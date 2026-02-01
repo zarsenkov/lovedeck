@@ -21,9 +21,9 @@ let currentTrack = 0;
 let musicVolume = 0.3; // 30% громкости (тихая фоновая музыка)
 const audioPlayer = new Audio();
 const musicTracks = [
-    './music/music1.mp3',
-    './music/music2.mp3', 
-    './music/music3.mp3'
+    './music1.mp3',
+    './music2.mp3', 
+    './music3.mp3'
 ];
 
 // ---------- ЦИТАТЫ О ЛЮБВИ ----------
@@ -1386,4 +1386,5 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
