@@ -1282,6 +1282,104 @@ function showIntimacyChallenge() {
   };
 }
 
+// ========== НЕДОСТАЮЩИЕ ФУНКЦИИ ==========
+
+// Отметить как выполненное
+function markAsCompleted() {
+    stats.completed++;
+    saveStats();
+    
+    // Показать подтверждение
+    const doneBtn = document.getElementById("doneBtn");
+    doneBtn.textContent = "✅ Выполнено!";
+    doneBtn.style.background = "#4CAF50";
+    
+    setTimeout(() => {
+        doneBtn.style.display = "none";
+        showCard(); // Показать следующую карточку
+    }, 1500);
+    
+    // Простая анимация
+    showNotification("🎉 Отлично! Задание выполнено!", "#4CAF50");
+}
+
+// Таймер
+function startTimer() {
+    stopTimer(); // Остановить предыдущий таймер
+    
+    const minutes = settings.timerMinutes;
+    timerSeconds = minutes * 60;
+    
+    const timerDisplay = document.getElementById("timer");
+    timerDisplay.textContent = formatTime(timerSeconds);
+    timerDisplay.style.color = "#ff4d6d";
+    timerDisplay.style.fontWeight = "bold";
+    
+    timer = setInterval(() => {
+        timerSeconds--;
+        timerDisplay.textContent = formatTime(timerSeconds);
+        
+        if (timerSeconds <= 0) {
+            stopTimer();
+            timerDisplay.textContent = "⏰ Время вышло!";
+            showNotification("⏰ Время выполнения истекло!", "#ff4d6d");
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    if (timer) {
+        clearInterval(timer);
+        timer = null;
+    }
+    const timerDisplay = document.getElementById("timer");
+    timerDisplay.textContent = "⏱️";
+    timerDisplay.style.color = "";
+    timerDisplay.style.fontWeight = "";
+}
+
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `⏱️ ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Функция для показа уведомлений
+function showNotification(message, color = "#4CAF50") {
+    const notification = document.createElement('div');
+    notification.className = 'copy-notification';
+    notification.textContent = message;
+    notification.style.background = color;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 2000);
+}
+
+// Функция для очистки истории
+if (!document.getElementById("clearHistory").onclick) {
+    document.getElementById("clearHistory").addEventListener("click", function() {
+        if (confirm("Очистить всю историю игры?")) {
+            localStorage.removeItem("loveDeck_history");
+            alert("История очищена!");
+            document.getElementById("historyBtn").click();
+        }
+    });
+}
+
+// Дополнительная функция для "О проекте"
+document.getElementById("aboutBtn").addEventListener("click", function() {
+    // Перемещаем в конец модального окна для лучшей читаемости
+    const aboutContent = document.querySelector(".about-content");
+    if (aboutContent) {
+        aboutContent.scrollTop = 0;
+    }
+});
+
+// Обновляем кнопку музыки при загрузке
+updateMusicButton();
+
 // ЗАПУСК ПРИЛОЖЕНИЯ
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
