@@ -1832,6 +1832,63 @@ body {
     font-weight: bold;
 }
 
+/* Уведомления */
+.copy-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #4CAF50;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-weight: bold;
+    z-index: 10001;
+    animation: copyNotification 2s forwards;
+    box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+}
+
+@keyframes copyNotification {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    40% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Улучшение отображения модальных окон */
+.modal-content {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Улучшение видимости кнопок */
+.icon-button:active, 
+.extra-button:active,
+.floating-button:active {
+    transform: scale(0.95);
+}
+
+/* Улучшение для инпутов */
+input:focus, 
+textarea:focus {
+    outline: 2px solid #ff4d6d;
+    outline-offset: 2px;
+}
+
+/* Анимация при нажатии */
+@keyframes buttonClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+.primary-button:active,
+.secondary-button:active {
+    animation: buttonClick 0.2s ease;
+}
+
+
 
 
 
