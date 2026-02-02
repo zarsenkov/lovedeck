@@ -512,5 +512,83 @@ const { error: updateError } = await window.supabase
 
 // Проверяем достижения
 await checkAchievements(couple.id);
+    // ========== УПОРЯДОЧЕННЫЕ КНОПКИ ==========
+
+// Функция для правильного расположения всех кнопок
+function organizeFloatingButtons() {
+    console.log('🎯 Организую плавающие кнопки...');
+    
+    // Список кнопок в порядке сверху вниз
+    const buttons = [
+        { id: 'login-btn', icon: '👤', title: 'Войти для синхронизации', color: '#ff6b8b' },
+        { id: 'myCardsBtn', icon: '✨', title: 'Мои карточки', color: '#6b8bff' },
+        { id: 'profileBtn', icon: '👫', title: 'Профиль пары с достижениями', color: '#ff8e53' },
+        { id: 'favoritesBtn', icon: '⭐', title: 'Избранные карточки', color: '#ffd166' }
+    ];
+    
+    // Позиционируем каждую кнопку
+    buttons.forEach((button, index) => {
+        let btn = document.getElementById(button.id);
+        
+        if (!btn) {
+            // Создаём кнопку если её нет
+            btn = document.createElement('button');
+            btn.id = button.id;
+            btn.innerHTML = button.icon;
+            btn.title = button.title;
+            document.body.appendChild(btn);
+        }
+        
+        // Показываем кнопку
+        btn.style.display = 'flex';
+        
+        // Позиция: 20px + (70px * номер_кнопки)
+        const topPosition = 20 + (index * 70);
+        
+        // Стили для кнопки
+        btn.style.cssText = `
+            position: fixed !important;
+            right: 20px !important;
+            top: ${topPosition}px !important;
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 50% !important;
+            background: ${button.color} !important;
+            color: white !important;
+            border: none !important;
+            font-size: 24px !important;
+            cursor: pointer !important;
+            z-index: 1000 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.3s !important;
+        `;
+        
+        // Hover эффект
+        btn.onmouseenter = () => {
+            btn.style.transform = 'scale(1.1)';
+            btn.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+        };
+        
+        btn.onmouseleave = () => {
+            btn.style.transform = 'scale(1)';
+            btn.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+        };
+        
+        // Назначаем обработчики для каждой кнопки
+        if (button.id === 'profileBtn') {
+            btn.onclick = function() {
+                alert('👫 ПРОФИЛЬ ПАРЫ\n\nСкоро здесь будет:\n• Ваша статистика 🏆\n• Достижения ⭐\n• Уровень любви 💖\n• Онлайн-режим 👥');
+            };
+        }
+    });
+    
+    console.log('✅ Все кнопки правильно расположены!');
+}
+
+// Запускаем через 3 секунды после загрузки
+setTimeout(organizeFloatingButtons, 3000);
 
 console.log('✨ Supabase.js инициализирован!');
