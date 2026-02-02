@@ -647,6 +647,33 @@ document.getElementById("aboutModal").addEventListener("click", function(e) {
   document.getElementById("closeFavorites").addEventListener("click", function() {
     document.getElementById("favoritesModal").classList.remove("active");
   });
+
+  // ДОБАВЬ ЭТОТ ОБРАБОТЧИК НЕПОСРЕДСТВЕННО:
+document.getElementById("clearAllFavorites").addEventListener("click", function() {
+    if (!confirm("Очистить все избранные карточки?")) return;
+    
+    localStorage.removeItem("loveDeck_favorites");
+    
+    // НЕМЕДЛЕННО обновляем список
+    const favoritesList = document.getElementById("favoritesList");
+    if (favoritesList) {
+        favoritesList.innerHTML = `
+            <div class="empty-message">
+                Нет избранных карточек<br>
+                Нажимайте 💾 на карточках, чтобы добавить их сюда!
+            </div>
+        `;
+    }
+    
+    // НЕ вызываем loadFavorites() — мы уже обновили DOM
+    
+    const notification = document.createElement("div");
+    notification.className = "copy-notification";
+    notification.textContent = "🗑️ Все избранные карточки удалены";
+    notification.style.background = "#ff4d6d";
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 2000);
+});
   
   // ЗАКРЫТИЕ МОДАЛОК ПО КЛИКУ ВНЕ
   document.querySelectorAll(".modal").forEach(modal => {
@@ -854,12 +881,42 @@ document.getElementById("aboutBtn").addEventListener("click", function() {
     }
 });
 
+// ========== ФУНКЦИЯ ОЧИСТКИ ВСЕГО ИЗБРАННОГО ==========
+function clearAllFavorites() {
+    if (!confirm("Очистить все избранные карточки?")) return;
+    
+    // 1. Очищаем хранилище
+    localStorage.removeItem("loveDeck_favorites");
+    
+    // 2. НЕМЕДЛЕННО обновляем список на экране
+    const favoritesList = document.getElementById("favoritesList");
+    if (favoritesList) {
+        favoritesList.innerHTML = `
+            <div class="empty-message">
+                Нет избранных карточек<br>
+                Нажимайте 💾 на карточках, чтобы добавить их сюда!
+            </div>
+        `;
+    }
+    
+    // 3. Уведомление
+    const notification = document.createElement("div");
+    notification.className = "copy-notification";
+    notification.textContent = "🗑️ Все избранные карточки удалены";
+    notification.style.background = "#ff4d6d";
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 2000);
+    
+    console.log("✅ Все избранные карточки удалены");
+}
+
 // ЗАПУСК ПРИЛОЖЕНИЯ
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
 } else {
     init();
 }
+
 
 
 
