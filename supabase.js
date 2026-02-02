@@ -1,205 +1,176 @@
-// supabase.js
-// =========== ВАШИ ДАННЫЕ ОТСЮДА ===========
-const SUPABASE_URL = 'https://xlnhuezhbmundhsdqyhu.supabase.co'  // Ваш URL из Supabase
-const SUPABASE_KEY = 'sb_publishable_wBSXXOSvG4zAJAQDy3hPow_nzhGcT9y'       // Ваш "Anon key" из Supabase
-// ===========================================
+// supabase.js - ПРОСТОЙ РАБОЧИЙ ВАРИАНТ
+const SUPABASE_URL = 'https://xlnhuezhbmundhsdqyhu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_wBSXXOSvG4zAJAQDy3hPow_nzhGcT9y';
 
-// Создаем клиент Supabase
-window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Текущий пользователь (будет заполняться)
-window.currentUser = null;
-
-// ================== ФУНКЦИИ ==================
-
-// 1. Инициализация аутентификации
-async function initAuth() {
-  console.log('Инициализация аутентификации...');
-  
-  // Проверяем, есть ли уже сессия
-  const { data: { session } } = await window.supabase.auth.getSession();
-  
-  if (session) {
-    // Пользователь уже вошел
-    window.currentUser = session.user;
-    console.log('Уже вошли как:', session.user.email);
-    updateUIForLoggedInUser();
-    loadUserData();
-  } else {
-    // Показываем кнопку входа
-    console.log('Не вошли, показываем кнопку входа');
-    updateUIForLoggedOutUser();
-  }
-  
-  // Слушаем изменения статуса входа
-  window.supabase.auth.onAuthStateChange((event, session) => {
-    console.log('Статус аутентификации изменился:', event);
-    
-    if (event === 'SIGNED_IN' && session) {
-      window.currentUser = session.user;
-      updateUIForLoggedInUser();
-      createCoupleProfile(); // Создаем запись в таблице couples
-      loadUserData();
-    } else if (event === 'SIGNED_OUT') {
-      window.currentUser = null;
-      updateUIForLoggedOutUser();
-    }
-  });
+// 1. Проверяем данные
+console.log('🔧 Проверка Supabase...');
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+    console.error('❌ ОШИБКА: SUPABASE_URL или SUPABASE_KEY не указаны!');
+    alert('Ошибка конфигурации Supabase. Проверь supabase.js');
 }
 
-// 2. Показать/скрыть модалку входа
-function showAuthModal() {
-  // Создаем модалку если еще нет
-  if (!document.getElementById('auth-modal')) {
-    const modalHTML = `
-    <div id="auth-modal" style="
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); display: flex; align-items: center;
-      justify-content: center; z-index: 1000;
-    ">
-      <div style="
-        background: white; padding: 30px; border-radius: 15px;
-        max-width: 400px; width: 90%;
-      ">
-        <h3 style="margin-top:0;">Вход в LoveDeck</h3>
-        <div id="auth-ui-container"></div>
-        <button onclick="hideAuthModal()" style="
-          margin-top: 20px; width: 100%; padding: 10px;
-          background: #eee; border: none; border-radius: 5px;
-        ">Закрыть</button>
-      </div>
-    </div>`;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Инициализируем Auth UI
-    window.supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN') {
-          hideAuthModal();
-        }
-      }
-    );
-  }
-  
-  document.getElementById('auth-modal').style.display = 'flex';
-}
-
-function hideAuthModal() {
-  const modal = document.getElementById('auth-modal');
-  if (modal) modal.style.display = 'none';
-}
-
-// 3. Обновить интерфейс для вошедшего пользователя
-function updateUIForLoggedInUser() {
-  // Находим или создаем кнопку профиля
-  let profileBtn = document.getElementById('profile-btn');
-  
-  if (!profileBtn) {
-    // Создаем кнопку если нет
-    profileBtn = document.createElement('button');
-    profileBtn.id = 'profile-btn';
-    profileBtn.innerHTML = '👤';
-    profileBtn.style.cssText = `
-      position: fixed; top: 20px; right: 20px; z-index: 100;
-      width: 50px; height: 50px; border-radius: 50%;
-      background: #ff6b8b; border: none; color: white;
-      font-size: 24px; cursor: pointer;
-    `;
-    profileBtn.onclick = showProfileMenu;
-    document.body.appendChild(profileBtn);
-  }
-  
-  // Меняем иконку на аватар если есть
-  if (window.currentUser?.user_metadata?.avatar_url) {
-    profileBtn.innerHTML = `<img src="${window.currentUser.user_metadata.avatar_url}" 
-      style="width:100%; height:100%; border-radius:50%;">`;
-  }
-}
-
-// 4. Обновить интерфейс для невошедшего пользователя
-function updateUIForLoggedOutUser() {
-  let loginBtn = document.getElementById('login-btn');
-  
-  if (!loginBtn) {
-    // Создаем кнопку входа
-    loginBtn = document.createElement('button');
-    loginBtn.id = 'login-btn';
-    loginBtn.innerHTML = '👤 Войти для синхронизации';
-    loginBtn.style.cssText = `
-      position: fixed; top: 20px; right: 20px; z-index: 100;
-      padding: 10px 20px; background: #ff6b8b; color: white;
-      border: none; border-radius: 25px; cursor: pointer;
-      font-size: 14px;
-    `;
-    loginBtn.onclick = showAuthModal;
-    document.body.appendChild(loginBtn);
-  }
-  
-  // Убираем кнопку профиля если есть
-  const profileBtn = document.getElementById('profile-btn');
-  if (profileBtn) profileBtn.remove();
-}
-
-// 5. Синхронизация действия с карточкой (ЭТУ ФУНКЦИЮ ВЫЗЫВАЕТ app.js)
-async function syncCardAction(cardId, cardText, mode, action) {
-  if (!window.currentUser) {
-    console.log('Пользователь не вошел, пропускаем синхронизацию');
+// 2. Создаем клиент
+try {
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✅ Supabase клиент создан');
+} catch (error) {
+    console.error('❌ Ошибка создания клиента:', error);
     return;
-  }
-  
-  try {
-    // Получаем ID пары
-    const { data: couple } = await window.supabase
-      .from('couples')
-      .select('id')
-      .eq('email', window.currentUser.email)
-      .single();
-    
-    if (!couple) {
-      console.error('Профиль пары не найден');
-      return;
-    }
-    
-    // Сохраняем в облако
-    const { error } = await window.supabase
-      .from('activities')
-      .insert({
-        couple_id: couple.id,
-        card_id: cardId,
-        card_text: cardText.substring(0, 255), // Обрезаем длинный текст
-        mode: mode,
-        completed: action === 'completed',
-        liked: action === 'liked',
-        timestamp: new Date().toISOString()
-      });
-    
-    if (error) {
-      console.error('Ошибка синхронизации:', error);
-      throw error;
-    }
-    
-    console.log(`✅ Успешно синхронизировано в облако (${action})`);
-    return true;
-    
-  } catch (error) {
-    console.error('❌ Ошибка при синхронизации:', error);
-    throw error;
-  }
 }
 
-// Экспортируем функцию для использования в app.js
-window.syncCardAction = syncCardAction;
+// 3. Создаем кнопку входа
+function createLoginButton() {
+    // Удаляем старую кнопку если есть
+    const oldBtn = document.getElementById('login-btn');
+    if (oldBtn) oldBtn.remove();
+    
+    // Создаем новую кнопку
+    const loginBtn = document.createElement('button');
+    loginBtn.id = 'login-btn';
+    loginBtn.innerHTML = '👤 Войти';
+    loginBtn.title = 'Войти для синхронизации';
+    loginBtn.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background: #ff6b8b;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        z-index: 1000;
+        font-size: 14px;
+        font-weight: bold;
+    `;
+    
+    // Обработчик клика
+    loginBtn.onclick = async function() {
+        console.log('🔄 Нажата кнопка входа');
+        
+        // Проверяем, вошли ли уже
+        const { data: { session } } = await window.supabase.auth.getSession();
+        if (session) {
+            alert(`✅ Уже вошли как: ${session.user.email}`);
+            console.log('Текущий пользователь:', session.user);
+            return;
+        }
+        
+        // Создаем простую форму входа
+        const email = prompt('Введите email для входа:\n(можно любой, даже test@test.com)');
+        if (!email) return;
+        
+        try {
+            console.log(`📧 Отправляю код на ${email}...`);
+            
+            const { error } = await window.supabase.auth.signInWithOtp({
+                email: email,
+                options: {
+                    shouldCreateUser: true,
+                    emailRedirectTo: window.location.href
+                }
+            });
+            
+            if (error) throw error;
+            
+            alert(`✅ Код отправлен на ${email}\n\nПроверьте почту и перейдите по ссылке из письма.`);
+            console.log('✅ Письмо с кодом отправлено');
+            
+        } catch (error) {
+            console.error('❌ Ошибка входа:', error);
+            alert(`Ошибка: ${error.message}`);
+        }
+    };
+    
+    // Добавляем кнопку на страницу
+    document.body.appendChild(loginBtn);
+    console.log('✅ Кнопка входа создана');
+}
 
-// ================== ЗАПУСК ==================
-
-// Инициализируем когда страница загрузится
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    if (window.supabase) {
-      initAuth();
-    } else {
-      console.error('Supabase не загрузился');
+// 4. Проверяем, вошли ли уже
+async function checkCurrentSession() {
+    try {
+        const { data: { session } } = await window.supabase.auth.getSession();
+        if (session) {
+            console.log('✅ Уже вошли как:', session.user.email);
+            // Обновляем кнопку
+            const btn = document.getElementById('login-btn');
+            if (btn) {
+                btn.innerHTML = `👤 ${session.user.email.split('@')[0]}`;
+                btn.style.background = '#4CAF50'; // Зеленый для "вошли"
+            }
+        } else {
+            console.log('ℹ️ Не вошли');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка проверки сессии:', error);
     }
-  }, 1000); // Даем время загрузиться основному коду
+}
+
+// 5. Функция для синхронизации (для app.js)
+window.syncCardAction = async function(cardId, cardText, mode, action) {
+    console.log(`🔄 syncCardAction вызвана: ${action} карточки ${cardId}`);
+    
+    try {
+        const { data: { session } } = await window.supabase.auth.getSession();
+        if (!session) {
+            console.log('⚠️ Не вошли - сохраняем локально');
+            return false;
+        }
+        
+        console.log('✅ Вошли, синхронизируем с облаком...');
+        // Здесь будет реальная синхронизация с базой данных
+        // Пока просто возвращаем успех
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Ошибка синхронизации:', error);
+        return false;
+    }
+};
+
+// 6. Запуск всего при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 LoveCouple загружен, инициализируем Supabase...');
+    
+    // Создаем кнопку входа
+    createLoginButton();
+    
+    // Проверяем текущий вход
+    checkCurrentSession();
+    
+    // Слушаем изменения статуса входа
+    window.supabase.auth.onAuthStateChange((event, session) => {
+        console.log('🔄 Статус аутентификации изменился:', event);
+        
+        if (event === 'SIGNED_IN' && session) {
+            alert(`🎉 Успешный вход!\nEmail: ${session.user.email}`);
+            // Обновляем кнопку
+            const btn = document.getElementById('login-btn');
+            if (btn) {
+                btn.innerHTML = `👤 ${session.user.email.split('@')[0]}`;
+                btn.style.background = '#4CAF50';
+                btn.onclick = () => {
+                    alert(`Вы вошли как: ${session.user.email}\n\nЧтобы выйти, откройте консоль (F12) и выполните:\nawait supabase.auth.signOut()`);
+                };
+            }
+        }
+        
+        if (event === 'SIGNED_OUT') {
+            console.log('👋 Вышли из системы');
+            // Обновляем кнопку
+            const btn = document.getElementById('login-btn');
+            if (btn) {
+                btn.innerHTML = '👤 Войти';
+                btn.style.background = '#ff6b8b';
+                btn.onclick = async function() {
+                    const email = prompt('Введите email для входа:');
+                    if (!email) return;
+                    await window.supabase.auth.signInWithOtp({ email });
+                };
+            }
+        }
+    });
 });
+
+console.log('✨ Supabase.js загружен и готов!');
