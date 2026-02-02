@@ -1445,6 +1445,69 @@ if (userInput && partnerInput) {
     });
 }
 
+// ===== НОВЫЕ ОБРАБОТЧИКИ ДЛЯ КНОПОК =====
+
+// Ждём полной загрузки страницы
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Обработчик для кнопки Пирамиды 🏆
+    const pyramidBtn = document.getElementById('pyramidBtn');
+    if (pyramidBtn) {
+        pyramidBtn.addEventListener('click', function() {
+            console.log('Нажата кнопка Пирамиды');
+            
+            // Пытаемся открыть модальное окно
+            const pyramidModal = document.getElementById('pyramidModal');
+            if (pyramidModal) {
+                pyramidModal.style.display = 'flex';
+            } else {
+                // Если модалки нет, показываем alert
+                alert('🏆 Пирамида любви\n\nСоревнуйтесь с другими парами:\n• 8 уровней отношений\n• Глобальный рейтинг\n• Еженедельные челленджи\n\nСкоро будет доступно!');
+            }
+        });
+    } else {
+        console.error('Кнопка pyramidBtn не найдена!');
+    }
+    
+    // Обработчик для кнопки Удалённой игры 🎮
+    const remoteBtn = document.getElementById('remoteBtn');
+    if (remoteBtn) {
+        remoteBtn.addEventListener('click', function() {
+            console.log('Нажата кнопка Удалённой игры');
+            
+            // Пытаемся открыть модальное окно
+            const remoteModal = document.getElementById('remoteModal');
+            if (remoteModal) {
+                remoteModal.style.display = 'flex';
+            } else {
+                // Если модалки нет, показываем alert
+                alert('🎮 Игра на расстоянии\n\nИграйте вместе, даже если вы далеко:\n• Создайте сессию\n• Отправьте ссылку партнёру\n• Карты синхронизируются в реальном времени\n\nСкоро будет доступно!');
+            }
+        });
+    } else {
+        console.error('Кнопка remoteBtn не найдена!');
+    }
+    
+    // Принудительно показываем header через секунду после загрузки
+    setTimeout(function() {
+        const header = document.querySelector('.header');
+        if (header) {
+            console.log('Принудительно показываем header');
+            header.style.display = 'flex';
+            header.style.visibility = 'visible';
+            header.style.opacity = '1';
+        } else {
+            console.error('Header не найден на странице!');
+        }
+    }, 1000);
+    
+    // Проверяем, что кнопки вообще есть в DOM
+    console.log('Проверка кнопок:');
+    console.log('pyramidBtn:', document.getElementById('pyramidBtn'));
+    console.log('remoteBtn:', document.getElementById('remoteBtn'));
+    console.log('Всего кнопок в header:', document.querySelectorAll('.header-buttons button').length);
+});
+
 
 // ЗАПУСК ПРИЛОЖЕНИЯ
 if (document.readyState === "loading") {
@@ -1452,6 +1515,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
