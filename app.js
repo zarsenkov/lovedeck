@@ -825,30 +825,6 @@ document.getElementById("aboutModal").addEventListener("click", function(e) {
     }
 });
   
-  // СТАТИСТИКА
-  document.getElementById("statsBtn").addEventListener("click", function() {
-    document.getElementById("statTotal").textContent = stats.total;
-    document.getElementById("statQuestions").textContent = stats.questions;
-    document.getElementById("statActions").textContent = stats.actions;
-    document.getElementById("statDates").textContent = stats.dates;
-    document.getElementById("statSecrets").textContent = stats.secrets;
-    document.getElementById("statCompleted").textContent = stats.completed;
-    document.getElementById("statsModal").classList.add("active");
-  });
-  
-  document.getElementById("closeStats").addEventListener("click", function() {
-    document.getElementById("statsModal").classList.remove("active");
-  });
-  
-  document.getElementById("resetStats").addEventListener("click", function() {
-    if (confirm("Сбросить статистику?")) {
-      stats = { ...defaultStats };
-      saveStats();
-      alert("Статистика сброшена!");
-      document.getElementById("statsModal").classList.remove("active");
-    }
-  });
-  
   // ДОСТИЖЕНИЯ
   document.getElementById("achievementsBtn").addEventListener("click", function() {
     loadAchievements();
@@ -1386,5 +1362,6 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
