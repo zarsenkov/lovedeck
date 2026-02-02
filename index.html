@@ -478,6 +478,31 @@
         </div>
     </div>
 </div>
+    <!-- Модальное окно Пирамиды -->
+<div id="pyramidModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
+        <h2 style="color: #2196F3; margin-top: 0;">🏆 Пирамида Любви</h2>
+        <p>Соревновательный режим с уровнями и рейтингом пар.</p>
+        <p style="color: #666; font-size: 14px;">(Функция в разработке)</p>
+        <button onclick="document.getElementById('pyramidModal').style.display='none'" 
+                style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Закрыть
+        </button>
+    </div>
+</div>
+
+<!-- Модальное окно Удалённой игры -->
+<div id="remoteModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
+        <h2 style="color: #ff6b8b; margin-top: 0;">🎮 Игра на расстоянии</h2>
+        <p>Создайте сессию и играйте с партнёром удалённо.</p>
+        <p style="color: #666; font-size: 14px;">(Функция в разработке)</p>
+        <button onclick="document.getElementById('remoteModal').style.display='none'" 
+                style="padding: 10px 20px; background: #ff6b8b; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Закрыть
+        </button>
+    </div>
+</div>
 
 <!-- Подключаем отдельный файл для управления карточками -->
 <script src="custom_cards.js"></script>
@@ -491,6 +516,7 @@
     <script src="main-integration.js"></script>
 </body>
 </html>
+
 
 
 
