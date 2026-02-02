@@ -1,5 +1,5 @@
 // ============================================
-// LOVECOUPLE - НАСТРАИВАЕМ СЕРДЦА
+// LOVEDECK - КОЛОДА ДЛЯ ВАШЕЙ ЛЮБВИ
 // Исправленная версия
 // ============================================
 
@@ -10,70 +10,6 @@ let currentMode = null;
 let currentCard = null;
 let timer = null;
 let timerSeconds = 0;
-
-// === ДОБАВЛЯЕМ ЭТИ 2 ПЕРЕМЕННЫЕ ===
-let currentCardId = null; // ID текущей карточки в массиве
-let currentCardText = null; // Текст текущей карточки (с именами)
-// ===================================
-
-// ================== КОД ДЛЯ СИНХРОНИЗАЦИИ С SUPABASE ==================
-// (Вставьте этот блок ПОСЛЕ переменных loveQuotes, НАПРИМЕР после строки 44)
-
-/**
- * Отправляет действие с карточкой в облако Supabase
- * @param {number} cardId - Номер карточки в массиве
- * @param {string} cardText - Текст карточки
- * @param {string} mode - Режим ("Пикантное 🔥", "Романтика" и т.д.)
- * @param {string} action - Тип действия: 'completed' (выполнено) или 'liked' (понравилось)
- */
-async function syncCardActionToCloud(cardId, cardText, mode, action) {
-  // Если пользователь не вошел в облачный аккаунт, ничего не делаем
-  if (!window.currentUser) {
-    console.log('Не вошли в облако, действие только локально.');
-    return;
-  }
-
-  // Подготавливаем данные для отправки
-  const cardData = {
-    card_id: cardId,
-    card_text: cardText.substring(0, 255), // Обрезаем длинный текст
-    mode: mode,
-    completed: action === 'completed', // true/false
-    liked: action === 'liked',         // true/false
-    timestamp: new Date().toISOString()
-  };
-
-  try {
-    // Отправляем данные в облако через глобальную функцию из supabase.js
-    // Мы предполагаем, что window.syncCardAction уже существует
-    await window.syncCardAction(cardId, cardText, mode, action);
-    console.log(`✅ Карточка #${cardId} синхронизирована (${action})`);
-
-  } catch (error) {
-    console.error('❌ Ошибка синхронизации с облаком:', error);
-    // Если не вышло, сохраняем в локальную очередь для повторной попытки позже
-    saveToSyncQueue(cardData);
-  }
-}
-
-/**
- * Сохраняет неудачное действие в локальную очередь (для оффлайн-работы)
- * @param {Object} cardData - Данные карточки для повторной отправки
- */
-function saveToSyncQueue(cardData) {
-  // Получаем текущую очередь из локального хранилища
-  let queue = JSON.parse(localStorage.getItem('loveDeck_syncQueue') || '[]');
-  // Добавляем новое действие
-  queue.push({
-    ...cardData,
-    retryCount: 0 // Счетчик попыток
-  });
-  // Сохраняем очередь обратно
-  localStorage.setItem('loveDeck_syncQueue', JSON.stringify(queue));
-  console.log('💾 Действие сохранено в оффлайн-очередь. Отправим, когда появится интернет.');
-}
-
-// ================== КОНЕЦ БЛОКА СИНХРОНИЗАЦИИ ==================
 
 // ---------- ИМЕНА ----------
 let userName = localStorage.getItem("loveDeck_user") || "";
@@ -737,11 +673,6 @@ function showCard() {
         currentCard = secretCards[Math.floor(Math.random() * secretCards.length)];
         document.getElementById("typeLabel").textContent = "✨ Секретная";
         document.getElementById("doneBtn").style.display = "block";
-        
-        // === ДОБАВЛЯЕМ ЭТО ДЛЯ СИНХРОНИЗАЦИИ ===
-        currentCardId = null; // У секретных карточек нет ID в массиве
-        currentCardText = insertNamesIntoCard(currentCard);
-        // ========================================
     } else {
         // Обычная карточка
         getRegularCard(type);
@@ -757,18 +688,18 @@ function showCard() {
     stopTimer();
     document.getElementById("timer").textContent = "⏱️";
     
+    if (settings.sound) {
+        try {
+            new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ").play();
+        } catch(e) {}
+    }
 }
 
 // Вспомогательная функция для обычных карточек
 
 function getRegularCard(type) {
   const pool = modeCards[currentMode][type];
-  
-  // === ИЗМЕНЯЕМ ЭТУ ЧАСТЬ ===
-  // Сохраняем ID карточки в массиве
-  currentCardId = Math.floor(Math.random() * pool.length);
-  currentCard = pool[currentCardId];
-  // ===========================
+  currentCard = pool[Math.floor(Math.random() * pool.length)];
   
   const typeMap = { 
     вопросы: "💬 Вопрос", 
@@ -778,10 +709,6 @@ function getRegularCard(type) {
   document.getElementById("typeLabel").textContent = typeMap[type];
   
   document.getElementById("doneBtn").style.display = type === "действия" ? "block" : "none";
-  
-  // === ДОБАВЛЯЕМ ЭТУ СТРОЧКУ ===
-  currentCardText = insertNamesIntoCard(currentCard);
-  // =============================
 }
 
 
@@ -805,20 +732,30 @@ function init() {
 }
 
 function continueInit() {
-  console.log("continueInit вызвана");
-  
-  // Проверяем, найдены ли кнопки
-  const modeButtons = document.querySelectorAll(".mode-button");
-  console.log(`Найдено кнопок режима: ${modeButtons.length}`);
-  
-  const typeButtons = document.querySelectorAll(".type-button.select");
-  console.log(`Найдено кнопок типа: ${typeButtons.length}`);
+
+// Загружаем имена
+const userInput = document.getElementById("userNameInput");
+const partnerInput = document.getElementById("partnerNameInput");
+
+if (userInput && partnerInput) {
+    // Если в localStorage ничего нет - оставляем placeholder
+    userInput.value = userName;
+    partnerInput.value = partnerName;
+    
+    userInput.addEventListener("input", function() {
+        userName = this.value || ""; // Пустая строка вместо "Вы"
+        saveProfiles();
+    });
+    
+    partnerInput.addEventListener("input", function() {
+        partnerName = this.value || ""; // Пустая строка вместо "Партнёр"
+        saveProfiles();
+    });
+}
   
   // ВЫБОР НАСТРОЕНИЯ
   document.querySelectorAll(".mode-button").forEach(button => {
-    console.log(`Добавляем обработчик для кнопки: ${button.dataset.mode}`);
     button.addEventListener("click", function() {
-      console.log(`Клик по режиму: ${this.dataset.mode}`);
       document.querySelectorAll(".mode-button").forEach(btn => btn.classList.remove("active"));
       this.classList.add("active");
       currentMode = this.dataset.mode;
@@ -863,32 +800,23 @@ function continueInit() {
   document.getElementById("timerBtn").addEventListener("click", startTimer);
   
   // СОХРАНЕНИЕ КАРТОЧКИ
-document.getElementById("saveBtn").addEventListener("click", function() {
+  document.getElementById("saveBtn").addEventListener("click", function() {
     if (!currentCard) return;
     
     const favorites = JSON.parse(localStorage.getItem("loveDeck_favorites") || "[]");
     if (favorites.some(fav => fav.text === currentCard)) {
-        alert("Эта карточка уже в избранном! ⭐");
-        return;
+      alert("Эта карточка уже в избранном! ⭐");
+      return;
     }
     
-    // === СОХРАНЯЕМ В LOCALSTORAGE (как было) ===
     favorites.push({
-        text: currentCard,
-        type: document.getElementById("typeLabel").textContent,
-        mode: currentMode,
-        date: new Date().toLocaleString()
+      text: currentCard,
+      type: document.getElementById("typeLabel").textContent,
+      mode: currentMode,
+      date: new Date().toLocaleString()
     });
     
     localStorage.setItem("loveDeck_favorites", JSON.stringify(favorites));
-    // ===========================================
-    
-    // === СИНХРОНИЗИРУЕМ С ОБЛАКОМ ===
-    if (window.syncCardActionToCloud && currentCardId !== null && currentCardText && currentMode) {
-        const cardIdToSync = currentCardId !== null ? currentCardId : -1;
-        syncCardActionToCloud(cardIdToSync, currentCardText, currentMode, 'liked');
-    }
-    // ================================
     
     const star = document.createElement("div");
     star.textContent = "⭐";
@@ -899,7 +827,7 @@ document.getElementById("saveBtn").addEventListener("click", function() {
     setTimeout(() => star.remove(), 1000);
     
     alert("Карточка сохранена! 💾");
-});
+  });
   
   // КОМПЛИМЕНТЫ
 document.getElementById("complimentBtn").addEventListener("click", function() {
@@ -1375,32 +1303,15 @@ function showIntimacyChallenge() {
 
 // Отметить как выполненное
 function markAsCompleted() {
-    // 1. Сохраняем локально (как было)
+    // Показать подтверждение
     const doneBtn = document.getElementById("doneBtn");
     doneBtn.textContent = "✅ Выполнено!";
     doneBtn.style.background = "#4CAF50";
-    
-    // === СОХРАНЯЕМ В LOCALSTORAGE (если ещё нет) ===
-    let completed = JSON.parse(localStorage.getItem("loveDeck_completed") || "[]");
-    if (currentCardId !== null && !completed.includes(currentCardId)) {
-        completed.push(currentCardId);
-        localStorage.setItem("loveDeck_completed", JSON.stringify(completed));
-    }
-    // ================================================
     
     setTimeout(() => {
         doneBtn.style.display = "none";
         showCard(); // Показать следующую карточку
     }, 1500);
-    
-    // 2. Синхронизируем с облаком
-    // === ДОБАВЛЯЕМ ВЫЗОВ СИНХРОНИЗАЦИИ ===
-    if (window.syncCardActionToCloud && currentCardId !== null && currentCardText && currentMode) {
-        // Для секретных карточек используем специальный ID
-        const cardIdToSync = currentCardId !== null ? currentCardId : -1;
-        syncCardActionToCloud(cardIdToSync, currentCardText, currentMode, 'completed');
-    }
-    // ======================================
     
     // Простая анимация
     showNotification("🎉 Отлично! Задание выполнено!", "#4CAF50");
@@ -1470,7 +1381,23 @@ document.getElementById("aboutBtn").addEventListener("click", function() {
 });
 
 // ========== ФУНКЦИЯ ОЧИСТКИ ВСЕГО ИЗБРАННОГО ==========
-
+function clearAllFavorites() {
+    if (!confirm("Очистить все избранные карточки?")) return;
+    
+    // 1. Очищаем хранилище
+    localStorage.removeItem("loveDeck_favorites");
+    
+    // 2. НЕМЕДЛЕННО обновляем список на экране
+    const favoritesList = document.getElementById("favoritesList");
+    if (favoritesList) {
+        favoritesList.innerHTML = `
+            <div class="empty-message">
+                Нет избранных карточек<br>
+                Нажимайте 💾 на карточках, чтобы добавить их сюда!
+            </div>
+        `;
+    }
+    
     // 3. Уведомление
     const notification = document.createElement("div");
     notification.className = "copy-notification";
@@ -1520,10 +1447,11 @@ if (userInput && partnerInput) {
 
 
 // ЗАПУСК ПРИЛОЖЕНИЯ
-document.addEventListener("DOMContentLoaded", function() {
-    // Даем время на загрузку других скриптов
-    setTimeout(init, 500);
-});
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+} else {
+    init();
+}
 
 
 
