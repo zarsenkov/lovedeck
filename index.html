@@ -42,73 +42,19 @@
             <div class="loading-hint">Настраиваем сердца...</div>
         </div>
     </div>
-    <div class="container">
-<!-- ШАПКА - УПРОЩЁННАЯ ВЕРСИЯ -->
-<div id="mainHeader" style="
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 15px 20px !important;
-    background: white !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
-    position: relative !important;
-    z-index: 1000 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-">
-    <!-- Логотип -->
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <div style="font-size: 28px;">👩‍❤️‍💋‍👨</div>
-        <div style="font-size: 20px; font-weight: bold; color: #ff4d6d;">LoveCouple</div>
-    </div>
     
-    <!-- Кнопки -->
-    <div style="display: flex; gap: 10px;">
-        <button id="settingsBtn" style="
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            border: none; 
-            background: #f0f0f0; 
-            color: #333; 
-            font-size: 20px; 
-            cursor: pointer;
-        " title="Настройки">⚙️</button>
-        
-        <button id="aboutBtn" style="
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            border: none; 
-            background: #f0f0f0; 
-            color: #333; 
-            font-size: 20px; 
-            cursor: pointer;
-        " title="О проекте">ℹ️</button>
-        
-        <button id="pyramidBtn" style="
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            border: none; 
-            background: linear-gradient(135deg, #2196F3, #1565c0); 
-            color: white; 
-            font-size: 20px; 
-            cursor: pointer;
-        " title="Пирамида">🏆</button>
-        
-        <button id="remoteBtn" style="
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            border: none; 
-            background: linear-gradient(135deg, #ff6b8b, #ff4d6d); 
-            color: white; 
-            font-size: 20px; 
-            cursor: pointer;
-        " title="Игра на расстоянии">🎮</button>
-    </div>
-</div>
+    <div class="container">
+        <!-- Шапка -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">👩‍❤️‍💋‍👨</div>
+                <div class="logo-text">LoveCouple</div>
+            </div>
+            <div class="header-buttons">
+                <button id="settingsBtn" class="icon-button" title="Настройки">⚙️</button>
+                <button id="aboutBtn" class="icon-button" title="О проекте">ℹ️</button>
+            </div>
+        </header>
 
         <!-- ЭКРАН МЕНЮ -->
         <div id="menu" class="screen active">
@@ -421,7 +367,7 @@
                 <div class="contact-info">
                     <p><strong>Для идей и предложений:</strong></p>
                     <div class="contact-details">
-                        <p>✉️ Telegram: <a href="https://t.me/LoveCouple_news" target="_blank" class="contact-link">LoveCouple_news</a></p>
+                        <p>✉️ Telegram: <a href="https://t.me/rymarbel" target="_blank" class="contact-link">@rymarbel</a></p>
                         <p>📧 Email: <a href="zarsenkov@yandex.ru" class="contact-link">zarsenkov@yandex.ru</a></p>
                     </div>
                     <p class="contact-note">Открыт для предложений по улучшению!</p>
@@ -530,63 +476,11 @@
         </div>
     </div>
 </div>
-    <!-- Модальное окно Пирамиды -->
-<div id="pyramidModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
-    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
-        <h2 style="color: #2196F3; margin-top: 0;">🏆 Пирамида Любви</h2>
-        <p>Соревновательный режим с уровнями и рейтингом пар.</p>
-        <p style="color: #666; font-size: 14px;">(Функция в разработке)</p>
-        <button onclick="document.getElementById('pyramidModal').style.display='none'" 
-                style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            Закрыть
-        </button>
-    </div>
-</div>
-
-<!-- Модальное окно Удалённой игры -->
-<div id="remoteModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
-    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
-        <h2 style="color: #ff6b8b; margin-top: 0;">🎮 Игра на расстоянии</h2>
-        <p>Создайте сессию и играйте с партнёром удалённо.</p>
-        <p style="color: #666; font-size: 14px;">(Функция в разработке)</p>
-        <button onclick="document.getElementById('remoteModal').style.display='none'" 
-                style="padding: 10px 20px; background: #ff6b8b; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            Закрыть
-        </button>
-    </div>
-</div>
 
 <!-- Подключаем отдельный файл для управления карточками -->
 <script src="custom_cards.js"></script>
 
-    <!-- ОСНОВНЫЕ СКРИПТЫ -->
     <script src="app.js"></script>
-    
-    <!-- НОВЫЕ ФИЧИ для обновления -->
-    <script src="shareable-deck.js"></script>
-    <script src="pyramid-competition.js"></script>
-    <script src="main-integration.js"></script>
-    <script src="new_features.js"></script>
+    <script src="custom_cards.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
