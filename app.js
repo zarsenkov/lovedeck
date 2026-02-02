@@ -805,10 +805,20 @@ function init() {
 }
 
 function continueInit() {
-
+  console.log("continueInit вызвана");
+  
+  // Проверяем, найдены ли кнопки
+  const modeButtons = document.querySelectorAll(".mode-button");
+  console.log(`Найдено кнопок режима: ${modeButtons.length}`);
+  
+  const typeButtons = document.querySelectorAll(".type-button.select");
+  console.log(`Найдено кнопок типа: ${typeButtons.length}`);
+  
   // ВЫБОР НАСТРОЕНИЯ
   document.querySelectorAll(".mode-button").forEach(button => {
+    console.log(`Добавляем обработчик для кнопки: ${button.dataset.mode}`);
     button.addEventListener("click", function() {
+      console.log(`Клик по режиму: ${this.dataset.mode}`);
       document.querySelectorAll(".mode-button").forEach(btn => btn.classList.remove("active"));
       this.classList.add("active");
       currentMode = this.dataset.mode;
@@ -1510,11 +1520,11 @@ if (userInput && partnerInput) {
 
 
 // ЗАПУСК ПРИЛОЖЕНИЯ
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-} else {
-    init();
-}
+document.addEventListener("DOMContentLoaded", function() {
+    // Даем время на загрузку других скриптов
+    setTimeout(init, 500);
+});
+
 
 
 
