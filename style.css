@@ -1460,6 +1460,166 @@ textarea:focus {
     font-weight: 700;
     color: #ff4d6d;
 }
+/* ========== ИСПРАВЛЕНИЕ ПОЛЕЙ ИМЕН ДЛЯ МОБИЛЬНЫХ ========== */
+
+/* На десктопе - горизонтально */
+.names-inputs {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.name-input-group {
+    flex: 1;
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.name-input {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    border: 2px solid #ffccd5;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s;
+    background: #fff9fa;
+}
+
+.heart-between {
+    font-size: 32px;
+    color: #ff4d6d;
+    padding-bottom: 25px;
+    animation: pulse 2s infinite;
+}
+
+/* На планшетах (меньше 768px) */
+@media (max-width: 768px) {
+    .names-inputs {
+        gap: 15px;
+    }
+    
+    .name-input-group {
+        min-width: 130px;
+        max-width: 180px;
+    }
+    
+    .name-input {
+        padding: 12px;
+        font-size: 15px;
+    }
+    
+    .heart-between {
+        font-size: 28px;
+        padding-bottom: 20px;
+    }
+}
+
+/* На мобильных (меньше 480px) - делаем вертикально */
+@media (max-width: 480px) {
+    .names-inputs {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .name-input-group {
+        min-width: 100%;
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .name-input {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+        padding: 16px; /* Увеличиваем для удобного тапа */
+        font-size: 16px;
+        height: 52px; /* Фиксированная высота */
+    }
+    
+    .heart-between {
+        order: 2; /* Сердечко между полями */
+        padding: 10px 0;
+        margin: 5px 0;
+        font-size: 24px;
+        transform: rotate(90deg); /* Сердечко вертикально */
+    }
+    
+    /* Первое поле */
+    .name-input-group:first-child {
+        order: 1;
+    }
+    
+    /* Второе поле */
+    .name-input-group:last-child {
+        order: 3;
+    }
+}
+
+/* Для очень маленьких экранов (iPhone SE) */
+@media (max-width: 320px) {
+    .names-inputs {
+        padding: 0 5px;
+    }
+    
+    .name-input {
+        max-width: 100%;
+        padding: 14px;
+        height: 50px;
+        font-size: 15px;
+    }
+    
+    .heart-between {
+        font-size: 20px;
+        padding: 8px 0;
+    }
+}
+
+/* Горизонтальная ориентация на мобильных */
+@media (max-height: 500px) and (orientation: landscape) {
+    .names-inputs {
+        flex-direction: row;
+        flex-wrap: nowrap;
+    }
+    
+    .name-input-group {
+        flex: 1;
+        min-width: auto;
+        max-width: 45%;
+    }
+    
+    .heart-between {
+        order: 0;
+        transform: none;
+        padding-bottom: 25px;
+    }
+    
+    .name-input {
+        max-width: 100%;
+    }
+}
+
+/* Улучшаем пример карточки на мобильных */
+@media (max-width: 480px) {
+    .example-card {
+        font-size: 14px;
+        padding: 8px 12px;
+        display: block;
+        text-align: center;
+        margin: 10px auto;
+        width: 90%;
+    }
+    
+    #name1Example, #name2Example {
+        font-size: 15px;
+        padding: 2px 6px;
+    }
+}
+
 
 
 
