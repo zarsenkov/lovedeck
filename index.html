@@ -493,67 +493,7 @@
 <script src="app.js"></script>
 <script src="custom_cards.js"></script>
 
-<!-- ДЕБАГ-СКРИПТ ДЛЯ ПРОВЕРКИ -->
-<script>
-// Этот код запустится ПОСЛЕ загрузки всех скриптов
-console.log('=== ДЕБАГ ПРОВЕРКА ===');
-
-// Ждём полной загрузки страницы
-setTimeout(() => {
-    // 1. Проверяем кнопку login-btn
-    const mainLoginBtn = document.getElementById('login-btn');
-    console.log('1. Основная кнопка login-btn найдена?', !!mainLoginBtn);
-    
-    if (mainLoginBtn) {
-        console.log('   Её HTML:', mainLoginBtn.outerHTML);
-        console.log('   Её onclick:', mainLoginBtn.onclick);
-        
-        // Делаем её видимой и кликабельной
-        mainLoginBtn.style.opacity = '1';
-        mainLoginBtn.style.cursor = 'pointer';
-        mainLoginBtn.style.pointerEvents = 'auto';
-        
-        // Добавляем простой обработчик
-        mainLoginBtn.addEventListener('click', function() {
-            console.log('✅ Основная кнопка нажата!');
-            alert('Основная кнопка работает!\n\nТеперь проверяем Supabase...');
-            
-            if (window.supabase) {
-                console.log('Supabase:', window.supabase);
-                window.supabase.auth.getSession().then(({ data }) => {
-                    alert('Сессия: ' + (data.session ? 'вошли' : 'не вошли'));
-                });
-            }
-        });
-    }
-    
-    // 2. Проверяем Supabase
-    console.log('2. Supabase доступен?', typeof window.supabase !== 'undefined');
-    console.log('3. Функция syncCardAction?', typeof window.syncCardAction !== 'undefined');
-    
-    // 3. Создаём тестовую кнопку (только для отладки)
-    const debugBtn = document.createElement('button');
-    debugBtn.textContent = '🐛 ДЕБАГ';
-    debugBtn.style.cssText = `
-        position: fixed; bottom: 20px; right: 20px;
-        padding: 10px; background: #666; color: white;
-        border: none; border-radius: 5px; cursor: pointer;
-        z-index: 9999; font-size: 12px;
-    `;
-    debugBtn.onclick = function() {
-        console.log('=== РУЧНАЯ ПРОВЕРКА ===');
-        console.log('Кнопка login-btn:', document.getElementById('login-btn'));
-        console.log('Supabase:', window.supabase);
-        console.log('Все кнопки в floating-buttons:', 
-            document.querySelectorAll('.floating-button'));
-        alert('Посмотри консоль (F12)');
-    };
-    document.body.appendChild(debugBtn);
-    
-    console.log('=== ДЕБАГ ЗАВЕРШЕН ===');
-}, 2000);
-</script>
-
 </body>
 </html>
+
 
