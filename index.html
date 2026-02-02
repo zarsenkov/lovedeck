@@ -493,8 +493,62 @@
 <script src="app.js"></script>
 <script src="custom_cards.js"></script>
 
+    <div id="profileModal" class="modal">
+    <div class="modal-content">
+        <h2>👫 Ваш профиль</h2>
+        
+        <div class="profile-header">
+            <div class="profile-photo" id="profilePhoto">
+                <img src="" alt="Фото пары">
+                <button onclick="changePhoto()">📷</button>
+            </div>
+            
+            <div class="profile-info">
+                <h3 id="coupleNames">Имя пары</h3>
+                <div class="love-level">
+                    <span>Уровень любви: </span>
+                    <span class="level" id="loveLevel">1</span>
+                    <div class="level-bar">
+                        <div class="level-fill" id="levelFill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-stats">
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="cardsCompleted">0</div>
+                <div class="stat-label">Выполнено</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value" id="cardsLiked">0</div>
+                <div class="stat-label">Понравилось</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-value" id="achievementsCount">0</div>
+                <div class="stat-label">Достижения</div>
+            </div>
+        </div>
+        
+        <div class="achievements-list" id="achievementsList">
+            <!-- Список достижений -->
+        </div>
+        
+        <button onclick="closeProfile()">Закрыть</button>
+    </div>
+</div>
+
+<!-- Кнопка открытия профиля -->
+<button id="profileBtn" class="floating-button" style="bottom: 20px; right: 20px;">👫</button>
+
 </body>
 </html>
+
 
 
 
