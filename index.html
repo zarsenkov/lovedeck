@@ -43,20 +43,72 @@
         </div>
     </div>
     <div class="container">
-<!-- Шапка -->
-<header class="header">
-    <div class="logo">
-        <div class="logo-icon">👩‍❤️‍💋‍👨</div>
-        <div class="logo-text">LoveCouple</div>
+<!-- ШАПКА - УПРОЩЁННАЯ ВЕРСИЯ -->
+<div id="mainHeader" style="
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 15px 20px !important;
+    background: white !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+    position: relative !important;
+    z-index: 1000 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+">
+    <!-- Логотип -->
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="font-size: 28px;">👩‍❤️‍💋‍👨</div>
+        <div style="font-size: 20px; font-weight: bold; color: #ff4d6d;">LoveCouple</div>
     </div>
-    <div class="header-buttons">
-        <button id="settingsBtn" class="icon-button" title="Настройки">⚙️</button>
-        <button id="aboutBtn" class="icon-button" title="О проекте">ℹ️</button>
-        <!-- НОВЫЕ КНОПКИ ДЛЯ ОБНОВЛЕНИЙ -->
-        <button id="pyramidBtn" class="icon-button" title="Пирамида" style="background: #2196F3;">🏆</button>
-        <button id="remoteBtn" class="icon-button" title="Игра на расстоянии" style="background: #ff6b8b;">🎮</button>
+    
+    <!-- Кнопки -->
+    <div style="display: flex; gap: 10px;">
+        <button id="settingsBtn" style="
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            border: none; 
+            background: #f0f0f0; 
+            color: #333; 
+            font-size: 20px; 
+            cursor: pointer;
+        " title="Настройки">⚙️</button>
+        
+        <button id="aboutBtn" style="
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            border: none; 
+            background: #f0f0f0; 
+            color: #333; 
+            font-size: 20px; 
+            cursor: pointer;
+        " title="О проекте">ℹ️</button>
+        
+        <button id="pyramidBtn" style="
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            border: none; 
+            background: linear-gradient(135deg, #2196F3, #1565c0); 
+            color: white; 
+            font-size: 20px; 
+            cursor: pointer;
+        " title="Пирамида">🏆</button>
+        
+        <button id="remoteBtn" style="
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            border: none; 
+            background: linear-gradient(135deg, #ff6b8b, #ff4d6d); 
+            color: white; 
+            font-size: 20px; 
+            cursor: pointer;
+        " title="Игра на расстоянии">🎮</button>
     </div>
-</header>
+</div>
 
         <!-- ЭКРАН МЕНЮ -->
         <div id="menu" class="screen active">
@@ -516,6 +568,7 @@
     <script src="main-integration.js"></script>
 </body>
 </html>
+
 
 
 
