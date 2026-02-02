@@ -616,153 +616,6 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Достижения */
-.achievements-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px;
-    margin: 25px 0;
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 10px;
-}
-
-@media (max-width: 600px) {
-    .achievements-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.achievement-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s;
-    border: 2px solid #f0f0f0;
-}
-
-.achievement-card.locked {
-    opacity: 0.6;
-    filter: grayscale(1);
-}
-
-.achievement-card.unlocked {
-    border-color: #FFD700;
-    background: linear-gradient(135deg, #fffdf0, #ffffff);
-}
-
-.achievement-card .achievement-emoji {
-    font-size: 40px;
-    margin-bottom: 10px;
-}
-
-.achievement-card .achievement-card-title {
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-}
-
-.achievement-card .achievement-card-desc {
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 10px;
-}
-
-.achievement-card .achievement-status {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 10px;
-    display: inline-block;
-}
-
-.achievement-card.locked .achievement-status {
-    background: #f0f0f0;
-    color: #888;
-}
-
-.achievement-card.unlocked .achievement-status {
-    background: #FFD700;
-    color: #333;
-    font-weight: bold;
-}
-
-/* Уведомление о достижении */
-.achievement-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: white;
-    border-radius: 15px;
-    padding: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    max-width: 350px;
-    transform: translateX(400px);
-    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    border-left: 5px solid #FFD700;
-}
-
-.achievement-notification.show {
-    transform: translateX(0);
-}
-
-.achievement-icon {
-    font-size: 40px;
-    flex-shrink: 0;
-}
-
-.achievement-content {
-    flex: 1;
-}
-
-.achievement-title {
-    font-size: 12px;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
-}
-
-.achievement-name {
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 3px;
-}
-
-.achievement-desc {
-    font-size: 14px;
-    color: #666;
-}
-
-/* Блеск для разблокированных достижений */
-.achievement-card.unlocked::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        45deg,
-        transparent 30%,
-        rgba(255, 215, 0, 0.1) 50%,
-        transparent 70%
-    );
-    animation: shine 3s infinite linear;
-}
-
-@keyframes shine {
-    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-}
-
 /* Настройки */
 .setting-item {
     margin: 20px 0;
@@ -797,90 +650,6 @@ body {
 .setting-input:focus {
     border-color: #ff4d6d;
     outline: none;
-}
-
-/* История и избранное */
-.history-list, .favorites-list {
-    max-height: 400px;
-    overflow-y: auto;
-    margin: 20px 0;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 12px;
-}
-
-.history-item, .favorite-item {
-    background: white;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    border-left: 4px solid #ff4d6d;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.item-text {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 8px;
-    line-height: 1.4;
-}
-
-.item-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    color: #888;
-}
-
-.item-type {
-    font-weight: 600;
-    color: #ff4d6d;
-}
-
-.item-date {
-    font-style: italic;
-}
-
-.item-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.action-button {
-    padding: 6px 12px;
-    font-size: 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.delete-button {
-    background: #ff4444;
-    color: white;
-}
-
-.delete-button:hover {
-    background: #cc0000;
-}
-
-.export-button {
-    background: #4CAF50;
-    color: white;
-}
-
-.export-button:hover {
-    background: #45a049;
-}
-
-.empty-message {
-    text-align: center;
-    color: #888;
-    padding: 40px;
-    font-style: italic;
-    font-size: 16px;
 }
 
 /* Кнопки в модалках */
@@ -1171,199 +940,48 @@ body {
     80% { opacity: 1; }
     100% { opacity: 0; }
 }
-/* ========== МУЗЫКА ========== */
 
-/* Анимация для кнопки музыки */
-@keyframes musicPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-}
-
-.icon-button.music-playing {
-    animation: musicPulse 2s infinite;
-    background: #ff4d6d;
-    color: white;
-}
-
-/* Мини-плеер (если захотите добавить позже) */
-.music-player {
-    position: fixed;
-    bottom: 100px;
-    right: 20px;
-    background: white;
-    border-radius: 15px;
-    padding: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    z-index: 99;
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 200px;
-}
-
-.music-player.active {
-    display: flex;
-    animation: modalSlideIn 0.3s ease;
-}
-
-.music-track {
-    font-size: 12px;
-    color: #666;
-    text-align: center;
-    margin-bottom: 5px;
-}
-/* ========== МОМЕНТЫ БЛАГОДАРНОСТИ ========== */
-.gratitude-form {
-    margin: 25px 0;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 15px;
-}
-
-.gratitude-form textarea {
-    width: 100%;
-    padding: 15px;
-    border: 2px solid #ffccd5;
-    border-radius: 10px;
-    font-size: 16px;
-    font-family: inherit;
-    resize: vertical;
-    min-height: 100px;
-    margin-bottom: 10px;
-    transition: border-color 0.3s;
-}
-
-.gratitude-form textarea:focus {
-    border-color: #ff4d6d;
-    outline: none;
-}
-
-.gratitude-counter {
-    text-align: right;
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 15px;
-}
-
-.gratitude-list {
-    max-height: 400px;
-    overflow-y: auto;
-    margin: 25px 0;
-    padding: 10px;
-    background: #f9f9f9;
-    border-radius: 15px;
-}
-
-.gratitude-item {
-    background: white;
-    padding: 20px;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    border-left: 5px solid #4CAF50;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-    position: relative;
-    animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.gratitude-text {
-    font-size: 16px;
-    line-height: 1.5;
-    color: #333;
-    margin-bottom: 10px;
-    word-break: break-word;
-}
-
-.gratitude-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    color: #888;
-}
-
-.gratitude-date {
-    font-style: italic;
-}
-
-.delete-gratitude {
-    background: #ff4444;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.delete-gratitude:hover {
-    background: #cc0000;
-}
-
-/* Анимация добавления */
-@keyframes gratitudeAdded {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-.gratitude-item.new {
-    animation: gratitudeAdded 0.5s ease;
-}
-
-/* ========== "О ПРОЕКТЕ" ========== */
-.about-content {
-    max-height: 60vh;
-    overflow-y: auto;
-    padding-right: 10px;
-}
-
-.about-logo {
-    text-align: center;
-    font-size: 60px;
-    margin-bottom: 20px;
-    animation: pulse 2s infinite;
+/* ========== О ПРОЕКТЕ ========== */
+.about-sections {
+    text-align: left;
+    margin: 20px 0;
 }
 
 .about-section {
-    margin: 25px 0;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 12px;
-    border-left: 4px solid #ff4d6d;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
 }
 
-.about-section h3 {
+.about-section:last-child {
+    border-bottom: none;
+}
+
+.about-subtitle {
+    font-size: 18px;
     color: #ff4d6d;
     margin-bottom: 15px;
-    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.about-section p {
-    line-height: 1.6;
-    margin-bottom: 10px;
-    color: #555;
-}
-
-.about-section ul {
+.about-list {
     padding-left: 20px;
     margin: 10px 0;
 }
 
-.about-section li {
+.about-list li {
     margin-bottom: 8px;
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
+/* Поддержка проекта */
 .support-options {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin: 20px 0;
+    gap: 12px;
+    margin: 15px 0;
 }
 
 .support-option {
@@ -1371,20 +989,19 @@ body {
     align-items: center;
     gap: 15px;
     padding: 15px;
-    background: white;
+    background: #fff9fa;
     border-radius: 10px;
     border: 2px solid #ffccd5;
     transition: all 0.3s;
 }
 
 .support-option:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(255, 107, 139, 0.1);
     border-color: #ff4d6d;
+    transform: translateY(-2px);
 }
 
 .support-icon {
-    font-size: 30px;
+    font-size: 28px;
     flex-shrink: 0;
 }
 
@@ -1392,247 +1009,88 @@ body {
     flex: 1;
 }
 
+.support-text strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
 .support-details {
     font-size: 14px;
     color: #666;
-    margin-top: 5px;
     word-break: break-all;
+    font-family: monospace;
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 5px;
 }
 
 .support-note {
-    font-size: 14px;
+    font-size: 13px;
     color: #888;
     font-style: italic;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 15px;
     padding-top: 15px;
     border-top: 1px dashed #ddd;
 }
 
-.version {
-    font-size: 16px;
-    font-weight: bold;
-    color: #ff4d6d;
-    text-align: center;
+/* Контакты */
+.contact-info {
+    margin: 15px 0;
+}
+
+.contact-info p {
     margin-bottom: 10px;
-}
-
-.features-count {
-    font-size: 14px;
-    color: #666;
-    text-align: center;
     line-height: 1.5;
-}
-
-/* ========== РАСШИРЕННАЯ ИНФОРМАЦИЯ "О ПРОЕКТЕ" ========== */
-
-/* История - таймлайн */
-.history-timeline {
-    margin: 20px 0;
-    position: relative;
-    padding-left: 30px;
-}
-
-.history-timeline::before {
-    content: '';
-    position: absolute;
-    left: 10px;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(to bottom, #ff4d6d, #ff8e53);
-    border-radius: 2px;
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 25px;
-    padding-left: 20px;
-}
-
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -10px;
-    top: 5px;
-    width: 20px;
-    height: 20px;
-    background: white;
-    border: 3px solid #ff4d6d;
-    border-radius: 50%;
-    z-index: 1;
-}
-
-.timeline-date {
-    font-weight: bold;
-    color: #ff4d6d;
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-
-.timeline-content {
-    color: #555;
-    line-height: 1.5;
-    font-size: 14px;
-}
-
-/* Планы на будущее - сетка фич */
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin: 20px 0;
-}
-
-@media (max-width: 600px) {
-    .features-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.feature-card {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    border: 2px solid #ffccd5;
-    text-align: center;
-    transition: all 0.3s;
-}
-
-.feature-card:hover {
-    transform: translateY(-5px);
-    border-color: #ff4d6d;
-    box-shadow: 0 8px 20px rgba(255, 107, 139, 0.15);
-}
-
-.feature-icon {
-    font-size: 30px;
-    margin-bottom: 10px;
-}
-
-.feature-text {
-    font-size: 13px;
-    line-height: 1.4;
-}
-
-/* Контакты - сетка */
-.contacts-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin: 20px 0;
-}
-
-@media (max-width: 600px) {
-    .contacts-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.contact-card {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    background: white;
-    border-radius: 10px;
-    border: 2px solid #e0e0e0;
-    transition: all 0.3s;
-}
-
-.contact-card:hover {
-    border-color: #ff4d6d;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(255, 107, 139, 0.1);
-}
-
-.contact-icon {
-    font-size: 24px;
-    color: #ff4d6d;
-    flex-shrink: 0;
 }
 
 .contact-details {
-    flex: 1;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
 }
 
-.contact-details strong {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    color: #333;
+.contact-details p {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.contact-info {
+.contact-link {
+    color: #ff4d6d;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.contact-link:hover {
+    text-decoration: underline;
+}
+
+.contact-note {
     font-size: 13px;
     color: #666;
-    word-break: break-all;
-}
-
-/* Техническая информация */
-.tech-info {
-    text-align: center;
-    padding: 20px;
-    background: linear-gradient(135deg, #fff5f5, #fff0f7);
-    border-radius: 12px;
-    border: 2px dashed #ffb3c1;
-}
-
-.stats-grid-small {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.stat-small {
-    text-align: center;
-}
-
-.stat-number {
-    font-size: 24px;
-    font-weight: 800;
-    color: #ff4d6d;
-    margin-bottom: 5px;
-}
-
-.stat-label {
-    font-size: 11px;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.tech-note {
-    font-size: 12px;
-    color: #888;
     font-style: italic;
-    margin-top: 15px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Футер */
+.about-footer {
+    margin-top: 25px;
     padding-top: 15px;
-    border-top: 1px solid #ffccd5;
+    border-top: 2px solid #f0f0f0;
+    text-align: center;
+    color: #888;
+    font-size: 14px;
 }
 
-/* Анимации для новых блоков */
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+.about-version {
+    margin: 0;
 }
-
-.about-section {
-    animation: slideIn 0.5s ease backwards;
-}
-
-.about-section:nth-child(2) { animation-delay: 0.1s; }
-.about-section:nth-child(3) { animation-delay: 0.2s; }
-.about-section:nth-child(4) { animation-delay: 0.3s; }
-.about-section:nth-child(5) { animation-delay: 0.4s; }
-.about-section:nth-child(6) { animation-delay: 0.5s; }
 
 /* ========== ИНТИМНЫЕ ЧЕЛЛЕНДЖИ ========== */
 .challenge-content {
