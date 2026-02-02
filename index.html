@@ -251,21 +251,26 @@
         </div>
     </div>
 
-    <!-- Избранное -->
-    <div id="favoritesModal" class="modal">
-        <div class="modal-content">
-            <h2 class="modal-title">⭐ Избранные карточки</h2>
-            <div class="favorites-list" id="favoritesList">
-                <div class="empty-message">
-                    Нет избранных карточек<br>
-                    Нажимайте 💾 на карточках, чтобы добавить их сюда!
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button id="closeFavorites" class="primary-button">Закрыть</button>
+<!-- Избранное -->
+<div id="favoritesModal" class="modal">
+    <div class="modal-content">
+        <h2 class="modal-title">⭐ Избранные карточки</h2>
+        
+        <!-- Простой список без фильтров -->
+        <div class="favorites-list" id="favoritesList">
+            <div class="empty-message">
+                Нет избранных карточек<br>
+                Нажимайте 💾 на карточках, чтобы добавить их сюда!
             </div>
         </div>
+        
+        <div class="modal-buttons">
+            <button id="closeFavorites" class="primary-button">Закрыть</button>
+            <button id="clearAllFavorites" class="secondary-button">🗑️ Очистить всё</button>
+        </div>
     </div>
+</div>
+
     <!-- Модалка комплимента -->
     <div id="complimentModal" class="modal">
         <div class="modal-content">
@@ -391,31 +396,6 @@
             </div>
         </div>
         
-        <!-- Фильтры -->
-        <div class="my-cards-controls">
-            <div class="filter-section">
-                <div class="filter-title">Режим:</div>
-                <button class="filter-button active" data-filter="all">Все</button>
-                <button class="filter-button" data-filter="Пикантное 🔥">🔥 Пикантное</button>
-                <button class="filter-button" data-filter="Экстрим ⚡">⚡ Экстрим</button>
-                <button class="filter-button" data-filter="Романтика 💖">💖 Романтика</button>
-                <button class="filter-button" data-filter="Веселье 😄">😄 Веселье</button>
-                <button class="filter-button" data-filter="Глубокое 🤔">🤔 Глубокое</button>
-            </div>
-            <div class="filter-section">
-                <div class="filter-title">Тип:</div>
-                <button class="type-filter active" data-type="all">Все</button>
-                <button class="type-filter" data-type="вопросы">💬 Вопросы</button>
-                <button class="type-filter" data-type="действия">🔥 Действия</button>
-                <button class="type-filter" data-type="свидания">🌹 Свидания</button>
-            </div>
-        </div>
-        
-        <!-- Поиск -->
-        <div class="search-box">
-            <input type="text" id="searchCards" placeholder="🔍 Поиск по тексту..." class="search-input">
-        </div>
-        
         <!-- Список карточек -->
         <div class="my-cards-list" id="myCardsList">
             <div class="empty-message">
@@ -459,18 +439,14 @@
                 </div>
             </div>
             
-            <!-- Текст карточки -->
-            <div class="form-group">
-                <label class="form-label">Текст карточки:</label>
-                <textarea id="customCardText" placeholder="Напишите ваш вопрос, задание или идею для свидания...
-Например: 'Что тебе больше всего нравится в наших отношениях?'
-Или: 'Приготовь мой любимый ужин сегодня'
-Или: 'Сходим в кино на тот фильм, который ты хотел(а) посмотреть'" 
-                          rows="4" maxlength="300"></textarea>
-                <div class="char-counter">
-                    <span id="customCharCount">0</span>/300 символов
-                </div>
-            </div>
+<!-- Текст карточки -->
+<div class="form-group">
+    <label class="form-label">Текст карточки:</label>
+    <textarea id="customCardText" placeholder="Напишите ваш вопрос, задание или идею для свидания..." maxlength="300"></textarea>
+    <div class="char-counter">
+        <span id="customCharCount">0</span>/300 символов
+    </div>
+</div>
             
             <!-- Подсказки -->
             <div class="form-hints">
