@@ -493,8 +493,35 @@
 
 <!-- Подключаем управление пользовательскими карточками -->
 <script src="custom_cards.js"></script>
+    
+    <!-- Кнопка входа (временная для теста) -->
+<button id="testLoginBtn" style="
+    position: fixed; top: 20px; right: 20px; 
+    padding: 10px 20px; background: #ff6b8b; 
+    color: white; border: none; border-radius: 25px; 
+    cursor: pointer; z-index: 1000; font-size: 14px;
+">
+    👤 Тест входа
+</button>
+
+<script>
+// Простейший тест кнопки
+document.getElementById('testLoginBtn').onclick = function() {
+    alert('Кнопка работает! Теперь проверим Supabase...');
+    
+    // Проверяем, загружен ли Supabase
+    if (window.supabase) {
+        console.log('✅ Supabase подключен:', window.supabase);
+        alert('Supabase подключен! Проверь консоль (F12)');
+    } else {
+        console.error('❌ Supabase НЕ подключен');
+        alert('Supabase НЕ подключен. Проверь консоль (F12)');
+    }
+};
+</script>
 </body>
 </html>
+
 
 
 
