@@ -1,5 +1,5 @@
 // ============================================
-// LOVEDECK - КОЛОДА ДЛЯ ВАШЕЙ ЛЮБВИ
+// LOVECOUPLE - НАСТРАИВАЕМ СЕРДЦА
 // Исправленная версия
 // ============================================
 
@@ -806,26 +806,6 @@ function init() {
 
 function continueInit() {
 
-// Загружаем имена
-const userInput = document.getElementById("userNameInput");
-const partnerInput = document.getElementById("partnerNameInput");
-
-if (userInput && partnerInput) {
-    // Если в localStorage ничего нет - оставляем placeholder
-    userInput.value = userName;
-    partnerInput.value = partnerName;
-    
-    userInput.addEventListener("input", function() {
-        userName = this.value || ""; // Пустая строка вместо "Вы"
-        saveProfiles();
-    });
-    
-    partnerInput.addEventListener("input", function() {
-        partnerName = this.value || ""; // Пустая строка вместо "Партнёр"
-        saveProfiles();
-    });
-}
-  
   // ВЫБОР НАСТРОЕНИЯ
   document.querySelectorAll(".mode-button").forEach(button => {
     button.addEventListener("click", function() {
@@ -1480,23 +1460,7 @@ document.getElementById("aboutBtn").addEventListener("click", function() {
 });
 
 // ========== ФУНКЦИЯ ОЧИСТКИ ВСЕГО ИЗБРАННОГО ==========
-function clearAllFavorites() {
-    if (!confirm("Очистить все избранные карточки?")) return;
-    
-    // 1. Очищаем хранилище
-    localStorage.removeItem("loveDeck_favorites");
-    
-    // 2. НЕМЕДЛЕННО обновляем список на экране
-    const favoritesList = document.getElementById("favoritesList");
-    if (favoritesList) {
-        favoritesList.innerHTML = `
-            <div class="empty-message">
-                Нет избранных карточек<br>
-                Нажимайте 💾 на карточках, чтобы добавить их сюда!
-            </div>
-        `;
-    }
-    
+
     // 3. Уведомление
     const notification = document.createElement("div");
     notification.className = "copy-notification";
@@ -1551,6 +1515,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
