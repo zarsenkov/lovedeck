@@ -192,22 +192,23 @@ async function handleLoginClick(event) {
         
         alert(`✅ Проверьте почту:\n${userEmail}\n\nМы отправили ссылку для входа.`);
         
-} catch (error) {
-    console.error('❌ Ошибка входа:', error);
-    
-    if (error.message.includes('rate limit') || error.message.includes('429')) {
-        // Считаем попытки
-        const attempts = localStorage.getItem('login_attempts') || 0;
-        localStorage.setItem('login_attempts', parseInt(attempts) + 1);
+    } catch (error) {
+        console.error('❌ Ошибка входа:', error);
         
-        const waitTime = Math.min(30, attempts * 10); // 10, 20, 30 минут
-        alert(`⚠️ Слишком много попыток!\nПодождите ${waitTime} минут.`);
-    } else if (error.message.includes('invalid')) {
-        alert('❌ Неверный email!');
-    } else {
-        alert(`Ошибка: ${error.message}`);
+        if (error.message.includes('rate limit') || error.message.includes('429')) {
+            // Считаем попытки
+            const attempts = localStorage.getItem('login_attempts') || 0;
+            localStorage.setItem('login_attempts', parseInt(attempts) + 1);
+            
+            const waitTime = Math.min(30, attempts * 10); // 10, 20, 30 минут
+            alert(`⚠️ Слишком много попыток!\nПодождите ${waitTime} минут.`);
+        } else if (error.message.includes('invalid')) {
+            alert('❌ Неверный email!');
+        } else {
+            alert(`Ошибка: ${error.message}`);
+        }
     }
-}
+} // ← ЭТУ СКОБКУ НУЖНО ДОБАВИТЬ
 
 // 6. ПРОВЕРКА ТЕКУЩЕЙ СЕССИИ
 async function checkCurrentSession() {
