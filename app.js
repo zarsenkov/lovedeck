@@ -878,23 +878,32 @@ if (userInput && partnerInput) {
   document.getElementById("timerBtn").addEventListener("click", startTimer);
   
   // СОХРАНЕНИЕ КАРТОЧКИ
-  document.getElementById("saveBtn").addEventListener("click", function() {
+document.getElementById("saveBtn").addEventListener("click", function() {
     if (!currentCard) return;
     
     const favorites = JSON.parse(localStorage.getItem("loveDeck_favorites") || "[]");
     if (favorites.some(fav => fav.text === currentCard)) {
-      alert("Эта карточка уже в избранном! ⭐");
-      return;
+        alert("Эта карточка уже в избранном! ⭐");
+        return;
     }
     
+    // === СОХРАНЯЕМ В LOCALSTORAGE (как было) ===
     favorites.push({
-      text: currentCard,
-      type: document.getElementById("typeLabel").textContent,
-      mode: currentMode,
-      date: new Date().toLocaleString()
+        text: currentCard,
+        type: document.getElementById("typeLabel").textContent,
+        mode: currentMode,
+        date: new Date().toLocaleString()
     });
     
     localStorage.setItem("loveDeck_favorites", JSON.stringify(favorites));
+    // ===========================================
+    
+    // === СИНХРОНИЗИРУЕМ С ОБЛАКОМ ===
+    if (window.syncCardActionToCloud && currentCardId !== null && currentCardText && currentMode) {
+        const cardIdToSync = currentCardId !== null ? currentCardId : -1;
+        syncCardActionToCloud(cardIdToSync, currentCardText, currentMode, 'liked');
+    }
+    // ================================
     
     const star = document.createElement("div");
     star.textContent = "⭐";
@@ -905,7 +914,7 @@ if (userInput && partnerInput) {
     setTimeout(() => star.remove(), 1000);
     
     alert("Карточка сохранена! 💾");
-  });
+});
   
   // КОМПЛИМЕНТЫ
 document.getElementById("complimentBtn").addEventListener("click", function() {
@@ -1547,6 +1556,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
