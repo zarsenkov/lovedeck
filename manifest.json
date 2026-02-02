@@ -1,0 +1,10 @@
+{
+  "name": "LoveCouple",
+  "short_name": "LoveCouple",
+  "description": "Игра для влюблённых пар",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff5f5",
+  "theme_color": "#ff4d6d",
+  "icons": []
+}
