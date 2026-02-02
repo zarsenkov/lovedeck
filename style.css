@@ -179,49 +179,6 @@ body {
     color: white;
 }
 
-/* ========== СЧЁТЧИК ДНЕЙ ========== */
-.days-counter {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 15px;
-    background: linear-gradient(135deg, #fff5f5, #fff0f7);
-    border-radius: 50px;
-    border: 2px solid #ffccd5;
-    font-size: 14px;
-    font-weight: 600;
-    color: #ff4d6d;
-    transition: all 0.3s;
-    cursor: default;
-}
-
-.days-counter:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 107, 139, 0.2);
-    background: linear-gradient(135deg, #fff0f0, #ffe5e9);
-    border-color: #ff4d6d;
-}
-
-.days-icon {
-    font-size: 18px;
-}
-
-.days-text {
-    white-space: nowrap;
-}
-
-/* Анимация для нового дня */
-@keyframes newDayPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-.days-counter.new-day {
-    animation: newDayPulse 1s 3;
-    border-color: #FFD700;
-    background: linear-gradient(135deg, #fffdf0, #ffffff);
-}
-
 /* ========== ЭКРАНЫ (МЕНЮ И ИГРА) ========== */
 .screen {
     display: none;
@@ -1887,6 +1844,7 @@ textarea:focus {
 .secondary-button:active {
     animation: buttonClick 0.2s ease;
 }
+
 
 
 
