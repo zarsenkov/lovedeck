@@ -737,6 +737,11 @@ function showCard() {
         currentCard = secretCards[Math.floor(Math.random() * secretCards.length)];
         document.getElementById("typeLabel").textContent = "✨ Секретная";
         document.getElementById("doneBtn").style.display = "block";
+        
+        // === ДОБАВЛЯЕМ ЭТО ДЛЯ СИНХРОНИЗАЦИИ ===
+        currentCardId = null; // У секретных карточек нет ID в массиве
+        currentCardText = insertNamesIntoCard(currentCard);
+        // ========================================
     } else {
         // Обычная карточка
         getRegularCard(type);
@@ -1516,6 +1521,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
