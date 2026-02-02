@@ -1,4 +1,4 @@
-// supabase.js - ИСПРАВЛЕННАЯ РАБОЧАЯ ВЕРСИЯ
+// supabase.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 console.log('🚀 Загружаю Supabase.js...');
 
 // ВАШИ ДАННЫЕ
@@ -8,28 +8,26 @@ const SUPABASE_KEY = 'sb_publishable_wBSXXOSvG4zAJAQDy3hPow_nzhGcT9y';
 // Проверяем данные
 console.log('🔍 Проверяю настройки Supabase...');
 if (SUPABASE_URL.includes('xlnhuezhbmundhsdqyhu')) {
-    console.log('✅ Supabase URL верный:', SUPABASE_URL.substring(0, 30) + '...');
+    console.log('✅ Supabase URL верный');
 } else {
     console.error('❌ Неверный URL Supabase');
 }
 
-// Проверяем загружена ли библиотека Supabase
+// 1. ПРОВЕРКА БИБЛИОТЕКИ
 console.log('📚 Библиотека supabase доступна?', typeof supabase !== 'undefined');
 
-// Создаём клиент
+// 2. СОЗДАЁМ КЛИЕНТ
 try {
     if (typeof supabase !== 'undefined') {
         window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('✅ Клиент Supabase создан');
     } else {
-        console.error('❌ ОШИБКА: Библиотека supabase не загружена!');
-        console.error('Проверьте что в index.html есть: <script src="supabase.min.js"></script>');
-        
-        // Создаём заглушку чтобы не было ошибок
+        console.error('❌ Библиотека supabase не загружена!');
+        // Заглушка для тестирования
         window.supabase = {
             auth: {
-                getSession: () => Promise.resolve({ data: { session: null } }),
-                signInWithOtp: () => Promise.reject(new Error('Supabase не загружен'))
+                getSession: () => ({ data: { session: null } }),
+                signInWithOtp: () => ({ error: 'Supabase не загружен' })
             }
         };
     }
@@ -37,13 +35,12 @@ try {
     console.error('❌ Ошибка создания клиента:', error);
 }
 
-// ========== ПРОСТАЯ КНОПКА ВХОДА ==========
+// ========== КНОПКА ВХОДА ==========
 
-// 1. Создаём/находим кнопку
+// 1. СОЗДАЁМ/НАХОДИМ КНОПКУ
 function setupLoginButton() {
     console.log('🔧 Настраиваю кнопку входа...');
     
-    // Ищем существующую кнопку
     let loginBtn = document.getElementById('login-btn');
     
     if (!loginBtn) {
@@ -54,51 +51,38 @@ function setupLoginButton() {
         loginBtn.title = 'Войти для синхронизации';
         loginBtn.innerHTML = '👤';
         
-        // Добавляем в контейнер
         const container = document.querySelector('.floating-buttons');
         if (container) {
             container.appendChild(loginBtn);
         } else {
-            // Если нет контейнера, создаём стиль
             loginBtn.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background: #ff6b8b;
-                color: white;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-                z-index: 1000;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                position: fixed; top: 20px; right: 20px;
+                width: 50px; height: 50px; border-radius: 50%;
+                background: #ff6b8b; color: white; border: none;
+                font-size: 24px; cursor: pointer; z-index: 1000;
             `;
             document.body.appendChild(loginBtn);
         }
     }
     
-    // Делаем кнопку кликабельной
+    // ДЕЛАЕМ КЛИКАБЕЛЬНОЙ
     loginBtn.style.cursor = 'pointer';
     loginBtn.style.pointerEvents = 'auto';
     loginBtn.style.opacity = '1';
     
-    // 2. Добавляем обработчик
-    loginBtn.addEventListener('click', async function(event) {
+    // 2. ДОБАВЛЯЕМ ОБРАБОТЧИК
+    loginBtn.onclick = async function(event) {
         event.preventDefault();
         event.stopPropagation();
         console.log('🔄 Кнопка входа нажата!');
         
         if (!window.supabase || !window.supabase.auth) {
-            alert('Supabase не загружен! Проверьте консоль (F12).');
-            console.error('Supabase не инициализирован:', window.supabase);
+            alert('❌ Supabase не загружен!');
+            console.error('Supabase.auth не доступен');
             return;
         }
         
-        // Проверяем, вошли ли уже
+        // ПРОВЕРЯЕМ СЕССИЮ
         try {
             const { data: { session } } = await window.supabase.auth.getSession();
             
@@ -109,107 +93,70 @@ function setupLoginButton() {
                 return;
             }
         } catch (error) {
-            console.log('Не вошли или ошибка сессии:', error.message);
+            console.log('Не вошли:', error.message);
         }
         
-        // === ИСПРАВЛЕННЫЙ PROMPT С ПРАВИЛЬНЫМ EMAIL ===
-    const email = prompt(
-        '✉️ Введите РЕАЛЬНЫЙ email для входа:\n\n' +
-        'Рабочие примеры:\n' +
-        '• ваш@gmail.com\n' +
-        '• ваша_почта@mail.ru\n' +
-        '• example@yandex.ru\n\n' +
-        '❌ НЕ РАБОТАЕТ:\n' +
-        '• test@test.com\n' +
-        '• test@example.com\n\n' +
-        'Нужен НАСТОЯЩИЙ email!',
-        'ваш_настоящий_email@gmail.com' // ← ЗАМЕНИТЕ НА СВОЙ РЕАЛЬНЫЙ EMAIL!
-    );
-    
-    if (!email) return;
-    
-    // БЫСТРАЯ ПРОВЕРКА EMAIL
-    if (email.includes('test@test') || email.includes('test@example')) {
-        alert('❌ Ошибка: Supabase не принимает тестовые emails!\n\n' +
-              'Используйте ваш реальный email или временный:\n' +
-              '1. Зайдите на mailinator.com\n' +
-              '2. Придумайте имя (например: lovecouple123)\n' +
-              '3. Используйте: lovecouple123@mailinator.com\n' +
-              '4. Проверьте почту на mailinator.com');
-        return;
-    }
-    
-// === ИСПРАВЛЕННЫЙ PROMPT С ПРАВИЛЬНЫМ EMAIL ===
-    const email = prompt(
-        '✉️ Введите РЕАЛЬНЫЙ email для входа:\n\n' +
-        'Рабочие примеры:\n' +
-        '• ваш@gmail.com\n' +
-        '• ваша_почта@mail.ru\n' +
-        '• example@yandex.ru\n\n' +
-        '❌ НЕ РАБОТАЕТ:\n' +
-        '• test@test.com\n' +
-        '• test@example.com\n\n' +
-        'Нужен НАСТОЯЩИЙ email!',
-        'ваш_настоящий_email@gmail.com' // ← ЗАМЕНИТЕ НА СВОЙ РЕАЛЬНЫЙ EMAIL!
-    );
-    
-    if (!email) return;
-    
-    // БЫСТРАЯ ПРОВЕРКА EMAIL
-    if (email.includes('test@test') || email.includes('test@example')) {
-        alert('❌ Ошибка: Supabase не принимает тестовые emails!\n\n' +
-              'Используйте ваш реальный email или временный:\n' +
-              '1. Зайдите на mailinator.com\n' +
-              '2. Придумайте имя (например: lovecouple123)\n' +
-              '3. Используйте: lovecouple123@mailinator.com\n' +
-              '4. Проверьте почту на mailinator.com');
-        return;
-    }
-    
-    // Проверка формата email
-    if (!email.includes('@') || !email.includes('.')) {
-        alert('❌ Ошибка: Неверный формат email!\nПример: имя@gmail.com');
-        return;
-    }
+        // ЗАПРАШИВАЕМ EMAIL
+        const userEmail = prompt(
+            '✉️ Введите РЕАЛЬНЫЙ email для входа:\n\n' +
+            'Примеры:\n• ваш@gmail.com\n• ваша@mail.ru\n\n' +
+            '❌ НЕ используйте: test@test.com',
+            'ваш_настоящий_email@gmail.com'
+        );
+        
+        if (!userEmail) return;
+        
+        // ПРОВЕРКА EMAIL
+        if (userEmail.includes('test@test') || userEmail.includes('test@example')) {
+            alert('❌ Используйте реальный email!');
+            return;
+        }
         
         try {
-            console.log(`📧 Отправляю код на ${email}...`);
+            console.log(`📧 Отправляю код на ${userEmail}...`);
             
-const { error } = await window.supabase.auth.signInWithOtp({
-    email: email,
-    options: {
-        shouldCreateUser: true,
-        emailRedirectTo: 'http://lovecouple.ru'  // ← Ваш домен!
-    }
-});
+            const { error } = await window.supabase.auth.signInWithOtp({
+                email: userEmail,
+                options: {
+                    shouldCreateUser: true,
+                    emailRedirectTo: 'http://lovecouple.ru'
+                }
+            });
             
             if (error) throw error;
             
-            alert(`✅ Проверьте почту ${email}!\n\nМы отправили ссылку для входа.\nОткройте письмо и перейдите по ссылке.`);
+            alert(`✅ Проверьте почту:\n${userEmail}\n\nМы отправили ссылку для входа.`);
             
         } catch (error) {
             console.error('❌ Ошибка входа:', error);
-            alert(`Ошибка: ${error.message}`);
+            
+            if (error.message.includes('rate limit') || error.message.includes('429')) {
+                alert('⚠️ Слишком много попыток!\nПодождите 30 минут.');
+            } else if (error.message.includes('invalid')) {
+                alert('❌ Неверный email!');
+            } else {
+                alert(`Ошибка: ${error.message}`);
+            }
         }
-    });
+    };
     
     console.log('✅ Кнопка настроена');
     return loginBtn;
 }
 
-// 3. Функция для синхронизации (для app.js)
+// 3. ФУНКЦИЯ ДЛЯ СИНХРОНИЗАЦИИ
 window.syncCardAction = async function(cardId, cardText, mode, action) {
-    console.log(`🔄 Синхронизация: ${action} карточки ${cardId}`);
+    console.log(`🔄 syncCardAction: ${action} карточки ${cardId}`);
     
     try {
         if (!window.supabase || !window.supabase.auth) {
-            console.log('⚠️ Supabase не доступен - сохраняем локально');
+            console.log('⚠️ Supabase не доступен');
             return false;
         }
         
         const { data: { session } } = await window.supabase.auth.getSession();
         if (!session) {
-            console.log('⚠️ Не вошли - сохраняем локально');
+            console.log('⚠️ Не вошли');
             return false;
         }
         
@@ -222,77 +169,27 @@ window.syncCardAction = async function(cardId, cardText, mode, action) {
     }
 };
 
-// 4. Проверяем текущий вход
-async function checkCurrentSession() {
-    try {
-        if (!window.supabase || !window.supabase.auth) return;
-        
-        const { data: { session } } = await window.supabase.auth.getSession();
-        if (session && session.user) {
-            console.log('✅ Уже вошли как:', session.user.email);
-            const btn = document.getElementById('login-btn');
-            if (btn) {
-                btn.innerHTML = `👤 ${session.user.email.split('@')[0]}`;
-                btn.style.background = '#4CAF50';
-            }
-        }
-    } catch (error) {
-        console.log('ℹ️ Не вошли:', error.message);
-    }
-}
-
-// 5. Запускаем при загрузке
+// 4. ЗАПУСК
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 Страница загружена, запускаю настройку...');
+    console.log('📄 Страница загружена');
     
-    // Ждём немного для полной загрузки
     setTimeout(() => {
-        const btn = setupLoginButton();
+        setupLoginButton();
         
-        // Проверяем сессию через 2 секунды
-        setTimeout(() => {
-            checkCurrentSession();
-        }, 2000);
-        
-        // Добавляем визуальный эффект при наведении
-        if (btn) {
-            btn.addEventListener('mouseenter', () => {
-                btn.style.transform = 'scale(1.1)';
-                btn.style.transition = 'transform 0.2s';
-            });
-            btn.addEventListener('mouseleave', () => {
-                btn.style.transform = 'scale(1)';
+        // ПРОВЕРКА СЕССИИ
+        if (window.supabase && window.supabase.auth) {
+            window.supabase.auth.getSession().then(({ data }) => {
+                if (data.session) {
+                    console.log('✅ Уже вошли:', data.session.user.email);
+                    const btn = document.getElementById('login-btn');
+                    if (btn) {
+                        btn.innerHTML = `👤 ${data.session.user.email.split('@')[0]}`;
+                        btn.style.background = '#4CAF50';
+                    }
+                }
             });
         }
-    }, 500);
+    }, 1000);
 });
 
-// Слушаем изменения статуса аутентификации
-if (window.supabase && window.supabase.auth) {
-    window.supabase.auth.onAuthStateChange((event, session) => {
-        console.log('🔄 Статус аутентификации:', event);
-        
-        if (event === 'SIGNED_IN' && session) {
-            console.log('🎉 Успешный вход!');
-            const btn = document.getElementById('login-btn');
-            if (btn) {
-                btn.innerHTML = `👤 ${session.user.email.split('@')[0]}`;
-                btn.style.background = '#4CAF50';
-            }
-        }
-        
-        if (event === 'SIGNED_OUT') {
-            console.log('👋 Вышли из системы');
-            const btn = document.getElementById('login-btn');
-            if (btn) {
-                btn.innerHTML = '👤';
-                btn.style.background = '#ff6b8b';
-            }
-        }
-    });
-}
-
-console.log('✨ Supabase.js полностью загружен и готов!');
-
-// ДЕБАГ: Выводим в глобальную область для тестирования
-console.log('🔍 Глобальный supabase:', window.supabase);
+console.log('✨ Supabase.js готов!');
