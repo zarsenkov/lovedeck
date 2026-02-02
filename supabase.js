@@ -460,4 +460,57 @@ if (window.supabase && window.supabase.auth) {
     });
 }
 
+window.createCoupleProfile = async function(userData) {
+    console.log('👫 Создаю профиль пары...');
+    
+    const profile = {
+        email: userData.email,
+        names: userData.names || 'Новая пара 💑',
+        photo_url: userData.photo || null,
+        love_level: 1,
+        experience: 0,
+        achievements: ['Новичок в любви 🌱'],
+        cards_completed: 0,
+        cards_liked: 0,
+        join_date: new Date().toISOString(),
+        last_active: new Date().toISOString(),
+        public_ranking: false,
+        online_status: 'offline'
+    };
+    
+    const { data, error } = await window.supabase
+        .from('couples')
+        .insert(profile)
+        .select()
+        .single();
+    
+    if (error && error.message.includes('duplicate')) {
+        console.log('✅ Профиль уже существует');
+        return await window.supabase
+            .from('couples')
+            .select('*')
+            .eq('email', userData.email)
+            .single();
+    }
+    
+    return { data, error };
+};
+
+    // Обновляем статистику пары
+const { error: updateError } = await window.supabase
+    .from('couples')
+    .update({
+        cards_completed: action === 'completed' ? 
+            window.supabase.sql`cards_completed + 1` : 
+            window.supabase.sql`cards_completed`,
+        cards_liked: action === 'liked' ? 
+            window.supabase.sql`cards_liked + 1` : 
+            window.supabase.sql`cards_liked`,
+        last_active: new Date().toISOString()
+    })
+    .eq('id', couple.id);
+
+// Проверяем достижения
+await checkAchievements(couple.id);
+
 console.log('✨ Supabase.js инициализирован!');
