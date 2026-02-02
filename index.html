@@ -26,10 +26,6 @@
     }
     </script>
     <link rel="stylesheet" href="style.css">
-<!-- Подключаем простую аутентификацию -->
-<script src="https://unpkg.com/@supabase/auth-ui@0.1"></script>
-<!-- Стили для красоты -->
-<link rel="stylesheet" href="https://unpkg.com/@supabase/auth-ui@0.1/style.css">
 </head>
 <body>
     <!-- Экран загрузки с цитатой -->
@@ -196,13 +192,11 @@
         </div>
     </div>
 
-<!-- Плавающие кнопки (правильное расположение) -->
-<div class="floating-buttons">
-    <button id="login-btn" class="floating-button" title="Войти для синхронизации">👤</button>
-    <button id="myCardsBtn" class="floating-button" title="Мои карточки">✨</button>
-    <button id="profileBtn" class="floating-button" title="Профиль пары с достижениями">👫</button>
-    <button id="favoritesBtn" class="floating-button" title="Избранное">⭐</button>
-</div>
+    <!-- Плавающие кнопки -->
+    <div class="floating-buttons">
+        <button id="favoritesBtn" class="floating-button" title="Избранное">⭐</button>
+        <button id="myCardsBtn" class="floating-button" title="Мои карточки">✨</button>
+    </div>
 
     <!-- МОДАЛЬНЫЕ ОКНА -->
 
@@ -373,8 +367,8 @@
                 <div class="contact-info">
                     <p><strong>Для идей и предложений:</strong></p>
                     <div class="contact-details">
-                        <p>✉️ Telegram: <a href="https://t.me/LoveCouple_news" target="_blank" class="contact-link">LoveCouple_news</a></p>
-                        <p>📧 Email: <a href="mailto:zarsenkov@yandex.ru" class="contact-link">zarsenkov@yandex.ru</a></p>
+                        <p>✉️ Telegram: <a href="https://t.me/rymarbel" target="_blank" class="contact-link">@rymarbel</a></p>
+                        <p>📧 Email: <a href="zarsenkov@yandex.ru" class="contact-link">zarsenkov@yandex.ru</a></p>
                     </div>
                     <p class="contact-note">Открыт для предложений по улучшению!</p>
                 </div>
@@ -483,71 +477,14 @@
     </div>
 </div>
 
-<!-- Основной код приложения -->
-<script src="app.js"></script>
-
-<!-- Дополнительные модули -->
+<!-- Подключаем отдельный файл для управления карточками -->
 <script src="custom_cards.js"></script>
-<script src="profile.js"></script>
 
-<!-- Supabase в конце -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
-<script src="supabase.js"></script>
-
-    <div id="profileModal" class="modal">
-    <div class="modal-content">
-        <h2>👫 Ваш профиль</h2>
-        
-        <div class="profile-header">
-            <div class="profile-photo" id="profilePhoto">
-                <img src="" alt="Фото пары">
-                <button onclick="changePhoto()">📷</button>
-            </div>
-            
-            <div class="profile-info">
-                <h3 id="coupleNames">Имя пары</h3>
-                <div class="love-level">
-                    <span>Уровень любви: </span>
-                    <span class="level" id="loveLevel">1</span>
-                    <div class="level-bar">
-                        <div class="level-fill" id="levelFill"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="profile-stats">
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-value" id="cardsCompleted">0</div>
-                <div class="stat-label">Выполнено</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-value" id="cardsLiked">0</div>
-                <div class="stat-label">Понравилось</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">🏆</div>
-                <div class="stat-value" id="achievementsCount">0</div>
-                <div class="stat-label">Достижения</div>
-            </div>
-        </div>
-        
-        <div class="achievements-list" id="achievementsList">
-            <!-- Список достижений -->
-        </div>
-        
-        <button onclick="closeProfile()">Закрыть</button>
-    </div>
-</div>
-
-<!-- Кнопка профиля будет создана в supabase.js -->
-
+    <script src="app.js"></script>
+    <script src="custom_cards.js"></script>
 </body>
 </html>
+
 
 
 
