@@ -1112,6 +1112,178 @@ const intimacyChallenges = {
   ]
 };
 
+// ========== УПРАВЛЕНИЕ SERVICE WORKER ==========
+
+// Проверка и регистрация SW
+if ('serviceWorker' in navigator) {
+  // Периодическая проверка обновлений
+  setInterval(() => {
+    navigator.serviceWorker.ready.then(registration => {
+      registration.update();
+    });
+  }, 60 * 60 * 1000); // Каждый час
+  
+  // Регистрация SW
+  navigator.serviceWorker.register('/sw.js')
+    .then(registration => {
+      console.log('Service Worker зарегистрирован:', registration);
+      
+      // Проверяем, есть ли обновления
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // Новый SW установлен, но не активирован
+            showUpdateNotification();
+          }
+        });
+      });
+    })
+    .catch(error => {
+      console.log('Ошибка регистрации Service Worker:', error);
+    });
+  
+  // Обработка сообщений от SW
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
+      console.log('Обновление доступно для:', event.data.url);
+      showUpdateNotification();
+    }
+  });
+}
+
+// Функция показа уведомления об обновлении
+function showUpdateNotification() {
+  // Проверяем, не показывается ли уже уведомление
+  if (document.getElementById('updateNotification')) return;
+  
+  const notification = document.createElement('div');
+  notification.id = 'updateNotification';
+  notification.innerHTML = `
+    <div class="update-notification">
+      <div class="update-content">
+        <span class="update-icon">✨</span>
+        <div class="update-text">
+          <strong>Новая версия LoveCouple!</strong>
+          <p>Доступны свежие карточки и улучшения</p>
+        </div>
+        <button id="updateNow" class="update-btn">Обновить</button>
+        <button id="updateLater" class="later-btn">Позже</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Обновить сейчас
+  document.getElementById('updateNow').addEventListener('click', () => {
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'SKIP_WAITING'
+      });
+    }
+    window.location.reload();
+  });
+  
+  // Позже
+  document.getElementById('updateLater').addEventListener('click', () => {
+    notification.remove();
+    // Покажем снова через 24 часа
+    localStorage.setItem('updateDismissed', Date.now());
+  });
+}
+
+// Проверяем, не пора ли показать уведомление снова
+const lastDismissed = localStorage.getItem('updateDismissed');
+if (lastDismissed && (Date.now() - lastDismissed > 24 * 60 * 60 * 1000)) {
+  localStorage.removeItem('updateDismissed');
+}
+
+// ========== СТИЛИ ДЛЯ УВЕДОМЛЕНИЯ ==========
+// Добавьте в style.css или создайте inline
+const updateStyles = document.createElement('style');
+updateStyles.textContent = `
+  .update-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #ff4d6d, #ff8e53);
+    color: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(255, 77, 109, 0.3);
+    z-index: 10000;
+    animation: slideInRight 0.5s ease;
+    max-width: 400px;
+  }
+  
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  .update-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .update-icon {
+    font-size: 32px;
+    text-align: center;
+    animation: pulse 2s infinite;
+  }
+  
+  .update-text {
+    text-align: center;
+  }
+  
+  .update-text strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+  
+  .update-btn, .later-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .update-btn {
+    background: white;
+    color: #ff4d6d;
+  }
+  
+  .update-btn:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+  }
+  
+  .later-btn {
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .later-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  @media (max-width: 480px) {
+    .update-notification {
+      left: 20px;
+      right: 20px;
+      max-width: none;
+    }
+  }
+`;
+document.head.appendChild(updateStyles);
+
 // Функция для показа челленджа
 function showIntimacyChallenge() {
   const levels = Object.keys(intimacyChallenges);
@@ -1280,6 +1452,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
