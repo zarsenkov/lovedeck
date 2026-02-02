@@ -51,8 +51,6 @@
                 <div class="logo-text">LoveCouple</div>
             </div>
             <div class="header-buttons">
-                <button id="achievementsBtn" class="icon-button" title="Достижения">🏆</button>
-                <button id="musicBtn" class="icon-button" title="Музыка (выкл)">🔇</button>
                 <button id="settingsBtn" class="icon-button" title="Настройки">⚙️</button>
                 <button id="aboutBtn" class="icon-button" title="О проекте">ℹ️</button>
             </div>
@@ -173,9 +171,7 @@
                 <div class="extra-controls">
                     <button id="saveBtn" class="extra-button" title="Сохранить в избранное">💾</button>
                     <button id="timerBtn" class="extra-button" title="Запустить таймер">⏱️</button>
-                    <button id="hintBtn" class="extra-button" title="Подсказка">💡</button>
                     <button id="complimentBtn" class="extra-button" title="Случайный комплимент">💝</button>
-                    <button id="gratitudeBtn" class="extra-button" title="Добавить благодарность">💌</button>
                     <button id="challengeBtn" class="extra-button" title="Интимный челлендж">🎯</button>
                 </div>
             </div>
@@ -184,7 +180,6 @@
 
     <!-- Плавающие кнопки -->
     <div class="floating-buttons">
-        <button id="historyBtn" class="floating-button" title="История">📜</button>
         <button id="favoritesBtn" class="floating-button" title="Избранное">⭐</button>
         <button id="myCardsBtn" class="floating-button" title="Мои карточки">✨</button>
     </div>
@@ -228,19 +223,6 @@
         </div>
     </div>
 
-    <!-- Достижения -->
-    <div id="achievementsModal" class="modal">
-        <div class="modal-content">
-            <h2 class="modal-title">🏆 Достижения</h2>
-            <div class="achievements-grid" id="achievementsList">
-                <!-- Достижения будут здесь -->
-            </div>
-            <div class="modal-buttons">
-                <button id="closeAchievements" class="primary-button">Закрыть</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Настройки -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">
@@ -265,23 +247,6 @@
             </div>
             <div class="modal-buttons">
                 <button id="closeSettings" class="primary-button">Сохранить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- История -->
-    <div id="historyModal" class="modal">
-        <div class="modal-content">
-            <h2 class="modal-title">📜 История игры</h2>
-            <div class="history-list" id="historyList">
-                <div class="empty-message">
-                    История игры пуста<br>
-                    Начните играть, и здесь появятся ваши карточки!
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button id="clearHistory" class="danger-button">Очистить историю</button>
-                <button id="closeHistory" class="primary-button">Закрыть</button>
             </div>
         </div>
     </div>
@@ -321,211 +286,78 @@
         </div>
     </div>
 
-        <!-- Модалка благодарностей -->
-    <div id="gratitudeModal" class="modal">
-        <div class="modal-content">
-            <h2 class="modal-title">💌 Моменты благодарности</h2>
-            
-            <!-- Форма добавления -->
-            <div class="gratitude-form">
-                <textarea id="gratitudeText" placeholder="Напишите, за что вы благодарны партнёру сегодня... 
-Например: 'Спасибо за утренний кофе', 'Спасибо за поддержку на работе', 'Спасибо за твою улыбку'"
-                          rows="4" maxlength="300"></textarea>
-                <div class="gratitude-counter">
-                    <span id="charCount">0</span>/300 символов
-                </div>
-                <button id="addGratitude" class="primary-button">💾 Сохранить благодарность</button>
-            </div>
-            
-            <!-- Список благодарностей -->
-            <div class="gratitude-list" id="gratitudeList">
-                <div class="empty-message">
-                    Пока нет благодарностей<br>
-                    Добавьте первую - это сделает день ярче! ✨
-                </div>
-            </div>
-            
-            <div class="modal-buttons">
-                <button id="closeGratitude" class="secondary-button">Закрыть</button>
-            </div>
-        </div>
-    </div>
-
-<!-- Модалка "О проекте" -->
+<!-- О проекте -->
 <div id="aboutModal" class="modal">
     <div class="modal-content">
-        <h2 class="modal-title">ℹ️ О проекте</h2>
-        <div class="about-content">
-            <div class="about-logo">💑</div>
-            
-            <!-- Блок "Что это?" -->
+        <h2 class="modal-title">ℹ️ О LoveCouple</h2>
+        
+        <div class="about-sections">
+            <!-- Цель -->
             <div class="about-section">
-                <h3>🎴 Что такое LoveCouple?</h3>
-                <p>LoveCouple - это интерактивная цифровая колода карт, созданная чтобы помочь парам:</p>
-                <ul>
-                    <li>💖 <strong>Укреплять эмоциональную связь</strong> через глубокие вопросы</li>
-                    <li>🔥 <strong>Разжигать страсть</strong> с помощью пикантных заданий</li>
-                    <li>🌹 <strong>Создавать романтику</strong> в повседневной жизни</li>
-                    <li>😄 <strong>Добавлять веселья</strong> через игры и челленджи</li>
-                    <li>✨ <strong>Сохранять моменты</strong> благодарности и комплиментов</li>
+                <h3 class="about-subtitle">🎯 Цель</h3>
+                <p>Помогать парам укреплять отношения через простые вопросы и действия.</p>
+            </div>
+            
+            <!-- Как играть -->
+            <div class="about-section">
+                <h3 class="about-subtitle">🎮 Как играть</h3>
+                <ol class="about-list">
+                    <li>Введите ваши имена</li>
+                    <li>Выберите настроение</li>
+                    <li>Выберите тип карточек</li>
+                    <li>Отвечайте на вопросы или выполняйте действия</li>
+                </ol>
+            </div>
+            
+            <!-- Особенности -->
+            <div class="about-section">
+                <h3 class="about-subtitle">✨ Особенности</h3>
+                <ul class="about-list">
+                    <li>Без регистрации</li>
+                    <li>Работает оффлайн</li>
+                    <li>Простой и понятный интерфейс</li>
+                    <li>Бесплатно навсегда</li>
                 </ul>
             </div>
             
-            <!-- Блок "История создания" -->
+            <!-- Поддержать проект -->
             <div class="about-section">
-                <h3>📖 История создания</h3>
-                <p>LoveCouple родился из простой идеи: <strong>"Как сделать ежедневное общение пар глубже и осознаннее?"</strong></p>
-                
-                <div class="history-timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-date">Начало 2026</div>
-                        <div class="timeline-content">Идея создать простое приложение с карточками для пар</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-date">Январь 2026</div>
-                        <div class="timeline-content">Первая версия с базовыми карточками и меню</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-date">Январь 2026</div>
-                        <div class="timeline-content">Добавлены: профили, статистика, достижения</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-date">Январь 2026</div>
-                        <div class="timeline-content">Новые функции: музыка, комплименты, благодарности</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-date">Сейчас</div>
-                        <div class="timeline-content">Вы используете LoveCouple v2.0 с 10+ функциями!</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Блок "Планы на будущее" -->
-            <div class="about-section">
-                <h3>🚀 Планы на будущее</h3>
-                <p>Что появится в следующих версиях:</p>
-                
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">📱</div>
-                        <div class="feature-text"><strong>Мобильное приложение</strong><br>Установка на телефон</div>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🌐</div>
-                        <div class="feature-text"><strong>Синхронизация</strong><br>Игра на двух устройствах</div>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🎮</div>
-                        <div class="feature-text"><strong>Новые игры</strong><br>"Угадай мысль", викторины</div>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🗓️</div>
-                        <div class="feature-text"><strong>Планировщик</strong><br>Совместный календарь свиданий</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Блок "Контакты и поддержка" -->
-            <div class="about-section">
-                <h3>📞 Контакты и поддержка</h3>
-                
-                <div class="contacts-grid">
-                    <div class="contact-card">
-                        <div class="contact-icon">📧</div>
-                        <div class="contact-details">
-                            <strong>Email для обратной связи</strong><br>
-                            <span class="contact-info">zarsenkov@yandex.ru</span>
-                        </div>
-                    </div>
-                    
-                    <div class="contact-card">
-                        <div class="contact-icon">🌐</div>
-                        <div class="contact-details">
-                            <strong>Сайт / Блог</strong><br>
-                            <span class="contact-info">https://zarsenkov.github.io/lovedeck/</span>
-                        </div>
-                    </div>
-                    
-                    <div class="contact-card">
-                        <div class="contact-icon">📱</div>
-                        <div class="contact-details">
-                            <strong>Telegram канал</strong><br>
-                            <span class="contact-info">@rymarbel</span>
-                        </div>
-                    </div>
-                    
-                    <div class="contact-card">
-                        <div class="contact-icon">💬</div>
-                        <div class="contact-details">
-                            <strong>Сообщество ВКонтакте</strong><br>
-                            <span class="contact-info">https://vk.ru/zarsenkov</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Блок "Поддержать проект" -->
-            <div class="about-section">
-                <h3>💝 Поддержать проект</h3>
-                <p>Если LoveCouple приносит вам радость, вы можете поддержать его развитие:</p>
-                
+                <h3 class="about-subtitle">❤️ Поддержать проект</h3>
                 <div class="support-options">
                     <div class="support-option">
                         <div class="support-icon">💳</div>
                         <div class="support-text">
-                            <strong>Поддержать разработку</strong><br>
-                            <span class="support-details">Любая сумма помогает добавлять новые функции!</span>
+                            <strong>Карта (СБП)</strong>
+                            <div class="support-details">2200 7001 2345 6789</div>
                         </div>
                     </div>
-                    
                     <div class="support-option">
-                        <div class="support-icon">⭐</div>
+                        <div class="support-icon">🤝</div>
                         <div class="support-text">
-                            <strong>Рассказать друзьям</strong><br>
-                            <span class="support-details">Лучшая поддержка - делиться с другими парами!</span>
-                        </div>
-                    </div>
-                    
-                    <div class="support-option">
-                        <div class="support-icon">💌</div>
-                        <div class="support-text">
-                            <strong>Написать отзыв</strong><br>
-                            <span class="support-details">Ваши идеи и впечатления очень ценны!</span>
+                            <strong>Другие способы</strong>
+                            <div class="support-details">Напишите — обсудим</div>
                         </div>
                     </div>
                 </div>
-                
-                <p class="support-note">
-                    Каждая поддержка мотивирует продолжать развивать LoveCouple и добавлять новые функции для пар!
-                </p>
+                <p class="support-note">Любая поддержка помогает развивать проект!</p>
             </div>
             
-            <!-- Блок "Техническая информация" -->
+            <!-- Связаться -->
             <div class="about-section">
-                <h3>⚙️ Техническая информация</h3>
-                <div class="tech-info">
-                    <p class="version">LoveCouple v2.0 • Январь 2026</p>
-                    <div class="stats-grid-small">
-                        <div class="stat-small">
-                            <div class="stat-number">80+</div>
-                            <div class="stat-label">карточек</div>
-                        </div>
-                        <div class="stat-small">
-                            <div class="stat-number">6</div>
-                            <div class="stat-label">достижений</div>
-                        </div>
-                        <div class="stat-small">
-                            <div class="stat-number">10+</div>
-                            <div class="stat-label">функций</div>
-                        </div>
-                        <div class="stat-small">
-                            <div class="stat-number">∞</div>
-                            <div class="stat-label">моментов счастья</div>
-                        </div>
+                <h3 class="about-subtitle">📮 Связаться</h3>
+                <div class="contact-info">
+                    <p><strong>Для идей и предложений:</strong></p>
+                    <div class="contact-details">
+                        <p>✉️ Telegram: <a href="https://t.me/yournickname" target="_blank" class="contact-link">@yournickname</a></p>
+                        <p>📧 Email: <a href="mailto:hello@lovecouple.ru" class="contact-link">hello@lovecouple.ru</a></p>
                     </div>
-                    <p class="tech-note">Сделано с ❤️ на HTML, CSS и JavaScript</p>
+                    <p class="contact-note">Открыт для предложений по улучшению!</p>
                 </div>
             </div>
+        </div>
+        
+        <div class="about-footer">
+            <p class="about-version">Версия 2.0 • Сделано с ❤️ для пар</p>
         </div>
         
         <div class="modal-buttons">
@@ -662,6 +494,7 @@
     <script src="custom_cards.js"></script>
 </body>
 </html>
+
 
 
 
