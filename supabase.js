@@ -175,13 +175,13 @@ function setupLoginButton() {
         try {
             console.log(`📧 Отправляю код на ${email}...`);
             
-            const { error } = await window.supabase.auth.signInWithOtp({
-                email: email,
-                options: {
-                    shouldCreateUser: true,
-                    emailRedirectTo: window.location.href
-                }
-            });
+const { error } = await window.supabase.auth.signInWithOtp({
+    email: email,
+    options: {
+        shouldCreateUser: true,
+        emailRedirectTo: 'http://lovecouple.ru'  // ← Ваш домен!
+    }
+});
             
             if (error) throw error;
             
