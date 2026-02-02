@@ -26,8 +26,6 @@
     }
     </script>
     <link rel="stylesheet" href="style.css">
-    <!-- Подключаем Supabase -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <!-- Подключаем простую аутентификацию -->
 <script src="https://unpkg.com/@supabase/auth-ui@0.1"></script>
 <!-- Стили для красоты -->
@@ -375,8 +373,8 @@
                 <div class="contact-info">
                     <p><strong>Для идей и предложений:</strong></p>
                     <div class="contact-details">
-                        <p>✉️ Telegram: <a href="https://t.me/LoveCouple_news" target="_blank" class="contact-link">LoveCouple_newsl</a></p>
-                        <p>📧 Email: <a href="zarsenkov@yandex.ru" class="contact-link">zarsenkov@yandex.ru</a></p>
+                        <p>✉️ Telegram: <a href="https://t.me/LoveCouple_news" target="_blank" class="contact-link">LoveCouple_news</a></p>
+                        <p>📧 Email: <a href="mailto:zarsenkov@yandex.ru" class="contact-link">zarsenkov@yandex.ru</a></p>
                     </div>
                     <p class="contact-note">Открыт для предложений по улучшению!</p>
                 </div>
@@ -489,10 +487,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
 
 <!-- ПОДКЛЮЧЕНИЕ НАШЕГО КОДА -->
-<script src="supabase.js"></script>
-<script src="app.js"></script>
-<script src="custom_cards.js"></script>
-<script src="profile.js"></script>
+<script src="supabase.js" defer></script>
+<script src="app.js" defer></script>
+<script src="custom_cards.js" defer></script>
+<script src="profile.js" defer></script>
 
     <div id="profileModal" class="modal">
     <div class="modal-content">
@@ -548,6 +546,7 @@
 
 </body>
 </html>
+
 
 
 
