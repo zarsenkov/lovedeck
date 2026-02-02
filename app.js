@@ -1508,6 +1508,127 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Всего кнопок в header:', document.querySelectorAll('.header-buttons button').length);
 });
 
+// ===== ЭКСТРЕННЫЙ ФИКС ДЛЯ КНОПОК =====
+
+// Принудительно показываем шапку
+function forceShowHeader() {
+    console.log('=== ЗАПУСК forceShowHeader ===');
+    
+    // Находим шапку
+    const header = document.getElementById('mainHeader');
+    console.log('Найден header:', header);
+    
+    if (!header) {
+        console.error('ERROR: header не найден! Создаём новый...');
+        // Создаём шапку если её нет
+        const newHeader = document.createElement('div');
+        newHeader.id = 'mainHeader';
+        newHeader.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="font-size: 28px;">👩‍❤️‍💋‍👨</div>
+                    <div style="font-size: 20px; font-weight: bold; color: #ff4d6d;">LoveCouple</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="settingsBtn">⚙️</button>
+                    <button id="aboutBtn">ℹ️</button>
+                    <button id="pyramidBtn" style="background: #2196F3; color: white;">🏆</button>
+                    <button id="remoteBtn" style="background: #ff6b8b; color: white;">🎮</button>
+                </div>
+            </div>
+        `;
+        
+        // Вставляем в начало container
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(newHeader, container.firstChild);
+            console.log('Header создан и добавлен!');
+        }
+    } else {
+        // Принудительно применяем стили
+        header.style.cssText = `
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 15px 20px !important;
+            background: white !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+            position: relative !important;
+            z-index: 1000 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        `;
+        console.log('Стили применены к header');
+    }
+    
+    // Проверяем кнопки
+    const buttons = ['settingsBtn', 'aboutBtn', 'pyramidBtn', 'remoteBtn'];
+    buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        console.log(`Кнопка ${btnId}:`, btn ? 'НАЙДЕНА' : 'НЕ НАЙДЕНА');
+        
+        if (btn) {
+            // Применяем базовые стили
+            btn.style.cssText = `
+                width: 45px !important;
+                height: 45px !important;
+                border-radius: 50% !important;
+                border: none !important;
+                font-size: 20px !important;
+                cursor: pointer !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            `;
+        }
+    });
+    
+    // Специальные стили для новых кнопок
+    const pyramidBtn = document.getElementById('pyramidBtn');
+    if (pyramidBtn) {
+        pyramidBtn.style.background = 'linear-gradient(135deg, #2196F3, #1565c0)';
+        pyramidBtn.style.color = 'white';
+    }
+    
+    const remoteBtn = document.getElementById('remoteBtn');
+    if (remoteBtn) {
+        remoteBtn.style.background = 'linear-gradient(135deg, #ff6b8b, #ff4d6d)';
+        remoteBtn.style.color = 'white';
+    }
+}
+
+// Запускаем при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== ДОМ ЗАГРУЖЕН ===');
+    forceShowHeader();
+    
+    // Добавляем обработчики
+    const pyramidBtn = document.getElementById('pyramidBtn');
+    if (pyramidBtn) {
+        pyramidBtn.addEventListener('click', function() {
+            alert('🏆 Пирамида любви\n\nСоревновательный режим с уровнями!\nСкоро будет доступно!');
+        });
+    }
+    
+    const remoteBtn = document.getElementById('remoteBtn');
+    if (remoteBtn) {
+        remoteBtn.addEventListener('click', function() {
+            alert('🎮 Игра на расстоянии\n\nИграйте вместе онлайн!\nСкоро будет доступно!');
+        });
+    }
+    
+    // Повторная проверка через 2 секунды
+    setTimeout(forceShowHeader, 2000);
+});
+
+// Также запускаем при полной загрузке страницы
+window.addEventListener('load', function() {
+    console.log('=== СТРАНИЦА ПОЛНОСТЬЮ ЗАГРУЖЕНА ===');
+    setTimeout(forceShowHeader, 500);
+});
+
 
 // ЗАПУСК ПРИЛОЖЕНИЯ
 if (document.readyState === "loading") {
@@ -1515,6 +1636,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
