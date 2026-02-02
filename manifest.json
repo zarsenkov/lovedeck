@@ -4,13 +4,14 @@
   "description": "Игра для влюблённых пар",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fff5f5",
+  "background_color": "#ff4d6d",
   "theme_color": "#ff4d6d",
   "icons": [
     {
       "src": "/icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon.png",
