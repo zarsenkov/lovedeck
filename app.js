@@ -768,7 +768,12 @@ function showCard() {
 
 function getRegularCard(type) {
   const pool = modeCards[currentMode][type];
-  currentCard = pool[Math.floor(Math.random() * pool.length)];
+  
+  // === ИЗМЕНЯЕМ ЭТУ ЧАСТЬ ===
+  // Сохраняем ID карточки в массиве
+  currentCardId = Math.floor(Math.random() * pool.length);
+  currentCard = pool[currentCardId];
+  // ===========================
   
   const typeMap = { 
     вопросы: "💬 Вопрос", 
@@ -778,6 +783,10 @@ function getRegularCard(type) {
   document.getElementById("typeLabel").textContent = typeMap[type];
   
   document.getElementById("doneBtn").style.display = type === "действия" ? "block" : "none";
+  
+  // === ДОБАВЛЯЕМ ЭТУ СТРОЧКУ ===
+  currentCardText = insertNamesIntoCard(currentCard);
+  // =============================
 }
 
 
@@ -1521,6 +1530,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
