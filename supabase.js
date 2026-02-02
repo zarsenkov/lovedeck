@@ -3,7 +3,7 @@ console.log('🚀 Загружаю Supabase.js...');
 
 // ВАШИ ДАННЫЕ
 const SUPABASE_URL = 'https://xlnhuezhbmundhsdqyhu.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsbmh1ZXpoYm11bmRoc2RxeWh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgxMDEwMzMsImV4cCI6MjA0MzY3NzAzM30.9LyO7IULvKlbuj3UaQOqyCHm9Gc-niL2O1WgWjjpWOQ';
+const SUPABASE_KEY = 'sb_publishable_wBSXXOSvG4zAJAQDy3hPow_nzhGcT9y';
 
 // Проверяем данные
 console.log('🔍 Проверяю настройки Supabase...');
