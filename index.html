@@ -485,90 +485,74 @@
     </div>
 </div>
 
-<!-- Подключаем Supabase для облачной синхронизации -->
+<!-- ПОДКЛЮЧЕНИЕ БИБЛИОТЕКИ SUPABASE -->
+<script src="supabase.min.js"></script>
+
+<!-- ПОДКЛЮЧЕНИЕ НАШЕГО КОДА -->
 <script src="supabase.js"></script>
-
-<!-- Подключаем основной код приложения -->
 <script src="app.js"></script>
-
-<!-- Подключаем управление пользовательскими карточками -->
 <script src="custom_cards.js"></script>
-    
-    <!-- Кнопка входа (временная для теста) -->
-<button id="testLoginBtn" style="
-    position: fixed; top: 20px; right: 20px; 
-    padding: 10px 20px; background: #ff6b8b; 
-    color: white; border: none; border-radius: 25px; 
-    cursor: pointer; z-index: 1000; font-size: 14px;
-">
-    👤 Тест входа
-</button>
 
+<!-- ДЕБАГ-СКРИПТ ДЛЯ ПРОВЕРКИ -->
 <script>
-// Простейший тест кнопки
-document.getElementById('testLoginBtn').onclick = function() {
-    alert('Кнопка работает! Теперь проверим Supabase...');
+// Этот код запустится ПОСЛЕ загрузки всех скриптов
+console.log('=== ДЕБАГ ПРОВЕРКА ===');
+
+// Ждём полной загрузки страницы
+setTimeout(() => {
+    // 1. Проверяем кнопку login-btn
+    const mainLoginBtn = document.getElementById('login-btn');
+    console.log('1. Основная кнопка login-btn найдена?', !!mainLoginBtn);
     
-    // Проверяем, загружен ли Supabase
-    if (window.supabase) {
-        console.log('✅ Supabase подключен:', window.supabase);
-        alert('Supabase подключен! Проверь консоль (F12)');
-    } else {
-        console.error('❌ Supabase НЕ подключен');
-        alert('Supabase НЕ подключен. Проверь консоль (F12)');
+    if (mainLoginBtn) {
+        console.log('   Её HTML:', mainLoginBtn.outerHTML);
+        console.log('   Её onclick:', mainLoginBtn.onclick);
+        
+        // Делаем её видимой и кликабельной
+        mainLoginBtn.style.opacity = '1';
+        mainLoginBtn.style.cursor = 'pointer';
+        mainLoginBtn.style.pointerEvents = 'auto';
+        
+        // Добавляем простой обработчик
+        mainLoginBtn.addEventListener('click', function() {
+            console.log('✅ Основная кнопка нажата!');
+            alert('Основная кнопка работает!\n\nТеперь проверяем Supabase...');
+            
+            if (window.supabase) {
+                console.log('Supabase:', window.supabase);
+                window.supabase.auth.getSession().then(({ data }) => {
+                    alert('Сессия: ' + (data.session ? 'вошли' : 'не вошли'));
+                });
+            }
+        });
     }
-};
+    
+    // 2. Проверяем Supabase
+    console.log('2. Supabase доступен?', typeof window.supabase !== 'undefined');
+    console.log('3. Функция syncCardAction?', typeof window.syncCardAction !== 'undefined');
+    
+    // 3. Создаём тестовую кнопку (только для отладки)
+    const debugBtn = document.createElement('button');
+    debugBtn.textContent = '🐛 ДЕБАГ';
+    debugBtn.style.cssText = `
+        position: fixed; bottom: 20px; right: 20px;
+        padding: 10px; background: #666; color: white;
+        border: none; border-radius: 5px; cursor: pointer;
+        z-index: 9999; font-size: 12px;
+    `;
+    debugBtn.onclick = function() {
+        console.log('=== РУЧНАЯ ПРОВЕРКА ===');
+        console.log('Кнопка login-btn:', document.getElementById('login-btn'));
+        console.log('Supabase:', window.supabase);
+        console.log('Все кнопки в floating-buttons:', 
+            document.querySelectorAll('.floating-button'));
+        alert('Посмотри консоль (F12)');
+    };
+    document.body.appendChild(debugBtn);
+    
+    console.log('=== ДЕБАГ ЗАВЕРШЕН ===');
+}, 2000);
 </script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
