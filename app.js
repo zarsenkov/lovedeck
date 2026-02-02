@@ -11,6 +11,11 @@ let currentCard = null;
 let timer = null;
 let timerSeconds = 0;
 
+// === ДОБАВЛЯЕМ ЭТИ 2 ПЕРЕМЕННЫЕ ===
+let currentCardId = null; // ID текущей карточки в массиве
+let currentCardText = null; // Текст текущей карточки (с именами)
+// ===================================
+
 // ================== КОД ДЛЯ СИНХРОНИЗАЦИИ С SUPABASE ==================
 // (Вставьте этот блок ПОСЛЕ переменных loveQuotes, НАПРИМЕР после строки 44)
 
@@ -1511,6 +1516,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
