@@ -198,13 +198,16 @@
         </div>
     </div>
 
-<!-- Плавающие кнопки -->
+<!-- Плавающие кнопки (правильное расположение) -->
 <div class="floating-buttons">
-    <button id="favoritesBtn" class="floating-button" title="Избранное">⭐</button>
-    <button id="myCardsBtn" class="floating-button" title="Мои карточки">✨</button>
-    <button id="login-btn" class="floating-button" title="Войти для синхронизации">👤</button>
-    <!-- Кнопка будет создаваться динамически в supabase.js -->
+    <!-- Кнопки будут создаваться динамически для правильного позиционирования -->
 </div>
+
+<!-- Кнопки создаём отдельно для контроля позиций -->
+<button id="login-btn" class="floating-button" title="Войти для синхронизации" style="display: none;">👤</button>
+<button id="myCardsBtn" class="floating-button" title="Мои карточки" style="display: none;">✨</button>
+<button id="profileBtn" class="floating-button" title="Профиль пары" style="display: none;">👫</button>
+<button id="favoritesBtn" class="floating-button" title="Избранное" style="display: none;">⭐</button>
 
     <!-- МОДАЛЬНЫЕ ОКНА -->
 
@@ -553,6 +556,7 @@
 
 </body>
 </html>
+
 
 
 
