@@ -1,9 +1,9 @@
-// supabase.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// supabase.js - ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ
 console.log('🚀 Загружаю Supabase.js...');
 
 // ВАШИ ДАННЫЕ
 const SUPABASE_URL = 'https://xlnhuezhbmundhsdqyhu.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_wBSXXOSvG4zAJAQDy3hPow_nzhGcT9y';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsbmh1ZXpoYm11bmRoc2RxeWh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgxMDEwMzMsImV4cCI6MjA0MzY3NzAzM30.9LyO7IULvKlbuj3UaQOqyCHm9Gc-niL2O1WgWjjpWOQ';
 
 // Проверяем данные
 console.log('🔍 Проверяю настройки Supabase...');
@@ -13,26 +13,43 @@ if (SUPABASE_URL.includes('xlnhuezhbmundhsdqyhu')) {
     console.error('❌ Неверный URL Supabase');
 }
 
-// 1. ПРОВЕРКА БИБЛИОТЕКИ
-console.log('📚 Библиотека supabase доступна?', typeof supabase !== 'undefined');
-
-// 2. СОЗДАЁМ КЛИЕНТ
+// 1. СОЗДАЁМ КЛИЕНТ SUPABASE
 try {
-    if (typeof supabase !== 'undefined') {
-        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log('✅ Клиент Supabase создан');
-    } else {
+    // Проверяем, есть ли библиотека supabase
+    if (typeof supabase === 'undefined') {
         console.error('❌ Библиотека supabase не загружена!');
-        // Заглушка для тестирования
-        window.supabase = {
-            auth: {
-                getSession: () => ({ data: { session: null } }),
-                signInWithOtp: () => ({ error: 'Supabase не загружен' })
-            }
-        };
+        // Загружаем динамически если нет
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js';
+        script.onload = initSupabase;
+        document.head.appendChild(script);
+    } else {
+        initSupabase();
     }
 } catch (error) {
-    console.error('❌ Ошибка создания клиента:', error);
+    console.error('❌ Ошибка инициализации Supabase:', error);
+}
+
+function initSupabase() {
+    try {
+        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
+        });
+        console.log('✅ Клиент Supabase создан');
+        
+        // Запускаем настройку кнопки
+        setTimeout(setupLoginButton, 500);
+        
+        // Проверяем текущую сессию
+        checkCurrentSession();
+        
+    } catch (error) {
+        console.error('❌ Ошибка создания клиента Supabase:', error);
+    }
 }
 
 // ========== КНОПКА ВХОДА ==========
@@ -50,21 +67,163 @@ function setupLoginButton() {
         loginBtn.className = 'floating-button';
         loginBtn.title = 'Войти для синхронизации';
         loginBtn.innerHTML = '👤';
+        loginBtn.style.cssText = `
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 50% !important;
+            background: #ff6b8b !important;
+            color: white !important;
+            border: none !important;
+            font-size: 24px !important;
+            cursor: pointer !important;
+            z-index: 1000 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        `;
         
-        const container = document.querySelector('.floating-buttons');
-        if (container) {
-            container.appendChild(loginBtn);
-        } else {
-            loginBtn.style.cssText = `
-                position: fixed; top: 20px; right: 20px;
-                width: 50px; height: 50px; border-radius: 50%;
-                background: #ff6b8b; color: white; border: none;
-                font-size: 24px; cursor: pointer; z-index: 1000;
-            `;
-            document.body.appendChild(loginBtn);
-        }
+        document.body.appendChild(loginBtn);
+    } else {
+        // Если кнопка уже есть, делаем её кликабельной
+        loginBtn.style.cssText = `
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 50% !important;
+            background: #ff6b8b !important;
+            color: white !important;
+            border: none !important;
+            font-size: 24px !important;
+            cursor: pointer !important;
+            z-index: 1000 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        `;
     }
-    async function createOrUpdateCoupleProfile(user) {
+    
+    // Удаляем старые обработчики
+    const newLoginBtn = loginBtn.cloneNode(true);
+    loginBtn.parentNode.replaceChild(newLoginBtn, loginBtn);
+    
+    // 2. ДОБАВЛЯЕМ ОБРАБОТЧИК
+    newLoginBtn.addEventListener('click', async function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('🎯 Кнопка входа нажата!');
+        
+        if (!window.supabase || !window.supabase.auth) {
+            alert('❌ Supabase не загружен! Обновите страницу (Ctrl+F5).');
+            return;
+        }
+        
+        // ПРОВЕРЯЕМ СЕССИЮ
+        try {
+            const { data: { session } } = await window.supabase.auth.getSession();
+            
+            if (session && session.user) {
+                alert(`✅ Уже вошли как:\n${session.user.email}\n\nНажмите на карточку "Выполнено" для синхронизации.`);
+                newLoginBtn.innerHTML = `👤 ${session.user.email.split('@')[0]}`;
+                newLoginBtn.style.background = '#4CAF50';
+                return;
+            }
+        } catch (error) {
+            console.log('Сессия не активна:', error.message);
+        }
+        
+        // ЗАПРАШИВАЕМ EMAIL
+        const userEmail = prompt(
+            '✉️ Введите email для входа:\n\n' +
+            'На этот email придёт ссылка для входа.\n\n' +
+            'Пример: zarsenkov@yandex.ru',
+            'zarsenkov@yandex.ru'
+        );
+        
+        if (!userEmail || !userEmail.includes('@')) {
+            alert('❌ Введите корректный email!');
+            return;
+        }
+        
+        try {
+            console.log(`📧 Отправляю код на ${userEmail}...`);
+            
+            const { error } = await window.supabase.auth.signInWithOtp({
+                email: userEmail,
+                options: {
+                    shouldCreateUser: true,
+                    emailRedirectTo: window.location.origin
+                }
+            });
+            
+            if (error) throw error;
+            
+            alert(`✅ Проверьте почту:\n${userEmail}\n\nМы отправили ссылку для входа.`);
+            
+        } catch (error) {
+            console.error('❌ Ошибка входа:', error);
+            
+            if (error.message.includes('rate limit') || error.message.includes('429')) {
+                alert('⚠️ Слишком много попыток!\nПодождите 30 минут.');
+            } else if (error.message.includes('invalid')) {
+                alert('❌ Неверный email!');
+            } else {
+                alert(`Ошибка: ${error.message}`);
+            }
+        }
+    });
+    
+    console.log('✅ Кнопка настроена');
+    return newLoginBtn;
+}
+
+// 2. ПРОВЕРКА ТЕКУЩЕЙ СЕССИИ
+async function checkCurrentSession() {
+    try {
+        if (!window.supabase || !window.supabase.auth) {
+            console.log('🔄 Supabase ещё не готов, жду...');
+            setTimeout(checkCurrentSession, 1000);
+            return;
+        }
+        
+        const { data: { session } } = await window.supabase.auth.getSession();
+        
+        if (session && session.user) {
+            console.log('✅ Уже вошли:', session.user.email);
+            window.currentUser = session.user;
+            
+            // Обновляем кнопку
+            const btn = document.getElementById('login-btn');
+            if (btn) {
+                btn.innerHTML = `👤 ${session.user.email.split('@')[0]}`;
+                btn.style.background = '#4CAF50';
+                btn.title = `Вошли как: ${session.user.email}`;
+            }
+            
+            // Автоматически создаём профиль пары
+            await createOrUpdateCoupleProfile(session.user);
+        } else {
+            console.log('ℹ️ Не вошли в систему');
+            window.currentUser = null;
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка проверки сессии:', error);
+    }
+}
+
+// 3. ФУНКЦИЯ ДЛЯ СОЗДАНИЯ ПРОФИЛЯ ПАРЫ
+async function createOrUpdateCoupleProfile(user) {
     try {
         console.log('👫 Создаю/обновляю профиль пары для:', user.email);
         
@@ -103,87 +262,8 @@ function setupLoginButton() {
         return null;
     }
 }
-    
-    // ДЕЛАЕМ КЛИКАБЕЛЬНОЙ
-    loginBtn.style.cursor = 'pointer';
-    loginBtn.style.pointerEvents = 'auto';
-    loginBtn.style.opacity = '1';
-    
-    // 2. ДОБАВЛЯЕМ ОБРАБОТЧИК
-    loginBtn.onclick = async function(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        console.log('🔄 Кнопка входа нажата!');
-        
-        if (!window.supabase || !window.supabase.auth) {
-            alert('❌ Supabase не загружен!');
-            console.error('Supabase.auth не доступен');
-            return;
-        }
-        
-        // ПРОВЕРЯЕМ СЕССИЮ
-        try {
-            const { data: { session } } = await window.supabase.auth.getSession();
-            
-            if (session && session.user) {
-                alert(`✅ Уже вошли как:\n${session.user.email}`);
-                loginBtn.innerHTML = `👤 ${session.user.email.split('@')[0]}`;
-                loginBtn.style.background = '#4CAF50';
-                return;
-            }
-        } catch (error) {
-            console.log('Не вошли:', error.message);
-        }
-        
-        // ЗАПРАШИВАЕМ EMAIL
-        const userEmail = prompt(
-            '✉️ Введите РЕАЛЬНЫЙ email для входа:\n\n' +
-            'Примеры:\n• ваш@gmail.com\n• ваша@mail.ru\n\n' +
-            '❌ НЕ используйте: test@test.com',
-            'ваш_настоящий_email@gmail.com'
-        );
-        
-        if (!userEmail) return;
-        
-        // ПРОВЕРКА EMAIL
-        if (userEmail.includes('test@test') || userEmail.includes('test@example')) {
-            alert('❌ Используйте реальный email!');
-            return;
-        }
-        
-        try {
-            console.log(`📧 Отправляю код на ${userEmail}...`);
-            
-            const { error } = await window.supabase.auth.signInWithOtp({
-                email: userEmail,
-                options: {
-                    shouldCreateUser: true,
-                    emailRedirectTo: 'http://lovecouple.ru'
-                }
-            });
-            
-            if (error) throw error;
-            
-            alert(`✅ Проверьте почту:\n${userEmail}\n\nМы отправили ссылку для входа.`);
-            
-        } catch (error) {
-            console.error('❌ Ошибка входа:', error);
-            
-            if (error.message.includes('rate limit') || error.message.includes('429')) {
-                alert('⚠️ Слишком много попыток!\nПодождите 30 минут.');
-            } else if (error.message.includes('invalid')) {
-                alert('❌ Неверный email!');
-            } else {
-                alert(`Ошибка: ${error.message}`);
-            }
-        }
-    };
-    
-    console.log('✅ Кнопка настроена');
-    return loginBtn;
-}
 
-// 3. ФУНКЦИЯ ДЛЯ СИНХРОНИЗАЦИИ (ПОЛНАЯ РАБОЧАЯ ВЕРСИЯ)
+// 4. ФУНКЦИЯ ДЛЯ СИНХРОНИЗАЦИИ КАРТОЧЕК
 window.syncCardAction = async function(cardId, cardText, mode, action) {
     console.log(`🔄 syncCardAction: ${action} карточки ${cardId} (${mode})`);
     
@@ -203,42 +283,24 @@ window.syncCardAction = async function(cardId, cardText, mode, action) {
         
         console.log('✅ Вошли как:', session.user.email);
         
-        // 3. ПОЛУЧАЕМ ИЛИ СОЗДАЁМ ПРОФИЛЬ ПАРЫ
-        let coupleProfile = null;
-        
-        // Ищем существующий профиль
-        const { data: existingCouple } = await window.supabase
+        // 3. ПОЛУЧАЕМ ПРОФИЛЬ ПАРЫ
+        const { data: couple, error: coupleError } = await window.supabase
             .from('couples')
-            .select('*')
+            .select('id')
             .eq('email', session.user.email)
             .single();
         
-        if (existingCouple) {
-            console.log('✅ Профиль пары найден:', existingCouple.id);
-            coupleProfile = existingCouple;
-        } else {
-            // Создаём новый профиль если нет
-            console.log('👫 Создаю новый профиль пары...');
-            const { data: newCouple, error } = await window.supabase
-                .from('couples')
-                .insert({
-                    email: session.user.email,
-                    names: 'Новая пара',
-                    love_level: 1,
-                    achievements: [],
-                    public_ranking: false
-                })
-                .select()
-                .single();
-            
-            if (error) {
-                console.error('❌ Ошибка создания профиля:', error);
+        if (coupleError || !couple) {
+            console.log('👫 Профиль не найден, создаём...');
+            const newCouple = await createOrUpdateCoupleProfile(session.user);
+            if (!newCouple) {
+                console.error('❌ Не удалось создать профиль пары');
                 return false;
             }
-            
-            coupleProfile = newCouple;
-            console.log('✅ Профиль пары создан:', coupleProfile.id);
+            couple = newCouple;
         }
+        
+        console.log('✅ Профиль пары найден:', couple.id);
         
         // 4. СОХРАНЯЕМ ДЕЙСТВИЕ В ACTIVITIES
         console.log('💾 Сохраняю в таблицу activities...');
@@ -246,9 +308,9 @@ window.syncCardAction = async function(cardId, cardText, mode, action) {
         const { error } = await window.supabase
             .from('activities')
             .insert({
-                couple_id: coupleProfile.id,
+                couple_id: couple.id,
                 card_id: cardId,
-                card_text: cardText.substring(0, 255), // Обрезаем длинный текст
+                card_text: cardText.substring(0, 255),
                 mode: mode,
                 completed: action === 'completed',
                 liked: action === 'liked',
@@ -268,3 +330,114 @@ window.syncCardAction = async function(cardId, cardText, mode, action) {
         return false;
     }
 };
+
+// 5. ФУНКЦИЯ ДЛЯ ОТЛАДКИ
+window.debugSupabase = async function() {
+    console.log('=== ДЕБАГ SUPABASE ===');
+    
+    // 1. Проверка соединения
+    console.log('Supabase:', !!window.supabase);
+    console.log('supabase.auth:', !!window.supabase?.auth);
+    
+    // 2. Проверка сессии
+    const { data: { session } } = await window.supabase.auth.getSession();
+    console.log('Сессия:', session ? 'Есть' : 'Нет');
+    console.log('Пользователь:', session?.user?.email);
+    
+    // 3. Проверка таблицы couples
+    try {
+        const { data: couples } = await window.supabase.from('couples').select('*');
+        console.log('Записей в couples:', couples?.length || 0);
+        if (session?.user?.email) {
+            console.log('Ваша запись:', couples?.find(c => c.email === session.user.email));
+        }
+    } catch (e) {
+        console.log('Ошибка couples:', e.message);
+    }
+    
+    // 4. Проверка таблицы activities
+    try {
+        const { data: activities } = await window.supabase.from('activities').select('*');
+        console.log('Записей в activities:', activities?.length || 0);
+    } catch (e) {
+        console.log('Ошибка activities:', e.message);
+    }
+    
+    console.log('=== ДЕБАГ ЗАВЕРШЕН ===');
+};
+
+// 6. ЗАПУСК ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 Страница загружена');
+    
+    // Даём время загрузиться всем скриптам
+    setTimeout(() => {
+        console.log('✨ Supabase.js готов!');
+        
+        // Принудительная активация кнопки через 2 секунды
+        setTimeout(() => {
+            const btn = document.getElementById('login-btn');
+            if (btn) {
+                console.log('🔄 Принудительно активирую кнопку...');
+                btn.style.cssText = `
+                    position: fixed !important;
+                    top: 20px !important;
+                    right: 20px !important;
+                    width: 50px !important;
+                    height: 50px !important;
+                    border-radius: 50% !important;
+                    background: #ff6b8b !important;
+                    color: white !important;
+                    border: none !important;
+                    font-size: 24px !important;
+                    cursor: pointer !important;
+                    z-index: 1000 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+                    opacity: 1 !important;
+                    pointer-events: auto !important;
+                `;
+                
+                // Добавляем простой обработчик если нет
+                if (!btn.onclick) {
+                    btn.onclick = () => alert('Кнопка работает! Настройка Supabase...');
+                }
+            }
+        }, 2000);
+    }, 500);
+});
+
+// 7. СЛУШАТЕЛЬ ИЗМЕНЕНИЙ АУТЕНТИФИКАЦИИ
+if (window.supabase && window.supabase.auth) {
+    window.supabase.auth.onAuthStateChange((event, session) => {
+        console.log(`🎭 Auth state changed: ${event}`);
+        
+        if (session) {
+            console.log('✅ Пользователь вошёл:', session.user.email);
+            window.currentUser = session.user;
+            
+            // Обновляем кнопку
+            const btn = document.getElementById('login-btn');
+            if (btn) {
+                btn.innerHTML = `👤 ${session.user.email.split('@')[0]}`;
+                btn.style.background = '#4CAF50';
+                btn.title = `Вошли как: ${session.user.email}`;
+            }
+            
+            // Создаём профиль
+            createOrUpdateCoupleProfile(session.user);
+        } else {
+            console.log('ℹ️ Пользователь вышел');
+            window.currentUser = null;
+            
+            const btn = document.getElementById('login-btn');
+            if (btn) {
+                btn.innerHTML = '👤';
+                btn.style.background = '#ff6b8b';
+                btn.title = 'Войти для синхронизации';
+            }
+        }
+    });
+}
