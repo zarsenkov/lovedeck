@@ -757,11 +757,15 @@ function showCard() {
     stopTimer();
     document.getElementById("timer").textContent = "⏱️";
     
+    // === УДАЛЕНО АУДИО (вызывает ошибку) ===
+    /*
     if (settings.sound) {
         try {
             new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ").play();
         } catch(e) {}
     }
+    */
+    // ========================================
 }
 
 // Вспомогательная функция для обычных карточек
@@ -1556,6 +1560,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
