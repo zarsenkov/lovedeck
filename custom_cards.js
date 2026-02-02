@@ -52,7 +52,7 @@ function loadCustomCards() {
                     </div>
                     <div class="custom-card-date">${card.date} • ${card.author || "Вы"}</div>
                 </div>
-                <button class="delete-button" onclick="deleteCustomCard(${card.id})">
+                <button class="delete-button" data-id="${card.id}">
                     🗑️
                 </button>
             </div>
@@ -60,6 +60,12 @@ function loadCustomCards() {
     });
     
     container.innerHTML = html;
+    container.querySelectorAll(".delete-button").forEach(btn => {
+    btn.addEventListener("click", function () {
+        const id = Number(this.dataset.id);
+        deleteCustomCard(id);
+    });
+});
 }
 
 // Удаление карточки
@@ -218,7 +224,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Делаем функцию удаления глобальной
-    window.deleteCustomCard = deleteCustomCard;
 });
+
 
