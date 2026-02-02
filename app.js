@@ -11,21 +11,6 @@ let currentCard = null;
 let timer = null;
 let timerSeconds = 0;
 
-// ---------- БЛАГОДАРНОСТИ ----------
-let gratitudes = [];
-
-
-// ---------- МУЗЫКА ----------
-let isMusicPlaying = false;
-let currentTrack = 0;
-let musicVolume = 0.3; // 30% громкости (тихая фоновая музыка)
-const audioPlayer = new Audio();
-const musicTracks = [
-    './music1.mp3',
-    './music2.mp3', 
-    './music3.mp3'
-];
-
 // ---------- ЦИТАТЫ О ЛЮБВИ ----------
 const loveQuotes = [
   "💖 Любовь — это когда тишина между вами комфортна",
@@ -64,55 +49,6 @@ const compliments = [
     "🕊️ Твоя мудрость помогает мне видеть вещи по-новому"
 ];
 
-// ---------- ДОСТИЖЕНИЯ ----------
-const achievements = [
-  { 
-    id: "first_card", 
-    title: "🎴 Первая карточка", 
-    desc: "Открыли первую карточку",
-    unlocked: false,
-    check: function() { return stats.total >= 1; }
-  },
-  { 
-    id: "10_cards", 
-    title: "📊 Десятка", 
-    desc: "10 карточек сыграно",
-    unlocked: false,
-    check: function() { return stats.total >= 10; }
-  },
-  { 
-    id: "romance_master", 
-    title: "💖 Мастер романтики", 
-    desc: "5 карточек в режиме Романтика",
-    unlocked: false,
-    check: function() { return stats.questions >= 5; }
-  },
-  { 
-    id: "complete_all", 
-    title: "🏆 Комплит", 
-    desc: "Выполнено 10 заданий",
-    unlocked: false,
-    check: function() { return stats.completed >= 10; }
-  },
-  { 
-    id: "secret_finder", 
-    title: "🔍 Искатель секретов", 
-    desc: "Нашли секретную карточку",
-    unlocked: false,
-    check: function() { return stats.secrets >= 1; }
-  }
-];
-
-// Загружаем разблокированные достижения
-if (localStorage.getItem("loveDeck_achievements")) {
-  const saved = JSON.parse(localStorage.getItem("loveDeck_achievements"));
-  achievements.forEach((ach, index) => {
-    if (saved[index]) {
-      ach.unlocked = saved[index].unlocked;
-    }
-  });
-}
-
 // ---------- НАСТРОЙКИ ----------
 const settings = {
   sound: true,
@@ -124,18 +60,6 @@ const settings = {
 if (localStorage.getItem("loveDeck_settings")) {
   Object.assign(settings, JSON.parse(localStorage.getItem("loveDeck_settings")));
 }
-
-// ---------- СТАТИСТИКА ----------
-const defaultStats = { 
-  total: 0, 
-  questions: 0, 
-  actions: 0, 
-  dates: 0, 
-  secrets: 0,
-  completed: 0
-};
-
-let stats = JSON.parse(localStorage.getItem("loveDeck_stats")) || { ...defaultStats };
 
 // ---------- ПРОФИЛИ ----------
 let userName = localStorage.getItem("loveDeck_user") || "Вы";
@@ -375,65 +299,6 @@ function saveProfiles() {
   localStorage.setItem("loveDeck_partner", partnerName);
 }
 
-// ---------- ФУНКЦИИ ДОСТИЖЕНИЙ ----------
-function checkAchievements() {
-  let newAchievements = [];
-  
-  achievements.forEach((achievement, index) => {
-    if (!achievement.unlocked && achievement.check()) {
-      achievement.unlocked = true;
-      newAchievements.push(achievement);
-      localStorage.setItem("loveDeck_achievements", JSON.stringify(achievements));
-    }
-  });
-  
-  if (newAchievements.length > 0) {
-    showAchievementNotification(newAchievements[0]);
-  }
-}
-
-function showAchievementNotification(achievement) {
-  const notification = document.createElement('div');
-  notification.className = 'achievement-notification';
-  notification.innerHTML = `
-    <div class="achievement-icon">🏆</div>
-    <div class="achievement-content">
-      <div class="achievement-title">Новое достижение!</div>
-      <div class="achievement-name">${achievement.title}</div>
-      <div class="achievement-desc">${achievement.desc}</div>
-    </div>
-  `;
-  
-  document.body.appendChild(notification);
-  
-  setTimeout(() => notification.classList.add('show'), 100);
-  setTimeout(() => {
-    notification.classList.remove('show');
-    setTimeout(() => notification.remove(), 300);
-  }, 5000);
-}
-
-function loadAchievements() {
-  const achievementsList = document.getElementById("achievementsList");
-  if (!achievementsList) return;
-  
-  let html = '';
-  achievements.forEach(achievement => {
-    html += `
-      <div class="achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}">
-        <div class="achievement-emoji">${achievement.title.split(' ')[0]}</div>
-        <div class="achievement-card-title">${achievement.title}</div>
-        <div class="achievement-card-desc">${achievement.desc}</div>
-        <div class="achievement-status">
-          ${achievement.unlocked ? '🏆 Разблокировано' : '🔒 Заблокировано'}
-        </div>
-      </div>
-    `;
-  });
-  
-  achievementsList.innerHTML = html;
-}
-
 // ---------- ОСНОВНЫЕ ФУНКЦИИ ----------
 function updateSelectionInfo() {
   const selectionInfo = document.getElementById("selectionInfo");
@@ -445,7 +310,6 @@ function updateSelectionInfo() {
 
 function showCard() {
   counter++;
-  stats.total++;
   
   let type = currentType;
   if (currentType === "random") {
@@ -457,7 +321,6 @@ function showCard() {
   if (Math.random() < 0.1) {
     currentCard = secretCards[Math.floor(Math.random() * secretCards.length)];
     document.getElementById("typeLabel").textContent = "✨ Секретная";
-    stats.secrets++;
     document.getElementById("doneBtn").style.display = "block";
   } 
   // Шанс на пользовательскую карточку (25% если они есть)
@@ -483,10 +346,6 @@ function showCard() {
       
       document.getElementById("doneBtn").style.display = type === "действия" ? "block" : "none";
       
-      if (type === "вопросы") stats.questions++;
-      if (type === "действия") stats.actions++;
-      if (type === "свидания") stats.dates++;
-      
       console.log("🎯 Показана пользовательская карточка:", randomCustomCard);
     } else {
       // Если нет пользовательских, берём обычную
@@ -504,9 +363,6 @@ function showCard() {
   stopTimer();
   document.getElementById("timer").textContent = "⏱️";
   
-  saveStats();
-  checkAchievements();
-  
   if (settings.sound) {
     try {
       new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ").play();
@@ -515,6 +371,7 @@ function showCard() {
 }
 
 // Вспомогательная функция для обычных карточек
+
 function getRegularCard(type) {
   const pool = modeCards[currentMode][type];
   currentCard = pool[Math.floor(Math.random() * pool.length)];
@@ -527,11 +384,8 @@ function getRegularCard(type) {
   document.getElementById("typeLabel").textContent = typeMap[type];
   
   document.getElementById("doneBtn").style.display = type === "действия" ? "block" : "none";
-  
-  if (type === "вопросы") stats.questions++;
-  if (type === "действия") stats.actions++;
-  if (type === "свидания") stats.dates++;
 }
+
 
 // ---------- ОСНОВНАЯ ИНИЦИАЛИЗАЦИЯ ----------
 function init() {
@@ -648,18 +502,6 @@ function continueInit() {
     alert("Карточка сохранена! 💾");
   });
   
-  // ПОДСКАЗКИ
-  document.getElementById("hintBtn").addEventListener("click", function() {
-    const hints = [
-      "💡 Совет: Выполняйте задания вместе, это сближает!",
-      "💡 Идея: Обсудите ответы на вопросы подробнее",
-      "💡 Напоминание: Не забывайте про романтику в будни",
-      "💡 Подсказка: Для свиданий можно выбрать выходной день",
-      "💡 Совет: Записывайте самые интересные моменты!"
-    ];
-    alert(hints[Math.floor(Math.random() * hints.length)]);
-  });
-
   // КОМПЛИМЕНТЫ
 document.getElementById("complimentBtn").addEventListener("click", function() {
     showRandomCompliment();
@@ -682,74 +524,6 @@ document.getElementById("complimentText").addEventListener("click", function() {
 
 // Закрытие модалки по клику вне
 document.getElementById("complimentModal").addEventListener("click", function(e) {
-    if (e.target === this) {
-        this.classList.remove("active");
-    }
-});
-
-// МУЗЫКА
-document.getElementById("musicBtn").addEventListener("click", function() {
-    toggleMusic();
-});
-
-// Загружаем настройки музыки
-const savedMusicSettings = localStorage.getItem("loveDeck_music");
-if (savedMusicSettings) {
-    const settings = JSON.parse(savedMusicSettings);
-    isMusicPlaying = settings.isPlaying || false;
-    currentTrack = settings.currentTrack || 0;
-    musicVolume = settings.volume || 0.3;
-    
-    if (isMusicPlaying) {
-        startMusic();
-    }
-}
-
-// БЛАГОДАРНОСТИ
-document.getElementById("gratitudeBtn").addEventListener("click", function() {
-    initGratitudes();
-    document.getElementById("gratitudeModal").classList.add("active");
-});
-
-document.getElementById("addGratitude").addEventListener("click", function() {
-    const text = document.getElementById("gratitudeText").value;
-    if (addGratitude(text)) {
-        // Если успешно добавили, фокус остаётся в поле для новой записи
-        document.getElementById("gratitudeText").focus();
-    }
-});
-
-document.getElementById("closeGratitude").addEventListener("click", function() {
-    document.getElementById("gratitudeModal").classList.remove("active");
-});
-
-// Счётчик символов
-document.getElementById("gratitudeText").addEventListener("input", function() {
-    const charCount = this.value.length;
-    document.getElementById("charCount").textContent = charCount;
-    
-    // Меняем цвет при приближении к лимиту
-    const counter = document.getElementById("charCount");
-    if (charCount > 280) {
-        counter.style.color = "#ff4444";
-        counter.style.fontWeight = "bold";
-    } else if (charCount > 250) {
-        counter.style.color = "#ff8e53";
-    } else {
-        counter.style.color = "#888";
-    }
-});
-
-// Enter для отправки (Shift+Enter для новой строки)
-document.getElementById("gratitudeText").addEventListener("keydown", function(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        document.getElementById("addGratitude").click();
-    }
-});
-
-// Закрытие модалки по клику вне
-document.getElementById("gratitudeModal").addEventListener("click", function(e) {
     if (e.target === this) {
         this.classList.remove("active");
     }
@@ -825,16 +599,6 @@ document.getElementById("aboutModal").addEventListener("click", function(e) {
     }
 });
   
-  // ДОСТИЖЕНИЯ
-  document.getElementById("achievementsBtn").addEventListener("click", function() {
-    loadAchievements();
-    document.getElementById("achievementsModal").classList.add("active");
-  });
-  
-  document.getElementById("closeAchievements").addEventListener("click", function() {
-    document.getElementById("achievementsModal").classList.remove("active");
-  });
-  
   // НАСТРОЙКИ
   document.getElementById("settingsBtn").addEventListener("click", function() {
     document.getElementById("soundToggle").checked = settings.sound;
@@ -851,36 +615,6 @@ document.getElementById("aboutModal").addEventListener("click", function(e) {
     saveSettings();
     document.getElementById("settingsModal").classList.remove("active");
     alert("Настройки сохранены!");
-  });
-  
-  // ИСТОРИЯ
-  document.getElementById("historyBtn").addEventListener("click", function() {
-    const history = JSON.parse(localStorage.getItem("loveDeck_history") || "[]");
-    const historyList = document.getElementById("historyList");
-    
-    if (history.length === 0) {
-      historyList.innerHTML = '<div class="empty-message">История игры пуста</div>';
-    } else {
-      let html = '';
-      history.slice(0, 20).forEach(item => {
-        html += `
-          <div class="history-item">
-            <div class="item-text">${item.text}</div>
-            <div class="item-meta">
-              <span class="item-type">${item.type} • ${item.mode}</span>
-              <span class="item-date">${item.date}</span>
-            </div>
-          </div>
-        `;
-      });
-      historyList.innerHTML = html;
-    }
-    
-    document.getElementById("historyModal").classList.add("active");
-  });
-  
-  document.getElementById("closeHistory").addEventListener("click", function() {
-    document.getElementById("historyModal").classList.remove("active");
   });
   
   // ИЗБРАННОЕ
@@ -982,225 +716,6 @@ function showCopyNotification(message) {
     }, 2000);
 }
 
-// 👇👇👇 ВСТАВЬТЕ ЭТОТ КОД ПРЯМО ЗДЕСЬ 👇👇👇
-
-// ========== ФУНКЦИИ ДЛЯ МУЗЫКИ ==========
-function toggleMusic() {
-    if (isMusicPlaying) {
-        stopMusic();
-    } else {
-        startMusic();
-    }
-    updateMusicButton();
-    saveMusicSettings();
-}
-
-function startMusic() {
-    if (musicTracks.length === 0) return;
-    
-    isMusicPlaying = true;
-    audioPlayer.src = musicTracks[currentTrack];
-    audioPlayer.volume = musicVolume;
-    audioPlayer.loop = false; // Не зацикливаем, чтобы переключать треки
-    
-    audioPlayer.play().catch(error => {
-        console.log("Автовоспроизведение заблокировано. Нажмите на кнопку музыки.");
-        isMusicPlaying = false;
-        updateMusicButton();
-    });
-    
-    // Когда трек заканчивается - включаем следующий
-    audioPlayer.onended = function() {
-        nextTrack();
-    };
-}
-
-function stopMusic() {
-    isMusicPlaying = false;
-    audioPlayer.pause();
-    audioPlayer.currentTime = 0;
-}
-
-function nextTrack() {
-    currentTrack = (currentTrack + 1) % musicTracks.length;
-    
-    if (isMusicPlaying) {
-        audioPlayer.src = musicTracks[currentTrack];
-        audioPlayer.volume = musicVolume;
-        audioPlayer.play();
-    }
-    
-    saveMusicSettings();
-    showTrackNotification();
-}
-
-function updateMusicButton() {
-    const musicBtn = document.getElementById("musicBtn");
-    if (!musicBtn) return;
-    
-    if (isMusicPlaying) {
-        musicBtn.innerHTML = "🔊";
-        musicBtn.title = "Музыка (вкл) - Трек " + (currentTrack + 1);
-        musicBtn.classList.add("music-playing");
-    } else {
-        musicBtn.innerHTML = "🔇";
-        musicBtn.title = "Музыка (выкл)";
-        musicBtn.classList.remove("music-playing");
-    }
-}
-
-function saveMusicSettings() {
-    const settings = {
-        isPlaying: isMusicPlaying,
-        currentTrack: currentTrack,
-        volume: musicVolume
-    };
-    localStorage.setItem("loveDeck_music", JSON.stringify(settings));
-}
-
-function showTrackNotification() {
-    // Простое уведомление в консоли
-    console.log("🎵 Сейчас играет: Трек " + (currentTrack + 1));
-    
-    // Можно сделать всплывающее уведомление если хотите
-    const trackNames = ["Романтическое пианино", "Любовная песня", "Эмоциональная мелодия"];
-    const notification = document.createElement("div");
-    notification.className = "copy-notification";
-    notification.textContent = "🎵 " + trackNames[currentTrack];
-    notification.style.background = "#ff4d6d";
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 2000);
-}
-
-// ========== ФУНКЦИИ БЛАГОДАРНОСТЕЙ ==========
-function initGratitudes() {
-    // Загружаем сохранённые благодарности
-    const saved = localStorage.getItem("loveDeck_gratitudes");
-    if (saved) {
-        gratitudes = JSON.parse(saved);
-        loadGratitudes();
-    }
-}
-
-function saveGratitudes() {
-    localStorage.setItem("loveDeck_gratitudes", JSON.stringify(gratitudes));
-}
-
-function addGratitude(text) {
-    if (!text.trim()) {
-        alert("Введите текст благодарности!");
-        return false;
-    }
-    
-    const newGratitude = {
-        id: Date.now(), // Уникальный ID на основе времени
-        text: text.trim(),
-        date: new Date().toLocaleString(),
-        author: localStorage.getItem("loveDeck_user") || "Вы"
-    };
-    
-    gratitudes.unshift(newGratitude); // Добавляем в начало
-    saveGratitudes();
-    
-    // Добавляем в список
-    addGratitudeToList(newGratitude);
-    
-    // Очищаем поле ввода
-    document.getElementById("gratitudeText").value = "";
-    document.getElementById("charCount").textContent = "0";
-    
-    // Показываем уведомление
-    showGratitudeNotification();
-    
-    return true;
-}
-
-function addGratitudeToList(gratitude) {
-    const gratitudeList = document.getElementById("gratitudeList");
-    const emptyMessage = gratitudeList.querySelector(".empty-message");
-    
-    // Убираем сообщение "пусто" если оно есть
-    if (emptyMessage) {
-        emptyMessage.remove();
-    }
-    
-    // Создаём элемент благодарности
-    const gratitudeItem = document.createElement("div");
-    gratitudeItem.className = "gratitude-item new";
-    gratitudeItem.innerHTML = `
-        <div class="gratitude-text">${gratitude.text}</div>
-        <div class="gratitude-meta">
-            <div class="gratitude-date">${gratitude.date} • ${gratitude.author}</div>
-            <button class="delete-gratitude" onclick="deleteGratitude(${gratitude.id})">🗑️</button>
-        </div>
-    `;
-    
-    // Добавляем в начало списка
-    gratitudeList.insertBefore(gratitudeItem, gratitudeList.firstChild);
-    
-    // Убираем класс анимации через время
-    setTimeout(() => {
-        gratitudeItem.classList.remove("new");
-    }, 500);
-}
-
-function loadGratitudes() {
-    const gratitudeList = document.getElementById("gratitudeList");
-    
-    if (gratitudes.length === 0) {
-        gratitudeList.innerHTML = `
-            <div class="empty-message">
-                Пока нет благодарностей<br>
-                Добавьте первую - это сделает день ярче! ✨
-            </div>
-        `;
-        return;
-    }
-    
-    let html = "";
-    gratitudes.forEach(gratitude => {
-        html += `
-            <div class="gratitude-item">
-                <div class="gratitude-text">${gratitude.text}</div>
-                <div class="gratitude-meta">
-                    <div class="gratitude-date">${gratitude.date} • ${gratitude.author}</div>
-                    <button class="delete-gratitude" onclick="deleteGratitude(${gratitude.id})">🗑️</button>
-                </div>
-            </div>
-        `;
-    });
-    
-    gratitudeList.innerHTML = html;
-}
-
-function deleteGratitude(id) {
-    if (!confirm("Удалить эту благодарность?")) return;
-    
-    gratitudes = gratitudes.filter(g => g.id !== id);
-    saveGratitudes();
-    loadGratitudes();
-}
-
-function showGratitudeNotification() {
-    const notification = document.createElement("div");
-    notification.className = "copy-notification";
-    notification.textContent = "💌 Благодарность сохранена!";
-    notification.style.background = "#4CAF50";
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 2000);
-}
-
-// Делаем функцию глобальной для onclick
-window.deleteGratitude = deleteGratitude;
-
 // ========== ИНТИМНЫЕ ЧЕЛЛЕНДЖИ ==========
 const intimacyChallenges = {
   Начинающий: [
@@ -1262,9 +777,6 @@ function showIntimacyChallenge() {
 
 // Отметить как выполненное
 function markAsCompleted() {
-    stats.completed++;
-    saveStats();
-    
     // Показать подтверждение
     const doneBtn = document.getElementById("doneBtn");
     doneBtn.textContent = "✅ Выполнено!";
@@ -1333,17 +845,6 @@ function showNotification(message, color = "#4CAF50") {
     }, 2000);
 }
 
-// Функция для очистки истории
-if (!document.getElementById("clearHistory").onclick) {
-    document.getElementById("clearHistory").addEventListener("click", function() {
-        if (confirm("Очистить всю историю игры?")) {
-            localStorage.removeItem("loveDeck_history");
-            alert("История очищена!");
-            document.getElementById("historyBtn").click();
-        }
-    });
-}
-
 // Дополнительная функция для "О проекте"
 document.getElementById("aboutBtn").addEventListener("click", function() {
     // Перемещаем в конец модального окна для лучшей читаемости
@@ -1353,15 +854,13 @@ document.getElementById("aboutBtn").addEventListener("click", function() {
     }
 });
 
-// Обновляем кнопку музыки при загрузке
-updateMusicButton();
-
 // ЗАПУСК ПРИЛОЖЕНИЯ
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
 } else {
     init();
 }
+
 
 
 
