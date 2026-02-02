@@ -62,17 +62,31 @@
                 <h1 class="welcome-title">LoveCouple</h1>
                 <p class="welcome-subtitle">Колода для вашей любви</p>
                 
-                <div class="profiles">
-                    <div class="profile-input">
-                        <div class="profile-label">Вы</div>
-                        <input type="text" id="userNameInput" placeholder="Ваше имя">
-                    </div>
-                    <div class="heart-connector">❤️</div>
-                    <div class="profile-input">
-                        <div class="profile-label">Партнёр</div>
-                        <input type="text" id="partnerNameInput" placeholder="Имя партнёра">
-                    </div>
-                </div>
+<div class="profiles-improved">
+    <h3 class="profiles-title">👥 Ваши имена</h3>
+    <p class="profiles-hint">Используются в карточках для персонализации</p>
+    
+    <div class="names-inputs">
+        <div class="name-input-group">
+            <label class="name-label">Первый участник</label>
+            <input type="text" id="userNameInput" class="name-input" 
+                   placeholder="Например: Алекс" maxlength="20">
+        </div>
+        
+        <div class="heart-between">❤️</div>
+        
+        <div class="name-input-group">
+            <label class="name-label">Второй участник</label>
+            <input type="text" id="partnerNameInput" class="name-input" 
+                   placeholder="Например: Мария" maxlength="20">
+        </div>
+    </div>
+    
+    <div class="names-example">
+        <span class="example-text">Будет в карточках:</span>
+        <span class="example-card">"<span id="name1Example">Алекс</span>, какой момент самый романтичный?"</span>
+    </div>
+</div>
                 
                 <div class="selection-info" id="selectionInfo">
                     Выберите настроение и тип карточек
@@ -470,6 +484,7 @@
     <script src="custom_cards.js"></script>
 </body>
 </html>
+
 
 
 
