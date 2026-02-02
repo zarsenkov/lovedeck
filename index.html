@@ -483,14 +483,16 @@
     </div>
 </div>
 
-<!-- ПОДКЛЮЧЕНИЕ БИБЛИОТЕКИ SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+<!-- Основной код приложения -->
+<script src="app.js"></script>
 
-<!-- ПОДКЛЮЧЕНИЕ НАШЕГО КОДА -->
-<script src="supabase.js" defer></script>
-<script src="app.js" defer></script>
-<script src="custom_cards.js" defer></script>
-<script src="profile.js" defer></script>
+<!-- Дополнительные модули -->
+<script src="custom_cards.js"></script>
+<script src="profile.js"></script>
+
+<!-- Supabase в конце -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+<script src="supabase.js"></script>
 
     <div id="profileModal" class="modal">
     <div class="modal-content">
@@ -546,6 +548,7 @@
 
 </body>
 </html>
+
 
 
 
