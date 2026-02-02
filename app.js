@@ -1381,15 +1381,32 @@ function showIntimacyChallenge() {
 
 // Отметить как выполненное
 function markAsCompleted() {
-    // Показать подтверждение
+    // 1. Сохраняем локально (как было)
     const doneBtn = document.getElementById("doneBtn");
     doneBtn.textContent = "✅ Выполнено!";
     doneBtn.style.background = "#4CAF50";
+    
+    // === СОХРАНЯЕМ В LOCALSTORAGE (если ещё нет) ===
+    let completed = JSON.parse(localStorage.getItem("loveDeck_completed") || "[]");
+    if (currentCardId !== null && !completed.includes(currentCardId)) {
+        completed.push(currentCardId);
+        localStorage.setItem("loveDeck_completed", JSON.stringify(completed));
+    }
+    // ================================================
     
     setTimeout(() => {
         doneBtn.style.display = "none";
         showCard(); // Показать следующую карточку
     }, 1500);
+    
+    // 2. Синхронизируем с облаком
+    // === ДОБАВЛЯЕМ ВЫЗОВ СИНХРОНИЗАЦИИ ===
+    if (window.syncCardActionToCloud && currentCardId !== null && currentCardText && currentMode) {
+        // Для секретных карточек используем специальный ID
+        const cardIdToSync = currentCardId !== null ? currentCardId : -1;
+        syncCardActionToCloud(cardIdToSync, currentCardText, currentMode, 'completed');
+    }
+    // ======================================
     
     // Простая анимация
     showNotification("🎉 Отлично! Задание выполнено!", "#4CAF50");
@@ -1530,6 +1547,7 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
+
 
 
 
