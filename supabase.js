@@ -1,7 +1,7 @@
 // supabase.js
 // =========== ВАШИ ДАННЫЕ ОТСЮДА ===========
-const SUPABASE_URL = 'https://ваш-проект.supabase.co'  // Ваш URL из Supabase
-const SUPABASE_KEY = 'ваш-public-key'       // Ваш "Anon key" из Supabase
+const SUPABASE_URL = 'https://xlnhuezhbmundhsdqyhu.supabase.co'  // Ваш URL из Supabase
+const SUPABASE_KEY = 'sb_publishable_wBSXXOSvG4zAJAQDy3hPow_nzhGcT9y'       // Ваш "Anon key" из Supabase
 // ===========================================
 
 // Создаем клиент Supabase
