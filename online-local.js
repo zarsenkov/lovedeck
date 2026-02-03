@@ -536,13 +536,16 @@ function sendCard(cardType, customText = '') {
     
     let card;
     
+    // 👇 ДОБАВЬ ЭТУ СТРОЧКУ ДЛЯ БЕЗОПАСНОСТИ:
+    const senderName = currentUsername || gameState.playerName || 'Игрок';
+    
     // Если есть текст - создаём пользовательскую карточку
     if (customText && customText.trim()) {
         card = {
             type: cardType,
             text: customText.trim(),
             id: 'custom_' + Date.now(),
-            author: currentUsername || 'Игрок'
+            author: senderName // ← Используй senderName вместо currentUsername
         };
         
         // Пробуем сохранить в CardManager
@@ -567,7 +570,8 @@ function sendCard(cardType, customText = '') {
         card = {
             type: cardType,
             text: `[${getCardTypeName(cardType)}] Случайная карточка`,
-            id: 'fallback_' + Date.now()
+            id: 'fallback_' + Date.now(),
+            author: senderName // ← Добавь и здесь тоже
         };
     }
     
@@ -578,14 +582,14 @@ function sendCard(cardType, customText = '') {
             roomId: currentRoomId,
             card: card,
             cardType: cardType,
-            sender: currentUsername
+            sender: senderName // ← Используй senderName
         };
         
         ws.send(JSON.stringify(message));
-        console.log('📤 Отправлено на сервер:', { type: 'SEND_CARD', cardType });
+        console.log('📤 Отправлено на сервер:', { type: 'SEND_CARD', cardType, sender: senderName });
         
         // Обновляем статистику
-        if (window.StorageManager) {
+        if (window.StorageManager && window.StorageManager.updateStats) {
             window.StorageManager.updateStats({
                 cardsSent: (window.StorageManager.profile.stats.cardsSent || 0) + 1
             });
