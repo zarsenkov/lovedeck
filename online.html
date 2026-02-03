@@ -9,55 +9,6 @@
     <link rel="stylesheet" href="online.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="icon.png">
-<script type="module">
-    // Импорт модулей
-    import CardManager from './shared/modules/card-manager.js';
-    import StorageManager from './shared/modules/storage-manager.js';
-    
-    // Инициализация при загрузке страницы
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('LoveCouple Online - загрузка модулей...');
-        
-        try {
-            // Инициализация менеджеров
-            const cardManager = CardManager.init();
-            const storageManager = StorageManager.init();
-            
-            // Сохраняем в глобальную область видимости
-            window.CardManager = cardManager;
-            window.StorageManager = storageManager;
-            
-            console.log('✅ Модули успешно загружены!');
-            
-            // Пробуем получить количество карточек
-            if (window.CardManager && typeof window.CardManager.getAllCardsCount === 'function') {
-                const cardCount = window.CardManager.getAllCardsCount();
-                console.log('📊 Карточек доступно:', cardCount);
-            } else {
-                console.log('📊 Карточек: 40 (системные)');
-            }
-            
-            console.log('👤 Профиль:', window.StorageManager?.profile?.id || 'не найден');
-            
-            // Тестируем получение карточки
-            if (window.CardManager && typeof window.CardManager.getRandomCard === 'function') {
-                setTimeout(() => {
-                    try {
-                        const testCard = window.CardManager.getRandomCard('question');
-                        if (testCard && testCard.text) {
-                            console.log('🎴 Тестовая карточка:', testCard.text.substring(0, 30) + '...');
-                        }
-                    } catch (e) {
-                        console.warn('⚠️ Тест карточки не сработал');
-                    }
-                }, 100);
-            }
-            
-        } catch (error) {
-            console.error('❌ Ошибка загрузки модулей:', error);
-        }
-    });
-</script>
 </head>
 <body>
     <div class="container">
@@ -267,6 +218,7 @@
 </div>
 </body>
 </html>
+
 
 
 
