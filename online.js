@@ -11,8 +11,10 @@ let players = [
     { id: null, name: '', ready: false }
 ];
 
-// Бесплатный WebSocket сервер для тестирования
-const WS_SERVER = 'wss://ws.postman-echo.com/raw';
+// СИМУЛЯЦИОННЫЙ РЕЖИМ - используем localStorage для обмена сообщениями
+const SIMULATION_MODE = true;
+const STORAGE_KEY = 'lovedeck_messages';
+let lastMessageId = 0;
 
 // Инициализация при загрузке
 window.onload = function() {
@@ -24,6 +26,11 @@ window.onload = function() {
             sendChatMessage();
         }
     });
+    
+    // Запускаем проверку сообщений (для симуляции)
+    if (SIMULATION_MODE) {
+        setInterval(checkForMessages, 1000);
+    }
 };
 
 // ===================== ОСНОВНЫЕ ФУНКЦИИ =====================
@@ -38,14 +45,19 @@ function createRoom() {
     
     // Обновляем интерфейс
     players[0] = { id: 'host', name: playerName, ready: false };
+    players[1] = { id: null, name: 'Игрок 2', ready: false };
     updatePlayersDisplay();
     
     document.getElementById('connection-screen').style.display = 'none';
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
-    // Подключаемся к WebSocket серверу
-    initWebSocket();
+    // Если в симуляционном режиме - сразу отмечаем партнера
+    if (SIMULATION_MODE) {
+        setTimeout(() => {
+            showNotification('💡 Симуляционный режим: используйте тестовые кнопки для подключения партнера', 'info');
+        }, 1000);
+    }
     
     console.log('Комната создана. Код:', currentRoomId);
     showNotification('Комната создана! Отправьте код партнеру.', 'success');
@@ -65,6 +77,7 @@ function joinRoom() {
     isHost = false;
     
     // Обновляем интерфейс
+    players[0] = { id: null, name: 'Игрок 1', ready: false };
     players[1] = { id: 'guest', name: playerName, ready: false };
     updatePlayersDisplay();
     
@@ -72,8 +85,12 @@ function joinRoom() {
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
-    // Подключаемся к WebSocket серверу
-    initWebSocket();
+    // Если в симуляционном режиме - сразу отмечаем партнера
+    if (SIMULATION_MODE) {
+        setTimeout(() => {
+            showNotification('💡 Симуляционный режим: используйте тестовые кнопки для подключения партнера', 'info');
+        }, 1000);
+    }
     
     console.log('Подключился к комнате:', roomCode);
     showNotification('Подключился к комнате!', 'success');
@@ -86,13 +103,13 @@ function quickStartGame() {
     currentRoomId = generateRoomCode();
     
     players[0] = { id: 'host', name: playerName, ready: false };
+    players[1] = { id: null, name: 'Игрок 2', ready: false };
     updatePlayersDisplay();
     
     document.getElementById('connection-screen').style.display = 'none';
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
-    initWebSocket();
     showQR();
     
     showNotification('Комната создана! Партнер может подключиться по QR-коду.', 'success');
@@ -121,8 +138,13 @@ function confirmPartnerConnection() {
     showNotification('Партнер отмечен как подключенный!', 'success');
     updateStartButton();
     
-    // Отправляем уведомление партнеру через чат
+    // Отправляем уведомление в чат
     addChatMessage('✅ Партнер подтвердил подключение!', 'system');
+    
+    // В симуляционном режиме "отправляем" партнеру
+    if (SIMULATION_MODE) {
+        simulatePartnerResponse('partner_connected');
+    }
 }
 
 // Отметить себя готовым
@@ -136,8 +158,13 @@ function markSelfReady() {
     showNotification('Вы готовы к игре!', 'success');
     updateStartButton();
     
-    // Отправляем сообщение партнеру
+    // Отправляем сообщение в чат
     addChatMessage('✅ Я готов(а) к игре!', 'system');
+    
+    // В симуляционном режиме "отправляем" партнеру
+    if (SIMULATION_MODE) {
+        simulatePartnerResponse('player_ready');
+    }
 }
 
 // Принудительно начать игру (если партнер не подключается)
@@ -153,128 +180,125 @@ function forceStartGame() {
     showNotification('Игра начата!', 'success');
 }
 
-// ===================== WEBSOCKET СОЕДИНЕНИЕ =====================
+// ===================== СИМУЛЯЦИОННЫЙ РЕЖИМ =====================
 
-// Инициализация WebSocket
-function initWebSocket() {
-    console.log('Подключаюсь к WebSocket серверу...');
+// Отправка сообщения в симуляционном режиме
+function sendSimulatedMessage(data) {
+    if (!currentRoomId) return;
     
-    try {
-        ws = new WebSocket(WS_SERVER);
-        
-        ws.onopen = function() {
-            console.log('✅ WebSocket подключен');
-            showNotification('Сервер подключен', 'success');
-            
-            // Регистрируемся в комнате
-            sendToServer({
-                type: 'join_room',
-                room: currentRoomId,
-                player: playerName,
-                isHost: isHost
-            });
-        };
-        
-        ws.onmessage = function(event) {
-            console.log('Получено от сервера:', event.data);
-            
-            try {
-                const data = JSON.parse(event.data);
-                handleServerMessage(data);
-            } catch (e) {
-                // Если это не JSON, обрабатываем как текстовое сообщение
-                if (event.data.includes('joined') || event.data.includes('connected')) {
-                    // Игнорируем служебные сообщения эхо-сервера
-                    return;
-                }
-                console.log('Текстовое сообщение:', event.data);
-                addChatMessage(event.data, 'Партнер');
-            }
-        };
-        
-        ws.onerror = function(error) {
-            console.error('WebSocket ошибка:', error);
-            showNotification('Ошибка подключения к серверу', 'error');
-        };
-        
-        ws.onclose = function() {
-            console.log('WebSocket закрыт');
-            partnerConnected = false;
-            players[1].ready = false;
-            updatePlayersDisplay();
-            showNotification('Соединение с сервером потеряно', 'warning');
-        };
-        
-    } catch (error) {
-        console.error('Не удалось подключиться:', error);
-        showNotification('Ошибка подключения', 'error');
-    }
-}
-
-// Отправка данных на сервер
-function sendToServer(data) {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        const message = JSON.stringify({
-            ...data,
-            room: currentRoomId,
-            timestamp: Date.now()
-        });
-        ws.send(message);
-        console.log('Отправлено на сервер:', data);
-        return true;
-    }
-    console.log('WebSocket не готов');
-    return false;
-}
-
-// Обработка сообщений от сервера
-function handleServerMessage(data) {
-    // Эхо-сервер возвращает НАШИ сообщения
-    // Нам нужно отличать свои сообщения от чужих
-    // Простой способ: если имя игрока не совпадает с нашим - это партнер
+    const messageId = Date.now() + '_' + Math.random();
+    const message = {
+        id: messageId,
+        room: currentRoomId,
+        from: playerName,
+        to: isHost ? 'guest' : 'host',
+        data: data,
+        timestamp: Date.now()
+    };
     
-    if (data.player && data.player !== playerName) {
-        // Сообщение от ПАРТНЕРА!
-        console.log('📨 Сообщение от партнера:', data);
-        
-        switch(data.type) {
-            case 'join_room':
-                // Партнер подключился к комнате
-                partnerConnected = true;
-                const partnerIndex = isHost ? 1 : 0;
-                players[partnerIndex] = {
-                    id: 'connected',
-                    name: data.player,
-                    ready: true
-                };
-                updatePlayersDisplay();
-                addChatMessage(`👋 ${data.player} подключился(ась)!`, 'system');
-                showNotification('Партнер подключился! 🎉', 'success');
-                updateStartButton();
-                break;
-                
-            case 'chat_message':
-                addChatMessage(data.message, data.player);
-                break;
-                
-            case 'card_click':
-                showPartnerCard(data.card);
-                break;
-        }
-        
-    } else if (data.player === playerName) {
-        // Это НАШЕ сообщение, вернувшееся от эхо-сервера
-        console.log('📤 Наше сообщение вернулось:', data.type);
-    }
+    // Сохраняем в localStorage
+    const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    messages.push(message);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-50))); // Храним последние 50
+    
+    console.log('Симулированная отправка:', data.type);
+    return true;
 }
 
-// Отправка данных партнеру (через сервер)
-function sendToPartner(data) {
-    return sendToServer({
-        ...data,
-        player: playerName,
-        isHost: isHost
+// Проверка входящих сообщений
+function checkForMessages() {
+    if (!currentRoomId || !playerName) return;
+    
+    const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const newMessages = messages.filter(msg => 
+        msg.room === currentRoomId && 
+        msg.to === (isHost ? 'host' : 'guest') &&
+        msg.from !== playerName && // Не наши сообщения
+        msg.id > lastMessageId
+    );
+    
+    newMessages.forEach(msg => {
+        console.log('Получено симулированное сообщение:', msg.data.type);
+        handlePartnerMessage(msg.data);
+        lastMessageId = Math.max(lastMessageId, msg.id);
     });
+}
+
+// Симулировать ответ партнера
+function simulatePartnerResponse(type) {
+    setTimeout(() => {
+        const fakeMessage = {
+            id: Date.now() + '_fake',
+            room: currentRoomId,
+            from: isHost ? 'Игрок 2' : 'Игрок 1',
+            to: isHost ? 'host' : 'guest',
+            data: { 
+                type: type,
+                player: isHost ? 'Игрок 2' : 'Игрок 1',
+                ready: true
+            },
+            timestamp: Date.now()
+        };
+        
+        const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        messages.push(fakeMessage);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-50)));
+        
+        console.log('Симулирован ответ партнера:', type);
+    }, 500);
+}
+
+// Обработка сообщений от партнера
+function handlePartnerMessage(data) {
+    console.log('📨 Сообщение от партнера:', data);
+    
+    switch(data.type) {
+        case 'join_room':
+        case 'partner_connected':
+            // Партнер подключился к комнате
+            partnerConnected = true;
+            const partnerIndex = isHost ? 1 : 0;
+            players[partnerIndex] = {
+                id: 'connected',
+                name: data.player,
+                ready: true
+            };
+            updatePlayersDisplay();
+            addChatMessage(`👋 ${data.player} подключился(ась)!`, 'system');
+            showNotification('Партнер подключился! 🎉', 'success');
+            updateStartButton();
+            break;
+            
+        case 'chat_message':
+            addChatMessage(data.message, 'Партнер');
+            break;
+            
+        case 'player_ready':
+            const partnerIdx = isHost ? 1 : 0;
+            players[partnerIdx].ready = data.ready;
+            updatePlayersDisplay();
+            addChatMessage(`✅ ${data.player} готов(а)!`, 'system');
+            updateStartButton();
+            break;
+            
+        case 'card_click':
+            showPartnerCard(data.card);
+            break;
+            
+        default:
+            console.log('Неизвестный тип сообщения:', data.type);
+    }
+}
+
+// Отправка данных партнеру
+function sendToPartner(data) {
+    if (SIMULATION_MODE) {
+        return sendSimulatedMessage(data);
+    }
+    
+    // Если WebSocket режим (пока не работает)
+    console.log('Отправка партнеру:', data);
+    return false;
 }
 
 // ===================== ИНТЕРФЕЙС =====================
@@ -437,7 +461,8 @@ function sendRandomQuestion() {
         card: card
     });
     
-    showPartnerCard(card);
+    // Показываем себе что отправили
+    addChatMessage(`💬 Отправил(а) вопрос: "${randomQuestion.substring(0, 30)}..."`, 'Вы');
     showNotification('Вопрос отправлен партнеру! 💬', 'success');
 }
 
@@ -457,7 +482,7 @@ function sendRandomAction() {
         card: card
     });
     
-    showPartnerCard(card);
+    addChatMessage(`🔥 Отправил(а) действие: "${randomAction.substring(0, 30)}..."`, 'Вы');
     showNotification('Действие отправлено партнеру! 🔥', 'success');
 }
 
@@ -477,7 +502,7 @@ function sendRandomDate() {
         card: card
     });
     
-    showPartnerCard(card);
+    addChatMessage(`🌹 Отправил(а) идею свидания: "${randomDate.substring(0, 30)}..."`, 'Вы');
     showNotification('Идея для свидания отправлена! 🌹', 'success');
 }
 
@@ -497,7 +522,7 @@ function sendRandomCompliment() {
         card: card
     });
     
-    showPartnerCard(card);
+    addChatMessage(`💖 Отправил(а) комплимент: "${randomCompliment.substring(0, 30)}..."`, 'Вы');
     showNotification('Комплимент отправлен! 💖', 'success');
 }
 
@@ -674,9 +699,6 @@ function showCustomAlert(title, message, type = 'info') {
     
     document.body.appendChild(alertDiv);
 }
-
-// Экспортируем функцию отправки карты
-window.sendCardToPartner = sendToPartner;
 
 // Добавляем анимации CSS
 const style = document.createElement('style');
