@@ -145,5 +145,20 @@ function playSound(type) {
         console.log('Аудио не поддерживается:', e);
     }
 }
+// Проверка обновлений
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then(reg => {
+    // Отправляем сообщение для проверки обновлений
+    reg.active?.postMessage({ type: 'CHECK_UPDATES' });
+    
+    // Слушаем ответы от SW
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data.type === 'UPDATES_AVAILABLE') {
+        console.log('Доступны обновления:', event.data.files);
+        // Можно показать уведомление игроку
+      }
+    });
+  });
+}
 
 console.log('✅ LoveDeck Online App загружен');
