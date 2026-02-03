@@ -1,14 +1,15 @@
 // online-local.js
-// Локальная онлайн-игра по локальной сети (Wi-Fi)
+// НАСТОЯЩАЯ ЛОКАЛЬНАЯ СЕТЕВАЯ ИГРА
 
-console.log('🎮 Локальный сетевой режим загружен');
+console.log('🎮 Настоящая локальная сетевая игра загружена');
 
 // Состояние игры
 let gameState = {
     isHost: false,
     playerName: '',
+    playerId: null,
     roomId: '',
-    connection: null,
+    ws: null, // WebSocket соединение
     messages: [],
     players: [],
     gameStarted: false
@@ -21,7 +22,7 @@ let chatMessages, chatInput, chatSendBtn;
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Запускаем локальную сетевую игру...');
+    console.log('🚀 Запускаем настоящую сетевую игру...');
     
     // Находим все нужные элементы
     connectionScreen = document.getElementById('connection-screen');
@@ -37,67 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Настраиваем обработчики событий
     setupEventListeners();
     
-    // Показываем локальный IP адрес
-    showLocalIP();
-    
-    console.log('✅ Локальная сетевая игра готова');
+    console.log('✅ Настоящая сетевая игра готова');
 });
-
-// Показать локальный IP адрес
-function showLocalIP() {
-    // Пытаемся получить локальный IP
-    const ipElement = document.getElementById('local-ip');
-    if (!ipElement) return;
-    
-    // Для демонстрации - показываем как получить реальный IP
-    ipElement.innerHTML = `
-        <div class="ip-info">
-            <h4>🌐 Ваш локальный IP:</h4>
-            <div class="ip-address">
-                <code id="actual-ip">Загрузка...</code>
-                <button onclick="copyLocalIP()" class="copy-ip-btn">📋</button>
-            </div>
-            <p class="ip-hint">
-                Этот IP нужно сообщить партнеру для подключения
-            </p>
-        </div>
-    `;
-    
-    // Пробуем получить реальный IP через WebRTC
-    getLocalIP().then(ip => {
-        document.getElementById('actual-ip').textContent = ip || 'Не удалось получить';
-    }).catch(() => {
-        document.getElementById('actual-ip').textContent = 'Проверьте настройки сети';
-    });
-}
-
-// Получить локальный IP через WebRTC
-async function getLocalIP() {
-    return new Promise((resolve, reject) => {
-        const pc = new RTCPeerConnection({ iceServers: [] });
-        
-        pc.createDataChannel('');
-        pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(reject);
-        
-        pc.onicecandidate = (ice) => {
-            if (!ice || !ice.candidate || !ice.candidate.candidate) return;
-            
-            const candidate = ice.candidate.candidate;
-            const regex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/;
-            const match = candidate.match(regex);
-            
-            if (match) {
-                resolve(match[1]);
-                pc.close();
-            }
-        };
-        
-        setTimeout(() => {
-            resolve('192.168.1.XXX'); // Заглушка если не получилось
-            pc.close();
-        }, 1000);
-    });
-}
 
 // Настройка обработчиков событий
 function setupEventListeners() {
@@ -106,14 +48,14 @@ function setupEventListeners() {
     // 1. Кнопка "Я Хост (Создатель)"
     const hostBtn = document.getElementById('host-btn');
     if (hostBtn) {
-        hostBtn.addEventListener('click', createHost);
+        hostBtn.addEventListener('click', createRoomAsHost);
         console.log('✅ Кнопка "Я Хост" настроена');
     }
     
     // 2. Кнопка "Я Игрок (Присоединиться)"
     const playerBtn = document.getElementById('player-btn');
     if (playerBtn) {
-        playerBtn.addEventListener('click', joinAsPlayer);
+        playerBtn.addEventListener('click', joinRoomAsPlayer);
         console.log('✅ Кнопка "Я Игрок" настроена');
     }
     
@@ -135,8 +77,100 @@ function setupEventListeners() {
     setupRoomButtons();
 }
 
-// Создать комнату как хост
-function createHost() {
+// Подключиться к WebSocket серверу
+function connectToServer() {
+    return new Promise((resolve, reject) => {
+        // ==== ВАЖНО: ВСТАВЬ СВОЙ IP ЗДЕСЬ ====
+        const hostIP = localStorage.getItem('loveDeck_hostIP') || '192.168.0.60';
+        // ======================================
+        
+        // Создаем WebSocket соединение
+        const ws = new WebSocket(`ws://${hostIP}:8080`);
+        
+        ws.onopen = () => {
+            console.log('✅ Подключение к серверу установлено');
+            gameState.ws = ws;
+            setupWebSocketHandlers();
+            resolve(ws);
+        };
+        
+        ws.onerror = (error) => {
+            console.error('❌ Ошибка подключения:', error);
+            showNotification(`Не удалось подключиться к ${hostIP}:8080`, 'error');
+            reject(error);
+        };
+        
+        ws.onclose = () => {
+            console.log('❌ Соединение закрыто');
+            showNotification('Соединение с сервером потеряно', 'error');
+        };
+    });
+}
+
+// Настроить обработчики WebSocket
+function setupWebSocketHandlers() {
+    const ws = gameState.ws;
+    
+    ws.onmessage = (event) => {
+        try {
+            const message = JSON.parse(event.data);
+            console.log('📨 Получено от сервера:', message.type);
+            
+            switch (message.type) {
+                case 'ROOM_CREATED':
+                    handleRoomCreated(message.data);
+                    break;
+                    
+                case 'JOINED_ROOM':
+                    handleJoinedRoom(message.data);
+                    break;
+                    
+                case 'PLAYER_CONNECTED':
+                    handlePlayerConnected(message.data);
+                    break;
+                    
+                case 'NEW_MESSAGE':
+                    handleNewMessage(message.data);
+                    break;
+                    
+                case 'NEW_CARD':
+                    handleNewCard(message.data);
+                    break;
+                    
+                case 'GAME_STARTED':
+                    handleGameStarted(message.data);
+                    break;
+                    
+                case 'ERROR':
+                    handleError(message.data);
+                    break;
+            }
+            
+        } catch (error) {
+            console.error('❌ Ошибка обработки сообщения:', error);
+        }
+    };
+}
+
+// Отправить сообщение на сервер
+function sendToServer(type, data) {
+    if (!gameState.ws || gameState.ws.readyState !== WebSocket.OPEN) {
+        showNotification('Нет соединения с сервером!', 'error');
+        return false;
+    }
+    
+    const message = JSON.stringify({
+        type: type,
+        data: data
+    });
+    
+    gameState.ws.send(message);
+    console.log(`📤 Отправлено на сервер: ${type}`);
+    return true;
+}
+
+// СОЗДАТЬ КОМНАТУ КАК ХОСТ
+async function createRoomAsHost() {
     console.log('👑 Создаем комнату как хост...');
     
     const playerName = playerNameInput ? playerNameInput.value.trim() : 'Хост';
@@ -146,36 +180,35 @@ function createHost() {
         return;
     }
     
-    // Генерируем случайный ID комнаты
-    const roomId = 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    // Показываем загрузку
+    showNotification('Подключаемся к серверу...', 'info');
     
-    // Обновляем состояние
-    gameState.isHost = true;
-    gameState.playerName = playerName;
-    gameState.roomId = roomId;
-    gameState.players = [{
-        id: 'player_' + Date.now(),
-        name: playerName,
-        isHost: true,
-        isConnected: true
-    }];
-    
-    // Запускаем сервер WebSocket
-    startWebSocketServer();
-    
-    // Показываем комнату
-    showRoomScreen();
-    
-    // Добавляем системное сообщение
-    addMessage('system', `🎮 Комната создана! Вы - хост.`);
-    addMessage('system', `🔗 Ваш ID комнаты: ${roomId}`);
-    addMessage('system', `👥 Сообщите ID партнеру для подключения`);
-    
-    console.log(`✅ Комната создана как хост. ID: ${roomId}`);
+    try {
+        // Подключаемся к серверу
+        await connectToServer();
+        
+        // Генерируем ID комнаты
+        const roomId = 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        
+        // Отправляем запрос на создание комнаты
+        sendToServer('CREATE_ROOM', {
+            roomId: roomId,
+            playerName: playerName
+        });
+        
+        // Сохраняем состояние
+        gameState.isHost = true;
+        gameState.playerName = playerName;
+        gameState.roomId = roomId;
+        
+    } catch (error) {
+        console.error('❌ Ошибка создания комнаты:', error);
+        showNotification('Не удалось подключиться к серверу', 'error');
+    }
 }
 
-// Присоединиться как игрок
-function joinAsPlayer() {
+// ПРИСОЕДИНИТЬСЯ К КОМНАТЕ КАК ИГРОК
+async function joinRoomAsPlayer() {
     console.log('🎮 Присоединяемся как игрок...');
     
     const playerName = playerNameInput ? playerNameInput.value.trim() : 'Игрок';
@@ -191,91 +224,142 @@ function joinAsPlayer() {
         return;
     }
     
-    // Обновляем состояние
-    gameState.isHost = false;
-    gameState.playerName = playerName;
-    gameState.roomId = roomId;
+    // Показываем загрузку
+    showNotification('Подключаемся к серверу...', 'info');
     
-    // Подключаемся к серверу хоста
-    connectToHost();
+    try {
+        // Подключаемся к серверу
+        await connectToServer();
+        
+        // Отправляем запрос на присоединение
+        sendToServer('JOIN_ROOM', {
+            roomId: roomId,
+            playerName: playerName
+        });
+        
+        // Сохраняем состояние
+        gameState.isHost = false;
+        gameState.playerName = playerName;
+        gameState.roomId = roomId;
+        
+    } catch (error) {
+        console.error('❌ Ошибка присоединения:', error);
+        showNotification('Не удалось подключиться к серверу', 'error');
+    }
+}
+
+// ========== ОБРАБОТКА ОТВЕТОВ ОТ СЕРВЕРА ==========
+
+// КОМНАТА СОЗДАНА
+function handleRoomCreated(data) {
+    console.log('🏠 Комната создана:', data);
+    
+    gameState.playerId = data.playerId;
     
     // Показываем комнату
     showRoomScreen();
     
-    // Добавляем системное сообщение
-    addMessage('system', `🔗 Подключаемся к комнате ${roomId}...`);
+    // Добавляем сообщение
+    addMessage('system', data.message);
+    addMessage('system', `ID комнаты: ${gameState.roomId}`);
+    addMessage('system', 'Сообщите этот ID партнеру для подключения');
     
-    console.log(`✅ Пытаемся подключиться к комнате: ${roomId}`);
+    showNotification('Комната создана!', 'success');
 }
 
-// Запустить WebSocket сервер (для хоста)
-function startWebSocketServer() {
-    console.log('🌐 Запускаем локальный WebSocket сервер...');
+// ПРИСОЕДИНИЛИСЬ К КОМНАТЕ
+function handleJoinedRoom(data) {
+    console.log('✅ Присоединились к комнате:', data);
     
-    // В реальной реализации здесь был бы WebSocket сервер
-    // Для демо используем симуляцию через localStorage
+    gameState.playerId = data.playerId;
     
-    addMessage('system', '✅ Локальный сервер запущен. Ожидание подключения...');
+    // Показываем комнату
+    showRoomScreen();
     
-    // Симулируем подключение второго игрока
-    setTimeout(() => {
-        simulatePlayerConnection();
-    }, 2000);
+    // Добавляем сообщение
+    addMessage('system', data.message);
+    addMessage('system', 'Ожидайте подтверждения от хоста...');
+    
+    showNotification('Успешно подключились!', 'success');
 }
 
-// Подключиться к хосту (для игрока)
-function connectToHost() {
-    console.log('🔗 Подключаемся к хосту...');
+// ИГРОК ПОДКЛЮЧИЛСЯ
+function handlePlayerConnected(data) {
+    console.log('👤 Игрок подключился:', data);
     
-    // В реальной реализации здесь было бы подключение к WebSocket
-    // Для демо используем симуляцию
+    addMessage('system', data.message);
     
-    addMessage('system', '⏳ Подключение к хосту...');
-    
-    setTimeout(() => {
-        addMessage('system', '✅ Успешно подключились к хосту!');
-        
-        // Добавляем игрока в список
-        gameState.players.push({
-            id: 'player_' + Date.now(),
-            name: gameState.playerName,
-            isHost: false,
-            isConnected: true
-        });
-        
-        updatePlayersDisplay();
-        
-        // Симулируем подтверждение от хоста
-        setTimeout(() => {
-            addMessage('system', '👋 Хост подтвердил ваше подключение!');
-            startGame();
-        }, 1000);
-    }, 1500);
-}
-
-// Симулировать подключение игрока (для хоста)
-function simulatePlayerConnection() {
-    console.log('👤 Симулируем подключение игрока...');
-    
-    // Добавляем тестового игрока
-    gameState.players.push({
-        id: 'player_' + Date.now(),
-        name: 'Тестовый игрок',
-        isHost: false,
-        isConnected: true
-    });
-    
-    updatePlayersDisplay();
-    
-    addMessage('system', '👤 Игрок подключился!');
-    addMessage('system', '🎮 Можно начинать игру!');
+    // Обновляем список игроков
+    updatePlayersList();
     
     // Активируем кнопку старта
-    const startBtn = document.getElementById('start-game-btn');
-    if (startBtn) {
-        startBtn.disabled = false;
+    if (gameState.isHost) {
+        const startBtn = document.getElementById('start-game-btn');
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.textContent = '🎮 Начать игру';
+        }
     }
 }
+
+// НОВОЕ СООБЩЕНИЕ
+function handleNewMessage(data) {
+    console.log('💬 Новое сообщение:', data);
+    
+    addMessage('player', data.text, data.sender);
+}
+
+// НОВАЯ КАРТОЧКА
+function handleNewCard(data) {
+    console.log('🎴 Новая карточка:', data);
+    
+    const typeLabels = {
+        question: '💬 Вопрос',
+        action: '🔥 Действие',
+        date: '🌹 Свидание',
+        compliment: '💖 Комплимент'
+    };
+    
+    addMessage('system', `${typeLabels[data.type]}: ${data.text}`);
+}
+
+// ИГРА НАЧАЛАСЬ
+function handleGameStarted(data) {
+    console.log('🎮 Игра началась:', data);
+    
+    gameState.gameStarted = true;
+    
+    // Обновляем список игроков
+    gameState.players = data.players;
+    updatePlayersList();
+    
+    // Отключаем кнопку старта
+    const startBtn = document.getElementById('start-game-btn');
+    if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.textContent = 'Игра идет...';
+    }
+    
+    // Добавляем сообщения
+    addMessage('system', data.message);
+    addMessage('system', 'Теперь вы можете отправлять карточки и общаться!');
+    
+    // Показываем кнопки карточек
+    const cardButtons = document.getElementById('card-buttons');
+    if (cardButtons) {
+        cardButtons.style.display = 'block';
+    }
+    
+    showNotification('Игра началась! Удачи!', 'success');
+}
+
+// ОШИБКА
+function handleError(data) {
+    console.error('❌ Ошибка от сервера:', data);
+    showNotification(data.message, 'error');
+}
+
+// ========== ОСНОВНЫЕ ФУНКЦИИ ==========
 
 // Показать экран комнаты
 function showRoomScreen() {
@@ -287,10 +371,6 @@ function showRoomScreen() {
         
         // Обновляем информацию о комнате
         updateRoomInfo();
-        
-        // Показываем кнопки карточек
-        const cardButtons = document.getElementById('card-buttons');
-        if (cardButtons) cardButtons.style.display = 'block';
     }
 }
 
@@ -301,37 +381,44 @@ function updateRoomInfo() {
         roomIdDisplay.textContent = gameState.roomId;
     }
     
-    // Обновляем информацию об игроках
-    updatePlayersDisplay();
-    
-    // Обновляем статус
     const statusElement = document.getElementById('room-status');
     if (statusElement) {
         statusElement.textContent = gameState.isHost ? 'Вы - Хост 👑' : 'Вы - Игрок 🎮';
     }
 }
 
-// Обновить отображение игроков
-function updatePlayersDisplay() {
+// Обновить список игроков
+function updatePlayersList() {
     const playersList = document.getElementById('players-list');
     if (!playersList) return;
     
     playersList.innerHTML = '';
     
-    gameState.players.forEach(player => {
+    // Хост всегда есть
+    const hostDiv = document.createElement('div');
+    hostDiv.className = 'player-item';
+    hostDiv.innerHTML = `
+        <div class="player-avatar">👑</div>
+        <div class="player-info">
+            <div class="player-name">${gameState.isHost ? gameState.playerName : 'Хост'}</div>
+            <div class="player-status">✅ Подключен</div>
+        </div>
+    `;
+    playersList.appendChild(hostDiv);
+    
+    // Второй игрок (если есть)
+    if (gameState.players.length > 1 || !gameState.isHost) {
         const playerDiv = document.createElement('div');
         playerDiv.className = 'player-item';
-        
         playerDiv.innerHTML = `
-            <div class="player-avatar">${player.isHost ? '👑' : '👤'}</div>
+            <div class="player-avatar">👤</div>
             <div class="player-info">
-                <div class="player-name">${player.name}</div>
-                <div class="player-status">${player.isConnected ? '✅ Подключен' : '❌ Отключен'}</div>
+                <div class="player-name">${!gameState.isHost ? gameState.playerName : 'Игрок'}</div>
+                <div class="player-status">✅ Подключен</div>
             </div>
         `;
-        
         playersList.appendChild(playerDiv);
-    });
+    }
 }
 
 // Настроить кнопки в комнате
@@ -353,7 +440,13 @@ function setupRoomButtons() {
     // 2. Кнопка "Начать игру"
     const startBtn = document.getElementById('start-game-btn');
     if (startBtn) {
-        startBtn.addEventListener('click', startGame);
+        startBtn.addEventListener('click', () => {
+            if (gameState.isHost && gameState.roomId) {
+                sendToServer('START_GAME', {
+                    roomId: gameState.roomId
+                });
+            }
+        });
     }
     
     // 3. Кнопка создания своей карточки
@@ -396,11 +489,102 @@ function setupCardButtons() {
     }
 }
 
+// Отправить случайную карточку
+function sendRandomCard(type) {
+    console.log(`🎴 Отправляем случайную карточку типа: ${type}`);
+    
+    const cards = {
+        question: [
+            "💬 Какой твой самый счастливый момент из детства?",
+            "💬 Если бы у тебя был миллион долларов, что бы ты сделал(а) первым делом?",
+            "💬 О чем ты чаще всего мечтаешь перед сном?",
+            "💬 Какая твоя самая странная привычка?",
+            "💬 Если бы мы оказались на необитаемом острове, что бы ты взял(а) с собой?"
+        ],
+        action: [
+            "🔥 Сделай комплимент партнеру прямо сейчас!",
+            "🔥 Обними партнера и прошепчи что-то приятное на ушко",
+            "🔥 Сделайте совместное селфи с самой глупой рожицей",
+            "🔥 Напиши партнеру любовную записку и спрячь в его вещах",
+            "🔥 Сделайте массаж друг другу в течение 5 минут"
+        ],
+        date: [
+            "🌹 Представь, что у нас сегодня свидание. Куда бы ты меня пригласил(а)?",
+            "🌹 Какое самое романтичное место в нашем городе ты знаешь?",
+            "🌹 Если бы мы поехали в путешествие, куда бы ты хотел(а)?",
+            "🌹 Какой идеальный вечер на двоих ты представляешь?",
+            "🌹 Хочешь сходить на пикник в парк в эти выходные?"
+        ]
+    };
+    
+    if (cards[type]) {
+        const randomCard = cards[type][Math.floor(Math.random() * cards[type].length)];
+        
+        // Отправляем на сервер
+        sendToServer('SEND_CARD', {
+            roomId: gameState.roomId,
+            cardType: type,
+            cardText: randomCard
+        });
+    }
+}
+
+// Отправить случайный комплимент
+function sendRandomCompliment() {
+    console.log('💖 Отправляем случайный комплимент');
+    
+    const compliments = [
+        "💖 Твоя улыбка делает мой день лучше!",
+        "💖 С тобой я чувствую себя самым счастливым человеком на свете!",
+        "💖 Ты вдохновляешь меня становиться лучше каждый день!",
+        "💖 Мне так повезло, что ты есть в моей жизни!",
+        "💖 Ты самый удивительный человек, которого я когда-либо встречал(а)!",
+        "💖 Твой смех - моя любимая мелодия!",
+        "💖 Я так горжусь тобой и всем, что ты делаешь!",
+        "💖 Ты понимаешь меня без слов - это бесценно!",
+        "💖 С тобой даже обычный вечер становится особенным!",
+        "💖 Твои глаза такие красивые, когда ты улыбаешься!"
+    ];
+    
+    const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
+    
+    // Отправляем как сообщение
+    sendToServer('SEND_MESSAGE', {
+        roomId: gameState.roomId,
+        text: randomCompliment,
+        sender: gameState.playerName
+    });
+}
+
+// Отправить сообщение в чат
+function sendChatMessage(customText = null) {
+    console.log('💬 Отправляем сообщение в чат...');
+    
+    const messageText = customText || (chatInput ? chatInput.value.trim() : '');
+    
+    if (!messageText) {
+        showNotification('Введите сообщение!', 'error');
+        return;
+    }
+    
+    // Отправляем на сервер
+    const success = sendToServer('SEND_MESSAGE', {
+        roomId: gameState.roomId,
+        text: messageText,
+        sender: gameState.playerName
+    });
+    
+    // Очищаем поле ввода
+    if (success && chatInput && !customText) {
+        chatInput.value = '';
+        chatInput.focus();
+    }
+}
+
 // Показать модальное окно создания карточки
 function showCustomCardModal() {
     console.log('✨ Показываем окно создания карточки');
     
-    // Создаем модальное окно
     const modal = document.createElement('div');
     modal.className = 'modal active';
     modal.innerHTML = `
@@ -454,9 +638,15 @@ function showCustomCardModal() {
                 return;
             }
             
-            // Отправляем карточку
-            sendCustomCard(type, text);
+            // Отправляем на сервер
+            sendToServer('SEND_CARD', {
+                roomId: gameState.roomId,
+                cardType: type,
+                cardText: text
+            });
+            
             modal.remove();
+            showNotification('Ваша карточка отправлена!', 'success');
         });
     }
     
@@ -476,99 +666,6 @@ function showCustomCardModal() {
     });
 }
 
-// Отправить свою карточку
-function sendCustomCard(type, text) {
-    console.log(`📤 Отправляем свою карточку: ${type} - ${text}`);
-    
-    const typeLabels = {
-        question: '💬 Вопрос',
-        action: '🔥 Действие', 
-        date: '🌹 Свидание',
-        compliment: '💖 Комплимент'
-    };
-    
-    addMessage('system', `${typeLabels[type]}: ${text}`);
-    showNotification('Ваша карточка отправлена партнеру!', 'success');
-}
-
-// Отправить случайную карточку
-function sendRandomCard(type) {
-    console.log(`🎴 Отправляем случайную карточку типа: ${type}`);
-    
-    const cards = {
-        question: [
-            "💬 Какой твой самый счастливый момент из детства?",
-            "💬 Если бы у тебя был миллион долларов, что бы ты сделал(а) первым делом?",
-            "💬 О чем ты чаще всего мечтаешь перед сном?",
-            "💬 Какая твоя самая странная привычка?",
-            "💬 Если бы мы оказались на необитаемом острове, что бы ты взял(а) с собой?"
-        ],
-        action: [
-            "🔥 Сделай комплимент партнеру прямо сейчас!",
-            "🔥 Обними партнера и прошепчи что-то приятное на ушко",
-            "🔥 Сделайте совместное селфи с самой глупой рожицей",
-            "🔥 Напиши партнеру любовную записку и спрячь в его вещах",
-            "🔥 Сделайте массаж друг другу в течение 5 минут"
-        ],
-        date: [
-            "🌹 Представь, что у нас сегодня свидание. Куда бы ты меня пригласил(а)?",
-            "🌹 Какое самое романтичное место в нашем городе ты знаешь?",
-            "🌹 Если бы мы поехали в путешествие, куда бы ты хотел(а)?",
-            "🌹 Какой идеальный вечер на двоих ты представляешь?",
-            "🌹 Хочешь сходить на пикник в парк в эти выходные?"
-        ]
-    };
-    
-    if (cards[type]) {
-        const randomCard = cards[type][Math.floor(Math.random() * cards[type].length)];
-        addMessage('system', randomCard);
-    }
-}
-
-// Отправить случайный комплимент
-function sendRandomCompliment() {
-    console.log('💖 Отправляем случайный комплимент');
-    
-    const compliments = [
-        "💖 Твоя улыбка делает мой день лучше!",
-        "💖 С тобой я чувствую себя самым счастливым человеком на свете!",
-        "💖 Ты вдохновляешь меня становиться лучше каждый день!",
-        "💖 Мне так повезло, что ты есть в моей жизни!",
-        "💖 Ты самый удивительный человек, которого я когда-либо встречал(а)!",
-        "💖 Твой смех - моя любимая мелодия!",
-        "💖 Я так горжусь тобой и всем, что ты делаешь!",
-        "💖 Ты понимаешь меня без слов - это бесценно!",
-        "💖 С тобой даже обычный вечер становится особенным!",
-        "💖 Твои глаза такие красивые, когда ты улыбаешься!"
-    ];
-    
-    const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
-    addMessage('player', randomCompliment);
-}
-
-// Отправить сообщение в чат
-function sendChatMessage(customText = null) {
-    console.log('💬 Отправляем сообщение в чат...');
-    
-    const messageText = customText || (chatInput ? chatInput.value.trim() : '');
-    
-    if (!messageText) {
-        showNotification('Введите сообщение!', 'error');
-        return;
-    }
-    
-    // Добавляем сообщение
-    addMessage('player', messageText);
-    
-    // Очищаем поле ввода
-    if (chatInput && !customText) {
-        chatInput.value = '';
-        chatInput.focus();
-    }
-    
-    console.log('✅ Сообщение отправлено:', messageText);
-}
-
 // Добавить сообщение
 function addMessage(type, text, sender = null) {
     const message = {
@@ -578,9 +675,6 @@ function addMessage(type, text, sender = null) {
         sender: sender || (type === 'system' ? 'Система' : gameState.playerName),
         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     };
-    
-    // Добавляем в историю
-    gameState.messages.push(message);
     
     // Отображаем в чате
     displayMessage(message);
@@ -608,36 +702,7 @@ function displayMessage(message) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Начать игру
-function startGame() {
-    console.log('🎮 Начинаем игру...');
-    
-    if (gameState.players.length < 2) {
-        showNotification('Нужно два игрока для начала игры!', 'error');
-        return;
-    }
-    
-    gameState.gameStarted = true;
-    
-    // Отключаем кнопку старта
-    const startBtn = document.getElementById('start-game-btn');
-    if (startBtn) {
-        startBtn.disabled = true;
-        startBtn.textContent = 'Игра идет...';
-    }
-    
-    addMessage('system', '🎮 Игра началась!');
-    addMessage('system', 'Теперь вы можете отправлять друг другу карточки и общаться!');
-    
-    // Отправляем первую карточку
-    setTimeout(() => {
-        sendRandomCard('question');
-    }, 1000);
-    
-    showNotification('Игра началась! Удачи!', 'success');
-}
-
-// Вспомогательные функции
+// Показать уведомление
 function showNotification(message, type = 'info') {
     console.log(`📢 Уведомление (${type}): ${message}`);
     
@@ -667,17 +732,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Копировать локальный IP
-window.copyLocalIP = function() {
-    const ipElement = document.getElementById('actual-ip');
-    if (ipElement) {
-        navigator.clipboard.writeText(ipElement.textContent).then(() => {
-            showNotification('IP адрес скопирован!', 'success');
-        });
-    }
-};
-
-// Добавляем стили для анимаций и модальных окон
+// Добавляем стили
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
@@ -691,172 +746,6 @@ style.textContent = `
     
     .notification {
         font-family: Arial, sans-serif;
-    }
-    
-    .ip-info {
-        background: #e8f5e9;
-        border-radius: 10px;
-        padding: 15px;
-        margin: 15px 0;
-        border-left: 4px solid #4CAF50;
-    }
-    
-    .ip-address {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 10px 0;
-    }
-    
-    .ip-address code {
-        background: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-family: monospace;
-        font-size: 16px;
-        flex: 1;
-        border: 1px solid #4CAF50;
-    }
-    
-    .copy-ip-btn {
-        background: #4CAF50;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    
-    .ip-hint {
-        color: #666;
-        font-size: 14px;
-        margin-top: 8px;
-    }
-    
-    .player-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 10px;
-        background: white;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        border: 2px solid #e0e0e0;
-    }
-    
-    .player-avatar {
-        font-size: 24px;
-    }
-    
-    .player-info {
-        flex: 1;
-    }
-    
-    .player-name {
-        font-weight: bold;
-        color: #333;
-    }
-    
-    .player-status {
-        font-size: 12px;
-        color: #666;
-    }
-    
-    .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-    
-    .modal.active {
-        display: flex;
-    }
-    
-    .modal-content {
-        background: white;
-        padding: 25px;
-        border-radius: 15px;
-        max-width: 500px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    
-    .custom-card-form {
-        margin: 20px 0;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-        color: #333;
-    }
-    
-    .form-select, .form-group textarea {
-        width: 100%;
-        padding: 12px;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        font-size: 16px;
-        box-sizing: border-box;
-    }
-    
-    .form-group textarea {
-        resize: vertical;
-        min-height: 100px;
-    }
-    
-    .char-counter {
-        text-align: right;
-        color: #666;
-        font-size: 14px;
-        margin-top: 5px;
-    }
-    
-    .modal-buttons {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-    }
-    
-    .primary-button, .secondary-button {
-        flex: 1;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .primary-button {
-        background: linear-gradient(45deg, #9C27B0, #E91E63);
-        color: white;
-    }
-    
-    .secondary-button {
-        background: #f5f5f5;
-        color: #666;
-        border: 2px solid #ddd;
-    }
-    
-    .primary-button:hover, .secondary-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 `;
 document.head.appendChild(style);
