@@ -159,13 +159,14 @@ function handleRoomJoined(data) {
     addMessage('system', data.message || 'Вы присоединились к комнате!');
     showNotification('Вы в комнате!', 'success');
     
-    // Сохраняем имя хоста (первый игрок)
-    if (!gameState.isHost) {
-        // В реальном приложении сервер должен отправить имя хоста
-        gameState.hostName = 'Хост';
-    }
+    // Сохраняем имя хоста (в реальном приложении сервер должен отправить имя хоста)
+    gameState.hostName = 'Хост';
+    
+    // ОБЯЗАТЕЛЬНО ПЕРЕКЛЮЧАЕМСЯ НА ЭКРАН КОМНАТЫ!
+    showScreen('roomScreen');
     
     updatePlayerNames();
+    updatePlayerCount();
 }
 
 function handlePlayerConnected(data) {
@@ -614,8 +615,10 @@ function updatePlayerNames() {
                 playerNameEl.style.fontWeight = 'bold';
             }
         } else {
+            // Для второго игрока показываем его имя как "Вы"
             playerNameEl.textContent = `${gameState.playerName} (Вы)`;
             playerNameEl.style.fontWeight = 'bold';
+            playerNameEl.style.color = '#764ba2';
         }
     }
 }
@@ -780,19 +783,23 @@ function updateRoomScreen() {
     // Обновляем счетчик игроков
     updatePlayerCount();
     
-    // Обновляем статус кнопки "Начать игру"
+    // Обновляем статус кнопки "Начать игру" (ТОЛЬКО ДЛЯ ХОСТА)
     const startBtn = document.getElementById('startGameBtn');
     if (startBtn) {
-        if (gameState.isHost && gameState.playersInRoom >= 2) {
-            startBtn.disabled = false;
-            startBtn.textContent = '🎮 Начать игру';
-            startBtn.style.opacity = '1';
-        } else if (gameState.isHost) {
-            startBtn.disabled = true;
-            startBtn.textContent = '⏳ Ожидание второго игрока...';
+        if (gameState.isHost) {
+            if (gameState.playersInRoom >= 2) {
+                startBtn.disabled = false;
+                startBtn.textContent = '🎮 Начать игру';
+                startBtn.style.opacity = '1';
+            } else {
+                startBtn.disabled = true;
+                startBtn.textContent = '⏳ Ожидание второго игрока...';
+            }
         } else {
-            startBtn.disabled = true;
+            // У игрока скрываем кнопку "Начать игру" или меняем текст
+            startBtn.style.display = 'none'; // или
             startBtn.textContent = '⏳ Ожидаем начала игры...';
+            startBtn.disabled = true;
         }
     }
 }
