@@ -1,0 +1,220 @@
+/* Основные цвета синей темы */
+:root {
+    --primary-color: #3b82f6;    /* Синий */
+    --primary-dark: #2563eb;
+    --primary-light: #60a5fa;
+    --secondary-color: #1e40af;  /* Темно-синий */
+    --accent-color: #06b6d4;     /* Голубой */
+    --background: #0f172a;       /* Темно-синий фон */
+    --card-bg: #1e293b;
+    --text-color: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+}
+
+/* Основные стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--background);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Шапка */
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-top: 20px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.friends-theme {
+    color: var(--accent-color);
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+}
+
+.back-to-main {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Кнопки */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-secondary {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: #2d3748;
+    transform: translateY(-2px);
+}
+
+/* Сетка игр */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    margin: 30px 0;
+}
+
+.game-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid var(--border-color);
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+    border-color: var(--primary-light);
+}
+
+.game-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+}
+
+.game-card h3 {
+    margin: 15px 0 10px;
+    font-size: 1.4rem;
+}
+
+.game-card p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    min-height: 40px;
+}
+
+.game-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.btn-play {
+    background: var(--primary-color);
+    color: white;
+    width: 100%;
+    margin-top: 10px;
+    font-size: 16px;
+    padding: 14px;
+}
+
+.btn-play:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Инфо секция */
+.info-section {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 15px;
+    margin-top: 50px;
+    border-left: 5px solid var(--accent-color);
+}
+
+.info-section h2 {
+    margin-bottom: 20px;
+    color: var(--accent-color);
+}
+
+.info-section p {
+    margin: 10px 0;
+    padding-left: 10px;
+}
+
+/* Подвал */
+footer {
+    text-align: center;
+    margin-top: 50px;
+    padding: 20px;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+footer a {
+    color: var(--accent-color);
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .games-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .games-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .back-to-main {
+        flex-direction: column;
+        align-items: center;
+    }
+}
