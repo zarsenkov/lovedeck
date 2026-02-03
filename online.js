@@ -103,6 +103,56 @@ function generateRoomCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+// ===================== УПРОЩЕННОЕ ПОДКЛЮЧЕНИЕ =====================
+
+// Подтвердить подключение партнера
+function confirmPartnerConnection() {
+    console.log('Подтверждаю подключение партнера...');
+    
+    // Отмечаем партнера как подключенного
+    const partnerIndex = isHost ? 1 : 0;
+    players[partnerIndex] = {
+        id: 'connected',
+        name: isHost ? 'Игрок 2' : 'Игрок 1',
+        ready: true
+    };
+    
+    updatePlayersDisplay();
+    showNotification('Партнер отмечен как подключенный!', 'success');
+    updateStartButton();
+    
+    // Отправляем уведомление партнеру через чат
+    addChatMessage('✅ Партнер подтвердил подключение!', 'system');
+}
+
+// Отметить себя готовым
+function markSelfReady() {
+    console.log('Отмечаю себя как готового...');
+    
+    const myIndex = isHost ? 0 : 1;
+    players[myIndex].ready = true;
+    
+    updatePlayersDisplay();
+    showNotification('Вы готовы к игре!', 'success');
+    updateStartButton();
+    
+    // Отправляем сообщение партнеру
+    addChatMessage('✅ Я готов(а) к игре!', 'system');
+}
+
+// Принудительно начать игру (если партнер не подключается)
+function forceStartGame() {
+    console.log('Принудительно начинаю игру...');
+    
+    // Отмечаем обоих игроков как готовых
+    players[0].ready = true;
+    players[1].ready = true;
+    
+    updatePlayersDisplay();
+    startSharedGame();
+    showNotification('Игра начата!', 'success');
+}
+
 // ===================== WEBSOCKET СОЕДИНЕНИЕ =====================
 
 // Инициализация WebSocket
@@ -123,12 +173,6 @@ function initWebSocket() {
                 player: playerName,
                 isHost: isHost
             });
-            
-            // Если мы хост - сразу отмечаем себя как готового
-            if (isHost) {
-                players[0].ready = true;
-                updatePlayersDisplay();
-            }
         };
         
         ws.onmessage = function(event) {
@@ -184,10 +228,7 @@ function sendToServer(data) {
 }
 
 // Обработка сообщений от сервера
-// Обработка сообщений от сервера
 function handleServerMessage(data) {
-    console.log('Обработка сообщения:', data);
-    
     // Эхо-сервер возвращает НАШИ сообщения
     // Нам нужно отличать свои сообщения от чужих
     // Простой способ: если имя игрока не совпадает с нашим - это партнер
@@ -212,15 +253,6 @@ function handleServerMessage(data) {
                 updateStartButton();
                 break;
                 
-            case 'player_ready':
-                players[isHost ? 1 : 0].ready = data.ready;
-                updatePlayersDisplay();
-                if (data.ready) {
-                    addChatMessage(`✅ ${data.player} готов(а)!`, 'system');
-                }
-                checkIfBothReady();
-                break;
-                
             case 'chat_message':
                 addChatMessage(data.message, data.player);
                 break;
@@ -228,22 +260,11 @@ function handleServerMessage(data) {
             case 'card_click':
                 showPartnerCard(data.card);
                 break;
-                
-            case 'start_game':
-                startSharedGame();
-                break;
         }
         
     } else if (data.player === playerName) {
         // Это НАШЕ сообщение, вернувшееся от эхо-сервера
         console.log('📤 Наше сообщение вернулось:', data.type);
-        
-        // Для join_room - сразу отмечаем себя готовым
-        if (data.type === 'join_room' && isHost) {
-            players[0].ready = true;
-            updatePlayersDisplay();
-            updateStartButton();
-        }
     }
 }
 
@@ -275,7 +296,17 @@ function updateStartButton() {
     const bothReady = players[0].ready && players[1].ready;
     
     startBtn.disabled = !bothReady;
-    startBtn.textContent = bothReady ? 'Начать игру!' : 'Ожидание игрока...';
+    
+    if (bothReady) {
+        startBtn.textContent = '🎮 Начать игру!';
+        startBtn.style.background = 'linear-gradient(45deg, #4CAF50, #8BC34A)';
+    } else if (players[0].ready || players[1].ready) {
+        startBtn.textContent = '⏳ Ожидание второго игрока...';
+        startBtn.style.background = 'linear-gradient(45deg, #FF9800, #FFB74D)';
+    } else {
+        startBtn.textContent = '👥 Ожидание игроков...';
+        startBtn.style.background = 'linear-gradient(45deg, #9E9E9E, #BDBDBD)';
+    }
 }
 
 // Начать игру
@@ -289,19 +320,9 @@ function startGame() {
     // Отправляем статус партнеру
     sendToPartner({
         type: 'player_ready',
-        ready: true,
-        player: playerName
+        player: playerName,
+        ready: true
     });
-    
-    // Если хост - запускаем игру для обоих
-    if (isHost) {
-        setTimeout(() => {
-            sendToPartner({
-                type: 'start_game'
-            });
-            startSharedGame();
-        }, 1000);
-    }
     
     checkIfBothReady();
 }
@@ -310,8 +331,7 @@ function startGame() {
 function checkIfBothReady() {
     const bothReady = players[0].ready && players[1].ready;
     
-    if (bothReady && isHost) {
-        // Хост запускает игру
+    if (bothReady) {
         startSharedGame();
     }
 }
@@ -368,6 +388,7 @@ function showCardButtons() {
     const cardButtons = document.getElementById('card-buttons');
     if (cardButtons) {
         cardButtons.style.display = 'block';
+        cardButtons.style.animation = 'fadeIn 0.5s ease';
     }
 }
 
@@ -678,4 +699,3 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
