@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -181,3 +183,175 @@
     }
     </style>
 </head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-heart"></i> LoveDeck Online</h1>
+        <p class="subtitle">Настоящая сетевая игра для двоих</p>
+        
+        <!-- Уведомления -->
+        <div id="notification" style="display: none;"></div>
+        
+        <!-- Экран выбора режима -->
+        <div id="modeSelectScreen" class="screen">
+            <div class="info-box">
+                <p><i class="fas fa-info-circle"></i> <strong>Как играть:</strong></p>
+                <p>1. Один игрок создаёт комнату как <strong>Хост</strong></p>
+                <p>2. Второй игрок подключается как <strong>Игрок</strong> с ID комнаты</p>
+                <p>3. Наслаждайтесь игрой вместе онлайн!</p>
+            </div>
+            
+            <div class="mode-buttons">
+                <button id="hostModeBtn" class="mode-btn">
+                    <i class="fas fa-crown"></i> Я Хост (Создать комнату)
+                </button>
+                <button id="playerModeBtn" class="mode-btn">
+                    <i class="fas fa-user"></i> Я Игрок (Присоединиться)
+                </button>
+            </div>
+            
+            <button class="back-btn btn-secondary" onclick="window.location.href='index.html'">
+                <i class="fas fa-arrow-left"></i> Назад к игре
+            </button>
+        </div>
+        
+        <!-- Экран хоста -->
+        <div id="hostScreen" class="screen" style="display: none;">
+            <h2><i class="fas fa-crown"></i> Создание комнаты</h2>
+            
+            <div class="input-group">
+                <input type="text" id="hostNameInput" placeholder="Ваше имя" value="Евгений">
+                <button id="createRoomBtn" class="btn-primary">
+                    <i class="fas fa-plus-circle"></i> Создать комнату
+                </button>
+            </div>
+            
+            <button class="back-btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+        </div>
+        
+        <!-- Экран игрока -->
+        <div id="playerScreen" class="screen" style="display: none;">
+            <h2><i class="fas fa-user"></i> Подключение к комнате</h2>
+            
+            <div class="input-group">
+                <input type="text" id="playerNameInput" placeholder="Ваше имя" value="Олечка">
+                <input type="text" id="roomIdInput" placeholder="ID комнаты от хоста">
+                <button id="joinRoomBtn" class="btn-primary">
+                    <i class="fas fa-plug"></i> Подключиться
+                </button>
+            </div>
+            
+            <button class="back-btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+        </div>
+        
+        <!-- Экран комнаты -->
+        <div id="roomScreen" class="screen" style="display: none;">
+            <div class="room-container">
+                <div class="room-header">
+                    <h2><i class="fas fa-door-open"></i> Комната онлайн-игры</h2>
+                    <div id="playerCount" class="player-count">Игроков в комнате: 1/2</div>
+                    <div id="roomIdDisplay">ID комнаты: <span id="roomId">ожидание...</span></div>
+                </div>
+                
+                <!-- Информация об игроках -->
+                <div class="player-info">
+                    <div class="player">
+                        <h3><i class="fas fa-crown"></i> Хост:</h3>
+                        <p id="hostName">Загрузка...</p>
+                    </div>
+                    <div class="player">
+                        <h3><i class="fas fa-user"></i> Игрок:</h3>
+                        <p id="playerName">Загрузка...</p>
+                    </div>
+                </div>
+                
+                <!-- Управление игрой -->
+                <div class="controls">
+                    <button id="startGameBtn" class="btn-primary control-btn" disabled>
+                        <i class="fas fa-hourglass-start"></i> Ожидание второго игрока...
+                    </button>
+                </div>
+                
+                <!-- Карточки -->
+                <div class="cards-container">
+                    <button id="randomQuestionBtn" class="card-btn">
+                        <i class="fas fa-question-circle"></i> Случайный вопрос
+                    </button>
+                    <button id="randomActionBtn" class="card-btn">
+                        <i class="fas fa-running"></i> Случайное действие
+                    </button>
+                    <button id="randomDateBtn" class="card-btn">
+                        <i class="fas fa-heart"></i> Случайное свидание
+                    </button>
+                    <button id="randomComplimentBtn" class="card-btn">
+                        <i class="fas fa-star"></i> Случайный комплимент
+                    </button>
+                </div>
+                
+                <!-- Контейнер для карточек -->
+                <div id="cardContainer"></div>
+                
+                <!-- Чат -->
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h3><i class="fas fa-comments"></i> Чат комнаты</h3>
+                    </div>
+                    <div id="messages" class="messages"></div>
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Введите сообщение...">
+                        <button id="sendChatBtn" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Отправить
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Управление комнатой -->
+                <div class="room-controls">
+                    <button id="playAgainBtn" class="btn-secondary">
+                        <i class="fas fa-redo"></i> Новая игра
+                    </button>
+                    <button id="leaveRoomBtn" class="btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Покинуть комнату
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="https://lovecouple.ru/online-app.js"></script>
+    <script src="https://lovecouple.ru/online-local.js"></script>
+    
+    <script>
+    // Проверка поддержки WebSocket (исправленная версия)
+    if (!window.WebSocket) {
+        console.error('WebSocket не поддерживается');
+        
+        // Скрываем основной контент
+        const container = document.querySelector('.container');
+        if (container) {
+            container.style.display = 'none';
+        }
+        
+        // Показываем сообщение об ошибке
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'container';
+        errorDiv.innerHTML = `
+            <div style="text-align: center; padding: 50px;">
+                <h2>❌ Ваш браузер не поддерживает WebSocket</h2>
+                <p>Пожалуйста, обновите браузер или используйте современный браузер</p>
+                <button onclick="window.location.href='index.html'" style="margin-top: 20px; padding: 10px 20px;">
+                    Вернуться к локальной игре
+                </button>
+            </div>
+        `;
+        document.body.appendChild(errorDiv);
+    } else {
+        console.log('✅ WebSocket поддерживается');
+    }
+    </script>
+</body>
+</html>
