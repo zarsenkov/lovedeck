@@ -15,6 +15,16 @@ const PEER_CONFIG = {
     }
 };
 
+// Проверяем, на HTTPS ли мы (важно для PeerJS)
+const isHTTPS = window.location.protocol === 'https:';
+if (!isHTTPS) {
+    console.warn('⚠️ Работаем не на HTTPS. PeerJS может не работать.');
+    // Можно показать предупреждение пользователю
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        showNotification('Внимание: Для онлайн-игры рекомендуется использовать HTTPS', 'warning');
+    }
+}
+
 // Глобальные переменные
 let peer = null;
 let conn = null;
@@ -43,8 +53,19 @@ window.onload = function() {
 
 // Инициализация PeerJS
 function initPeerJS() {
-    try {
-        peer = new Peer(PEER_CONFIG);
+try {
+    peer = new Peer(PEER_CONFIG);
+} catch (error) {
+    console.error('Ошибка при создании Peer:', error);
+    // Пробуем альтернативную конфигурацию
+    peer = new Peer({
+        host: 'peerjs-server.herokuapp.com',
+        port: 443,
+        secure: true,
+        path: '/',
+        debug: 3
+    });
+}
         
         peer.on('open', function(id) {
             console.log('PeerJS подключен, мой ID:', id);
@@ -112,11 +133,23 @@ function joinRoom() {
     
     console.log('Подключаюсь к комнате:', roomCode);
     
-    // Создаем соединение
-    conn = peer.connect(roomCode, {
-        reliable: true,
-        serialization: 'json'
-    });
+// Создаем соединение с увеличенным таймаутом
+conn = peer.connect(roomCode, {
+    reliable: true,
+    serialization: 'json',
+    metadata: {
+        playerName: playerName,
+        timestamp: Date.now()
+    }
+});
+
+// Добавляем обработку ошибок подключения
+setTimeout(() => {
+    if (conn && !conn.open) {
+        console.log('Таймаут подключения, пробуем альтернативный метод...');
+        showNotification('Не удалось подключиться напрямую. Попробуйте создать новую комнату.', 'warning');
+    }
+}, 10000); // 10 секунд таймаут
     
     setupConnection(conn);
     
@@ -1222,3 +1255,4 @@ function quickStartGame() {
 // Экспортируем функцию отправки карты для основной игры
 
 window.sendCardToPartner = sendCardToPartner;
+
