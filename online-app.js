@@ -1,5 +1,7 @@
 // LoveDeck - функции для онлайн-режима (упрощённая версия без локальной игры)
 
+const APP_VERSION = '2.0.0';
+
 // Получение случайной карточки
 function getRandomQuestion() {
     const questions = [
