@@ -182,6 +182,44 @@ export const CardManager = {
     
     return results;
   }
+    // Простой метод для получения общего количества карточек
+  getAllCardsCount() {
+    try {
+      const systemCount = 
+        (this.systemCards.questions?.length || 0) +
+        (this.systemCards.actions?.length || 0) +
+        (this.systemCards.dates?.length || 0) +
+        (this.systemCards.compliments?.length || 0);
+      
+      const userCount = 
+        (this.userCards.questions?.length || 0) +
+        (this.userCards.actions?.length || 0) +
+        (this.userCards.dates?.length || 0) +
+        (this.userCards.compliments?.length || 0);
+      
+      const total = systemCount + userCount;
+      console.log('📊 getAllCardsCount():', { system: systemCount, user: userCount, total });
+      return total;
+    } catch (error) {
+      console.error('❌ Ошибка в getAllCardsCount:', error);
+      return 40; // fallback на базовые карточки
+    }
+  },
+  
+  // Обновить метод init, чтобы вызывал loadFromLocalStorage
+  init() {
+    console.log('🎴 CardManager инициализирован. Карточек:', 
+      this.systemCards.questions.length + ' вопросов, ' +
+      this.systemCards.actions.length + ' действий, ' +
+      this.systemCards.dates.length + ' свиданий, ' +
+      this.systemCards.compliments.length + ' комплиментов'
+    );
+    
+    // 👇 ДОБАВЬ ЭТУ СТРОЧКУ:
+    this.loadFromLocalStorage();
+    
+    return this;
+  }
 };
 
 // Экспорт по умолчанию
