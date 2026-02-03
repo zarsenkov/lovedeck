@@ -306,7 +306,7 @@ function handlePlayerConnected(data) {
 function handleNewMessage(data) {
     console.log('💬 Новое сообщение:', data);
     
-    addMessage('player', data.text, data.sender);
+    addMessage('player', data.text, data.sender || 'Игрок');
 }
 
 // НОВАЯ КАРТОЧКА
