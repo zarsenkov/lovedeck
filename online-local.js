@@ -1,125 +1,6 @@
 // LoveCouple Online - Настоящая сетевая игра
 console.log('🚀 Запускаем настоящую сетевую игру...');
 
-// 👇 ДОБАВЬ ЭТИ ПЕРЕМЕННЫЕ:
-let ws = null;
-let currentRoomId = null;
-let currentUsername = ''; // ← ВАЖНО!
-let currentPlayerId = null;
-
-// ====================
-// ИМПОРТ МОДУЛЕЙ
-// ====================
-
-let CardManager, StorageManager;
-
-// Функция для загрузки модулей
-async function loadModules() {
-  try {
-    console.log('📦 Загрузка модулей...');
-    
-    // Динамический импорт модулей
-    const cardModule = await import('./shared/modules/card-manager.js');
-    const storageModule = await import('./shared/modules/storage-manager.js');
-    
-    CardManager = cardModule.default.init();
-    StorageManager = storageModule.default.init();
-    
-    console.log('✅ Модули загружены и инициализированы');
-    
-    // Пробуем получить статистику карточек
-    try {
-      if (CardManager.getStats) {
-        console.log('📊 Карточек доступно:', CardManager.getStats().total);
-      } else if (CardManager.getAllCardsCount) {
-        console.log('📊 Карточек доступно:', CardManager.getAllCardsCount());
-      } else {
-        console.log('📊 Карточек: 40 (системные)');
-      }
-    } catch (e) {
-      console.log('📊 Карточек: 40 (системные)');
-    }
-    
-    console.log('👤 Профиль:', StorageManager.profile?.id || 'не найден');
-    
-    // Сохраняем в глобальную область
-    window.CardManager = CardManager;
-    window.StorageManager = StorageManager;
-    
-    // Обновляем статистику на странице если есть элемент
-    updateStatsDisplay();
-    
-    return true;
-  } catch (error) {
-    console.error('❌ Ошибка загрузки модулей:', error);
-    console.warn('⚠️ Модули не загружены, продолжается в режиме совместимости');
-    
-    // Fallback объекты
-    window.CardManager = {
-      getRandomCard: (type) => ({ 
-        type: type, 
-        text: `[${type}] Случайная карточка`,
-        id: 'fallback_' + Date.now()
-      }),
-      getAllCardsCount: () => 40,
-      addUserCard: (card) => ({ ...card, id: 'custom_' + Date.now() })
-    };
-    
-    window.StorageManager = {
-      profile: { 
-        id: 'fallback_user', 
-        stats: { gamesPlayed: 0, cardsSent: 0, totalPlayTime: 0 } 
-      },
-      updateStats: () => {},
-      getOverallStats: () => ({ gamesPlayed: 0, cardsSent: 0, totalPlayTime: 0 })
-    };
-    
-    return false;
-  }
-}
-
-// Функция для обновления отображения статистики
-function updateStatsDisplay() {
-  try {
-    if (!window.StorageManager) return;
-    
-    const stats = window.StorageManager.getOverallStats();
-    const statsElement = document.getElementById('statsDisplay');
-    
-    if (statsElement) {
-      statsElement.innerHTML = `
-        <div class="mini-stats">
-          <span><i class="fas fa-gamepad"></i> Игр: ${stats.gamesPlayed || 0}</span>
-          <span><i class="fas fa-cards"></i> Карт: ${stats.cardsSent || 0}</span>
-          <span><i class="fas fa-clock"></i> ${stats.totalPlayTime || 0}м</span>
-        </div>
-      `;
-      statsElement.style.display = 'flex';
-    }
-  } catch (error) {
-    console.warn('Не удалось обновить статистику:', error);
-  }
-}
-
-// Запускаем загрузку модулей
-loadModules().then(success => {
-  if (success) {
-    console.log('🎉 LoveCouple Online с модулями готов к работе!');
-    
-    // Тестируем получение карточки через 1 секунду
-    setTimeout(() => {
-      if (window.CardManager && window.CardManager.getRandomCard) {
-        try {
-          const testCard = window.CardManager.getRandomCard('question');
-          console.log('🎴 Тестовая карточка:', testCard?.text?.substring(0, 40) + '...');
-        } catch (e) {
-          console.warn('⚠️ Тест карточки не сработал');
-        }
-      }
-    }, 1000);
-  }
-});
-
 // Глобальное состояние игры
 const gameState = {
     ws: null,
@@ -454,19 +335,16 @@ function sendToServer(type, data = {}) {
 }
 
 // Создание комнаты
-function createRoom() {
+async function createRoom() {
     console.log('👑 Создаем комнату как хост...');
     
     const nameInput = document.getElementById('hostNameInput');
-    if (!nameInput) return;
+    const playerName = nameInput ? nameInput.value.trim() : ''; // ← УБРАЛ 'Хост'
     
-    const name = nameInput.value.trim();
-    if (!name) {
+    if (!playerName) {
         showNotification('Введите ваше имя', 'error');
         return;
     }
-  currentUsername = name;
-    gameState.playerName = name;
     
     showNotification('Подключаемся к серверу...', 'info');
     
@@ -482,18 +360,16 @@ function createRoom() {
 }
 
 // Подключение к комнате
-function joinRoom() {
-    console.log('🎯 Присоединяемся к комнате...');
+async function joinRoom() {
+    console.log('👤 Подключаемся к комнате как игрок...');
     
     const nameInput = document.getElementById('playerNameInput');
-    const roomIdInput = document.getElementById('roomIdInput');
+    const roomInput = document.getElementById('roomIdInput');
     
-    if (!nameInput || !roomIdInput) return;
+    const playerName = nameInput ? nameInput.value.trim() : ''; // ← УБРАЛ 'Игрок'
+    const roomId = roomInput ? roomInput.value.trim() : '';
     
-    const name = nameInput.value.trim();
-    const roomId = roomIdInput.value.trim();
-    
-    if (!name) {
+    if (!playerName) {
         showNotification('Введите ваше имя', 'error');
         return;
     }
@@ -502,8 +378,6 @@ function joinRoom() {
         showNotification('Введите ID комнаты', 'error');
         return;
     }
-      currentUsername = name;
-    gameState.playerName = name;
     
     showNotification('Подключаемся к серверу...', 'info');
     
@@ -531,91 +405,15 @@ function startGame() {
 }
 
 // Отправка карточки
-function sendCard(cardType, customText = '') {
+function sendCard(card, cardType) {
     console.log('🎴 Отправляем карточку:', cardType);
     
-    let card;
-    
-    // 👇 ДОБАВЬ ЭТУ СТРОЧКУ ДЛЯ БЕЗОПАСНОСТИ:
-    const senderName = currentUsername || gameState.playerName || 'Игрок';
-    
-    // Если есть текст - создаём пользовательскую карточку
-    if (customText && customText.trim()) {
-        card = {
-            type: cardType,
-            text: customText.trim(),
-            id: 'custom_' + Date.now(),
-            author: senderName // ← Используй senderName вместо currentUsername
-        };
-        
-        // Пробуем сохранить в CardManager
-        if (window.CardManager && window.CardManager.addUserCard) {
-            const savedCard = window.CardManager.addUserCard(card);
-            if (savedCard) {
-                card = savedCard;
-                console.log('✅ Карточка сохранена в CardManager');
-            }
-        }
-    } 
-    // Иначе берём случайную из CardManager
-    else if (window.CardManager && window.CardManager.getRandomCard) {
-        card = window.CardManager.getRandomCard(cardType);
-        if (card) {
-            console.log('✅ Используем карточку из базы:', card.id);
-        }
+    if (!gameState.isConnected) {
+        showNotification('Нет подключения', 'error');
+        return;
     }
     
-    // Если CardManager не сработал - создаём базовую карточку
-    if (!card) {
-        card = {
-            type: cardType,
-            text: `[${getCardTypeName(cardType)}] Случайная карточка`,
-            id: 'fallback_' + Date.now(),
-            author: senderName // ← Добавь и здесь тоже
-        };
-    }
-    
-    // Остальной код отправки через WebSocket...
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        const message = {
-            type: 'SEND_CARD',
-            roomId: currentRoomId,
-            card: card,
-            cardType: cardType,
-            sender: senderName // ← Используй senderName
-        };
-        
-        ws.send(JSON.stringify(message));
-        console.log('📤 Отправлено на сервер:', { type: 'SEND_CARD', cardType, sender: senderName });
-        
-        // Обновляем статистику
-        if (window.StorageManager && window.StorageManager.updateStats) {
-            window.StorageManager.updateStats({
-                cardsSent: (window.StorageManager.profile.stats.cardsSent || 0) + 1
-            });
-            
-            // Обновляем отображение статистики
-            if (window.updateStatsDisplay) {
-                window.updateStatsDisplay();
-            }
-        }
-        
-        showNotification(customText ? 'Карточка создана!' : 'Карточка отправлена!', 'success');
-        displayCard(card, cardType, true);
-    } else {
-        showNotification('Нет соединения с сервером', 'error');
-    }
-}
-
-// Добавь вспомогательную функцию
-function getCardTypeName(type) {
-    const names = {
-        'question': 'Вопрос',
-        'action': 'Действие', 
-        'date': 'Свидание',
-        'compliment': 'Комплимент'
-    };
-    return names[type] || type;
+    sendToServer('SEND_CARD', { card, cardType });
 }
 
 // Отправка сообщения в чат
