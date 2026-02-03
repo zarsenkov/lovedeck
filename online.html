@@ -9,51 +9,42 @@
 </head>
 <body>
     <div class="online-container">
-        <!-- ... твой HTML код без изменений ... -->
+        <!-- ... твой существующий HTML код ... -->
     </div>
 
-    <!-- Firebase библиотеки (версия 9.x) -->
+    <!-- Firebase библиотеки -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <!-- Наши скрипты -->
     <script src="online.js"></script>                     <!-- Локальный режим -->
-    <script src="firebase-mode.js"></script>             <!-- Firebase режим (с твоей конфигурацией) -->
+    <script src="firebase-mode.js"></script>             <!-- Firebase режим -->
     
     <script>
         // После загрузки всех скриптов
         window.addEventListener('load', function() {
             console.log('📦 Все скрипты загружены');
             
-            // Добавляем переключатель режимов вручную
-            addSimpleModeSelector();
-            
-            // Настраиваем обработчики Enter для чата
-            const chatInput = document.getElementById('chat-input');
-            if (chatInput) {
-                chatInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        // Определяем, какую функцию вызывать
-                        if (window.currentMode === 'firebase' && window.firebaseSendChatMessage) {
-                            window.firebaseSendChatMessage();
-                        } else if (window.sendChatMessage) {
-                            window.sendChatMessage();
-                        }
-                    }
-                });
-            }
+            // Добавляем простой переключатель
+            setTimeout(addSimpleModeSelector, 500);
         });
         
         // Простой переключатель режимов
         function addSimpleModeSelector() {
             const connectionScreen = document.getElementById('connection-screen');
-            if (!connectionScreen) return;
+            if (!connectionScreen) {
+                console.log('⚠️ Элемент connection-screen не найден');
+                return;
+            }
+            
+            // Проверяем, не добавлен ли уже переключатель
+            if (document.querySelector('.simple-mode-selector')) return;
             
             const selectorHTML = `
                 <div class="simple-mode-selector">
                     <h3>🌐 Режим игры:</h3>
                     <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                        <button onclick="switchToFirebaseMode()" style="
+                        <button id="firebase-mode-btn" style="
                             flex: 1;
                             padding: 15px;
                             background: linear-gradient(45deg, #FF9800, #FFB74D);
@@ -68,7 +59,7 @@
                             <div style="font-size: 12px; opacity: 0.9;">Между разными устройствами</div>
                         </button>
                         
-                        <button onclick="switchToLocalMode()" style="
+                        <button id="local-mode-btn" style="
                             flex: 1;
                             padding: 15px;
                             background: linear-gradient(45deg, #9C27B0, #E91E63);
@@ -91,7 +82,7 @@
                         border-radius: 8px;
                         text-align: center;
                     ">
-                        🔥 <strong>Онлайн режим</strong>: для игры между разными устройствами. Нужен интернет.
+                        💻 <strong>Локальный режим</strong>: для тестирования на одном компьютере. Откройте две вкладки браузера.
                     </p>
                 </div>
             `;
@@ -113,11 +104,24 @@
                     text-align: center;
                     font-size: 20px;
                 }
+                @media (max-width: 600px) {
+                    .simple-mode-selector div {
+                        flex-direction: column;
+                    }
+                }
             `;
             document.head.appendChild(style);
             
             // Вставляем переключатель
             connectionScreen.insertAdjacentHTML('afterbegin', selectorHTML);
+            
+            // Назначаем обработчики
+            document.getElementById('firebase-mode-btn').addEventListener('click', switchToFirebaseMode);
+            document.getElementById('local-mode-btn').addEventListener('click', switchToLocalMode);
+            
+            // Устанавливаем локальный режим по умолчанию
+            window.currentMode = 'local';
+            updateButtonsForLocal();
         }
         
         // Переключить на Firebase режим
@@ -148,7 +152,6 @@
         function updateButtonsForFirebase() {
             const createBtn = document.querySelector('.player-card.create-room .btn-primary');
             const joinBtn = document.querySelector('.player-card.join-room .btn-secondary');
-            const quickBtn = document.querySelector('.btn-quick-start');
             
             if (createBtn && window.firebaseCreateRoom) {
                 createBtn.textContent = '🔥 Создать онлайн-комнату';
@@ -160,17 +163,14 @@
                 joinBtn.onclick = window.firebaseJoinRoom;
             }
             
-            if (quickBtn) {
-                quickBtn.textContent = '⚡ Быстрый онлайн-старт';
-                quickBtn.onclick = window.firebaseCreateRoom;
-            }
+            // Обновляем кнопки в комнате, если она открыта
+            updateRoomButtonsForFirebase();
         }
         
         // Обновить кнопки для локального режима
         function updateButtonsForLocal() {
             const createBtn = document.querySelector('.player-card.create-room .btn-primary');
             const joinBtn = document.querySelector('.player-card.join-room .btn-secondary');
-            const quickBtn = document.querySelector('.btn-quick-start');
             
             if (createBtn && window.createRoom) {
                 createBtn.textContent = '💻 Создать локальную комнату';
@@ -182,17 +182,45 @@
                 joinBtn.onclick = window.joinRoom;
             }
             
-            if (quickBtn && window.quickStartGame) {
-                quickBtn.textContent = '⚡ Быстрый старт';
-                quickBtn.onclick = window.quickStartGame;
-            }
+            // Обновляем кнопки в комнате, если она открыта
+            updateRoomButtonsForLocal();
         }
         
-        // Инициализируем локальный режим по умолчанию
-        window.currentMode = 'local';
-        setTimeout(() => {
-            updateButtonsForLocal();
-        }, 100);
+        // Обновить кнопки в комнате для Firebase
+        function updateRoomButtonsForFirebase() {
+            const roomScreen = document.getElementById('room-screen');
+            if (!roomScreen || roomScreen.style.display === 'none') return;
+            
+            const readyBtn = document.querySelector('.btn-ready');
+            const partnerBtn = document.querySelector('.btn-partner');
+            const forceBtn = document.querySelector('.btn-force-start');
+            const chatBtn = document.querySelector('.chat-input button');
+            const startBtn = document.getElementById('start-game-btn');
+            
+            if (readyBtn && window.firebaseMarkSelfReady) readyBtn.onclick = window.firebaseMarkSelfReady;
+            if (partnerBtn && window.firebaseConfirmPartner) partnerBtn.onclick = window.firebaseConfirmPartner;
+            if (forceBtn && window.firebaseForceStart) forceBtn.onclick = window.firebaseForceStart;
+            if (chatBtn && window.firebaseSendChatMessage) chatBtn.onclick = window.firebaseSendChatMessage;
+            if (startBtn && window.firebaseMarkSelfReady) startBtn.onclick = window.firebaseMarkSelfReady;
+        }
+        
+        // Обновить кнопки в комнате для локального режима
+        function updateRoomButtonsForLocal() {
+            const roomScreen = document.getElementById('room-screen');
+            if (!roomScreen || roomScreen.style.display === 'none') return;
+            
+            const readyBtn = document.querySelector('.btn-ready');
+            const partnerBtn = document.querySelector('.btn-partner');
+            const forceBtn = document.querySelector('.btn-force-start');
+            const chatBtn = document.querySelector('.chat-input button');
+            const startBtn = document.getElementById('start-game-btn');
+            
+            if (readyBtn && window.markSelfReady) readyBtn.onclick = window.markSelfReady;
+            if (partnerBtn && window.confirmPartnerConnection) partnerBtn.onclick = window.confirmPartnerConnection;
+            if (forceBtn && window.forceStartGame) forceBtn.onclick = window.forceStartGame;
+            if (chatBtn && window.sendChatMessage) chatBtn.onclick = window.sendChatMessage;
+            if (startBtn && window.startGame) startBtn.onclick = window.startGame;
+        }
     </script>
 </body>
 </html>
