@@ -219,4 +219,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+/**
+ * Обновление отображения статистики
+ */
+function updateStatsDisplay() {
+    try {
+        if (!window.StorageManager || !window.CardManager) {
+            console.log('Модули не загружены для статистики');
+            return;
+        }
+        
+        const statsElement = document.getElementById('statsDisplay');
+        const statsContent = document.getElementById('statsContent');
+        
+        if (!statsElement || !statsContent) return;
+        
+        // Получаем данные
+        const profile = window.StorageManager.profile;
+        const cardStats = window.CardManager.getStats();
+        
+        // Форматируем статистику
+        statsContent.innerHTML = `
+            <div style="display: flex; gap: 20px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                <span style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-gamepad" style="color: #ff6b9d;"></i>
+                    <strong>${profile.stats.gamesPlayed || 0}</strong> игр
+                </span>
+                <span style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-cards" style="color: #667eea;"></i>
+                    <strong>${profile.stats.cardsSent || 0}</strong> карт
+                </span>
+                <span style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-database" style="color: #764ba2;"></i>
+                    <strong>${cardStats.total}</strong> в базе
+                </span>
+            </div>
+        `;
+        
+        // Показываем блок
+        statsElement.style.display = 'flex';
+        
+    } catch (error) {
+        console.warn('Не удалось обновить статистику:', error);
+    }
+}
+
+// Вызываем обновление статистики через 1 секунду после загрузки
+setTimeout(updateStatsDisplay, 1000);
+
+// И обновляем при каждом действии
+window.updateStatsDisplay = updateStatsDisplay;
+
 console.log('✅ LoveDeck Online App загружен');
