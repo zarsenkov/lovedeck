@@ -181,7 +181,7 @@ export const CardManager = {
     }
     
     return results;
-  }
+  },
     // Простой метод для получения общего количества карточек
   getAllCardsCount() {
     try {
