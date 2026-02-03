@@ -1,24 +1,26 @@
-// online.js - онлайн-режим через WebSocket сервер
+// online.js - онлайн-режим через localStorage симуляцию
 
 // Глобальные переменные
-let ws = null;
 let currentRoomId = null;
 let playerName = '';
 let isHost = false;
-let partnerConnected = false;
+let playerId = '';
 let players = [
     { id: null, name: '', ready: false },
     { id: null, name: '', ready: false }
 ];
 
-// СИМУЛЯЦИОННЫЙ РЕЖИМ - используем localStorage для обмена сообщениями
-const SIMULATION_MODE = true;
-const STORAGE_KEY = 'lovedeck_messages';
-let lastMessageId = 0;
+// Ключи для localStorage
+const STORAGE_PREFIX = 'lovedeck_';
+let lastCheckedId = 0;
+let checkInterval = null;
 
 // Инициализация при загрузке
 window.onload = function() {
     console.log('LoveDeck Online загружен!');
+    
+    // Генерируем уникальный ID для этого игрока
+    playerId = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     
     // Настраиваем отправку сообщения по Enter
     document.getElementById('chat-input').addEventListener('keypress', function(e) {
@@ -27,10 +29,8 @@ window.onload = function() {
         }
     });
     
-    // Запускаем проверку сообщений (для симуляции)
-    if (SIMULATION_MODE) {
-        setInterval(checkForMessages, 1000);
-    }
+    // Запускаем проверку сообщений
+    startMessageChecking();
 };
 
 // ===================== ОСНОВНЫЕ ФУНКЦИИ =====================
@@ -44,20 +44,16 @@ function createRoom() {
     currentRoomId = generateRoomCode();
     
     // Обновляем интерфейс
-    players[0] = { id: 'host', name: playerName, ready: false };
-    players[1] = { id: null, name: 'Игрок 2', ready: false };
+    players[0] = { id: playerId, name: playerName, ready: false };
+    players[1] = { id: null, name: 'Ожидание...', ready: false };
     updatePlayersDisplay();
     
     document.getElementById('connection-screen').style.display = 'none';
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
-    // Если в симуляционном режиме - сразу отмечаем партнера
-    if (SIMULATION_MODE) {
-        setTimeout(() => {
-            showNotification('💡 Симуляционный режим: используйте тестовые кнопки для подключения партнера', 'info');
-        }, 1000);
-    }
+    // Очищаем старые сообщения этой комнаты
+    clearOldMessages();
     
     console.log('Комната создана. Код:', currentRoomId);
     showNotification('Комната создана! Отправьте код партнеру.', 'success');
@@ -77,20 +73,25 @@ function joinRoom() {
     isHost = false;
     
     // Обновляем интерфейс
-    players[0] = { id: null, name: 'Игрок 1', ready: false };
-    players[1] = { id: 'guest', name: playerName, ready: false };
+    players[0] = { id: null, name: 'Ожидание...', ready: false };
+    players[1] = { id: playerId, name: playerName, ready: false };
     updatePlayersDisplay();
     
     document.getElementById('connection-screen').style.display = 'none';
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
-    // Если в симуляционном режиме - сразу отмечаем партнера
-    if (SIMULATION_MODE) {
-        setTimeout(() => {
-            showNotification('💡 Симуляционный режим: используйте тестовые кнопки для подключения партнера', 'info');
-        }, 1000);
-    }
+    // Очищаем старые сообщения
+    clearOldMessages();
+    
+    // Отправляем уведомление о подключении
+    sendMessageToRoom({
+        type: 'player_joined',
+        playerId: playerId,
+        playerName: playerName,
+        isHost: false,
+        timestamp: Date.now()
+    });
     
     console.log('Подключился к комнате:', roomCode);
     showNotification('Подключился к комнате!', 'success');
@@ -102,14 +103,15 @@ function quickStartGame() {
     isHost = true;
     currentRoomId = generateRoomCode();
     
-    players[0] = { id: 'host', name: playerName, ready: false };
-    players[1] = { id: null, name: 'Игрок 2', ready: false };
+    players[0] = { id: playerId, name: playerName, ready: false };
+    players[1] = { id: null, name: 'Ожидание...', ready: false };
     updatePlayersDisplay();
     
     document.getElementById('connection-screen').style.display = 'none';
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
+    clearOldMessages();
     showQR();
     
     showNotification('Комната создана! Партнер может подключиться по QR-коду.', 'success');
@@ -128,9 +130,11 @@ function confirmPartnerConnection() {
     
     // Отмечаем партнера как подключенного
     const partnerIndex = isHost ? 1 : 0;
+    const partnerName = isHost ? 'Игрок 2' : 'Игрок 1';
+    
     players[partnerIndex] = {
-        id: 'connected',
-        name: isHost ? 'Игрок 2' : 'Игрок 1',
+        id: 'connected_' + partnerIndex,
+        name: partnerName,
         ready: true
     };
     
@@ -141,10 +145,14 @@ function confirmPartnerConnection() {
     // Отправляем уведомление в чат
     addChatMessage('✅ Партнер подтвердил подключение!', 'system');
     
-    // В симуляционном режиме "отправляем" партнеру
-    if (SIMULATION_MODE) {
-        simulatePartnerResponse('partner_connected');
-    }
+    // Отправляем партнеру
+    sendMessageToRoom({
+        type: 'partner_confirmed',
+        playerId: playerId,
+        playerName: playerName,
+        confirmed: true,
+        timestamp: Date.now()
+    });
 }
 
 // Отметить себя готовым
@@ -161,13 +169,17 @@ function markSelfReady() {
     // Отправляем сообщение в чат
     addChatMessage('✅ Я готов(а) к игре!', 'system');
     
-    // В симуляционном режиме "отправляем" партнеру
-    if (SIMULATION_MODE) {
-        simulatePartnerResponse('player_ready');
-    }
+    // Отправляем партнеру
+    sendMessageToRoom({
+        type: 'player_ready',
+        playerId: playerId,
+        playerName: playerName,
+        ready: true,
+        timestamp: Date.now()
+    });
 }
 
-// Принудительно начать игру (если партнер не подключается)
+// Принудительно начать игру
 function forceStartGame() {
     console.log('Принудительно начинаю игру...');
     
@@ -180,105 +192,124 @@ function forceStartGame() {
     showNotification('Игра начата!', 'success');
 }
 
-// ===================== СИМУЛЯЦИОННЫЙ РЕЖИМ =====================
+// ===================== СООБЩЕНИЯ ЧЕРЕЗ LOCALSTORAGE =====================
 
-// Отправка сообщения в симуляционном режиме
-function sendSimulatedMessage(data) {
+// Начать проверку сообщений
+function startMessageChecking() {
+    if (checkInterval) clearInterval(checkInterval);
+    
+    checkInterval = setInterval(() => {
+        if (currentRoomId) {
+            checkForMessages();
+        }
+    }, 500); // Проверяем каждые 500ms
+}
+
+// Отправить сообщение в комнату
+function sendMessageToRoom(data) {
     if (!currentRoomId) return;
     
-    const messageId = Date.now() + '_' + Math.random();
+    const messageId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     const message = {
         id: messageId,
-        room: currentRoomId,
-        from: playerName,
-        to: isHost ? 'guest' : 'host',
+        roomId: currentRoomId,
+        senderId: playerId,
+        senderName: playerName,
         data: data,
         timestamp: Date.now()
     };
     
     // Сохраняем в localStorage
-    const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const messages = JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'messages') || '[]');
     messages.push(message);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-50))); // Храним последние 50
     
-    console.log('Симулированная отправка:', data.type);
-    return true;
+    // Ограничиваем размер (храним последние 100 сообщений)
+    if (messages.length > 100) {
+        messages.splice(0, messages.length - 100);
+    }
+    
+    localStorage.setItem(STORAGE_PREFIX + 'messages', JSON.stringify(messages));
+    console.log('Отправлено:', data.type, 'в комнату', currentRoomId);
+    
+    return messageId;
 }
 
-// Проверка входящих сообщений
+// Проверить входящие сообщения
 function checkForMessages() {
-    if (!currentRoomId || !playerName) return;
+    if (!currentRoomId || !playerId) return;
     
-    const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const newMessages = messages.filter(msg => 
-        msg.room === currentRoomId && 
-        msg.to === (isHost ? 'host' : 'guest') &&
-        msg.from !== playerName && // Не наши сообщения
-        msg.id > lastMessageId
-    );
-    
-    newMessages.forEach(msg => {
-        console.log('Получено симулированное сообщение:', msg.data.type);
-        handlePartnerMessage(msg.data);
-        lastMessageId = Math.max(lastMessageId, msg.id);
-    });
+    try {
+        const messages = JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'messages') || '[]');
+        
+        // Фильтруем сообщения для нашей комнаты и не от нас
+        const newMessages = messages.filter(msg => 
+            msg.roomId === currentRoomId && 
+            msg.senderId !== playerId &&
+            msg.id > lastCheckedId
+        );
+        
+        newMessages.forEach(msg => {
+            console.log('Получено от', msg.senderName + ':', msg.data.type);
+            handleIncomingMessage(msg);
+            lastCheckedId = Math.max(lastCheckedId, parseInt(msg.id) || 0);
+        });
+        
+    } catch (error) {
+        console.error('Ошибка при проверке сообщений:', error);
+    }
 }
 
-// Симулировать ответ партнера
-function simulatePartnerResponse(type) {
-    setTimeout(() => {
-        const fakeMessage = {
-            id: Date.now() + '_fake',
-            room: currentRoomId,
-            from: isHost ? 'Игрок 2' : 'Игрок 1',
-            to: isHost ? 'host' : 'guest',
-            data: { 
-                type: type,
-                player: isHost ? 'Игрок 2' : 'Игрок 1',
-                ready: true
-            },
-            timestamp: Date.now()
-        };
-        
-        const messages = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        messages.push(fakeMessage);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-50)));
-        
-        console.log('Симулирован ответ партнера:', type);
-    }, 500);
-}
-
-// Обработка сообщений от партнера
-function handlePartnerMessage(data) {
-    console.log('📨 Сообщение от партнера:', data);
+// Обработка входящих сообщений
+function handleIncomingMessage(msg) {
+    const data = msg.data;
     
     switch(data.type) {
-        case 'join_room':
-        case 'partner_connected':
+        case 'player_joined':
             // Партнер подключился к комнате
-            partnerConnected = true;
             const partnerIndex = isHost ? 1 : 0;
             players[partnerIndex] = {
-                id: 'connected',
-                name: data.player,
-                ready: true
+                id: data.playerId,
+                name: data.playerName,
+                ready: false
             };
             updatePlayersDisplay();
-            addChatMessage(`👋 ${data.player} подключился(ась)!`, 'system');
-            showNotification('Партнер подключился! 🎉', 'success');
-            updateStartButton();
-            break;
-            
-        case 'chat_message':
-            addChatMessage(data.message, 'Партнер');
+            addChatMessage(`👋 ${data.playerName} подключился(ась)!`, 'system');
+            showNotification('Партнер в комнате!', 'success');
             break;
             
         case 'player_ready':
-            const partnerIdx = isHost ? 1 : 0;
-            players[partnerIdx].ready = data.ready;
-            updatePlayersDisplay();
-            addChatMessage(`✅ ${data.player} готов(а)!`, 'system');
-            updateStartButton();
+            // Партнер готов
+            const partnerIdx = players[0].id === data.playerId ? 0 : 
+                              players[1].id === data.playerId ? 1 : -1;
+            
+            if (partnerIdx !== -1) {
+                players[partnerIdx].ready = data.ready;
+                updatePlayersDisplay();
+                addChatMessage(`✅ ${data.playerName} готов(а)!`, 'system');
+                updateStartButton();
+                
+                // Проверяем, можно ли начать игру
+                if (players[0].ready && players[1].ready) {
+                    startSharedGame();
+                }
+            }
+            break;
+            
+        case 'partner_confirmed':
+            // Партнер подтвердил подключение
+            const confIdx = players[0].id === data.playerId ? 0 : 
+                           players[1].id === data.playerId ? 1 : -1;
+            
+            if (confIdx !== -1) {
+                players[confIdx].ready = true;
+                updatePlayersDisplay();
+                addChatMessage(`✅ ${data.playerName} подтвердил(а) подключение!`, 'system');
+                updateStartButton();
+            }
+            break;
+            
+        case 'chat_message':
+            addChatMessage(data.message, data.playerName);
             break;
             
         case 'card_click':
@@ -290,15 +321,15 @@ function handlePartnerMessage(data) {
     }
 }
 
-// Отправка данных партнеру
-function sendToPartner(data) {
-    if (SIMULATION_MODE) {
-        return sendSimulatedMessage(data);
-    }
-    
-    // Если WebSocket режим (пока не работает)
-    console.log('Отправка партнеру:', data);
-    return false;
+// Очистить старые сообщения
+function clearOldMessages() {
+    const messages = JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'messages') || '[]');
+    const filtered = messages.filter(msg => 
+        msg.roomId !== currentRoomId || 
+        (Date.now() - msg.timestamp < 5 * 60 * 1000) // Храним 5 минут
+    );
+    localStorage.setItem(STORAGE_PREFIX + 'messages', JSON.stringify(filtered));
+    lastCheckedId = 0;
 }
 
 // ===================== ИНТЕРФЕЙС =====================
@@ -342,20 +373,15 @@ function startGame() {
     updatePlayersDisplay();
     
     // Отправляем статус партнеру
-    sendToPartner({
+    sendMessageToRoom({
         type: 'player_ready',
-        player: playerName,
+        playerId: playerId,
+        playerName: playerName,
         ready: true
     });
     
-    checkIfBothReady();
-}
-
-// Проверка готовности обоих
-function checkIfBothReady() {
-    const bothReady = players[0].ready && players[1].ready;
-    
-    if (bothReady) {
+    // Проверяем, можно ли начать
+    if (players[0].ready && players[1].ready) {
         startSharedGame();
     }
 }
@@ -386,9 +412,10 @@ function sendChatMessage() {
     if (!message) return;
     
     // Отправляем партнеру
-    sendToPartner({
+    sendMessageToRoom({
         type: 'chat_message',
-        message: message
+        message: message,
+        playerName: playerName
     });
     
     // Показываем себе
@@ -456,13 +483,13 @@ function sendRandomQuestion() {
         from: playerName
     };
     
-    sendToPartner({
+    sendMessageToRoom({
         type: 'card_click',
-        card: card
+        card: card,
+        playerName: playerName
     });
     
-    // Показываем себе что отправили
-    addChatMessage(`💬 Отправил(а) вопрос: "${randomQuestion.substring(0, 30)}..."`, 'Вы');
+    addChatMessage(`💬 Отправил(а) вопрос партнеру`, 'Вы');
     showNotification('Вопрос отправлен партнеру! 💬', 'success');
 }
 
@@ -477,12 +504,13 @@ function sendRandomAction() {
         from: playerName
     };
     
-    sendToPartner({
+    sendMessageToRoom({
         type: 'card_click',
-        card: card
+        card: card,
+        playerName: playerName
     });
     
-    addChatMessage(`🔥 Отправил(а) действие: "${randomAction.substring(0, 30)}..."`, 'Вы');
+    addChatMessage(`🔥 Отправил(а) задание партнеру`, 'Вы');
     showNotification('Действие отправлено партнеру! 🔥', 'success');
 }
 
@@ -497,12 +525,13 @@ function sendRandomDate() {
         from: playerName
     };
     
-    sendToPartner({
+    sendMessageToRoom({
         type: 'card_click',
-        card: card
+        card: card,
+        playerName: playerName
     });
     
-    addChatMessage(`🌹 Отправил(а) идею свидания: "${randomDate.substring(0, 30)}..."`, 'Вы');
+    addChatMessage(`🌹 Отправил(а) идею свидания партнеру`, 'Вы');
     showNotification('Идея для свидания отправлена! 🌹', 'success');
 }
 
@@ -517,12 +546,13 @@ function sendRandomCompliment() {
         from: playerName
     };
     
-    sendToPartner({
+    sendMessageToRoom({
         type: 'card_click',
-        card: card
+        card: card,
+        playerName: playerName
     });
     
-    addChatMessage(`💖 Отправил(а) комплимент: "${randomCompliment.substring(0, 30)}..."`, 'Вы');
+    addChatMessage(`💖 Отправил(а) комплимент партнеру`, 'Вы');
     showNotification('Комплимент отправлен! 💖', 'success');
 }
 
