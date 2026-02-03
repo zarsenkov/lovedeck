@@ -145,20 +145,78 @@ function playSound(type) {
         console.log('Аудио не поддерживается:', e);
     }
 }
-// Проверка обновлений
+// ========== SERVICE WORKER УВЕДОМЛЕНИЯ ==========
+
+// Проверка обновлений через Service Worker
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.ready.then(reg => {
-    // Отправляем сообщение для проверки обновлений
-    reg.active?.postMessage({ type: 'CHECK_UPDATES' });
-    
-    // Слушаем ответы от SW
-    navigator.serviceWorker.addEventListener('message', event => {
-      if (event.data.type === 'UPDATES_AVAILABLE') {
-        console.log('Доступны обновления:', event.data.files);
-        // Можно показать уведомление игроку
-      }
+    // Когда SW готов
+    navigator.serviceWorker.ready.then(reg => {
+        console.log('🔄 Service Worker готов, проверяем обновления...');
+        
+        // Проверяем обновления
+        setTimeout(() => {
+            reg.active?.postMessage({ type: 'CHECK_UPDATES' });
+        }, 3000); // Ждём 3 секунды после загрузки
+        
+        // Слушаем сообщения от SW
+        navigator.serviceWorker.addEventListener('message', event => {
+            console.log('📨 Сообщение от Service Worker:', event.data);
+            
+            switch (event.data.type) {
+                case 'UPDATES_AVAILABLE':
+                    console.log('🆕 Доступны обновления:', event.data.files);
+                    showUpdateNotification(event.data.files);
+                    break;
+                    
+                case 'NEW_VERSION':
+                    console.log(`🎉 Новая версия: ${event.data.version}`);
+                    localStorage.setItem('app_version', event.data.version);
+                    break;
+            }
+        });
+        
+        // Периодическая проверка обновлений (каждые 30 минут)
+        setInterval(() => {
+            if (navigator.onLine) {
+                reg.active?.postMessage({ type: 'CHECK_UPDATES' });
+            }
+        }, 30 * 60 * 1000); // 30 минут
+        
+    }).catch(error => {
+        console.error('❌ Ошибка Service Worker:', error);
     });
-  });
 }
+
+// Показать уведомление об обновлении
+function showUpdateNotification(files) {
+    // Можно добавить уведомление в интерфейс
+    const notification = document.getElementById('notification');
+    if (notification && files.length > 0) {
+        notification.textContent = `Доступно обновление (${files.length} файлов). Обновите страницу.`;
+        notification.style.backgroundColor = '#ff9800';
+        notification.style.display = 'block';
+        
+        // Добавляем кнопку обновления
+        notification.innerHTML = `
+            🔄 Доступно обновление
+            <button onclick="location.reload()" style="margin-left: 10px; padding: 5px 10px; background: white; color: #333; border: none; border-radius: 5px; cursor: pointer;">
+                Обновить
+            </button>
+        `;
+        
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 10000); // Скрыть через 10 секунд
+    }
+}
+
+// Проверка версии при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    const savedVersion = localStorage.getItem('app_version');
+    if (savedVersion && savedVersion !== APP_VERSION) {
+        console.log(`🆙 Обновление с версии ${savedVersion} до ${APP_VERSION}`);
+        showUpdateNotification(['Все файлы']);
+    }
+});
 
 console.log('✅ LoveDeck Online App загружен');
