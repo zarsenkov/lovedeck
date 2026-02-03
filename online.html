@@ -9,37 +9,49 @@
     <link rel="stylesheet" href="online.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="icon.png">
-        <script type="module">
-        // Импорт модулей
-        import CardManager from './shared/modules/card-manager.js';
-        import StorageManager from './shared/modules/storage-manager.js';
+       <script type="module">
+    // Импорт модулей
+    import CardManager from './shared/modules/card-manager.js';
+    import StorageManager from './shared/modules/storage-manager.js';
+    
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('LoveCouple Online - загрузка модулей...');
         
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('LoveCouple Online - загрузка модулей...');
+        try {
+            // Инициализация менеджеров
+            const cardManager = CardManager.init();
+            const storageManager = StorageManager.init();
             
-            try {
-                // Инициализация менеджеров
-                window.CardManager = CardManager.init();
-                window.StorageManager = StorageManager.init();
-                
-                console.log('✅ Модули успешно загружены!');
-                console.log('📊 Статистика:', {
-                    карточек: window.CardManager.getAllCardsCount(),
-                    профиль: window.StorageManager.profile.id
-                });
-                
-                // Тестируем получение карточки
-                setTimeout(() => {
+            // Сохраняем в глобальную область видимости
+            window.CardManager = cardManager;
+            window.StorageManager = storageManager;
+            
+            console.log('✅ Модули успешно загружены!');
+            console.log('📊 Карточек доступно:', window.CardManager.getAllCardsCount());
+            console.log('👤 Профиль:', window.StorageManager.profile.id);
+            
+            // Тестируем получение карточки
+            setTimeout(() => {
+                try {
                     const testCard = window.CardManager.getRandomCard('question');
-                    console.log('🎴 Тестовая карточка:', testCard?.text?.substring(0, 50) + '...');
-                }, 100);
-                
-            } catch (error) {
-                console.error('❌ Ошибка загрузки модулей:', error);
-            }
-        });
-    </script>
+                    if (testCard && testCard.text) {
+                        console.log('🎴 Тестовая карточка:', testCard.text.substring(0, 50) + '...');
+                    } else {
+                        console.log('🎴 Тестовая карточка:', testCard);
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Тест карточки не сработал:', e.message);
+                }
+            }, 100);
+            
+        } catch (error) {
+            console.error('❌ Ошибка загрузки модулей:', error);
+            console.error('Детали:', error.message);
+            console.error('Стек:', error.stack);
+        }
+    });
+</script>
 </head>
 <body>
     <div class="container">
@@ -244,6 +256,7 @@
 </div>
 </body>
 </html>
+
 
 
 
