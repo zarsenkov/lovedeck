@@ -885,27 +885,86 @@ function initializeOnlineGame() {
     console.log('✅ Настоящая сетевая игра готова');
 }
 
-// Функция создания своей карточки
+// Функция создания своей карточки (красивая версия)
 function showCustomCardCreator() {
-    const cardType = prompt('Выберите тип карточки:\n1. Вопрос\n2. Действие\n3. Свидание\n4. Комплимент', '1');
-    const text = prompt('Введите текст карточки:', '');
+    const modal = document.getElementById('customCardModal');
+    const textarea = document.getElementById('customCardText');
+    const typeButtons = document.querySelectorAll('.card-type-btn');
+    const cancelBtn = document.getElementById('cancelCustomCard');
+    const saveBtn = document.getElementById('saveCustomCard');
     
-    if (!text) return;
+    if (!modal || !textarea) return;
     
-    let type = 'question';
-    let typeName = 'вопрос';
+    // Сброс формы
+    textarea.value = '';
+    typeButtons.forEach(btn => {
+        btn.style.borderColor = '#e0e0e0';
+        btn.style.background = 'white';
+    });
     
-    switch(cardType) {
-        case '2': type = 'action'; typeName = 'действие'; break;
-        case '3': type = 'date'; typeName = 'свидание'; break;
-        case '4': type = 'compliment'; typeName = 'комплимент'; break;
+    // Показываем модальное окно
+    modal.style.display = 'flex';
+    
+    // Выбор типа карточки
+    let selectedType = 'question';
+    typeButtons.forEach(btn => {
+        btn.onclick = () => {
+            typeButtons.forEach(b => {
+                b.style.borderColor = '#e0e0e0';
+                b.style.background = 'white';
+            });
+            btn.style.borderColor = '#764ba2';
+            btn.style.background = '#f5f0ff';
+            selectedType = btn.dataset.type;
+        };
+    });
+    
+    // Выбираем первый тип по умолчанию
+    if (typeButtons[0]) {
+        typeButtons[0].click();
     }
     
-    const customCard = { text: text, custom: true };
-    sendCard(customCard, type);
-    displayCard(customCard, type);
+    // Отмена
+    cancelBtn.onclick = () => {
+        modal.style.display = 'none';
+    };
     
-    addMessage('system', `Вы создали ${typeName}: "${text.substring(0, 50)}..."`);
+    // Создание
+    saveBtn.onclick = () => {
+        const text = textarea.value.trim();
+        if (!text) {
+            showNotification('Введите текст карточки', 'error');
+            return;
+        }
+        
+        const typeNames = {
+            'question': 'вопрос',
+            'action': 'действие', 
+            'date': 'свидание',
+            'compliment': 'комплимент'
+        };
+        
+        const customCard = { 
+            text: text, 
+            custom: true,
+            author: gameState.playerName || 'Вы'
+        };
+        
+        sendCard(customCard, selectedType);
+        displayCard(customCard, selectedType);
+        
+        addMessage('system', `Вы создали ${typeNames[selectedType]}: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
+        
+        modal.style.display = 'none';
+        showNotification('Карточка создана и отправлена!', 'success');
+    };
+    
+    // Закрытие по клику на фон
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
 }
 
 // Запуск при загрузке
