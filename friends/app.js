@@ -1,12 +1,14 @@
-// Объект с играми и их данными
+// Обновляем объект games в app.js
 const games = {
     questions: {
         name: "Вопросы для друзей",
-        description: "Карточки с вопросами для разговоров",
+        description: "100+ карточек с вопросами для разговоров",
         players: "2-10",
         time: "15-60 мин",
         color: "#3b82f6",
-        icon: "❓"
+        icon: "❓",
+        hasOnline: false,
+        isReady: true
     },
     spy: {
         name: "Шпион",
@@ -14,7 +16,9 @@ const games = {
         players: "3-8",
         time: "10-20 мин",
         color: "#10b981",
-        icon: "🕵️"
+        icon: "🕵️",
+        hasOnline: true,
+        isReady: true
     },
     bunker: {
         name: "Бункер",
@@ -22,7 +26,9 @@ const games = {
         players: "4-12",
         time: "30-90 мин",
         color: "#f59e0b",
-        icon: "🏠"
+        icon: "🏠",
+        hasOnline: false,
+        isReady: false
     },
     crocodile: {
         name: "Крокодил",
@@ -30,7 +36,9 @@ const games = {
         players: "4+",
         time: "15-45 мин",
         color: "#ef4444",
-        icon: "🐊"
+        icon: "🐊",
+        hasOnline: false,
+        isReady: true
     },
     truth: {
         name: "Правда или Действие",
@@ -38,7 +46,9 @@ const games = {
         players: "3+",
         time: "20-60 мин",
         color: "#8b5cf6",
-        icon: "🎯"
+        icon: "🎯",
+        hasOnline: false,
+        isReady: true
     },
     alias: {
         name: "Алиас",
@@ -46,13 +56,20 @@ const games = {
         players: "4+",
         time: "20-40 мин",
         color: "#ec4899",
-        icon: "🗣️"
+        icon: "🗣️",
+        hasOnline: false,
+        isReady: false
     }
 };
 
-// Запуск игры
+// Обновляем функцию startGame
 function startGame(gameId) {
     if (!games[gameId]) return;
+    
+    if (!games[gameId].isReady) {
+        alert('Эта игра скоро будет доступна! Сейчас в разработке.');
+        return;
+    }
     
     // Сохраняем выбранную игру
     localStorage.setItem('selectedGame', gameId);
