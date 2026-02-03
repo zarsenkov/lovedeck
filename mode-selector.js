@@ -1,6 +1,7 @@
 // mode-selector.js - Выбор режима игры
 
-let currentMode = 'firebase'; // 'local' или 'firebase'
+let currentMode = 'local'; // По умолчанию локальный режим
+let firebaseReady = false;
 
 // Инициализация при загрузке
 window.addEventListener('DOMContentLoaded', function() {
@@ -13,23 +14,26 @@ function createModeSelector() {
     const connectionScreen = document.getElementById('connection-screen');
     if (!connectionScreen) return;
     
+    // Проверяем, есть ли уже переключатель
+    if (document.querySelector('.mode-selector')) return;
+    
     // Создаем контейнер для выбора режима
     const modeSelector = document.createElement('div');
     modeSelector.className = 'mode-selector';
     modeSelector.innerHTML = `
         <h3>🌐 Выберите режим подключения:</h3>
         <div class="mode-buttons">
-            <button class="mode-btn active" data-mode="firebase">
+            <button class="mode-btn ${firebaseReady ? '' : 'disabled'}" data-mode="firebase" ${!firebaseReady ? 'disabled' : ''}>
                 🔥 Онлайн (Firebase)
-                <small>Работает между разными устройствами</small>
+                <small>${firebaseReady ? 'Работает между разными устройствами' : 'Загрузка Firebase...'}</small>
             </button>
-            <button class="mode-btn" data-mode="local">
+            <button class="mode-btn active" data-mode="local">
                 💻 Локальный тест
                 <small>Только на одном компьютере</small>
             </button>
         </div>
         <p class="mode-description" id="mode-description">
-            🔥 Онлайн: использует Firebase для обмена сообщениями между разными устройствами.
+            💻 Локальный: для тестирования на одном компьютере. Откройте две вкладки браузера.
         </p>
     `;
     
@@ -37,18 +41,72 @@ function createModeSelector() {
     connectionScreen.insertBefore(modeSelector, connectionScreen.firstChild);
     
     // Назначаем обработчики кнопок
-    document.querySelectorAll('.mode-btn').forEach(btn => {
+    document.querySelectorAll('.mode-btn:not(.disabled)').forEach(btn => {
         btn.addEventListener('click', function() {
-            switchMode(this.dataset.mode);
+            if (!this.classList.contains('disabled')) {
+                switchMode(this.dataset.mode);
+            }
         });
     });
     
     // Добавляем стили
     addModeStyles();
+    
+    // Пытаемся загрузить Firebase
+    loadFirebase();
+}
+
+// Загрузить Firebase
+function loadFirebase() {
+    // Проверяем, загружены ли Firebase библиотеки
+    if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
+        console.log('⚠️ Firebase не загружен, онлайн режим недоступен');
+        return;
+    }
+    
+    // Проверяем, есть ли конфигурация
+    if (typeof firebaseConfig === 'undefined') {
+        console.log('⚠️ Конфигурация Firebase не найдена');
+        return;
+    }
+    
+    try {
+        // Пытаемся инициализировать Firebase
+        firebase.initializeApp(firebaseConfig);
+        firebaseReady = true;
+        console.log('✅ Firebase готов к использованию');
+        
+        // Обновляем кнопку Firebase
+        const firebaseBtn = document.querySelector('.mode-btn[data-mode="firebase"]');
+        if (firebaseBtn) {
+            firebaseBtn.classList.remove('disabled');
+            firebaseBtn.disabled = false;
+            firebaseBtn.innerHTML = `
+                🔥 Онлайн (Firebase)
+                <small>Работает между разными устройствами</small>
+            `;
+        }
+        
+        // Если уже выбран Firebase режим, переключаемся
+        if (currentMode === 'firebase') {
+            switchMode('firebase');
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка инициализации Firebase:', error);
+    }
 }
 
 // Переключить режим
 function switchMode(mode) {
+    console.log('🔄 Переключаю на режим:', mode);
+    
+    // Проверяем доступность Firebase
+    if (mode === 'firebase' && !firebaseReady) {
+        showNotification('Firebase не загружен. Используйте локальный режим.', 'warning');
+        return;
+    }
+    
     currentMode = mode;
     
     // Обновляем активную кнопку
@@ -62,83 +120,141 @@ function switchMode(mode) {
     // Обновляем описание
     const description = document.getElementById('mode-description');
     if (mode === 'firebase') {
-        description.innerHTML = '🔥 <strong>Онлайн режим:</strong> Работает между разными устройствами через интернет. Нужен доступ к Firebase.';
-        showNotification('Выбран онлайн режим (Firebase)', 'info');
+        description.innerHTML = '🔥 <strong>Онлайн режим:</strong> Работает между разными устройствами через интернет. Требует настройки Firebase.';
+        showNotification('Выбран онлайн режим (Firebase)', 'success');
     } else {
-        description.innerHTML = '💻 <strong>Локальный режим:</strong> Только для тестирования на одном компьютере. Не требует интернета.';
+        description.innerHTML = '💻 <strong>Локальный режим:</strong> Для тестирования на одном компьютере. Откройте две вкладки браузера.';
         showNotification('Выбран локальный тестовый режим', 'info');
     }
     
     // Обновляем кнопки действий
     updateActionButtons();
-}
-
-// Обновить кнопки действий
-function updateActionButtons() {
-    const createBtn = document.querySelector('.player-card.create-room .btn-primary');
-    const joinBtn = document.querySelector('.player-card.join-room .btn-secondary');
     
-    if (currentMode === 'firebase') {
-        createBtn.textContent = '🔥 Создать онлайн-комнату';
-        createBtn.onclick = firebaseCreateRoom;
-        joinBtn.textContent = '🔥 Присоединиться онлайн';
-        joinBtn.onclick = firebaseJoinRoom;
-    } else {
-        createBtn.textContent = '💻 Создать локальную комнату';
-        createBtn.onclick = createRoom; // из online.js
-        joinBtn.textContent = '💻 Присоединиться локально';
-        joinBtn.onclick = joinRoom; // из online.js
+    // Обновляем кнопки в комнате (если она открыта)
+    if (document.getElementById('room-screen').style.display !== 'none') {
+        setupRoomButtons();
     }
 }
 
-// Переопределить кнопки в комнате
+// Обновить кнопки действий на экране подключения
+function updateActionButtons() {
+    console.log('🔄 Обновляю кнопки для режима:', currentMode);
+    
+    const createBtn = document.querySelector('.player-card.create-room .btn-primary');
+    const joinBtn = document.querySelector('.player-card.join-room .btn-secondary');
+    const quickStartBtn = document.querySelector('.btn-quick-start');
+    
+    if (!createBtn || !joinBtn) return;
+    
+    if (currentMode === 'firebase' && firebaseReady) {
+        // Проверяем, что функции Firebase существуют
+        if (typeof firebaseCreateRoom !== 'undefined') {
+            createBtn.textContent = '🔥 Создать онлайн-комнату';
+            createBtn.onclick = firebaseCreateRoom;
+        }
+        
+        if (typeof firebaseJoinRoom !== 'undefined') {
+            joinBtn.textContent = '🔥 Присоединиться онлайн';
+            joinBtn.onclick = firebaseJoinRoom;
+        }
+        
+        if (quickStartBtn && typeof firebaseQuickStart !== 'undefined') {
+            quickStartBtn.onclick = firebaseQuickStart;
+        }
+        
+    } else {
+        // Локальный режим - используем функции из online.js
+        createBtn.textContent = '💻 Создать локальную комнату';
+        createBtn.onclick = window.createRoom; // из online.js
+        
+        joinBtn.textContent = '💻 Присоединиться локально';
+        joinBtn.onclick = window.joinRoom; // из online.js
+        
+        if (quickStartBtn) {
+            quickStartBtn.onclick = window.quickStartGame; // из online.js
+        }
+    }
+}
+
+// Настроить кнопки в комнате
 function setupRoomButtons() {
-    if (!document.getElementById('room-screen')) return;
+    console.log('🔄 Настраиваю кнопки комнаты для режима:', currentMode);
     
     const startBtn = document.getElementById('start-game-btn');
     const cardButtons = document.getElementById('card-buttons');
+    const chatBtn = document.querySelector('.chat-input button');
     
-    if (currentMode === 'firebase') {
-        // Обновляем кнопки управления
-        document.querySelector('.btn-ready').onclick = firebaseMarkSelfReady;
-        document.querySelector('.btn-partner').onclick = firebaseConfirmPartner;
-        document.querySelector('.btn-force-start').onclick = firebaseForceStart;
-        
-        // Обновляем кнопки карточек
-        if (cardButtons) {
-            cardButtons.querySelectorAll('.card-btn')[0].onclick = firebaseSendRandomQuestion;
-            cardButtons.querySelectorAll('.card-btn')[1].onclick = firebaseSendRandomAction;
-            cardButtons.querySelectorAll('.card-btn')[2].onclick = firebaseSendRandomDate;
-            cardButtons.querySelectorAll('.card-btn')[3].onclick = firebaseSendRandomCompliment;
+    // Проверяем существование элементов
+    const readyBtn = document.querySelector('.btn-ready');
+    const partnerBtn = document.querySelector('.btn-partner');
+    const forceBtn = document.querySelector('.btn-force-start');
+    
+    if (currentMode === 'firebase' && firebaseReady) {
+        // Кнопки управления игроками
+        if (readyBtn && typeof firebaseMarkSelfReady !== 'undefined') {
+            readyBtn.onclick = firebaseMarkSelfReady;
         }
         
-        // Обновляем кнопку чата
-        document.querySelector('.chat-input button').onclick = firebaseSendChatMessage;
+        if (partnerBtn && typeof firebaseConfirmPartner !== 'undefined') {
+            partnerBtn.onclick = firebaseConfirmPartner;
+        }
         
-        // Обновляем кнопку старта
-        startBtn.onclick = firebaseMarkSelfReady;
+        if (forceBtn && typeof firebaseForceStart !== 'undefined') {
+            forceBtn.onclick = firebaseForceStart;
+        }
+        
+        // Кнопки карточек
+        if (cardButtons) {
+            const cardBtns = cardButtons.querySelectorAll('.card-btn');
+            if (cardBtns[0] && typeof firebaseSendRandomQuestion !== 'undefined') {
+                cardBtns[0].onclick = firebaseSendRandomQuestion;
+            }
+            if (cardBtns[1] && typeof firebaseSendRandomAction !== 'undefined') {
+                cardBtns[1].onclick = firebaseSendRandomAction;
+            }
+            if (cardBtns[2] && typeof firebaseSendRandomDate !== 'undefined') {
+                cardBtns[2].onclick = firebaseSendRandomDate;
+            }
+            if (cardBtns[3] && typeof firebaseSendRandomCompliment !== 'undefined') {
+                cardBtns[3].onclick = firebaseSendRandomCompliment;
+            }
+        }
+        
+        // Кнопка чата
+        if (chatBtn && typeof firebaseSendChatMessage !== 'undefined') {
+            chatBtn.onclick = firebaseSendChatMessage;
+        }
+        
+        // Кнопка старта игры
+        if (startBtn && typeof firebaseMarkSelfReady !== 'undefined') {
+            startBtn.onclick = firebaseMarkSelfReady;
+        }
         
     } else {
-        // Возвращаем локальные функции
-        document.querySelector('.btn-ready').onclick = markSelfReady;
-        document.querySelector('.btn-partner').onclick = confirmPartnerConnection;
-        document.querySelector('.btn-force-start').onclick = forceStartGame;
+        // Локальный режим
+        if (readyBtn) readyBtn.onclick = window.markSelfReady;
+        if (partnerBtn) partnerBtn.onclick = window.confirmPartnerConnection;
+        if (forceBtn) forceBtn.onclick = window.forceStartGame;
         
         if (cardButtons) {
-            cardButtons.querySelectorAll('.card-btn')[0].onclick = sendRandomQuestion;
-            cardButtons.querySelectorAll('.card-btn')[1].onclick = sendRandomAction;
-            cardButtons.querySelectorAll('.card-btn')[2].onclick = sendRandomDate;
-            cardButtons.querySelectorAll('.card-btn')[3].onclick = sendRandomCompliment;
+            const cardBtns = cardButtons.querySelectorAll('.card-btn');
+            if (cardBtns[0]) cardBtns[0].onclick = window.sendRandomQuestion;
+            if (cardBtns[1]) cardBtns[1].onclick = window.sendRandomAction;
+            if (cardBtns[2]) cardBtns[2].onclick = window.sendRandomDate;
+            if (cardBtns[3]) cardBtns[3].onclick = window.sendRandomCompliment;
         }
         
-        document.querySelector('.chat-input button').onclick = sendChatMessage;
-        startBtn.onclick = startGame;
+        if (chatBtn) chatBtn.onclick = window.sendChatMessage;
+        if (startBtn) startBtn.onclick = window.startGame;
     }
 }
 
 // Добавить стили для переключателя
 function addModeStyles() {
+    if (document.querySelector('#mode-styles')) return;
+    
     const style = document.createElement('style');
+    style.id = 'mode-styles';
     style.textContent = `
         .mode-selector {
             background: linear-gradient(45deg, #f3e5f5, #e8eaf6);
@@ -162,6 +278,12 @@ function addModeStyles() {
             margin-bottom: 15px;
         }
         
+        @media (max-width: 600px) {
+            .mode-buttons {
+                flex-direction: column;
+            }
+        }
+        
         .mode-btn {
             flex: 1;
             max-width: 250px;
@@ -176,12 +298,23 @@ function addModeStyles() {
             border: 2px solid #e0e0e0;
         }
         
+        .mode-btn:hover:not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
         .mode-btn.active {
             background: linear-gradient(45deg, #2196F3, #21CBF3);
             color: white;
             border-color: #2196F3;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+        
+        .mode-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f5f5f5;
         }
         
         .mode-btn small {
@@ -242,3 +375,4 @@ function showNotification(message, type = 'info') {
 window.currentMode = currentMode;
 window.switchMode = switchMode;
 window.setupRoomButtons = setupRoomButtons;
+window.firebaseReady = firebaseReady;
