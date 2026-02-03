@@ -766,3 +766,210 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Показать поле для ввода сигнала
+function showSignalInputSection() {
+    document.getElementById('signal-input-section').style.display = 'block';
+}
+
+// Подключиться по сигналу из поля ввода
+function connectWithSignalInput() {
+    const signalInput = document.getElementById('signal-input');
+    const encodedSignal = signalInput.value.trim();
+    
+    if (!encodedSignal) {
+        showNotification('Введите сигнал от партнера!', 'warning');
+        return;
+    }
+    
+    connectWithSignal(encodedSignal);
+    signalInput.value = '';
+    document.getElementById('signal-input-section').style.display = 'none';
+}
+
+// Функция подключения по сигналу
+function connectWithSignal(encodedSignal) {
+    console.log('Пытаюсь подключиться по сигналу...');
+    
+    try {
+        // Декодируем из base64
+        const signalStr = atob(encodedSignal);
+        const signalData = JSON.parse(signalStr);
+        
+        console.log('Сигнал получен:', signalData.type);
+        
+        // Создаем P2P соединение как гость
+        peer = new SimplePeer({
+            initiator: false,
+            trickle: false,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' }
+                ]
+            }
+        });
+        
+        // Настраиваем обработчики
+        setupPeerHandlers();
+        
+        // Отправляем сигнал
+        peer.signal(signalData);
+        
+        showNotification('Подключаюсь к партнеру...', 'info');
+        
+    } catch (error) {
+        console.error('Ошибка подключения:', error);
+        showNotification('Неверный сигнал: ' + error.message, 'error');
+    }
+}
+
+// Общие обработчики для P2P
+function setupPeerHandlers() {
+    // Когда подключимся
+    peer.on('connect', function() {
+        console.log('✅ P2P соединение установлено!');
+        showNotification('Подключено к партнеру! 🎉', 'success');
+        
+        const myIndex = isHost ? 0 : 1;
+        players[myIndex].ready = true;
+        updatePlayersDisplay();
+        
+        // Показываем кнопки карточек
+        setTimeout(showCardButtons, 500);
+        
+        // Отправляем информацию о себе
+        setTimeout(() => {
+            if (peer.connected) {
+                peer.send(JSON.stringify({
+                    type: 'player_info',
+                    name: playerName,
+                    isHost: isHost
+                }));
+            }
+        }, 1000);
+    });
+    
+    // Когда получим данные
+    peer.on('data', function(data) {
+        try {
+            const message = JSON.parse(data.toString());
+            console.log('Получены данные:', message);
+            handlePeerData(message);
+        } catch (e) {
+            console.log('Получен текст:', data.toString());
+            addChatMessage(data.toString(), 'Партнер');
+        }
+    });
+    
+    // Когда получим сигнал
+    peer.on('signal', function(data) {
+        console.log('Сгенерирован сигнал:', data.type);
+        
+        if (isHost && data.type === 'offer') {
+            // Хост показывает свой сигнал для гостя
+            const signalStr = JSON.stringify(data);
+            const encodedSignal = btoa(signalStr);
+            
+            showNotification('Сигнал сгенерирован!', 'success');
+            addChatMessage(`📡 Сигнал для подключения: ${encodedSignal}`, 'system');
+            
+            // Также показываем в отдельном блоке для удобного копирования
+            showSignalForCopy(encodedSignal);
+        }
+    });
+    
+    // Обработка ошибок
+    peer.on('error', function(err) {
+        console.error('Ошибка P2P:', err);
+        showNotification('Ошибка соединения: ' + err.message, 'error');
+    });
+}
+
+// Показать сигнал для копирования (на хосте)
+function showSignalForCopy(encodedSignal) {
+    const signalDiv = document.createElement('div');
+    signalDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        z-index: 10007;
+        max-width: 600px;
+        width: 90%;
+        text-align: center;
+    `;
+    
+    signalDiv.innerHTML = `
+        <h3 style="color:#2196F3; margin-bottom: 15px;">📡 Сигнал для партнера</h3>
+        <p style="color:#666; margin-bottom: 15px;">Скопируйте этот код и отправьте партнеру:</p>
+        
+        <div style="
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px dashed #2196F3;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            text-align: left;
+        ">
+            ${encodedSignal}
+        </div>
+        
+        <button onclick="copyToClipboard('${encodedSignal}')" style="
+            padding: 12px 25px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        ">
+            📋 Копировать сигнал
+        </button>
+        
+        <button onclick="this.parentElement.remove()" style="
+            padding: 12px 25px;
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        ">
+            Закрыть
+        </button>
+    `;
+    
+    document.body.appendChild(signalDiv);
+}
+
+// Копировать в буфер обмена
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => showNotification('Сигнал скопирован! ✅', 'success'))
+        .catch(err => {
+            // Fallback
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showNotification('Сигнал скопирован!', 'success');
+        });
+}
+
