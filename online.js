@@ -53,19 +53,8 @@ window.onload = function() {
 
 // Инициализация PeerJS
 function initPeerJS() {
-try {
-    peer = new Peer(PEER_CONFIG);
-} catch (error) {
-    console.error('Ошибка при создании Peer:', error);
-    // Пробуем альтернативную конфигурацию
-    peer = new Peer({
-        host: 'peerjs-server.herokuapp.com',
-        port: 443,
-        secure: true,
-        path: '/',
-        debug: 3
-    });
-}
+    try {
+peer = new Peer(PEER_CONFIG);
         
         peer.on('open', function(id) {
             console.log('PeerJS подключен, мой ID:', id);
@@ -1255,4 +1244,5 @@ function quickStartGame() {
 // Экспортируем функцию отправки карты для основной игры
 
 window.sendCardToPartner = sendCardToPartner;
+
 
