@@ -1,6 +1,12 @@
 // LoveCouple Online - Настоящая сетевая игра
 console.log('🚀 Запускаем настоящую сетевую игру...');
 
+// 👇 ДОБАВЬ ЭТИ ПЕРЕМЕННЫЕ:
+let ws = null;
+let currentRoomId = null;
+let currentUsername = ''; // ← ВАЖНО!
+let currentPlayerId = null;
+
 // ====================
 // ИМПОРТ МОДУЛЕЙ
 // ====================
@@ -448,16 +454,19 @@ function sendToServer(type, data = {}) {
 }
 
 // Создание комнаты
-async function createRoom() {
+function createRoom() {
     console.log('👑 Создаем комнату как хост...');
     
     const nameInput = document.getElementById('hostNameInput');
-    const playerName = nameInput ? nameInput.value.trim() : ''; // ← УБРАЛ 'Хост'
+    if (!nameInput) return;
     
-    if (!playerName) {
+    const name = nameInput.value.trim();
+    if (!name) {
         showNotification('Введите ваше имя', 'error');
         return;
     }
+  currentUsername = name;
+    gameState.playerName = name;
     
     showNotification('Подключаемся к серверу...', 'info');
     
