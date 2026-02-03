@@ -222,5 +222,28 @@
             if (startBtn && window.startGame) startBtn.onclick = window.startGame;
         }
     </script>
+    <script>
+    // Обработчик Enter для чата
+    function setupChatListeners() {
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    if (window.currentMode === 'firebase' && window.firebaseSendChatMessage) {
+                        window.firebaseSendChatMessage();
+                    } else if (window.sendChatMessage) {
+                        window.sendChatMessage();
+                    }
+                }
+            });
+        }
+    }
+    
+    // Устанавливаем после загрузки
+    window.addEventListener('load', function() {
+        setTimeout(setupChatListeners, 1000);
+    });
+</script>
 </body>
 </html>
+
