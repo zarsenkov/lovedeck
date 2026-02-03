@@ -111,10 +111,15 @@ function handleRoomCreated(data) {
     gameState.playerId = data.playerId;
     gameState.isConnected = true;
     
-    // Показываем ID комнаты
+    // Показываем ID комнаты (ИСПРАВЛЕНО)
     const roomIdElement = document.getElementById('roomId');
     if (roomIdElement) {
         roomIdElement.textContent = data.roomId;
+        roomIdElement.style.fontWeight = 'bold';
+        roomIdElement.style.color = '#764ba2';
+        
+        // Добавляем кнопку копирования
+        roomIdElement.innerHTML = data.roomId + ' <button onclick="copyRoomId()" style="margin-left:10px; padding:5px 10px; font-size:0.8em; background:#4CAF50; color:white; border:none; border-radius:5px; cursor:pointer;">Копировать</button>';
     }
     
     // Показываем уведомление
@@ -127,6 +132,15 @@ function handleRoomCreated(data) {
     }
     
     updatePlayerNames();
+}
+
+// Функция копирования ID комнаты
+function copyRoomId() {
+    if (gameState.roomId) {
+        navigator.clipboard.writeText(gameState.roomId)
+            .then(() => showNotification('ID комнаты скопирован!', 'success'))
+            .catch(() => showNotification('Не удалось скопировать', 'error'));
+    }
 }
 
 function handleRoomJoined(data) {
@@ -150,32 +164,32 @@ function handleRoomJoined(data) {
 function handlePlayerConnected(data) {
     console.log('👤 Игрок подключился:', data);
     
-    // Обновляем статус подключения
     gameState.isConnected = true;
+    gameState.playersInRoom = (gameState.playersInRoom || 0) + 1;
     
-    // Показываем имя игрока
-    let message = 'Новый игрок подключился!';
-    if (data.playerName) {
-        message = `${data.playerName} присоединился к игре!`;
-        // Сохраняем имя второго игрока
-        if (data.playerName !== gameState.playerName) {
-            gameState.otherPlayerName = data.playerName;
-            updatePlayerNames();
-        }
+    // Сохраняем имя второго игрока
+    if (data.playerName && data.playerName !== gameState.playerName) {
+        gameState.otherPlayerName = data.playerName;
+        updatePlayerNames();
     }
     
+    // Показываем сообщение
+    const message = data.playerName ? 
+        `${data.playerName} присоединился к игре!` : 
+        'Новый игрок подключился!';
     addMessage('system', message);
     
-    // Если мы хост и подключился второй игрок - активируем кнопку "Начать игру"
-    if (gameState.isHost && gameState.playersInRoom >= 1) {
+    // Если мы хост и есть второй игрок - активируем кнопку "Начать игру"
+    if (gameState.isHost && gameState.playersInRoom >= 2) {
         const startBtn = document.getElementById('startGameBtn');
         if (startBtn) {
             startBtn.disabled = false;
             startBtn.textContent = '🎮 Начать игру';
+            startBtn.style.opacity = '1';
+            showNotification('Второй игрок подключился! Можно начинать игру.', 'success');
         }
     }
     
-    gameState.playersInRoom = (gameState.playersInRoom || 0) + 1;
     updatePlayerCount();
 }
 
@@ -560,7 +574,14 @@ function showNotification(message, type = 'info') {
 function updatePlayerCount() {
     const countElement = document.getElementById('playerCount');
     if (countElement) {
-        countElement.textContent = `Игроков в комнате: ${gameState.playersInRoom}/2`;
+        const count = gameState.playersInRoom || 1;
+        countElement.textContent = `Игроков в комнате: ${count}/2`;
+        
+        // Меняем цвет если полная комната
+        if (count >= 2) {
+            countElement.style.color = '#4CAF50';
+            countElement.style.fontWeight = 'bold';
+        }
     }
 }
 
@@ -570,14 +591,24 @@ function updatePlayerNames() {
     const playerNameEl = document.getElementById('playerName');
     
     if (hostNameEl) {
-        hostNameEl.textContent = gameState.isHost ? 'Вы (Хост)' : (gameState.hostName || 'Хост');
+        if (gameState.isHost) {
+            hostNameEl.textContent = `${gameState.playerName} (Вы)`;
+            hostNameEl.style.fontWeight = 'bold';
+        } else {
+            hostNameEl.textContent = gameState.hostName || 'Хост';
+        }
     }
     
     if (playerNameEl) {
         if (gameState.isHost) {
             playerNameEl.textContent = gameState.otherPlayerName || 'Ожидание игрока...';
+            if (gameState.otherPlayerName) {
+                playerNameEl.style.color = '#4CAF50';
+                playerNameEl.style.fontWeight = 'bold';
+            }
         } else {
-            playerNameEl.textContent = 'Вы';
+            playerNameEl.textContent = `${gameState.playerName} (Вы)`;
+            playerNameEl.style.fontWeight = 'bold';
         }
     }
 }
@@ -704,9 +735,39 @@ function showScreen(screenId) {
     if (targetScreen) {
         targetScreen.style.display = 'block';
         
-        // Загружаем историю чата при входе в комнату
+        // Если это экран комнаты - обновляем данные
         if (screenId === 'roomScreen') {
-            loadChatHistory();
+            updateRoomScreen();
+        }
+    }
+}
+
+// Новая функция для обновления экрана комнаты
+function updateRoomScreen() {
+    // Обновляем ID комнаты
+    const roomIdEl = document.getElementById('roomId');
+    if (roomIdEl && gameState.roomId) {
+        roomIdEl.textContent = gameState.roomId;
+    }
+    
+    // Обновляем имена игроков
+    updatePlayerNames();
+    
+    // Обновляем счетчик игроков
+    updatePlayerCount();
+    
+    // Обновляем статус кнопки "Начать игру"
+    const startBtn = document.getElementById('startGameBtn');
+    if (startBtn) {
+        if (gameState.isHost && gameState.playersInRoom >= 2) {
+            startBtn.disabled = false;
+            startBtn.textContent = '🎮 Начать игру';
+        } else if (gameState.isHost) {
+            startBtn.disabled = true;
+            startBtn.textContent = '⏳ Ожидание второго игрока...';
+        } else {
+            startBtn.disabled = true;
+            startBtn.textContent = '⏳ Ожидаем начала игры...';
         }
     }
 }
