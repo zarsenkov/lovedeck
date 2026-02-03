@@ -1,27 +1,22 @@
-// online.js - онлайн-режим на SimplePeer
+// online.js - онлайн-режим через WebSocket сервер
 
 // Глобальные переменные
-let peer = null;
-let conn = null;
+let ws = null;
 let currentRoomId = null;
 let playerName = '';
 let isHost = false;
+let partnerConnected = false;
 let players = [
     { id: null, name: '', ready: false },
     { id: null, name: '', ready: false }
 ];
 
+// Бесплатный WebSocket сервер для тестирования
+const WS_SERVER = 'wss://ws.postman-echo.com/raw';
+
 // Инициализация при загрузке
 window.onload = function() {
     console.log('LoveDeck Online загружен!');
-    
-    // Проверяем SimplePeer
-    if (typeof SimplePeer === 'undefined') {
-        showNotification('Ошибка: SimplePeer не загружен', 'error');
-        return;
-    }
-    
-    console.log('SimplePeer доступен');
     
     // Настраиваем отправку сообщения по Enter
     document.getElementById('chat-input').addEventListener('keypress', function(e) {
@@ -36,7 +31,6 @@ window.onload = function() {
 // Создание комнаты (Хост)
 function createRoom() {
     playerName = document.getElementById('player1-name').value.trim() || 'Игрок 1';
-    
     isHost = true;
     
     // Генерируем случайный ID комнаты
@@ -50,14 +44,11 @@ function createRoom() {
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
-    // Показываем код комнаты
-    showRoomCode(currentRoomId);
-    console.log('Комната создана. Код:', currentRoomId);
+    // Подключаемся к WebSocket серверу
+    initWebSocket();
     
-    // Автоматически генерируем сигнал
-    setTimeout(() => {
-        generateSignal();
-    }, 1000);
+    console.log('Комната создана. Код:', currentRoomId);
+    showNotification('Комната создана! Отправьте код партнеру.', 'success');
 }
 
 // Присоединение к комнате (Гость)
@@ -81,8 +72,11 @@ function joinRoom() {
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
-    showNotification('Ожидаю сигнал от хоста. Нажмите "Ввести сигнал" когда получите его.', 'info');
-    console.log('Ожидаю сигнал от хоста для комнаты:', roomCode);
+    // Подключаемся к WebSocket серверу
+    initWebSocket();
+    
+    console.log('Подключился к комнате:', roomCode);
+    showNotification('Подключился к комнате!', 'success');
 }
 
 // Быстрый старт
@@ -98,13 +92,10 @@ function quickStartGame() {
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
-    // Генерируем сигнал
-    setTimeout(() => {
-        generateSignal();
-    }, 1000);
-    
+    initWebSocket();
     showQR();
-    showNotification('Сигнал автоматически генерируется...', 'success');
+    
+    showNotification('Комната создана! Партнер может подключиться по QR-коду.', 'success');
 }
 
 // Генерация кода комнаты
@@ -112,185 +103,142 @@ function generateRoomCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-// ===================== P2P СОЕДИНЕНИЕ =====================
+// ===================== WEBSOCKET СОЕДИНЕНИЕ =====================
 
-// Генерация сигнала (для хоста)
-function generateSignal() {
-    console.log('🔧 Генерация P2P сигнала...');
+// Инициализация WebSocket
+function initWebSocket() {
+    console.log('Подключаюсь к WebSocket серверу...');
     
-    if (!isHost) {
-        showNotification('Только хост может генерировать сигнал', 'warning');
-        return;
-    }
-    
-    // Если peer уже создан - пересоздаем
-    if (peer) {
-        peer.destroy();
-        peer = null;
-    }
-    
-    // Создаем новое P2P соединение как инициатор
-    peer = new SimplePeer({
-        initiator: true,
-        trickle: false,
-        config: {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:global.stun.twilio.com:3478' }
-            ]
-        }
-    });
-    
-    console.log('✅ P2P соединение создано (инициатор)');
-    
-    // Настраиваем обработчики
-    setupPeerHandlers();
-    
-    showNotification('Генерирую сигнал подключения...', 'info');
-}
-
-// Общие обработчики для P2P
-function setupPeerHandlers() {
-    if (!peer) {
-        console.error('❌ Peer не определен!');
-        return;
-    }
-    
-    // Когда подключимся
-    peer.on('connect', function() {
-        console.log('✅ P2P соединение установлено!');
-        showNotification('Подключено к партнеру! 🎉', 'success');
+    try {
+        ws = new WebSocket(WS_SERVER);
         
-        const myIndex = isHost ? 0 : 1;
-        players[myIndex].ready = true;
-        updatePlayersDisplay();
-        
-        // Активируем кнопку старта
-        updateStartButton();
-        
-        // Показываем кнопки карточек
-        setTimeout(showCardButtons, 500);
-        
-        // Отправляем информацию о себе
-        setTimeout(() => {
-            if (peer.connected) {
-                sendPeerData({
-                    type: 'player_info',
-                    name: playerName,
-                    isHost: isHost
-                });
+        ws.onopen = function() {
+            console.log('✅ WebSocket подключен');
+            showNotification('Сервер подключен', 'success');
+            
+            // Регистрируемся в комнате
+            sendToServer({
+                type: 'join_room',
+                room: currentRoomId,
+                player: playerName,
+                isHost: isHost
+            });
+            
+            // Если мы хост - сразу отмечаем себя как готового
+            if (isHost) {
+                players[0].ready = true;
+                updatePlayersDisplay();
             }
-        }, 1000);
-    });
-    
-    // Когда получим сигнал (офер или ответ)
-    peer.on('signal', function(data) {
-        console.log('📡 Сгенерирован сигнал:', data.type);
+        };
         
-        const signalStr = JSON.stringify(data);
-        const encodedSignal = btoa(signalStr);
+        ws.onmessage = function(event) {
+            console.log('Получено от сервера:', event.data);
+            
+            try {
+                const data = JSON.parse(event.data);
+                handleServerMessage(data);
+            } catch (e) {
+                // Если это не JSON, обрабатываем как текстовое сообщение
+                if (event.data.includes('joined') || event.data.includes('connected')) {
+                    // Игнорируем служебные сообщения эхо-сервера
+                    return;
+                }
+                console.log('Текстовое сообщение:', event.data);
+                addChatMessage(event.data, 'Партнер');
+            }
+        };
         
-        if (isHost && data.type === 'offer') {
-            // Хост показывает свой сигнал для гостя
-            showNotification('✅ Сигнал сгенерирован!', 'success');
-            
-            // Показываем для копирования
-            showSignalForCopy(encodedSignal);
-            
-            // Также добавляем в чат
-            addChatMessage(`📡 Сигнал для подключения готов.`, 'system');
-            
-        } else if (!isHost && data.type === 'answer') {
-            // Гость сгенерировал ответ
-            console.log('Ответный сигнал сгенерирован');
-        }
-    });
-    
-    // Когда получим данные
-    peer.on('data', function(data) {
-        try {
-            const message = JSON.parse(data.toString());
-            console.log('📩 Получены данные:', message);
-            handlePeerData(message);
-        } catch (e) {
-            console.log('Получен текст:', data.toString());
-            addChatMessage(data.toString(), 'Партнер');
-        }
-    });
-    
-    // Обработка ошибок
-    peer.on('error', function(err) {
-        console.error('❌ Ошибка P2P:', err);
-        showNotification('Ошибка соединения: ' + err.message, 'error');
-    });
-    
-    // Закрытие соединения
-    peer.on('close', function() {
-        console.log('Соединение закрыто');
-        showNotification('Соединение с партнером разорвано', 'warning');
-        players[1].ready = false;
-        players[0].ready = false;
-        updatePlayersDisplay();
-    });
+        ws.onerror = function(error) {
+            console.error('WebSocket ошибка:', error);
+            showNotification('Ошибка подключения к серверу', 'error');
+        };
+        
+        ws.onclose = function() {
+            console.log('WebSocket закрыт');
+            partnerConnected = false;
+            players[1].ready = false;
+            updatePlayersDisplay();
+            showNotification('Соединение с сервером потеряно', 'warning');
+        };
+        
+    } catch (error) {
+        console.error('Не удалось подключиться:', error);
+        showNotification('Ошибка подключения', 'error');
+    }
 }
 
-// Отправка данных партнеру
-function sendPeerData(data) {
-    if (peer && peer.connected) {
-        try {
-            const dataStr = JSON.stringify(data);
-            peer.send(dataStr);
-            return true;
-        } catch (error) {
-            console.error('Ошибка отправки:', error);
-            return false;
-        }
+// Отправка данных на сервер
+function sendToServer(data) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        const message = JSON.stringify({
+            ...data,
+            room: currentRoomId,
+            timestamp: Date.now()
+        });
+        ws.send(message);
+        console.log('Отправлено на сервер:', data);
+        return true;
     }
-    console.log('Нет активного соединения');
+    console.log('WebSocket не готов');
     return false;
 }
 
-// Подключение по сигналу (для гостя)
-function connectWithSignal(encodedSignal) {
-    console.log('🔗 Подключаюсь по сигналу...');
+// Обработка сообщений от сервера
+function handleServerMessage(data) {
+    // Поскольку это эхо-сервер, мы получаем свои же сообщения
+    // Будем считать, что если сообщение не от нас - то от партнера
     
-    try {
-        // Декодируем из base64
-        const signalStr = atob(encodedSignal);
-        const signalData = JSON.parse(signalStr);
+    if (data.player && data.player !== playerName) {
+        // Сообщение от партнера
+        console.log('Сообщение от партнера:', data);
         
-        console.log('✅ Сигнал получен:', signalData.type);
-        
-        // Если peer уже создан - пересоздаем
-        if (peer) {
-            peer.destroy();
-            peer = null;
+        switch(data.type) {
+            case 'join_room':
+                // Партнер подключился к комнате
+                partnerConnected = true;
+                const partnerIndex = isHost ? 1 : 0;
+                players[partnerIndex] = {
+                    id: 'connected',
+                    name: data.player,
+                    ready: true
+                };
+                updatePlayersDisplay();
+                addChatMessage(`👋 ${data.player} подключился(ась)!`, 'system');
+                showNotification('Партнер подключился!', 'success');
+                updateStartButton();
+                break;
+                
+            case 'player_ready':
+                players[isHost ? 1 : 0].ready = data.ready;
+                updatePlayersDisplay();
+                if (data.ready) {
+                    addChatMessage(`✅ ${data.player} готов(а)!`, 'system');
+                }
+                checkIfBothReady();
+                break;
+                
+            case 'chat_message':
+                addChatMessage(data.message, data.player);
+                break;
+                
+            case 'card_click':
+                showPartnerCard(data.card);
+                break;
+                
+            case 'start_game':
+                startSharedGame();
+                break;
         }
-        
-        // Создаем P2P соединение как гость
-        peer = new SimplePeer({
-            initiator: false,
-            trickle: false,
-            config: {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' }
-                ]
-            }
-        });
-        
-        // Настраиваем обработчики
-        setupPeerHandlers();
-        
-        // Отправляем сигнал
-        peer.signal(signalData);
-        
-        showNotification('Подключаюсь к партнеру...', 'info');
-        
-    } catch (error) {
-        console.error('❌ Ошибка подключения:', error);
-        showNotification('Неверный сигнал: ' + error.message, 'error');
     }
+}
+
+// Отправка данных партнеру (через сервер)
+function sendToPartner(data) {
+    return sendToServer({
+        ...data,
+        player: playerName,
+        isHost: isHost
+    });
 }
 
 // ===================== ИНТЕРФЕЙС =====================
@@ -309,10 +257,10 @@ function updatePlayersDisplay() {
 // Обновление кнопки старта
 function updateStartButton() {
     const startBtn = document.getElementById('start-game-btn');
-    const bothConnected = (players[0].ready || players[1].ready) && peer && peer.connected;
+    const bothReady = players[0].ready && players[1].ready;
     
-    startBtn.disabled = !bothConnected;
-    startBtn.textContent = bothConnected ? 'Начать игру!' : 'Ожидание подключения...';
+    startBtn.disabled = !bothReady;
+    startBtn.textContent = bothReady ? 'Начать игру!' : 'Ожидание игрока...';
 }
 
 // Начать игру
@@ -324,12 +272,21 @@ function startGame() {
     updatePlayersDisplay();
     
     // Отправляем статус партнеру
-    sendPeerData({
+    sendToPartner({
         type: 'player_ready',
         ready: true,
-        playerIndex: myIndex,
-        playerName: playerName
+        player: playerName
     });
+    
+    // Если хост - запускаем игру для обоих
+    if (isHost) {
+        setTimeout(() => {
+            sendToPartner({
+                type: 'start_game'
+            });
+            startSharedGame();
+        }, 1000);
+    }
     
     checkIfBothReady();
 }
@@ -337,9 +294,9 @@ function startGame() {
 // Проверка готовности обоих
 function checkIfBothReady() {
     const bothReady = players[0].ready && players[1].ready;
-    const bothConnected = peer && peer.connected;
     
-    if (bothReady && bothConnected) {
+    if (bothReady && isHost) {
+        // Хост запускает игру
         startSharedGame();
     }
 }
@@ -369,19 +326,14 @@ function sendChatMessage() {
     
     if (!message) return;
     
-    // Обычное сообщение
-    if (sendPeerData) {
-        sendPeerData({
-            type: 'chat_message',
-            message: message,
-            sender: playerName
-        });
-        
-        addChatMessage(message, 'Вы');
-    } else {
-        addChatMessage(message, 'Вы (локально)');
-    }
+    // Отправляем партнеру
+    sendToPartner({
+        type: 'chat_message',
+        message: message
+    });
     
+    // Показываем себе
+    addChatMessage(message, 'Вы');
     input.value = '';
 }
 
@@ -401,14 +353,6 @@ function showCardButtons() {
     const cardButtons = document.getElementById('card-buttons');
     if (cardButtons) {
         cardButtons.style.display = 'block';
-        cardButtons.style.animation = 'fadeIn 0.5s ease';
-    }
-}
-
-function hideCardButtons() {
-    const cardButtons = document.getElementById('card-buttons');
-    if (cardButtons) {
-        cardButtons.style.display = 'none';
     }
 }
 
@@ -419,29 +363,29 @@ const onlineCards = {
     вопросы: [
         "Что тебе больше всего нравится в наших отношениях?",
         "Какая наша совместная мечта?",
-        "Что бы ты хотел(а) улучшить в наших отношениях?"
+        "Что бы ты хотел(а) улучшить в наших отношениях?",
+        "Какой момент с тобой был самым романтичным?",
+        "Что тебе нравится во мне больше всего?"
     ],
     действия: [
         "Отправь партнеру фото с надписью 'Скучаю по тебе' 💕",
-        "Напиши партнеру голосовое сообщение с комплиментом 🎤"
+        "Напиши партнеру голосовое сообщение с комплиментом 🎤",
+        "Спой партнеру песню (можно в голосовом сообщении) 🎵"
     ],
     свидания: [
         "Виртуальный киновечер: смотрим один фильм одновременно 🎬",
-        "Онлайн-ужин при свечах 🍽️"
+        "Онлайн-ужин при свечах: готовим одинаковые блюда 🍽️",
+        "Совместная игра в онлайн-игры или квизы 🎮"
     ],
     комплименты: [
-        "Ты делаешь мои дни ярче 🌞",
-        "Я так благодарен(на) судьбе за то, что ты в моей жизни 💫"
+        "Ты делаешь мои дни ярче просто своим существованием 🌞",
+        "Я так благодарен(на) судьбе за то, что ты в моей жизни 💫",
+        "Твоя улыбка - мой самый любимый вид 😊"
     ]
 };
 
 // Функции отправки карточек
 function sendRandomQuestion() {
-    if (!sendPeerData) {
-        showNotification('Нет соединения с партнером', 'warning');
-        return;
-    }
-    
     const questions = onlineCards.вопросы;
     const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
     
@@ -452,7 +396,7 @@ function sendRandomQuestion() {
         from: playerName
     };
     
-    sendPeerData({
+    sendToPartner({
         type: 'card_click',
         card: card
     });
@@ -462,11 +406,6 @@ function sendRandomQuestion() {
 }
 
 function sendRandomAction() {
-    if (!sendPeerData) {
-        showNotification('Нет соединения с партнером', 'warning');
-        return;
-    }
-    
     const actions = onlineCards.действия;
     const randomAction = actions[Math.floor(Math.random() * actions.length)];
     
@@ -477,7 +416,7 @@ function sendRandomAction() {
         from: playerName
     };
     
-    sendPeerData({
+    sendToPartner({
         type: 'card_click',
         card: card
     });
@@ -487,11 +426,6 @@ function sendRandomAction() {
 }
 
 function sendRandomDate() {
-    if (!sendPeerData) {
-        showNotification('Нет соединения с партнером', 'warning');
-        return;
-    }
-    
     const dates = onlineCards.свидания;
     const randomDate = dates[Math.floor(Math.random() * dates.length)];
     
@@ -502,7 +436,7 @@ function sendRandomDate() {
         from: playerName
     };
     
-    sendPeerData({
+    sendToPartner({
         type: 'card_click',
         card: card
     });
@@ -512,11 +446,6 @@ function sendRandomDate() {
 }
 
 function sendRandomCompliment() {
-    if (!sendPeerData) {
-        showNotification('Нет соединения с партнером', 'warning');
-        return;
-    }
-    
     const compliments = onlineCards.комплименты;
     const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
     
@@ -527,7 +456,7 @@ function sendRandomCompliment() {
         from: playerName
     };
     
-    sendPeerData({
+    sendToPartner({
         type: 'card_click',
         card: card
     });
@@ -576,7 +505,7 @@ function showPartnerCard(card) {
                 border-left: 5px solid #e91e63;
             ">
                 <p style="color: #9C27B0; font-weight: bold; margin-bottom: 10px;">${card.category || 'Вопрос для пары'}</p>
-                <p style="font-size: 20px; color: #333;">${card.question || card.text || 'Карта от партнера'}</p>
+                <p style="font-size: 20px; color: #333;">${card.question || 'Карта от партнера'}</p>
             </div>
             
             <button onclick="this.parentElement.parentElement.remove()" style="
@@ -598,11 +527,6 @@ function showPartnerCard(card) {
 }
 
 // ===================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====================
-
-// Показать код комнаты
-function showRoomCode(roomId) {
-    showCustomAlert('🎮 Комната создана!', `Код комнаты: <strong>${roomId}</strong><br><br>Отправьте этот код партнеру.`, 'info');
-}
 
 // Копировать код комнаты
 function copyRoomCode() {
@@ -636,137 +560,6 @@ function showQR() {
 
 function closeQR() {
     document.getElementById('qr-modal').style.display = 'none';
-}
-
-// Показать сигнал для копирования
-function showSignalForCopy(encodedSignal) {
-    const signalDiv = document.createElement('div');
-    signalDiv.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        z-index: 10007;
-        max-width: 600px;
-        width: 90%;
-        text-align: center;
-    `;
-    
-    signalDiv.innerHTML = `
-        <h3 style="color:#2196F3; margin-bottom: 15px;">📡 Сигнал для партнера</h3>
-        <p style="color:#666; margin-bottom: 15px;">Скопируйте этот код и отправьте партнеру:</p>
-        
-        <div style="
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px dashed #2196F3;
-            margin-bottom: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 12px;
-            text-align: left;
-        ">
-            ${encodedSignal}
-        </div>
-        
-        <button onclick="copyToClipboard('${encodedSignal}')" style="
-            padding: 12px 25px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        ">
-            📋 Копировать сигнал
-        </button>
-        
-        <button onclick="this.parentElement.remove()" style="
-            padding: 12px 25px;
-            background: #f0f0f0;
-            color: #666;
-            border: none;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 5px;
-        ">
-            Закрыть
-        </button>
-    `;
-    
-    document.body.appendChild(signalDiv);
-}
-
-// Показать поле для ввода сигнала
-function showSignalInputSection() {
-    document.getElementById('signal-input-section').style.display = 'block';
-}
-
-// Подключиться по сигналу из поля ввода
-function connectWithSignalInput() {
-    const signalInput = document.getElementById('signal-input');
-    const encodedSignal = signalInput.value.trim();
-    
-    if (!encodedSignal) {
-        showNotification('Введите сигнал от партнера!', 'warning');
-        return;
-    }
-    
-    connectWithSignal(encodedSignal);
-    signalInput.value = '';
-    document.getElementById('signal-input-section').style.display = 'none';
-}
-
-// Обработка данных от партнера
-function handlePeerData(data) {
-    console.log('Обработка данных от партнера:', data);
-    
-    switch(data.type) {
-        case 'player_info':
-            const playerIndex = isHost ? 1 : 0;
-            players[playerIndex] = {
-                id: 'connected',
-                name: data.name,
-                ready: true
-            };
-            updatePlayersDisplay();
-            addChatMessage(`👋 ${data.name} подключился(ась)!`, 'system');
-            checkIfBothReady();
-            break;
-            
-        case 'player_ready':
-            const index = data.playerIndex !== undefined ? data.playerIndex : (isHost ? 1 : 0);
-            if (players[index]) {
-                players[index].ready = data.ready;
-                updatePlayersDisplay();
-                
-                if (data.ready) {
-                    addChatMessage(`✅ ${data.playerName} готов(а)!`, 'system');
-                }
-                checkIfBothReady();
-            }
-            break;
-            
-        case 'chat_message':
-            addChatMessage(data.message, data.sender);
-            break;
-            
-        case 'card_click':
-            showPartnerCard(data.card);
-            break;
-    }
 }
 
 // Уведомления
@@ -846,24 +639,8 @@ function showCustomAlert(title, message, type = 'info') {
     document.body.appendChild(alertDiv);
 }
 
-// Копировать в буфер обмена
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text)
-        .then(() => showNotification('Скопировано! ✅', 'success'))
-        .catch(err => {
-            // Fallback
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            showNotification('Скопировано!', 'success');
-        });
-}
-
 // Экспортируем функцию отправки карты
-window.sendCardToPartner = sendPeerData;
+window.sendCardToPartner = sendToPartner;
 
 // Добавляем анимации CSS
 const style = document.createElement('style');
