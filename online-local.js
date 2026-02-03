@@ -674,6 +674,14 @@ function setupCardButtons() {
             }
         };
     }
+    
+    // Настройка новой кнопки в setupCardButtons:
+const createCustomCardBtn = document.getElementById('createCustomCardBtn');
+if (createCustomCardBtn) {
+    createCustomCardBtn.onclick = () => {
+        showCustomCardCreator();
+    };
+}
 }
 
 // Настройка кнопок в комнате
@@ -875,6 +883,29 @@ function initializeOnlineGame() {
     setupRoomButtons();
     
     console.log('✅ Настоящая сетевая игра готова');
+}
+
+// Функция создания своей карточки
+function showCustomCardCreator() {
+    const cardType = prompt('Выберите тип карточки:\n1. Вопрос\n2. Действие\n3. Свидание\n4. Комплимент', '1');
+    const text = prompt('Введите текст карточки:', '');
+    
+    if (!text) return;
+    
+    let type = 'question';
+    let typeName = 'вопрос';
+    
+    switch(cardType) {
+        case '2': type = 'action'; typeName = 'действие'; break;
+        case '3': type = 'date'; typeName = 'свидание'; break;
+        case '4': type = 'compliment'; typeName = 'комплимент'; break;
+    }
+    
+    const customCard = { text: text, custom: true };
+    sendCard(customCard, type);
+    displayCard(customCard, type);
+    
+    addMessage('system', `Вы создали ${typeName}: "${text.substring(0, 50)}..."`);
 }
 
 // Запуск при загрузке
