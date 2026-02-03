@@ -75,6 +75,7 @@ window.onload = function() {
 // ===================== ОСНОВНЫЕ ФУНКЦИИ =====================
 
 // Создание комнаты (Хост)
+// Создание комнаты (с автоматической генерацией сигнала)
 function createRoom() {
     playerName = document.getElementById('player1-name').value.trim() || 'Игрок 1';
     
@@ -91,8 +92,12 @@ function createRoom() {
     document.getElementById('room-screen').style.display = 'block';
     document.getElementById('room-id-display').textContent = currentRoomId;
     
-    // Показываем код комнаты
-    showRoomCode(currentRoomId);
+    // Автоматически генерируем сигнал через 2 секунды
+    setTimeout(() => {
+        generateSignal();
+    }, 2000);
+    
+    showNotification('Комната создана! Автоматически генерирую сигнал...', 'success');
     console.log('Комната создана. Код:', currentRoomId);
 }
 
@@ -268,6 +273,7 @@ function sendPeerData(data) {
             return false;
         }
     }
+    console.log('Нет активного соединения');
     return false;
 }
 
@@ -866,7 +872,13 @@ function connectWithSignal(encodedSignal) {
 }
 
 // Общие обработчики для P2P
+// Общие обработчики для P2P
 function setupPeerHandlers() {
+    if (!peer) {
+        console.error('Peer не определен!');
+        return;
+    }
+    
     // Когда подключимся
     peer.on('connect', function() {
         console.log('✅ P2P соединение установлено!');
@@ -876,26 +888,52 @@ function setupPeerHandlers() {
         players[myIndex].ready = true;
         updatePlayersDisplay();
         
+        // Активируем кнопку старта
+        updateStartButton();
+        
         // Показываем кнопки карточек
         setTimeout(showCardButtons, 500);
         
         // Отправляем информацию о себе
         setTimeout(() => {
             if (peer.connected) {
-                peer.send(JSON.stringify({
+                sendPeerData({
                     type: 'player_info',
                     name: playerName,
                     isHost: isHost
-                }));
+                });
             }
         }, 1000);
+    });
+    
+    // Когда получим сигнал (офер или ответ)
+    peer.on('signal', function(data) {
+        console.log('📡 Сгенерирован сигнал:', data.type);
+        
+        const signalStr = JSON.stringify(data);
+        const encodedSignal = btoa(signalStr);
+        
+        if (isHost && data.type === 'offer') {
+            // Хост показывает свой сигнал для гостя
+            showNotification('Сигнал сгенерирован!', 'success');
+            
+            // Показываем для копирования
+            showSignalForCopy(encodedSignal);
+            
+            // Также добавляем в чат
+            addChatMessage(`📡 Сигнал для подключения готов.`, 'system');
+            
+        } else if (!isHost && data.type === 'answer') {
+            // Гость сгенерировал ответ
+            console.log('Ответный сигнал сгенерирован');
+        }
     });
     
     // Когда получим данные
     peer.on('data', function(data) {
         try {
             const message = JSON.parse(data.toString());
-            console.log('Получены данные:', message);
+            console.log('📩 Получены данные:', message);
             handlePeerData(message);
         } catch (e) {
             console.log('Получен текст:', data.toString());
@@ -903,27 +941,19 @@ function setupPeerHandlers() {
         }
     });
     
-    // Когда получим сигнал
-    peer.on('signal', function(data) {
-        console.log('Сгенерирован сигнал:', data.type);
-        
-        if (isHost && data.type === 'offer') {
-            // Хост показывает свой сигнал для гостя
-            const signalStr = JSON.stringify(data);
-            const encodedSignal = btoa(signalStr);
-            
-            showNotification('Сигнал сгенерирован!', 'success');
-            addChatMessage(`📡 Сигнал для подключения: ${encodedSignal}`, 'system');
-            
-            // Также показываем в отдельном блоке для удобного копирования
-            showSignalForCopy(encodedSignal);
-        }
-    });
-    
     // Обработка ошибок
     peer.on('error', function(err) {
-        console.error('Ошибка P2P:', err);
+        console.error('❌ Ошибка P2P:', err);
         showNotification('Ошибка соединения: ' + err.message, 'error');
+    });
+    
+    // Закрытие соединения
+    peer.on('close', function() {
+        console.log('Соединение закрыто');
+        showNotification('Соединение с партнером разорвано', 'warning');
+        players[1].ready = false;
+        players[0].ready = false;
+        updatePlayersDisplay();
     });
 }
 
@@ -1013,5 +1043,6 @@ function copyToClipboard(text) {
             showNotification('Сигнал скопирован!', 'success');
         });
 }
+
 
 
