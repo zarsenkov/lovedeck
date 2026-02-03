@@ -1445,6 +1445,20 @@ if (userInput && partnerInput) {
     });
 }
 
+// Показать кнопку онлайн-режима после загрузки
+setTimeout(function() {
+    const onlineBtn = document.querySelector('#onlineButton a') || document.querySelector('a[href="online.html"]');
+    if (onlineBtn) {
+        onlineBtn.style.opacity = '0';
+        onlineBtn.style.display = 'block';
+        
+        setTimeout(function() {
+            onlineBtn.style.transition = 'opacity 0.5s ease';
+            onlineBtn.style.opacity = '1';
+        }, 100);
+    }
+}, 1000); // Через 1 секунду после загрузки
+
 
 // ЗАПУСК ПРИЛОЖЕНИЯ
 if (document.readyState === "loading") {
