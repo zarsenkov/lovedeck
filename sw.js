@@ -170,11 +170,11 @@ self.addEventListener('push', event => {
   try {
     data = event.data ? event.data.json() : {};
   } catch (e) {
-    data = { title: 'LoveDeck', body: event.data?.text() || 'Новое уведомление' };
+    data = { title: 'LoveCouple', body: event.data?.text() || 'Новое уведомление' };
   }
   
   const options = {
-    body: data.body || 'Новое уведомление от LoveDeck',
+    body: data.body || 'Новое уведомление от LoveCouple',
     icon: '/icon.png',
     badge: '/icon.png',
     vibrate: [200, 100, 200],
@@ -189,7 +189,7 @@ self.addEventListener('push', event => {
   };
   
   event.waitUntil(
-    self.registration.showNotification(data.title || 'LoveDeck', options)
+    self.registration.showNotification(data.title || 'LoveCouple', options)
   );
 });
 
