@@ -1,63 +1,81 @@
 // firebase-mode.js - Реальный онлайн-режим через Firebase
 
-// ВСТАВЬ СЮДА СВОЮ КОНФИГУРАЦИЮ ОТ FIREBASE
+// ТВОЯ КОНФИГУРАЦИЯ (ВСТАВЬ ЕЁ СЮДА!)
 const firebaseConfig = {
-  apiKey: "ТВОЙ_API_KEY",
-  authDomain: "ТВОЙ_ПРОЕКТ.firebaseapp.com",
-  databaseURL: "https://ТВОЙ_ПРОЕКТ-default-rtdb.firebaseio.com",
-  projectId: "ТВОЙ_ПРОЕКТ",
-  storageBucket: "ТВОЙ_ПРОЕКТ.appspot.com",
-  messagingSenderId: "ТВОЙ_SENDER_ID",
-  appId: "ТВОЙ_APP_ID"
+  apiKey: "AIzaSyAIsICrK63Q9umIuFHyu7zted9kBiCIne8",
+  authDomain: "lovedeck-71787.firebaseapp.com",
+  databaseURL: "https://lovedeck-71787-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "lovedeck-71787",
+  storageBucket: "lovedeck-71787.firebasestorage.app",
+  messagingSenderId: "867802574115",
+  appId: "1:867802574115:web:1458f7ded97cdf6824b096"
 };
+
+console.log('🔥 Firebase конфигурация загружена');
 
 // Глобальные переменные
 let currentRoomId = null;
 let playerName = '';
 let isHost = false;
 let playerId = '';
-let players = [];
 let database = null;
 let roomRef = null;
 let messagesRef = null;
 
+// Проверка инициализации Firebase
+let firebaseInitialized = false;
+
 // Инициализация Firebase
 function initFirebase() {
-    console.log('🔥 Инициализирую Firebase...');
+    if (firebaseInitialized) return true;
     
     try {
+        console.log('🔄 Инициализирую Firebase...');
+        
+        // Проверяем, загружена ли библиотека Firebase
+        if (typeof firebase === 'undefined') {
+            console.error('❌ Библиотека Firebase не загружена');
+            return false;
+        }
+        
         // Инициализируем Firebase
         firebase.initializeApp(firebaseConfig);
         database = firebase.database();
+        firebaseInitialized = true;
         
-        console.log('✅ Firebase инициализирован');
+        console.log('✅ Firebase успешно инициализирован');
         return true;
+        
     } catch (error) {
         console.error('❌ Ошибка инициализации Firebase:', error);
-        showNotification('Ошибка подключения к серверу', 'error');
         return false;
     }
 }
 
+// ===================== ОСНОВНЫЕ ФУНКЦИИ =====================
+
 // Создание комнаты (Хост)
 function firebaseCreateRoom() {
-    if (!database) {
-        if (!initFirebase()) return;
+    console.log('🔥 Создаю комнату через Firebase...');
+    
+    if (!initFirebase()) {
+        showNotification('Ошибка подключения к серверу', 'error');
+        return;
     }
     
     playerName = document.getElementById('player1-name').value.trim() || 'Игрок 1';
     isHost = true;
-    playerId = generatePlayerId();
+    playerId = 'host_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     
     // Генерируем случайный ID комнаты
     currentRoomId = generateRoomCode();
     
     // Обновляем интерфейс
-    players = [
+    window.players = [
         { id: playerId, name: playerName, ready: false },
         { id: null, name: 'Ожидание...', ready: false }
     ];
-    updatePlayersDisplay();
+    window.updatePlayersDisplay?.();
     
     document.getElementById('connection-screen').style.display = 'none';
     document.getElementById('room-screen').style.display = 'block';
@@ -66,14 +84,17 @@ function firebaseCreateRoom() {
     // Создаем комнату в Firebase
     createFirebaseRoom();
     
-    console.log('🔥 Комната создана в Firebase. Код:', currentRoomId);
-    showNotification('Комната создана! Отправьте код партнеру.', 'success');
+    console.log('🔥 Комната создана. Код:', currentRoomId);
+    showNotification('Онлайн комната создана! Отправьте код партнеру.', 'success');
 }
 
 // Присоединение к комнате (Гость)
 function firebaseJoinRoom() {
-    if (!database) {
-        if (!initFirebase()) return;
+    console.log('🔥 Присоединяюсь к комнате через Firebase...');
+    
+    if (!initFirebase()) {
+        showNotification('Ошибка подключения к серверу', 'error');
+        return;
     }
     
     const roomCode = document.getElementById('room-code').value.trim();
@@ -86,14 +107,14 @@ function firebaseJoinRoom() {
     
     currentRoomId = roomCode;
     isHost = false;
-    playerId = generatePlayerId();
+    playerId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     
     // Обновляем интерфейс
-    players = [
+    window.players = [
         { id: null, name: 'Ожидание...', ready: false },
         { id: playerId, name: playerName, ready: false }
     ];
-    updatePlayersDisplay();
+    window.updatePlayersDisplay?.();
     
     document.getElementById('connection-screen').style.display = 'none';
     document.getElementById('room-screen').style.display = 'block';
@@ -102,12 +123,14 @@ function firebaseJoinRoom() {
     // Подключаемся к комнате в Firebase
     joinFirebaseRoom();
     
-    console.log('🔥 Подключился к комнате в Firebase:', roomCode);
-    showNotification('Подключился к комнате!', 'success');
+    console.log('🔥 Подключился к комнате:', roomCode);
+    showNotification('Подключился к онлайн комнате!', 'success');
 }
 
 // Создать комнату в Firebase
 function createFirebaseRoom() {
+    if (!database) return;
+    
     roomRef = database.ref('rooms/' + currentRoomId);
     messagesRef = database.ref('messages/' + currentRoomId);
     
@@ -117,27 +140,36 @@ function createFirebaseRoom() {
             id: playerId,
             name: playerName,
             ready: false,
-            connected: true
+            connected: true,
+            timestamp: Date.now()
         },
         guest: {
             id: null,
             name: '',
             ready: false,
-            connected: false
+            connected: false,
+            timestamp: null
         },
-        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        createdAt: Date.now(),
         status: 'waiting'
+    }).then(() => {
+        console.log('✅ Комната создана в Firebase');
+        
+        // Слушаем изменения в комнате
+        roomRef.on('value', handleRoomUpdate);
+        
+        // Слушаем сообщения
+        listenForMessages();
+    }).catch((error) => {
+        console.error('❌ Ошибка создания комнаты:', error);
+        showNotification('Ошибка создания комнаты', 'error');
     });
-    
-    // Слушаем изменения в комнате
-    roomRef.on('value', handleRoomUpdate);
-    
-    // Слушаем сообщения
-    listenForMessages();
 }
 
 // Подключиться к комнате в Firebase
 function joinFirebaseRoom() {
+    if (!database) return;
+    
     roomRef = database.ref('rooms/' + currentRoomId);
     messagesRef = database.ref('messages/' + currentRoomId);
     
@@ -153,26 +185,33 @@ function joinFirebaseRoom() {
             id: playerId,
             name: playerName,
             ready: false,
-            connected: true
+            connected: true,
+            timestamp: Date.now()
+        }).then(() => {
+            console.log('✅ Успешно подключился к комнате');
+            
+            // Отправляем сообщение о подключении
+            sendFirebaseMessage({
+                type: 'player_joined',
+                playerId: playerId,
+                playerName: playerName,
+                isHost: false
+            });
+            
+            // Слушаем изменения в комнате
+            roomRef.on('value', handleRoomUpdate);
+            
+            // Слушаем сообщения
+            listenForMessages();
+            
+        }).catch((error) => {
+            console.error('❌ Ошибка подключения:', error);
+            showNotification('Ошибка подключения к комнате', 'error');
         });
-        
-        // Отправляем сообщение о подключении
-        sendFirebaseMessage({
-            type: 'player_joined',
-            playerId: playerId,
-            playerName: playerName,
-            isHost: false
-        });
-        
-        // Слушаем изменения в комнате
-        roomRef.on('value', handleRoomUpdate);
-        
-        // Слушаем сообщения
-        listenForMessages();
         
     }).catch((error) => {
-        console.error('Ошибка подключения к комнате:', error);
-        showNotification('Ошибка подключения', 'error');
+        console.error('❌ Ошибка поиска комнаты:', error);
+        showNotification('Комната не найдена', 'error');
     });
 }
 
@@ -181,43 +220,53 @@ function handleRoomUpdate(snapshot) {
     const roomData = snapshot.val();
     if (!roomData) return;
     
-    const host = roomData.host;
-    const guest = roomData.guest;
+    const host = roomData.host || {};
+    const guest = roomData.guest || {};
     
     // Обновляем список игроков
     if (isHost) {
-        players[0] = {
-            id: host.id,
-            name: host.name,
-            ready: host.ready
-        };
-        players[1] = {
-            id: guest.id,
-            name: guest.name || 'Ожидание...',
-            ready: guest.ready
-        };
+        window.players = [
+            {
+                id: host.id,
+                name: host.name || 'Игрок 1',
+                ready: host.ready || false
+            },
+            {
+                id: guest.id,
+                name: guest.name || 'Ожидание...',
+                ready: guest.ready || false
+            }
+        ];
     } else {
-        players[0] = {
-            id: host.id,
-            name: host.name,
-            ready: host.ready
-        };
-        players[1] = {
-            id: guest.id,
-            name: guest.name || 'Ожидание...',
-            ready: guest.ready
-        };
+        window.players = [
+            {
+                id: host.id,
+                name: host.name || 'Игрок 1',
+                ready: host.ready || false
+            },
+            {
+                id: guest.id,
+                name: guest.name || 'Ожидание...',
+                ready: guest.ready || false
+            }
+        ];
     }
     
-    updatePlayersDisplay();
-    updateStartButton();
+    // Обновляем отображение
+    window.updatePlayersDisplay?.();
+    window.updateStartButton?.();
+    
+    // Проверяем, можно ли начать игру
+    if (host.ready && guest.ready && host.connected && guest.connected) {
+        window.startSharedGame?.();
+    }
 }
 
 // Слушать сообщения
 function listenForMessages() {
     if (!messagesRef) return;
     
-    messagesRef.limitToLast(100).on('child_added', (snapshot) => {
+    messagesRef.limitToLast(50).on('child_added', (snapshot) => {
         const message = snapshot.val();
         
         // Игнорируем свои сообщения
@@ -229,68 +278,57 @@ function listenForMessages() {
 
 // Обработка сообщений
 function handleFirebaseMessage(message) {
-    console.log('📨 Firebase сообщение от', message.senderName + ':', message.type);
+    console.log('📨 Получено сообщение через Firebase:', message.type);
     
     switch(message.type) {
         case 'player_joined':
-            addChatMessage(`👋 ${message.playerName} подключился(ась)!`, 'system');
-            showNotification('Партнер в комнате!', 'success');
+            window.addChatMessage?.(`👋 ${message.playerName} подключился(ась)!`, 'system');
+            showNotification('Партнер подключился!', 'success');
             break;
             
         case 'player_ready':
-            // Обновляем статус партнера
-            const partnerField = isHost ? 'guest' : 'host';
-            roomRef.child(partnerField + '/ready').set(message.ready);
-            
-            addChatMessage(`✅ ${message.playerName} готов(а)!`, 'system');
-            
-            // Проверяем готовность обоих
-            checkFirebaseReadiness();
+            window.addChatMessage?.(`✅ ${message.playerName} готов(а)!`, 'system');
+            // Обновляем статус игрока в Firebase
+            if (roomRef) {
+                const playerField = message.isHost ? 'host' : 'guest';
+                roomRef.child(playerField + '/ready').set(true);
+            }
             break;
             
         case 'chat_message':
-            addChatMessage(message.message, message.senderName);
+            window.addChatMessage?.(message.message, message.senderName || 'Партнер');
             break;
             
         case 'card_click':
-            showPartnerCard(message.card);
+            window.showPartnerCard?.(message.card);
             break;
             
         case 'partner_confirmed':
-            addChatMessage(`✅ ${message.playerName} подтвердил(а) подключение!`, 'system');
+            window.addChatMessage?.(`✅ ${message.playerName} подтвердил(а) подключение!`, 'system');
             break;
     }
 }
 
 // Отправить сообщение через Firebase
 function sendFirebaseMessage(data) {
-    if (!messagesRef) return;
+    if (!messagesRef) {
+        console.error('❌ Нет подключения к Firebase');
+        return;
+    }
     
     const message = {
         ...data,
         senderId: playerId,
         senderName: playerName,
+        isHost: isHost,
         timestamp: Date.now(),
         messageId: generateMessageId()
     };
     
-    messagesRef.push(message);
-    console.log('📤 Отправлено через Firebase:', data.type);
-}
-
-// Проверить готовность обоих игроков
-function checkFirebaseReadiness() {
-    if (!roomRef) return;
-    
-    roomRef.once('value').then((snapshot) => {
-        const room = snapshot.val();
-        if (!room) return;
-        
-        const bothReady = room.host.ready && room.guest.ready;
-        
-        if (bothReady) {
-            startSharedGame();
-        }
+    messagesRef.push(message).then(() => {
+        console.log('📤 Сообщение отправлено через Firebase:', data.type);
+    }).catch((error) => {
+        console.error('❌ Ошибка отправки сообщения:', error);
     });
 }
 
@@ -298,47 +336,65 @@ function checkFirebaseReadiness() {
 
 // Отметить себя готовым
 function firebaseMarkSelfReady() {
-    console.log('🔥 Отмечаю себя как готового...');
+    console.log('🔥 Отмечаю себя как готового через Firebase...');
+    
+    if (!roomRef) {
+        showNotification('Нет подключения к комнате', 'error');
+        return;
+    }
     
     const playerField = isHost ? 'host' : 'guest';
-    roomRef.child(playerField + '/ready').set(true);
     
-    // Отправляем сообщение партнеру
-    sendFirebaseMessage({
-        type: 'player_ready',
-        playerId: playerId,
-        playerName: playerName,
-        ready: true
+    // Обновляем статус в Firebase
+    roomRef.child(playerField + '/ready').set(true).then(() => {
+        // Отправляем сообщение партнеру
+        sendFirebaseMessage({
+            type: 'player_ready',
+            playerId: playerId,
+            playerName: playerName,
+            isHost: isHost,
+            ready: true
+        });
+        
+        window.addChatMessage?.('✅ Я готов(а) к игре!', 'system');
+        showNotification('Вы готовы к игре!', 'success');
+        
+    }).catch((error) => {
+        console.error('❌ Ошибка обновления статуса:', error);
+        showNotification('Ошибка обновления статуса', 'error');
     });
-    
-    addChatMessage('✅ Я готов(а) к игре!', 'system');
-    showNotification('Вы готовы к игре!', 'success');
 }
 
 // Подтвердить подключение партнера
 function firebaseConfirmPartner() {
-    console.log('🔥 Подтверждаю подключение партнера...');
+    console.log('🔥 Подтверждаю подключение партнера через Firebase...');
     
-    // Отправляем уведомление
+    // Отправляем уведомление партнеру
     sendFirebaseMessage({
         type: 'partner_confirmed',
         playerId: playerId,
-        playerName: playerName
+        playerName: playerName,
+        isHost: isHost
     });
     
-    addChatMessage('✅ Партнер подтвердил подключение!', 'system');
+    window.addChatMessage?.('✅ Партнер подтвердил подключение!', 'system');
     showNotification('Партнер отмечен как подключенный!', 'success');
 }
 
 // Принудительно начать игру
 function firebaseForceStart() {
-    console.log('🔥 Принудительно начинаю игру...');
+    console.log('🔥 Принудительно начинаю игру через Firebase...');
+    
+    if (!roomRef) {
+        showNotification('Нет подключения к комнате', 'error');
+        return;
+    }
     
     // Отмечаем обоих как готовых
     roomRef.child('host/ready').set(true);
     roomRef.child('guest/ready').set(true);
     
-    startSharedGame();
+    window.startSharedGame?.();
     showNotification('Игра начата!', 'success');
 }
 
@@ -350,13 +406,17 @@ function firebaseSendChatMessage() {
     const message = input.value.trim();
     
     if (!message) return;
+    if (!messagesRef) {
+        showNotification('Нет подключения к чату', 'error');
+        return;
+    }
     
     sendFirebaseMessage({
         type: 'chat_message',
         message: message
     });
     
-    addChatMessage(message, 'Вы');
+    window.addChatMessage?.(message, 'Вы');
     input.value = '';
 }
 
@@ -377,7 +437,7 @@ function firebaseSendRandomQuestion() {
         card: card
     });
     
-    addChatMessage(`💬 Отправил(а) вопрос партнеру`, 'Вы');
+    window.addChatMessage?.('💬 Отправил(а) вопрос партнеру', 'Вы');
     showNotification('Вопрос отправлен партнеру! 💬', 'success');
 }
 
@@ -397,7 +457,7 @@ function firebaseSendRandomAction() {
         card: card
     });
     
-    addChatMessage(`🔥 Отправил(а) задание партнеру`, 'Вы');
+    window.addChatMessage?.('🔥 Отправил(а) задание партнеру', 'Вы');
     showNotification('Действие отправлено партнеру! 🔥', 'success');
 }
 
@@ -417,7 +477,7 @@ function firebaseSendRandomDate() {
         card: card
     });
     
-    addChatMessage(`🌹 Отправил(а) идею свидания партнеру`, 'Вы');
+    window.addChatMessage?.('🌹 Отправил(а) идею свидания партнеру', 'Вы');
     showNotification('Идея для свидания отправлена! 🌹', 'success');
 }
 
@@ -437,15 +497,11 @@ function firebaseSendRandomCompliment() {
         card: card
     });
     
-    addChatMessage(`💖 Отправил(а) комплимент партнеру`, 'Вы');
+    window.addChatMessage?.('💖 Отправил(а) комплимент партнеру', 'Вы');
     showNotification('Комплимент отправлен! 💖', 'success');
 }
 
 // ===================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====================
-
-function generatePlayerId() {
-    return 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-}
 
 function generateRoomCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -455,29 +511,49 @@ function generateMessageId() {
     return Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-// ===================== ОЧИСТКА =====================
-
-// Выйти из комнаты
-function firebaseLeaveRoom() {
-    if (roomRef) {
-        roomRef.off();
-    }
-    if (messagesRef) {
-        messagesRef.off();
-    }
+// Уведомления
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4CAF50' : '#2196F3'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 10003;
+        animation: slideDown 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    `;
     
-    // Обновляем статус отключения
-    if (roomRef && playerId) {
-        const playerField = isHost ? 'host' : 'guest';
-        roomRef.child(playerField + '/connected').set(false);
-    }
+    notification.innerHTML = `
+        ${type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️'}
+        <span>${message}</span>
+    `;
     
-    console.log('🔥 Вышел из комнаты Firebase');
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideUp 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
-// Очистить старые комнаты (по таймеру)
-function cleanupOldRooms() {
-    // Комнаты старше 24 часов удаляются
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    database.ref('rooms').orderByChild('createdAt').endAt(cutoff).remove();
-}
+// Экспорт функций в глобальную область видимости
+window.firebaseCreateRoom = firebaseCreateRoom;
+window.firebaseJoinRoom = firebaseJoinRoom;
+window.firebaseMarkSelfReady = firebaseMarkSelfReady;
+window.firebaseConfirmPartner = firebaseConfirmPartner;
+window.firebaseForceStart = firebaseForceStart;
+window.firebaseSendChatMessage = firebaseSendChatMessage;
+window.firebaseSendRandomQuestion = firebaseSendRandomQuestion;
+window.firebaseSendRandomAction = firebaseSendRandomAction;
+window.firebaseSendRandomDate = firebaseSendRandomDate;
+window.firebaseSendRandomCompliment = firebaseSendRandomCompliment;
+
+console.log('✅ Firebase функции загружены и готовы к использованию');
