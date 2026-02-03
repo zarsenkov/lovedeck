@@ -734,30 +734,7 @@ function setupRoomButtons() {
             }
         };
     }
-}
-    
-    // Кнопка "Новая игра"
-    const playAgainBtn = document.getElementById('playAgainBtn');
-    if (playAgainBtn) {
-        playAgainBtn.onclick = () => {
-            if (!gameState.isHost) {
-                showNotification('Только хост может начать новую игру', 'error');
-                return;
-            }
-            sendToServer('PLAY_AGAIN');
-        };
-    }
-    
-    // Кнопка "Покинуть комнату"
-    const leaveRoomBtn = document.getElementById('leaveRoomBtn');
-    if (leaveRoomBtn) {
-        leaveRoomBtn.onclick = () => {
-            if (confirm('Покинуть комнату?')) {
-                window.location.href = 'online.html';
-            }
-        };
-    }
-}
+} // ← ЗАКРЫВАЕМ ФУНКЦИЮ setupRoomButtons ЗДЕСЬ!
 
 // Переключение экранов
 function showScreen(screenId) {
