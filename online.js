@@ -11,6 +11,47 @@ let players = [
     { id: null, name: '', ready: false }
 ];
 
+// Генерация сигнала (для хоста)
+function generateSignal() {
+    console.log('Генерация P2P сигнала...');
+    
+    if (!isHost) {
+        showNotification('Только хост может генерировать сигнал', 'warning');
+        return;
+    }
+    
+    // Если peer уже создан - пересоздаем
+    if (peer) {
+        peer.destroy();
+        peer = null;
+    }
+    
+    // Создаем новое P2P соединение как инициатор
+    peer = new SimplePeer({
+        initiator: true,
+        trickle: false,
+        config: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' }
+            ]
+        }
+    });
+    
+    console.log('P2P соединение создано (инициатор)');
+    
+    // Настраиваем обработчики
+    setupPeerHandlers();
+    
+    // Запускаем генерацию сигнала
+    setTimeout(() => {
+        console.log('Запускаю генерацию оффера...');
+        // SimplePeer автоматически сгенерирует offer при создании
+    }, 1000);
+    
+    showNotification('Генерирую сигнал подключения...', 'info');
+}
+
 // Инициализация при загрузке
 window.onload = function() {
     console.log('LoveDeck Online загружен!');
@@ -972,4 +1013,5 @@ function copyToClipboard(text) {
             showNotification('Сигнал скопирован!', 'success');
         });
 }
+
 
