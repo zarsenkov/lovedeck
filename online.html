@@ -23,7 +23,7 @@
                     <p>Вы будете ведущим игры</p>
                     <input type="text" id="player1-name" placeholder="Ваше имя" value="Игрок 1">
                     
-                    <!-- КНОПКА БЫСТРОГО СТАРТА (ДОБАВЛЯЕМ СЮДА) -->
+                    <!-- КНОПКА БЫСТРОГО СТАРТА -->
                     <div class="quick-start" style="margin-bottom: 15px;">
                         <button onclick="quickStartGame()" class="btn-quick-start">
                             ⚡ Быстрый старт
@@ -32,20 +32,6 @@
                             Создаст комнату и покажет QR-код для мгновенного подключения
                         </p>
                     </div>
-                    <!-- Для хоста: кнопка генерации сигнала -->
-<button onclick="generateSignal()" style="
-    margin-top: 10px;
-    padding: 10px 15px;
-    background: linear-gradient(45deg, #9C27B0, #E91E63);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    font-weight: bold;
-">
-    📡 Сгенерировать сигнал
-</button>
                     
                     <button class="btn-primary" onclick="createRoom()">Создать игру</button>
                 </div>
@@ -80,6 +66,25 @@
                         </div>
                     </div>
                     
+                    <!-- Кнопки управления подключением -->
+                    <div class="connection-controls" style="margin: 20px 0; padding: 15px; background: #f9f0ff; border-radius: 10px; border: 2px solid #e1bee7;">
+                        <h4 style="color: #9C27B0; margin-bottom: 10px; text-align: center;">🎮 Управление игроками</h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                            <button onclick="markSelfReady()" class="btn-ready">
+                                ✅ Я готов(а) к игре
+                            </button>
+                            <button onclick="confirmPartnerConnection()" class="btn-partner">
+                                👋 Партнер подключился
+                            </button>
+                            <button onclick="forceStartGame()" class="btn-force-start" style="background: linear-gradient(45deg, #FF5722, #FF9800);">
+                                🚀 Принудительно начать
+                            </button>
+                        </div>
+                        <p style="color: #666; font-size: 12px; text-align: center; margin-top: 10px;">
+                            Используйте эти кнопки, чтобы управлять статусом игроков
+                        </p>
+                    </div>
+                    
                     <div class="room-actions">
                         <button class="btn-copy" onclick="copyRoomCode()">
                             📋 Копировать код
@@ -91,28 +96,6 @@
                             Начать игру
                         </button>
                     </div>
-                    <!-- Поле для ввода сигнала (для гостя) -->
-<div id="signal-input-section" style="display: none; margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 10px; border: 2px dashed #2196F3;">
-    <h4 style="color: #2196F3; margin-bottom: 10px;">🔗 Подключение к партнеру</h4>
-    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
-        Попроси партнера отправить вам <strong>сигнал</strong> и вставьте его ниже:
-    </p>
-    <textarea id="signal-input" placeholder="Вставьте сигнал от партнера здесь..." 
-              style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-family: monospace; font-size: 12px; min-height: 60px; margin-bottom: 10px;"></textarea>
-    <div style="display: flex; gap: 10px;">
-        <button onclick="connectWithSignalInput()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            ✅ Подключиться
-        </button>
-        <button onclick="document.getElementById('signal-input-section').style.display = 'none'" style="padding: 10px 20px; background: #f0f0f0; color: #666; border: none; border-radius: 5px; cursor: pointer;">
-            ✖️ Отмена
-        </button>
-    </div>
-</div>
-
-<!-- Кнопка для показа поля ввода сигнала -->
-<button class="btn-connect" onclick="showSignalInputSection()" style="margin-top: 10px; padding: 10px 15px; background: #FF9800; color: white; border: none; border-radius: 8px; cursor: pointer;">
-    🔗 Ввести сигнал от партнера
-</button>
                     
                     <div class="chat-box">
                         <h3>💬 Чат с партнером</h3>
@@ -130,8 +113,8 @@
                                 <button class="card-btn" onclick="sendRandomDate()">
                                     🌹 Случайное свидание
                                 </button>
-                                <button class="card-btn" onclick="showCustomCardForm()">
-                                    ✨ Своя карточка
+                                <button class="card-btn" onclick="sendRandomCompliment()">
+                                    💖 Случайный комплимент
                                 </button>
                             </div>
                         </div>
@@ -164,16 +147,80 @@
         </footer>
     </div>
 
-    <!-- Сначала eventemitter3 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/eventemitter3/4.0.7/eventemitter3.min.js"></script>
-    <!-- Подключаем PeerJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
-    <!-- Наш онлайн скрипт -->
+    <!-- НАШ онлайн скрипт - ВСЕ ОСТАЛЬНЫЕ СКРИПТЫ УДАЛЕНЫ -->
     <script src="online.js"></script>
+    
+    <!-- Встроенные стили для новых кнопок -->
+    <style>
+        .btn-ready {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .btn-ready:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-partner {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #2196F3, #03A9F4);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .btn-partner:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-force-start {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #FF5722, #FF9800);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .btn-force-start:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-quick-start {
+            padding: 15px 25px;
+            background: linear-gradient(45deg, #FF9800, #FFB74D);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .btn-quick-start:hover {
+            transform: scale(1.02);
+        }
+        
+        .quick-start-hint {
+            color: #666;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 5px;
+        }
+    </style>
 </body>
-
 </html>
-
-
-
-
