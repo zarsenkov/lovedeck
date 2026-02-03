@@ -1,0 +1,476 @@
+/* online.css - стили для онлайн-версии */
+
+.online-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #f9f0ff, #fff0f6);
+    min-height: 100vh;
+}
+
+.online-header {
+    text-align: center;
+    padding: 30px 0;
+    color: #e91e63;
+}
+
+.online-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.2em;
+}
+
+/* Экран подключения */
+.connection-screen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    margin: 40px 0;
+}
+
+.player-card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(233, 30, 99, 0.1);
+    flex: 1;
+    min-width: 300px;
+    text-align: center;
+}
+
+.player-card h2 {
+    color: #e91e63;
+    margin-bottom: 15px;
+}
+
+.player-card input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.player-card input:focus {
+    border-color: #e91e63;
+    outline: none;
+}
+
+/* Кнопки */
+.btn-primary, .btn-secondary, .btn-start, .btn-copy, .btn-qr, .btn-close, .btn-back {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px 5px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #e91e63, #ff4081);
+    color: white;
+    width: 100%;
+}
+
+.btn-secondary {
+    background: #4CAF50;
+    color: white;
+    width: 100%;
+}
+
+.btn-start {
+    background: linear-gradient(45deg, #2196F3, #21CBF3);
+    color: white;
+    font-size: 18px;
+    padding: 15px 40px;
+}
+
+.btn-copy {
+    background: #9C27B0;
+    color: white;
+}
+
+.btn-qr {
+    background: #FF9800;
+    color: white;
+}
+
+.btn-close {
+    background: #666;
+    color: white;
+}
+
+.btn-back {
+    background: transparent;
+    color: #666;
+    text-decoration: none;
+    border: 2px solid #ddd;
+}
+
+.btn-primary:hover { background: linear-gradient(45deg, #d81b60, #f50057); }
+.btn-secondary:hover { background: #388E3C; }
+.btn-start:hover { background: linear-gradient(45deg, #1976D2, #00BCD4); }
+.btn-copy:hover { background: #7B1FA2; }
+.btn-qr:hover { background: #F57C00; }
+
+.btn-start:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Разделитель */
+.divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+}
+
+.divider span {
+    background: white;
+    padding: 10px;
+    border-radius: 50%;
+    color: #666;
+    font-weight: bold;
+}
+
+/* Экран комнаты */
+.room-screen {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin: 30px 0;
+}
+
+.room-info h2 {
+    color: #e91e63;
+    text-align: center;
+}
+
+/* Список игроков */
+.players {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.player {
+    text-align: center;
+    padding: 20px;
+    border-radius: 15px;
+    background: #f9f9f9;
+    min-width: 150px;
+}
+
+.player-avatar {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.player-name {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.player-status {
+    font-size: 24px;
+}
+
+/* Чат */
+.chat-box {
+    margin-top: 30px;
+    border-top: 2px solid #eee;
+    padding-top: 20px;
+}
+
+.chat-messages {
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+}
+
+.chat-input {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+}
+
+.chat-input button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* Модальное окно */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+#qr-code img {
+    max-width: 100%;
+    height: auto;
+    margin: 20px 0;
+}
+
+/* Подвал */
+.online-footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #666;
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .connection-screen {
+        flex-direction: column;
+    }
+    
+    .player-card {
+        min-width: auto;
+    }
+    
+    .players {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+/* Уведомления и алерты */
+.custom-alert {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    z-index: 10004;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.chat-message {
+    margin: 8px 0;
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.chat-message.self {
+    background: linear-gradient(45deg, #2196F3, #21CBF3);
+    color: white;
+    margin-left: auto;
+    text-align: right;
+}
+
+.chat-message.other {
+    background: #f0f0f0;
+    color: #333;
+    margin-right: auto;
+    text-align: left;
+}
+
+.chat-message strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+/* Кнопки для карточек */
+.card-buttons {
+    background: linear-gradient(135deg, #fff0f6, #f9f0ff);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    border: 2px solid #ffcdd2;
+}
+
+.quick-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.card-btn {
+    padding: 12px 8px;
+    background: white;
+    border: 2px solid #e91e63;
+    border-radius: 12px;
+    color: #e91e63;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.card-btn:hover {
+    background: #e91e63;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(233, 30, 99, 0.3);
+}
+
+.card-btn:active {
+    transform: translateY(0);
+}
+
+/* Форма для своей карточки */
+.custom-card-form {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
+    font-weight: bold;
+}
+
+.form-select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.form-textarea:focus {
+    border-color: #e91e63;
+    outline: none;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+.card-buttons {
+    animation: fadeIn 0.5s ease;
+}
+/* Кнопка быстрого старта */
+.btn-quick-start {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(45deg, #9C27B0, #E91E63);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    transition: all 0.3s;
+}
+
+.btn-quick-start:hover {
+    background: linear-gradient(45deg, #7B1FA2, #C2185B);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(156, 39, 176, 0.3);
+}
+
+.quick-start {
+    margin-bottom: 15px;
+}
+
+.quick-start-hint {
+    text-align: center;
+    color: #666;
+    font-size: 13px;
+    margin: 0;
+    padding: 0 10px;
+    line-height: 1.4;
+}
