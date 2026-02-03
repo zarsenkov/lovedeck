@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoveCouple: Friends Edition | Игры для компании</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Правильный путь к иконке из корня -->
+    <link rel="icon" href="../icon.png">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 LoveCouple: <span class="friends-theme">Friends Edition</span></h1>
+            <p class="subtitle">Игры для дружеской компании. Выбирайте игру и начинайте общаться!</p>
+            
+            <div class="back-to-main">
+                <!-- Правильный путь к основной игре -->
+                <a href="../index.html" class="btn btn-secondary">← Версия для пар</a>
+                <a href="#" class="btn btn-secondary" id="random-game">🎲 Случайная игра</a>
+            </div>
+        </header>
+
+        <main>
+            <!-- СЕТКА ИГР -->
+            <div class="games-grid">
+                
+                <!-- ИГРА 1: Вопросы для друзей -->
+                <div class="game-card" data-game="questions">
+                    <div class="game-icon">❓</div>
+                    <h3>Вопросы для друзей</h3>
+                    <p>100+ карточек с вопросами для разговоров</p>
+                    <div class="game-stats">
+                        <span>👥 2-10 игроков</span>
+                        <span>⏱ 15-60 мин</span>
+                    </div>
+                    <button class="btn btn-play" onclick="startGame('questions')">Играть</button>
+                </div>
+
+                <!-- ИГРА 2: Шпион -->
+                <div class="game-card" data-game="spy">
+                    <div class="game-icon">🕵️</div>
+                    <h3>Шпион</h3>
+                    <p>Найдите шпиона среди вас</p>
+                    <div class="game-stats">
+                        <span>👥 3-8 игроков</span>
+                        <span>⏱ 10-20 мин</span>
+                    </div>
+                    <button class="btn btn-play" onclick="startGame('spy')">Играть</button>
+                </div>
+
+                <!-- ИГРА 3: Бункер -->
+                <div class="game-card" data-game="bunker">
+                    <div class="game-icon">🏠</div>
+                    <h3>Бункер</h3>
+                    <p>Выживание после апокалипсиса</p>
+                    <div class="game-stats">
+                        <span>👥 4-12 игроков</span>
+                        <span>⏱ 30-90 мин</span>
+                    </div>
+                    <button class="btn btn-play" onclick="startGame('bunker')">Играть</button>
+                </div>
+
+                <!-- ИГРА 4: Крокодил -->
+                <div class="game-card" data-game="crocodile">
+                    <div class="game-icon">🐊</div>
+                    <h3>Крокодил</h3>
+                    <p>Объясняйте слова без слов</p>
+                    <div class="game-stats">
+                        <span>👥 4+ игроков</span>
+                        <span>⏱ 15-45 мин</span>
+                    </div>
+                    <button class="btn btn-play" onclick="startGame('crocodile')">Играть</button>
+                </div>
+
+                <!-- ИГРА 5: Правда или действие -->
+                <div class="game-card" data-game="truth">
+                    <div class="game-icon">🎯</div>
+                    <h3>Правда или Действие</h3>
+                    <p>Классика для смелых</p>
+                    <div class="game-stats">
+                        <span>👥 3+ игроков</span>
+                        <span>⏱ 20-60 мин</span>
+                    </div>
+                    <button class="btn btn-play" onclick="startGame('truth')">Играть</button>
+                </div>
+
+                <!-- ИГРА 6: Алиас -->
+                <div class="game-card" data-game="alias">
+                    <div class="game-icon">🗣️</div>
+                    <h3>Алиас</h3>
+                    <p>Объясняйте слова за время</p>
+                    <div class="game-stats">
+                        <span>👥 4+ игроков</span>
+                        <span>⏱ 20-40 мин</span>
+                    </div>
+                    <button class="btn btn-play" onclick="startGame('alias')">Играть</button>
+                </div>
+
+            </div>
+
+            <!-- БЛОК С ИНСТРУКЦИЕЙ -->
+            <div class="info-section">
+                <h2>📚 Как играть?</h2>
+                <p>1. Соберите друзей в одном помещении или в видеоконференции</p>
+                <p>2. Выберите игру из списка выше</p>
+                <p>3. Передавайте устройство по кругу или смотрите на общий экран</p>
+                <p>4. Наслаждайтесь общением и узнавайте друг друга лучше!</p>
+            </div>
+
+        </main>
+
+        <footer>
+            <p>© LoveCouple Game Studio | 
+                <a href="../index.html">Для пар</a> | 
+                <a href="#" onclick="alert('Скоро будет!')">Для семьи</a> (скоро) |
+                <a href="https://t.me/lovecouple" target="_blank">Telegram</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Правильный путь к JS -->
+    <script src="app.js"></script>
+</body>
+</html>
