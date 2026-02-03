@@ -20,8 +20,25 @@ async function loadModules() {
     StorageManager = storageModule.default.init();
     
     console.log('✅ Модули загружены и инициализированы');
-    console.log('📊 Карточек доступно:', CardManager.getStats().total);
-    console.log('👤 Профиль:', StorageManager.profile.id);
+    
+    // Пробуем получить статистику карточек
+    try {
+      if (CardManager.getStats) {
+        console.log('📊 Карточек доступно:', CardManager.getStats().total);
+      } else if (CardManager.getAllCardsCount) {
+        console.log('📊 Карточек доступно:', CardManager.getAllCardsCount());
+      } else {
+        console.log('📊 Карточек: 40 (системные)');
+      }
+    } catch (e) {
+      console.log('📊 Карточек: 40 (системные)');
+    }
+    
+    console.log('👤 Профиль:', StorageManager.profile?.id || 'не найден');
+    
+    // Сохраняем в глобальную область
+    window.CardManager = CardManager;
+    window.StorageManager = StorageManager;
     
     // Обновляем статистику на странице если есть элемент
     updateStatsDisplay();
@@ -30,24 +47,45 @@ async function loadModules() {
   } catch (error) {
     console.error('❌ Ошибка загрузки модулей:', error);
     console.warn('⚠️ Модули не загружены, продолжается в режиме совместимости');
+    
+    // Fallback объекты
+    window.CardManager = {
+      getRandomCard: (type) => ({ 
+        type: type, 
+        text: `[${type}] Случайная карточка`,
+        id: 'fallback_' + Date.now()
+      }),
+      getAllCardsCount: () => 40,
+      addUserCard: (card) => ({ ...card, id: 'custom_' + Date.now() })
+    };
+    
+    window.StorageManager = {
+      profile: { 
+        id: 'fallback_user', 
+        stats: { gamesPlayed: 0, cardsSent: 0, totalPlayTime: 0 } 
+      },
+      updateStats: () => {},
+      getOverallStats: () => ({ gamesPlayed: 0, cardsSent: 0, totalPlayTime: 0 })
+    };
+    
     return false;
   }
 }
 
 // Функция для обновления отображения статистики
 function updateStatsDisplay() {
-  if (!StorageManager) return;
-  
   try {
-    const stats = StorageManager.getOverallStats();
+    if (!window.StorageManager) return;
+    
+    const stats = window.StorageManager.getOverallStats();
     const statsElement = document.getElementById('statsDisplay');
     
     if (statsElement) {
       statsElement.innerHTML = `
         <div class="mini-stats">
-          <span><i class="fas fa-gamepad"></i> Игр: ${stats.gamesPlayed}</span>
-          <span><i class="fas fa-cards"></i> Карт: ${stats.cardsSent}</span>
-          <span><i class="fas fa-clock"></i> ${stats.totalPlayTime}м</span>
+          <span><i class="fas fa-gamepad"></i> Игр: ${stats.gamesPlayed || 0}</span>
+          <span><i class="fas fa-cards"></i> Карт: ${stats.cardsSent || 0}</span>
+          <span><i class="fas fa-clock"></i> ${stats.totalPlayTime || 0}м</span>
         </div>
       `;
       statsElement.style.display = 'flex';
@@ -56,6 +94,25 @@ function updateStatsDisplay() {
     console.warn('Не удалось обновить статистику:', error);
   }
 }
+
+// Запускаем загрузку модулей
+loadModules().then(success => {
+  if (success) {
+    console.log('🎉 LoveCouple Online с модулями готов к работе!');
+    
+    // Тестируем получение карточки через 1 секунду
+    setTimeout(() => {
+      if (window.CardManager && window.CardManager.getRandomCard) {
+        try {
+          const testCard = window.CardManager.getRandomCard('question');
+          console.log('🎴 Тестовая карточка:', testCard?.text?.substring(0, 40) + '...');
+        } catch (e) {
+          console.warn('⚠️ Тест карточки не сработал');
+        }
+      }
+    }, 1000);
+  }
+});
 
 // Глобальное состояние игры
 const gameState = {
