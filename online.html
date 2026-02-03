@@ -64,13 +64,88 @@
             <button class="back-btn btn-secondary"><i class="fas fa-arrow-left"></i> Назад</button>
         </div>
         
-        <div id="roomScreen" class="screen" style="display: none;">
-            <!-- Комната будет заполняться через JS -->
+<div id="roomScreen" class="screen" style="display: none;">
+    <div class="room-container">
+        <!-- Заголовок комнаты -->
+        <div class="room-header">
+            <h2><i class="fas fa-door-open"></i> Комната онлайн-игры</h2>
+            <div id="playerCount" class="player-count">Игроков в комнате: 1/2</div>
+            <div id="roomIdDisplay" style="margin: 15px 0; font-size: 1.1em;">
+                <strong>ID комнаты:</strong> 
+                <span id="roomId" style="color: #764ba2; font-weight: bold;">ожидание...</span>
+                <button onclick="copyRoomId()" style="margin-left: 10px; padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em;">
+                    📋 Копировать
+                </button>
+            </div>
+        </div>
+        
+        <!-- Игроки -->
+        <div class="player-info">
+            <div class="player" id="hostPlayer">
+                <h3><i class="fas fa-crown"></i> Хост:</h3>
+                <p id="hostName" style="font-size: 1.2em;">Загрузка...</p>
+            </div>
+            <div class="player" id="guestPlayer">
+                <h3><i class="fas fa-user"></i> Игрок:</h3>
+                <p id="playerName" style="font-size: 1.2em;">Ожидание...</p>
+            </div>
+        </div>
+        
+        <!-- Кнопка начала игры -->
+        <div class="game-controls">
+            <button id="startGameBtn" class="btn-primary" style="padding: 20px; font-size: 1.3em;" disabled>
+                <i class="fas fa-hourglass-start"></i> Ожидание второго игрока...
+            </button>
+        </div>
+        
+        <!-- Карточки -->
+        <div class="cards-container">
+            <button id="randomQuestionBtn" class="card-btn">
+                <i class="fas fa-question-circle"></i> Случайный вопрос
+            </button>
+            <button id="randomActionBtn" class="card-btn">
+                <i class="fas fa-running"></i> Случайное действие
+            </button>
+            <button id="randomDateBtn" class="card-btn">
+                <i class="fas fa-heart"></i> Случайное свидание
+            </button>
+            <button id="randomComplimentBtn" class="card-btn">
+                <i class="fas fa-star"></i> Случайный комплимент
+            </button>
+        </div>
+        
+        <!-- Контейнер для карточек -->
+        <div id="cardContainer" style="margin: 30px 0; min-height: 200px;"></div>
+        
+        <!-- Чат -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3><i class="fas fa-comments"></i> Чат комнаты</h3>
+            </div>
+            <div id="messages" class="messages"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Введите сообщение...">
+                <button id="sendChatBtn" class="btn-primary">
+                    <i class="fas fa-paper-plane"></i> Отправить
+                </button>
+            </div>
+        </div>
+        
+        <!-- Управление комнатой -->
+        <div class="room-controls">
+            <button id="playAgainBtn" class="btn-secondary">
+                <i class="fas fa-redo"></i> Новая игра
+            </button>
+            <button id="leaveRoomBtn" class="btn-secondary">
+                <i class="fas fa-sign-out-alt"></i> Покинуть комнату
+            </button>
         </div>
     </div>
+</div>
 
     <!-- Скрипты -->
     <script src="online-app.js"></script>
     <script src="online-local.js"></script>
 </body>
 </html>
+
