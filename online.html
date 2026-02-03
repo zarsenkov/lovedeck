@@ -27,9 +27,9 @@
             window.CardManager = cardManager;
             window.StorageManager = storageManager;
             
-            console.log('✅ Модули успешно загружены!');
-            console.log('📊 Карточек доступно:', window.CardManager.getAllCardsCount());
-            console.log('👤 Профиль:', window.StorageManager.profile.id);
+console.log('📊 Статистика:', {
+    карточек: window.CardManager.getStats ? window.CardManager.getStats().total : 'N/A',
+    профиль: window.StorageManager.profile.id
             
             // Тестируем получение карточки
             setTimeout(() => {
@@ -261,6 +261,7 @@
 </div>
 </body>
 </html>
+
 
 
 
