@@ -222,5 +222,26 @@
             margin-top: 5px;
         }
     </style>
+    <!-- Firebase библиотека -->
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+
+<!-- Наши скрипты (ВАЖЕН ПОРЯДОК!) -->
+<script src="online.js"></script>                     <!-- Локальный режим -->
+<script src="firebase-mode.js"></script>             <!-- Firebase режим -->
+<script src="mode-selector.js"></script>             <!-- Переключатель -->
+
+<script>
+    // После загрузки страницы настраиваем кнопки
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ждем немного, чтобы все скрипты загрузились
+        setTimeout(() => {
+            if (window.setupRoomButtons) {
+                window.setupRoomButtons();
+            }
+        }, 500);
+    });
+</script>
 </body>
 </html>
+
