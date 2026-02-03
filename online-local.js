@@ -339,7 +339,7 @@ async function createRoom() {
     console.log('👑 Создаем комнату как хост...');
     
     const nameInput = document.getElementById('hostNameInput');
-    const playerName = nameInput ? nameInput.value.trim() : 'Хост';
+    const playerName = nameInput ? nameInput.value.trim() : ''; // ← УБРАЛ 'Хост'
     
     if (!playerName) {
         showNotification('Введите ваше имя', 'error');
@@ -366,7 +366,7 @@ async function joinRoom() {
     const nameInput = document.getElementById('playerNameInput');
     const roomInput = document.getElementById('roomIdInput');
     
-    const playerName = nameInput ? nameInput.value.trim() : 'Игрок';
+    const playerName = nameInput ? nameInput.value.trim() : ''; // ← УБРАЛ 'Игрок'
     const roomId = roomInput ? roomInput.value.trim() : '';
     
     if (!playerName) {
