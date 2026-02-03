@@ -111,18 +111,12 @@ function handleRoomCreated(data) {
     gameState.playerId = data.playerId;
     gameState.isConnected = true;
     
-    // Показываем ID комнаты (ИСПРАВЛЕНО)
+    // Показываем ID комнаты
     const roomIdElement = document.getElementById('roomId');
     if (roomIdElement) {
         roomIdElement.textContent = data.roomId;
-        roomIdElement.style.fontWeight = 'bold';
-        roomIdElement.style.color = '#764ba2';
-        
-        // Добавляем кнопку копирования
-        roomIdElement.innerHTML = data.roomId + ' <button onclick="copyRoomId()" style="margin-left:10px; padding:5px 10px; font-size:0.8em; background:#4CAF50; color:white; border:none; border-radius:5px; cursor:pointer;">Копировать</button>';
     }
     
-    // Показываем уведомление
     addMessage('system', data.message || 'Комната создана!');
     showNotification('Комната создана!', 'success');
     
@@ -131,7 +125,20 @@ function handleRoomCreated(data) {
         gameState.hostName = gameState.playerName;
     }
     
+    // ПЕРЕКЛЮЧАЕМСЯ НА ЭКРАН КОМНАТЫ (ДОБАВЬ ЭТУ СТРОЧКУ!)
+    showScreen('roomScreen');
+    
     updatePlayerNames();
+    updatePlayerCount();
+}
+
+// Функция копирования ID комнаты (ДОБАВЬ ЭТУ ФУНКЦИЮ!)
+function copyRoomId() {
+    if (gameState.roomId) {
+        navigator.clipboard.writeText(gameState.roomId)
+            .then(() => showNotification('ID комнаты скопирован!', 'success'))
+            .catch(() => showNotification('Не удалось скопировать', 'error'));
+    }
 }
 
 // Функция копирования ID комнаты
@@ -713,6 +720,39 @@ function setupRoomButtons() {
     if (leaveRoomBtn) {
         leaveRoomBtn.onclick = () => {
             if (confirm('Покинуть комнату?')) {
+                // Отключаемся от сервера
+                if (gameState.ws) {
+                    gameState.ws.close();
+                }
+                // Возвращаемся к выбору режима
+                showScreen('modeSelectScreen');
+                // Сбрасываем состояние
+                gameState.roomId = null;
+                gameState.isConnected = false;
+                gameState.playersInRoom = 0;
+                showNotification('Вы вышли из комнаты', 'info');
+            }
+        };
+    }
+}
+    
+    // Кнопка "Новая игра"
+    const playAgainBtn = document.getElementById('playAgainBtn');
+    if (playAgainBtn) {
+        playAgainBtn.onclick = () => {
+            if (!gameState.isHost) {
+                showNotification('Только хост может начать новую игру', 'error');
+                return;
+            }
+            sendToServer('PLAY_AGAIN');
+        };
+    }
+    
+    // Кнопка "Покинуть комнату"
+    const leaveRoomBtn = document.getElementById('leaveRoomBtn');
+    if (leaveRoomBtn) {
+        leaveRoomBtn.onclick = () => {
+            if (confirm('Покинуть комнату?')) {
                 window.location.href = 'online.html';
             }
         };
@@ -727,23 +767,30 @@ function showScreen(screenId) {
     const screens = ['modeSelectScreen', 'hostScreen', 'playerScreen', 'roomScreen'];
     screens.forEach(id => {
         const screen = document.getElementById(id);
-        if (screen) screen.style.display = 'none';
+        if (screen) {
+            screen.style.display = 'none';
+        }
     });
     
     // Показываем нужный экран
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) {
         targetScreen.style.display = 'block';
+        console.log(`✅ Экран ${screenId} показан`);
         
         // Если это экран комнаты - обновляем данные
         if (screenId === 'roomScreen') {
             updateRoomScreen();
         }
+    } else {
+        console.error(`❌ Экран ${screenId} не найден!`);
     }
 }
 
 // Новая функция для обновления экрана комнаты
 function updateRoomScreen() {
+    console.log('🔄 Обновляем экран комнаты');
+    
     // Обновляем ID комнаты
     const roomIdEl = document.getElementById('roomId');
     if (roomIdEl && gameState.roomId) {
@@ -762,6 +809,7 @@ function updateRoomScreen() {
         if (gameState.isHost && gameState.playersInRoom >= 2) {
             startBtn.disabled = false;
             startBtn.textContent = '🎮 Начать игру';
+            startBtn.style.opacity = '1';
         } else if (gameState.isHost) {
             startBtn.disabled = true;
             startBtn.textContent = '⏳ Ожидание второго игрока...';
@@ -779,14 +827,28 @@ function initializeOnlineGame() {
     // Кнопка "Я Хост"
     const hostModeBtn = document.getElementById('hostModeBtn');
     if (hostModeBtn) {
-        hostModeBtn.onclick = () => showScreen('hostScreen');
+        hostModeBtn.onclick = () => {
+            showScreen('hostScreen');
+            // Очищаем поле имени если нужно
+            const nameInput = document.getElementById('hostNameInput');
+            if (nameInput && !nameInput.value) {
+                nameInput.value = 'Евгений';
+            }
+        };
         console.log('✅ Кнопка "Я Хост" настроена');
     }
     
     // Кнопка "Я Игрок"
     const playerModeBtn = document.getElementById('playerModeBtn');
     if (playerModeBtn) {
-        playerModeBtn.onclick = () => showScreen('playerScreen');
+        playerModeBtn.onclick = () => {
+            showScreen('playerScreen');
+            // Очищаем поле ID комнаты
+            const roomInput = document.getElementById('roomIdInput');
+            if (roomInput) {
+                roomInput.value = '';
+            }
+        };
         console.log('✅ Кнопка "Я Игрок" настроена');
     }
     
@@ -802,11 +864,25 @@ function initializeOnlineGame() {
         joinRoomBtn.onclick = joinRoom;
     }
     
-    // Кнопка "Назад"
-    const backButtons = document.querySelectorAll('.back-btn');
-    backButtons.forEach(btn => {
-        btn.onclick = () => showScreen('modeSelectScreen');
+    // Кнопки "Назад" (ИСПРАВЛЕНО!)
+    document.querySelectorAll('.back-btn').forEach(btn => {
+        btn.onclick = () => {
+            console.log('🔙 Возвращаемся к выбору режима');
+            showScreen('modeSelectScreen');
+        };
     });
+    
+    // Кнопка "Назад к игре" в modeSelectScreen (ИСПРАВЛЕНО!)
+    const backToGameBtn = document.querySelector('.back-btn[onclick*="index.html"]');
+    if (backToGameBtn) {
+        // Убираем старый обработчик
+        backToGameBtn.removeAttribute('onclick');
+        // Добавляем новый
+        backToGameBtn.onclick = () => {
+            console.log('🎮 Возвращаемся к локальной игре');
+            window.location.href = 'index.html';
+        };
+    }
     
     // Настраиваем карточки
     setupCardButtons();
