@@ -428,13 +428,7 @@ function setupRoomButtons() {
     // 1. Кнопка "Копировать код"
     const copyBtn = document.querySelector('.btn-copy');
     if (copyBtn) {
-        copyBtn.addEventListener('click', function() {
-            if (gameState.roomId) {
-                navigator.clipboard.writeText(gameState.roomId).then(() => {
-                    showNotification('ID комнаты скопирован!', 'success');
-                });
-            }
-        });
+
     }
     
     // 2. Кнопка "Начать игру"
