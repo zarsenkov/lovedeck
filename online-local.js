@@ -80,29 +80,29 @@ function setupEventListeners() {
 // Подключиться к WebSocket серверу
 function connectToServer() {
     return new Promise((resolve, reject) => {
-        // ==== ВАЖНО: ВСТАВЬ СВОЙ IP ЗДЕСЬ ====
-        const hostIP = localStorage.getItem('loveDeck_hostIP') || '192.168.0.60';
-        // ======================================
+        // 🔥 ЗАМЕНИЛ НА ТВОЙ ДОМЕН:
+        const serverUrl = 'wss://lovedeck-server-production.up.railway.app';
         
-        // Создаем WebSocket соединение
-        const ws = new WebSocket(`ws://${hostIP}:8080`);
+        console.log('🔗 Подключаемся к облаку:', serverUrl);
+        
+        const ws = new WebSocket(serverUrl);
         
         ws.onopen = () => {
-            console.log('✅ Подключение к серверу установлено');
+            console.log('✅ Подключение к облачному серверу установлено!');
             gameState.ws = ws;
             setupWebSocketHandlers();
             resolve(ws);
         };
         
         ws.onerror = (error) => {
-            console.error('❌ Ошибка подключения:', error);
-            showNotification(`Не удалось подключиться к ${hostIP}:8080`, 'error');
+            console.error('❌ Ошибка подключения к облаку:', error);
+            showNotification(`Не удалось подключиться к облаку`, 'error');
             reject(error);
         };
         
         ws.onclose = () => {
-            console.log('❌ Соединение закрыто');
-            showNotification('Соединение с сервером потеряно', 'error');
+            console.log('❌ Соединение с облаком закрыто');
+            showNotification('Соединение потеряно', 'error');
         };
     });
 }
