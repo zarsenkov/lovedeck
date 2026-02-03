@@ -1,23 +1,32 @@
-/* online.css - Стили для онлайн-режима */
+/* online.css - Стили для локальной сетевой игры */
 
+/* Основные стили */
 .online-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
 }
 
 .online-header {
     text-align: center;
     margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #f0f0f0;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
 .online-header h1 {
     color: #E91E63;
     margin: 0;
     font-size: 2.5rem;
+    background: linear-gradient(45deg, #E91E63, #9C27B0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .subtitle {
@@ -26,55 +35,122 @@
     margin-top: 5px;
 }
 
-.online-main {
+/* Экран подключения */
+.connection-screen {
     background: white;
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
 }
 
-.connection-screen {
+.role-selection {
+    text-align: center;
+}
+
+.role-selection h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.role-hint {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+    padding: 10px;
+    background: #e3f2fd;
+    border-radius: 10px;
+    border-left: 4px solid #2196F3;
+}
+
+.role-cards {
     display: flex;
-    flex-wrap: wrap;
     gap: 30px;
+    flex-wrap: wrap;
     justify-content: center;
+    margin-top: 30px;
 }
 
-.player-card {
+.role-card {
     flex: 1;
     min-width: 300px;
+    max-width: 450px;
     background: #f8f9fa;
     border-radius: 15px;
     padding: 25px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border: 3px solid transparent;
+    transition: all 0.3s;
 }
 
-.player-card h2 {
+.role-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.host-card {
+    border-color: #FF9800;
+}
+
+.player-card {
+    border-color: #2196F3;
+}
+
+.role-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.role-card h3 {
     color: #333;
     margin-top: 0;
+    margin-bottom: 10px;
 }
 
-.player-card p {
+.role-card p {
     color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.role-details {
+    text-align: left;
+    margin: 20px 0;
+}
+
+.input-group {
     margin-bottom: 20px;
 }
 
-input[type="text"] {
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.input-group input {
     width: 100%;
     padding: 12px 15px;
-    margin: 10px 0;
     border: 2px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
     box-sizing: border-box;
 }
 
-input[type="text"]:focus {
+.input-group input:focus {
     outline: none;
     border-color: #9C27B0;
 }
 
-.btn-primary, .btn-secondary {
+.input-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.role-button {
     width: 100%;
     padding: 15px;
     border: none;
@@ -82,65 +158,27 @@ input[type="text"]:focus {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    margin-top: 10px;
     transition: all 0.3s;
+    margin-top: 10px;
 }
 
-.btn-primary {
-    background: linear-gradient(45deg, #9C27B0, #E91E63);
+.host-button {
+    background: linear-gradient(45deg, #FF9800, #FFB74D);
     color: white;
 }
 
-.btn-secondary {
+.player-button {
     background: linear-gradient(45deg, #2196F3, #21CBF3);
     color: white;
 }
 
-.btn-primary:hover, .btn-secondary:hover {
+.role-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
-.btn-quick-start {
-    background: #FF9800;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    transition: all 0.3s;
-}
-
-.btn-quick-start:hover {
-    background: #F57C00;
-    transform: translateY(-2px);
-}
-
-.quick-start-hint {
-    font-size: 12px;
-    color: #888;
-    text-align: center;
-    margin-top: 8px;
-}
-
-.divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 20px 0;
-}
-
-.divider span {
-    background: white;
-    padding: 0 15px;
-    color: #999;
-    font-weight: bold;
-}
-
-/* Стили для экрана комнаты */
-.room-info {
+/* Экран комнаты */
+.room-screen {
     animation: fadeIn 0.5s ease;
 }
 
@@ -149,194 +187,155 @@ input[type="text"]:focus {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.players {
+.room-header {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     display: flex;
-    gap: 20px;
-    margin: 30px 0;
+    justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
+    gap: 15px;
 }
 
-.player {
-    flex: 1;
-    min-width: 200px;
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    border: 2px solid #e0e0e0;
+.room-header h2 {
+    color: #333;
+    margin: 0;
+}
+
+.room-code {
     display: flex;
     align-items: center;
-    gap: 15px;
-}
-
-.player-avatar {
-    font-size: 2rem;
-}
-
-.player-name {
-    font-weight: bold;
-    color: #333;
-    flex: 1;
-}
-
-.player-status {
-    font-size: 1.5rem;
-}
-
-.room-actions {
-    display: flex;
-    gap: 15px;
-    margin: 25px 0;
-    flex-wrap: wrap;
-}
-
-.btn-copy, .btn-qr, .btn-start {
-    flex: 1;
-    min-width: 150px;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
+    gap: 10px;
+    background: #f5f5f5;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 16px;
 }
 
 .btn-copy {
     background: #4CAF50;
     color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
 }
 
-.btn-qr {
-    background: #2196F3;
-    color: white;
+.btn-copy:hover {
+    background: #388E3C;
+    transform: scale(1.05);
+}
+
+/* Список игроков */
+.players-section {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.players-section h3 {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Кнопка начала игры */
+.start-section {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    text-align: center;
 }
 
 .btn-start {
     background: linear-gradient(45deg, #E91E63, #FF4081);
     color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+    max-width: 300px;
 }
 
 .btn-start:disabled {
     background: #ccc;
     cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
-.btn-ready, .btn-partner, .btn-force-start {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
+.btn-start:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.3);
 }
 
-.btn-ready {
-    background: #4CAF50;
-    color: white;
-}
-
-.btn-partner {
-    background: #2196F3;
-    color: white;
-}
-
-.btn-force-start {
-    background: #FF9800;
-    color: white;
-}
-
-.btn-ready:hover, .btn-partner:hover, .btn-force-start:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+.start-hint {
+    color: #666;
+    margin-top: 10px;
+    font-size: 14px;
 }
 
 /* Чат */
 .chat-box {
-    margin-top: 30px;
-    background: #f8f9fa;
+    background: white;
     border-radius: 15px;
     padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
-.chat-box h3 {
-    color: #333;
-    margin-top: 0;
-}
-
-.chat-messages {
-    height: 300px;
-    overflow-y: auto;
-    padding: 15px;
-    background: white;
-    border-radius: 10px;
-    margin: 15px 0;
-    border: 2px solid #e0e0e0;
-}
-
-.message {
-    margin-bottom: 15px;
-    padding: 10px 15px;
-    border-radius: 10px;
-    background: #f0f0f0;
-}
-
-.message.system {
-    background: #e3f2fd;
-    border-left: 4px solid #2196F3;
-}
-
-.message.player {
-    background: #f3e5f5;
-    border-left: 4px solid #9C27B0;
-}
-
-.message-sender {
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-}
-
-.message-text {
-    color: #333;
-    margin-bottom: 5px;
-}
-
-.message-time {
-    font-size: 12px;
-    color: #888;
-    text-align: right;
-}
-
-.chat-input {
+.chat-header {
     display: flex;
-    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
-.chat-input input {
-    flex: 1;
-    padding: 12px 15px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
+.chat-header h3 {
+    color: #333;
+    margin: 0;
 }
 
-.chat-send {
-    background: #9C27B0;
+.btn-create-card {
+    background: linear-gradient(45deg, #FF9800, #FFB74D);
     color: white;
     border: none;
-    padding: 12px 25px;
+    padding: 10px 20px;
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s;
 }
 
-.chat-send:hover {
-    background: #7B1FA2;
+.btn-create-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
 }
 
-/* Кнопки карточек */
+/* Карточки */
 .card-buttons {
     animation: slideDown 0.5s ease;
+    margin-bottom: 20px;
 }
 
 @keyframes slideDown {
@@ -344,11 +343,15 @@ input[type="text"]:focus {
     to { opacity: 1; transform: translateY(0); }
 }
 
+.card-buttons h4 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
 .quick-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 10px;
-    margin: 15px 0;
 }
 
 .card-btn {
@@ -360,6 +363,7 @@ input[type="text"]:focus {
     transition: all 0.3s;
     text-align: center;
     font-weight: bold;
+    font-size: 14px;
 }
 
 .card-btn:hover {
@@ -387,25 +391,159 @@ input[type="text"]:focus {
     color: #9C27B0;
 }
 
+/* Сообщения чата */
+.chat-messages {
+    height: 300px;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin: 15px 0;
+    border: 2px solid #e0e0e0;
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    background: white;
+    border-left: 4px solid #ddd;
+}
+
+.message.system {
+    border-left-color: #2196F3;
+    background: #e3f2fd;
+}
+
+.message.player {
+    border-left-color: #4CAF50;
+    background: #e8f5e9;
+}
+
+.message-sender {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.message-text {
+    color: #333;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+.message-time {
+    font-size: 12px;
+    color: #888;
+    text-align: right;
+}
+
+/* Ввод сообщения */
+.chat-input {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.chat-input input:focus {
+    outline: none;
+    border-color: #9C27B0;
+}
+
+.chat-send {
+    background: #9C27B0;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.chat-send:hover {
+    background: #7B1FA2;
+}
+
+/* Подвал */
+.online-footer {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 30px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.footer-info {
+    margin-bottom: 20px;
+}
+
+.footer-info p {
+    color: #333;
+    font-weight: bold;
+    margin-top: 0;
+}
+
+.footer-info ol {
+    margin-left: 20px;
+    color: #666;
+}
+
+.footer-info li {
+    margin-bottom: 8px;
+}
+
+.btn-back {
+    display: inline-block;
+    color: #2196F3;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: 2px solid #2196F3;
+    border-radius: 8px;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.btn-back:hover {
+    background: #2196F3;
+    color: white;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .online-header h1 {
         font-size: 2rem;
     }
     
-    .player-card {
+    .role-cards {
+        flex-direction: column;
+    }
+    
+    .role-card {
         min-width: 100%;
     }
     
-    .players {
+    .room-header {
         flex-direction: column;
-    }
-    
-    .room-actions {
-        flex-direction: column;
+        text-align: center;
     }
     
     .quick-cards {
         grid-template-columns: 1fr;
+    }
+    
+    .chat-header {
+        flex-direction: column;
+        text-align: center;
     }
 }
