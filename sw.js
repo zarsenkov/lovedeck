@@ -1,5 +1,5 @@
 // ========== SERVICE WORKER С АВТООБНОВЛЕНИЕМ ==========
-const CACHE_NAME = 'lovecouple-v1.7.4'; // ⚡ МЕНЯЙТЕ ВЕРСИЮ ПРИ КАЖДОМ ОБНОВЛЕНИИ!
+const CACHE_NAME = 'lovecouple-v1.7.5'; // ⚡ МЕНЯЙТЕ ВЕРСИЮ ПРИ КАЖДОМ ОБНОВЛЕНИИ!
 const urlsToCache = [
   '/',
   '/index.html',
