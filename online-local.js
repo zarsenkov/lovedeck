@@ -461,15 +461,87 @@ function startGame() {
 }
 
 // Отправка карточки
-function sendCard(card, cardType) {
+function sendCard(cardType, customText = '') {
     console.log('🎴 Отправляем карточку:', cardType);
     
-    if (!gameState.isConnected) {
-        showNotification('Нет подключения', 'error');
-        return;
+    let card;
+    
+    // Если есть текст - создаём пользовательскую карточку
+    if (customText && customText.trim()) {
+        card = {
+            type: cardType,
+            text: customText.trim(),
+            id: 'custom_' + Date.now(),
+            author: currentUsername || 'Игрок'
+        };
+        
+        // Пробуем сохранить в CardManager
+        if (window.CardManager && window.CardManager.addUserCard) {
+            const savedCard = window.CardManager.addUserCard(card);
+            if (savedCard) {
+                card = savedCard;
+                console.log('✅ Карточка сохранена в CardManager');
+            }
+        }
+    } 
+    // Иначе берём случайную из CardManager
+    else if (window.CardManager && window.CardManager.getRandomCard) {
+        card = window.CardManager.getRandomCard(cardType);
+        if (card) {
+            console.log('✅ Используем карточку из базы:', card.id);
+        }
     }
     
-    sendToServer('SEND_CARD', { card, cardType });
+    // Если CardManager не сработал - создаём базовую карточку
+    if (!card) {
+        card = {
+            type: cardType,
+            text: `[${getCardTypeName(cardType)}] Случайная карточка`,
+            id: 'fallback_' + Date.now()
+        };
+    }
+    
+    // Остальной код отправки через WebSocket...
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        const message = {
+            type: 'SEND_CARD',
+            roomId: currentRoomId,
+            card: card,
+            cardType: cardType,
+            sender: currentUsername
+        };
+        
+        ws.send(JSON.stringify(message));
+        console.log('📤 Отправлено на сервер:', { type: 'SEND_CARD', cardType });
+        
+        // Обновляем статистику
+        if (window.StorageManager) {
+            window.StorageManager.updateStats({
+                cardsSent: (window.StorageManager.profile.stats.cardsSent || 0) + 1
+            });
+            
+            // Обновляем отображение статистики
+            if (window.updateStatsDisplay) {
+                window.updateStatsDisplay();
+            }
+        }
+        
+        showNotification(customText ? 'Карточка создана!' : 'Карточка отправлена!', 'success');
+        displayCard(card, cardType, true);
+    } else {
+        showNotification('Нет соединения с сервером', 'error');
+    }
+}
+
+// Добавь вспомогательную функцию
+function getCardTypeName(type) {
+    const names = {
+        'question': 'Вопрос',
+        'action': 'Действие', 
+        'date': 'Свидание',
+        'compliment': 'Комплимент'
+    };
+    return names[type] || type;
 }
 
 // Отправка сообщения в чат
