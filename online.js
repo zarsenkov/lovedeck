@@ -11,9 +11,112 @@ let players = [
     { id: null, name: '', ready: false }
 ];
 
+// Инициализация при загрузке
+window.onload = function() {
+    console.log('LoveDeck Online загружен!');
+    
+    // Проверяем SimplePeer
+    if (typeof SimplePeer === 'undefined') {
+        showNotification('Ошибка: SimplePeer не загружен', 'error');
+        return;
+    }
+    
+    console.log('SimplePeer доступен');
+    
+    // Настраиваем отправку сообщения по Enter
+    document.getElementById('chat-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendChatMessage();
+        }
+    });
+};
+
+// ===================== ОСНОВНЫЕ ФУНКЦИИ =====================
+
+// Создание комнаты (Хост)
+function createRoom() {
+    playerName = document.getElementById('player1-name').value.trim() || 'Игрок 1';
+    
+    isHost = true;
+    
+    // Генерируем случайный ID комнаты
+    currentRoomId = generateRoomCode();
+    
+    // Обновляем интерфейс
+    players[0] = { id: 'host', name: playerName, ready: false };
+    updatePlayersDisplay();
+    
+    document.getElementById('connection-screen').style.display = 'none';
+    document.getElementById('room-screen').style.display = 'block';
+    document.getElementById('room-id-display').textContent = currentRoomId;
+    
+    // Показываем код комнаты
+    showRoomCode(currentRoomId);
+    console.log('Комната создана. Код:', currentRoomId);
+    
+    // Автоматически генерируем сигнал
+    setTimeout(() => {
+        generateSignal();
+    }, 1000);
+}
+
+// Присоединение к комнате (Гость)
+function joinRoom() {
+    const roomCode = document.getElementById('room-code').value.trim();
+    playerName = document.getElementById('player2-name').value.trim() || 'Игрок 2';
+    
+    if (!roomCode) {
+        showNotification('Введите код комнаты!', 'warning');
+        return;
+    }
+    
+    currentRoomId = roomCode;
+    isHost = false;
+    
+    // Обновляем интерфейс
+    players[1] = { id: 'guest', name: playerName, ready: false };
+    updatePlayersDisplay();
+    
+    document.getElementById('connection-screen').style.display = 'none';
+    document.getElementById('room-screen').style.display = 'block';
+    document.getElementById('room-id-display').textContent = currentRoomId;
+    
+    showNotification('Ожидаю сигнал от хоста. Нажмите "Ввести сигнал" когда получите его.', 'info');
+    console.log('Ожидаю сигнал от хоста для комнаты:', roomCode);
+}
+
+// Быстрый старт
+function quickStartGame() {
+    playerName = document.getElementById('player1-name').value.trim() || 'Игрок 1';
+    isHost = true;
+    currentRoomId = generateRoomCode();
+    
+    players[0] = { id: 'host', name: playerName, ready: false };
+    updatePlayersDisplay();
+    
+    document.getElementById('connection-screen').style.display = 'none';
+    document.getElementById('room-screen').style.display = 'block';
+    document.getElementById('room-id-display').textContent = currentRoomId;
+    
+    // Генерируем сигнал
+    setTimeout(() => {
+        generateSignal();
+    }, 1000);
+    
+    showQR();
+    showNotification('Сигнал автоматически генерируется...', 'success');
+}
+
+// Генерация кода комнаты
+function generateRoomCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// ===================== P2P СОЕДИНЕНИЕ =====================
+
 // Генерация сигнала (для хоста)
 function generateSignal() {
-    console.log('Генерация P2P сигнала...');
+    console.log('🔧 Генерация P2P сигнала...');
     
     if (!isHost) {
         showNotification('Только хост может генерировать сигнал', 'warning');
@@ -38,227 +141,97 @@ function generateSignal() {
         }
     });
     
-    console.log('P2P соединение создано (инициатор)');
+    console.log('✅ P2P соединение создано (инициатор)');
     
     // Настраиваем обработчики
     setupPeerHandlers();
     
-    // Запускаем генерацию сигнала
-    setTimeout(() => {
-        console.log('Запускаю генерацию оффера...');
-        // SimplePeer автоматически сгенерирует offer при создании
-    }, 1000);
-    
     showNotification('Генерирую сигнал подключения...', 'info');
 }
 
-// Инициализация при загрузке
-window.onload = function() {
-    console.log('LoveDeck Online загружен!');
-    
-    // Проверяем SimplePeer
-    if (typeof SimplePeer === 'undefined') {
-        showNotification('Ошибка: SimplePeer не загружен', 'error');
+// Общие обработчики для P2P
+function setupPeerHandlers() {
+    if (!peer) {
+        console.error('❌ Peer не определен!');
         return;
     }
     
-    console.log('SimplePeer доступен:', typeof SimplePeer);
+    // Когда подключимся
+    peer.on('connect', function() {
+        console.log('✅ P2P соединение установлено!');
+        showNotification('Подключено к партнеру! 🎉', 'success');
+        
+        const myIndex = isHost ? 0 : 1;
+        players[myIndex].ready = true;
+        updatePlayersDisplay();
+        
+        // Активируем кнопку старта
+        updateStartButton();
+        
+        // Показываем кнопки карточек
+        setTimeout(showCardButtons, 500);
+        
+        // Отправляем информацию о себе
+        setTimeout(() => {
+            if (peer.connected) {
+                sendPeerData({
+                    type: 'player_info',
+                    name: playerName,
+                    isHost: isHost
+                });
+            }
+        }, 1000);
+    });
     
-    // Настраиваем отправку сообщения по Enter
-    document.getElementById('chat-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendChatMessage();
+    // Когда получим сигнал (офер или ответ)
+    peer.on('signal', function(data) {
+        console.log('📡 Сгенерирован сигнал:', data.type);
+        
+        const signalStr = JSON.stringify(data);
+        const encodedSignal = btoa(signalStr);
+        
+        if (isHost && data.type === 'offer') {
+            // Хост показывает свой сигнал для гостя
+            showNotification('✅ Сигнал сгенерирован!', 'success');
+            
+            // Показываем для копирования
+            showSignalForCopy(encodedSignal);
+            
+            // Также добавляем в чат
+            addChatMessage(`📡 Сигнал для подключения готов.`, 'system');
+            
+        } else if (!isHost && data.type === 'answer') {
+            // Гость сгенерировал ответ
+            console.log('Ответный сигнал сгенерирован');
         }
     });
-};
-
-// ===================== ОСНОВНЫЕ ФУНКЦИИ =====================
-
-// Создание комнаты (Хост)
-// Создание комнаты (с автоматической генерацией сигнала)
-function createRoom() {
-    playerName = document.getElementById('player1-name').value.trim() || 'Игрок 1';
     
-    isHost = true;
-    
-    // Генерируем случайный ID комнаты
-    currentRoomId = generateRoomCode();
-    
-    // Обновляем интерфейс
-    players[0] = { id: 'host', name: playerName, ready: false };
-    updatePlayersDisplay();
-    
-    document.getElementById('connection-screen').style.display = 'none';
-    document.getElementById('room-screen').style.display = 'block';
-    document.getElementById('room-id-display').textContent = currentRoomId;
-    
-    // Автоматически генерируем сигнал через 2 секунды
-    setTimeout(() => {
-        generateSignal();
-    }, 2000);
-    
-    showNotification('Комната создана! Автоматически генерирую сигнал...', 'success');
-    console.log('Комната создана. Код:', currentRoomId);
-}
-
-// Присоединение к комнате (Гость)
-function joinRoom() {
-    const roomCode = document.getElementById('room-code').value.trim();
-    playerName = document.getElementById('player2-name').value.trim() || 'Игрок 2';
-    
-    if (!roomCode) {
-        showNotification('Введите код комнаты!', 'warning');
-        return;
-    }
-    
-    currentRoomId = roomCode;
-    isHost = false;
-    
-    // Обновляем интерфейс
-    players[1] = { id: 'guest', name: playerName, ready: false };
-    updatePlayersDisplay();
-    
-    document.getElementById('connection-screen').style.display = 'none';
-    document.getElementById('room-screen').style.display = 'block';
-    document.getElementById('room-id-display').textContent = currentRoomId;
-    
-    showNotification('Введите код сигнала от хоста в чат', 'info');
-    console.log('Ожидаю сигнал от хоста для комнаты:', roomCode);
-}
-
-// Быстрый старт
-function quickStartGame() {
-    playerName = document.getElementById('player1-name').value.trim() || 'Игрок 1';
-    isHost = true;
-    currentRoomId = generateRoomCode();
-    
-    players[0] = { id: 'host', name: playerName, ready: false };
-    updatePlayersDisplay();
-    
-    document.getElementById('connection-screen').style.display = 'none';
-    document.getElementById('room-screen').style.display = 'block';
-    document.getElementById('room-id-display').textContent = currentRoomId;
-    
-    showQR();
-    showNotification('Партнер может отсканировать QR-код или ввести код: ' + currentRoomId, 'success');
-}
-
-// Генерация кода комнаты
-function generateRoomCode() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
-// ===================== P2P СОЕДИНЕНИЕ =====================
-
-// Инициализация P2P соединения (вызывается после обмена сигналами)
-function initP2PConnection(signalData, isInitiator) {
-    console.log('Инициализируем P2P соединение. Инициатор:', isInitiator);
-    
-    try {
-        // Закрываем старое соединение если есть
-        if (peer) {
-            peer.destroy();
-            peer = null;
+    // Когда получим данные
+    peer.on('data', function(data) {
+        try {
+            const message = JSON.parse(data.toString());
+            console.log('📩 Получены данные:', message);
+            handlePeerData(message);
+        } catch (e) {
+            console.log('Получен текст:', data.toString());
+            addChatMessage(data.toString(), 'Партнер');
         }
-        
-        // Создаем новое соединение
-        peer = new SimplePeer({
-            initiator: isInitiator,
-            trickle: false,
-            config: {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' }
-                ]
-            }
-        });
-        
-        // Обработка сигналов
-        peer.on('signal', function(data) {
-            console.log('Получен сигнал:', data.type);
-            
-            // Кодируем сигнал в base64 для отправки через чат
-            const signalStr = JSON.stringify(data);
-            const encodedSignal = btoa(signalStr);
-            
-            // Если мы хост и это первый сигнал - отправляем гостю
-            if (isHost && isInitiator && data.type === 'offer') {
-                const message = `SIGNAL:${encodedSignal}`;
-                addChatMessage('Отправляю сигнал подключения...', 'system');
-                
-                // В реальном приложении здесь должна быть отправка через сервер
-                // А мы просто покажем в чате
-                setTimeout(() => {
-                    addChatMessage(`Сигнал для подключения: ${encodedSignal.substring(0, 50)}...`, 'system');
-                }, 1000);
-            }
-            
-            // Если мы гость и получили answer - отправляем обратно
-            if (!isHost && !isInitiator && data.type === 'answer') {
-                const message = `SIGNAL:${encodedSignal}`;
-                addChatMessage('Отправляю ответный сигнал...', 'system');
-            }
-        });
-        
-        // Когда соединение установлено
-        peer.on('connect', function() {
-            console.log('✅ P2P соединение установлено!');
-            showNotification('Подключено к партнеру! 🎉', 'success');
-            
-            // Обновляем статус игроков
-            const myIndex = isHost ? 0 : 1;
-            players[myIndex].ready = true;
-            updatePlayersDisplay();
-            
-            // Показываем кнопки карточек
-            showCardButtons();
-            
-            // Отправляем информацию о себе
-            sendPeerData({
-                type: 'player_info',
-                name: playerName,
-                isHost: isHost
-            });
-        });
-        
-        // При получении данных
-        peer.on('data', function(data) {
-            try {
-                const message = JSON.parse(data.toString());
-                console.log('Получены данные:', message);
-                handlePeerData(message);
-            } catch (e) {
-                console.log('Получен текст:', data.toString());
-                addChatMessage(data.toString(), 'Партнер');
-            }
-        });
-        
-        // Обработка ошибок
-        peer.on('error', function(err) {
-            console.error('Ошибка P2P:', err);
-            showNotification('Ошибка соединения: ' + err.message, 'error');
-        });
-        
-        // Закрытие соединения
-        peer.on('close', function() {
-            console.log('Соединение закрыто');
-            showNotification('Соединение с партнером разорвано', 'warning');
-            players[1].ready = false;
-            players[0].ready = false;
-            updatePlayersDisplay();
-        });
-        
-        // Если передали начальный сигнал - отправляем его
-        if (signalData) {
-            setTimeout(() => {
-                peer.signal(signalData);
-            }, 500);
-        }
-        
-    } catch (error) {
-        console.error('Ошибка при создании P2P:', error);
-        showNotification('Не удалось создать соединение', 'error');
-    }
+    });
+    
+    // Обработка ошибок
+    peer.on('error', function(err) {
+        console.error('❌ Ошибка P2P:', err);
+        showNotification('Ошибка соединения: ' + err.message, 'error');
+    });
+    
+    // Закрытие соединения
+    peer.on('close', function() {
+        console.log('Соединение закрыто');
+        showNotification('Соединение с партнером разорвано', 'warning');
+        players[1].ready = false;
+        players[0].ready = false;
+        updatePlayersDisplay();
+    });
 }
 
 // Отправка данных партнеру
@@ -277,54 +250,46 @@ function sendPeerData(data) {
     return false;
 }
 
-// Обработка данных от партнера
-function handlePeerData(data) {
-    console.log('Обработка данных от партнера:', data);
+// Подключение по сигналу (для гостя)
+function connectWithSignal(encodedSignal) {
+    console.log('🔗 Подключаюсь по сигналу...');
     
-    switch(data.type) {
-        case 'player_info':
-            const playerIndex = isHost ? 1 : 0;
-            players[playerIndex] = {
-                id: 'connected',
-                name: data.name,
-                ready: true
-            };
-            updatePlayersDisplay();
-            addChatMessage(`👋 ${data.name} подключился(ась)!`, 'system');
-            checkIfBothReady();
-            break;
-            
-        case 'player_ready':
-            const index = data.playerIndex !== undefined ? data.playerIndex : (isHost ? 1 : 0);
-            if (players[index]) {
-                players[index].ready = data.ready;
-                updatePlayersDisplay();
-                
-                if (data.ready) {
-                    addChatMessage(`✅ ${data.playerName} готов(а)!`, 'system');
-                }
-                checkIfBothReady();
+    try {
+        // Декодируем из base64
+        const signalStr = atob(encodedSignal);
+        const signalData = JSON.parse(signalStr);
+        
+        console.log('✅ Сигнал получен:', signalData.type);
+        
+        // Если peer уже создан - пересоздаем
+        if (peer) {
+            peer.destroy();
+            peer = null;
+        }
+        
+        // Создаем P2P соединение как гость
+        peer = new SimplePeer({
+            initiator: false,
+            trickle: false,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' }
+                ]
             }
-            break;
-            
-        case 'chat_message':
-            addChatMessage(data.message, data.sender);
-            break;
-            
-        case 'card_click':
-            showPartnerCard(data.card);
-            break;
-            
-        case 'signal':
-            // Получен сигнал для подключения
-            try {
-                const signalData = JSON.parse(data.signal);
-                initP2PConnection(signalData, !isHost);
-                addChatMessage('Обрабатываю сигнал подключения...', 'system');
-            } catch (e) {
-                console.error('Ошибка парсинга сигнала:', e);
-            }
-            break;
+        });
+        
+        // Настраиваем обработчики
+        setupPeerHandlers();
+        
+        // Отправляем сигнал
+        peer.signal(signalData);
+        
+        showNotification('Подключаюсь к партнеру...', 'info');
+        
+    } catch (error) {
+        console.error('❌ Ошибка подключения:', error);
+        showNotification('Неверный сигнал: ' + error.message, 'error');
     }
 }
 
@@ -352,21 +317,19 @@ function updateStartButton() {
 
 // Начать игру
 function startGame() {
-    console.log('Начинаем игру!');
+    console.log('🎮 Начинаем игру!');
     
     const myIndex = isHost ? 0 : 1;
     players[myIndex].ready = true;
     updatePlayersDisplay();
     
     // Отправляем статус партнеру
-    if (sendPeerData) {
-        sendPeerData({
-            type: 'player_ready',
-            ready: true,
-            playerIndex: myIndex,
-            playerName: playerName
-        });
-    }
+    sendPeerData({
+        type: 'player_ready',
+        ready: true,
+        playerIndex: myIndex,
+        playerName: playerName
+    });
     
     checkIfBothReady();
 }
@@ -405,29 +368,6 @@ function sendChatMessage() {
     const message = input.value.trim();
     
     if (!message) return;
-    
-    // Проверяем, не сигнал ли это
-    if (message.startsWith('SIGNAL:')) {
-        try {
-            const encodedSignal = message.substring(7);
-            const signalStr = atob(encodedSignal);
-            const signalData = JSON.parse(signalStr);
-            
-            if (!isHost) {
-                // Гость обрабатывает сигнал от хоста
-                initP2PConnection(signalData, false);
-                addChatMessage('Обрабатываю сигнал от хоста...', 'system');
-            } else {
-                // Хост обрабатывает ответный сигнал
-                initP2PConnection(signalData, true);
-                addChatMessage('Обрабатываю ответный сигнал...', 'system');
-            }
-            input.value = '';
-            return;
-        } catch (e) {
-            console.error('Ошибка обработки сигнала:', e);
-        }
-    }
     
     // Обычное сообщение
     if (sendPeerData) {
@@ -474,7 +414,7 @@ function hideCardButtons() {
 
 // ===================== КАРТОЧКИ =====================
 
-// База карточек (упрощенная)
+// База карточек
 const onlineCards = {
     вопросы: [
         "Что тебе больше всего нравится в наших отношениях?",
@@ -655,27 +595,13 @@ function showPartnerCard(card) {
     `;
     
     document.body.appendChild(modal);
-    
-    // Добавляем анимации
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-    `;
-    document.head.appendChild(style);
 }
 
 // ===================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====================
 
 // Показать код комнаты
 function showRoomCode(roomId) {
-    showCustomAlert('🎮 Комната создана!', `Код комнаты: <strong>${roomId}</strong><br><br>Отправьте этот код партнеру. Партнер должен ввести его в поле "Код комнаты".`, 'info');
+    showCustomAlert('🎮 Комната создана!', `Код комнаты: <strong>${roomId}</strong><br><br>Отправьте этот код партнеру.`, 'info');
 }
 
 // Копировать код комнаты
@@ -710,6 +636,137 @@ function showQR() {
 
 function closeQR() {
     document.getElementById('qr-modal').style.display = 'none';
+}
+
+// Показать сигнал для копирования
+function showSignalForCopy(encodedSignal) {
+    const signalDiv = document.createElement('div');
+    signalDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        z-index: 10007;
+        max-width: 600px;
+        width: 90%;
+        text-align: center;
+    `;
+    
+    signalDiv.innerHTML = `
+        <h3 style="color:#2196F3; margin-bottom: 15px;">📡 Сигнал для партнера</h3>
+        <p style="color:#666; margin-bottom: 15px;">Скопируйте этот код и отправьте партнеру:</p>
+        
+        <div style="
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px dashed #2196F3;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            text-align: left;
+        ">
+            ${encodedSignal}
+        </div>
+        
+        <button onclick="copyToClipboard('${encodedSignal}')" style="
+            padding: 12px 25px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        ">
+            📋 Копировать сигнал
+        </button>
+        
+        <button onclick="this.parentElement.remove()" style="
+            padding: 12px 25px;
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        ">
+            Закрыть
+        </button>
+    `;
+    
+    document.body.appendChild(signalDiv);
+}
+
+// Показать поле для ввода сигнала
+function showSignalInputSection() {
+    document.getElementById('signal-input-section').style.display = 'block';
+}
+
+// Подключиться по сигналу из поля ввода
+function connectWithSignalInput() {
+    const signalInput = document.getElementById('signal-input');
+    const encodedSignal = signalInput.value.trim();
+    
+    if (!encodedSignal) {
+        showNotification('Введите сигнал от партнера!', 'warning');
+        return;
+    }
+    
+    connectWithSignal(encodedSignal);
+    signalInput.value = '';
+    document.getElementById('signal-input-section').style.display = 'none';
+}
+
+// Обработка данных от партнера
+function handlePeerData(data) {
+    console.log('Обработка данных от партнера:', data);
+    
+    switch(data.type) {
+        case 'player_info':
+            const playerIndex = isHost ? 1 : 0;
+            players[playerIndex] = {
+                id: 'connected',
+                name: data.name,
+                ready: true
+            };
+            updatePlayersDisplay();
+            addChatMessage(`👋 ${data.name} подключился(ась)!`, 'system');
+            checkIfBothReady();
+            break;
+            
+        case 'player_ready':
+            const index = data.playerIndex !== undefined ? data.playerIndex : (isHost ? 1 : 0);
+            if (players[index]) {
+                players[index].ready = data.ready;
+                updatePlayersDisplay();
+                
+                if (data.ready) {
+                    addChatMessage(`✅ ${data.playerName} готов(а)!`, 'system');
+                }
+                checkIfBothReady();
+            }
+            break;
+            
+        case 'chat_message':
+            addChatMessage(data.message, data.sender);
+            break;
+            
+        case 'card_click':
+            showPartnerCard(data.card);
+            break;
+    }
 }
 
 // Уведомления
@@ -789,6 +846,22 @@ function showCustomAlert(title, message, type = 'info') {
     document.body.appendChild(alertDiv);
 }
 
+// Копировать в буфер обмена
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => showNotification('Скопировано! ✅', 'success'))
+        .catch(err => {
+            // Fallback
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showNotification('Скопировано!', 'success');
+        });
+}
+
 // Экспортируем функцию отправки карты
 window.sendCardToPartner = sendPeerData;
 
@@ -813,236 +886,3 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
-// Показать поле для ввода сигнала
-function showSignalInputSection() {
-    document.getElementById('signal-input-section').style.display = 'block';
-}
-
-// Подключиться по сигналу из поля ввода
-function connectWithSignalInput() {
-    const signalInput = document.getElementById('signal-input');
-    const encodedSignal = signalInput.value.trim();
-    
-    if (!encodedSignal) {
-        showNotification('Введите сигнал от партнера!', 'warning');
-        return;
-    }
-    
-    connectWithSignal(encodedSignal);
-    signalInput.value = '';
-    document.getElementById('signal-input-section').style.display = 'none';
-}
-
-// Функция подключения по сигналу
-function connectWithSignal(encodedSignal) {
-    console.log('Пытаюсь подключиться по сигналу...');
-    
-    try {
-        // Декодируем из base64
-        const signalStr = atob(encodedSignal);
-        const signalData = JSON.parse(signalStr);
-        
-        console.log('Сигнал получен:', signalData.type);
-        
-        // Создаем P2P соединение как гость
-        peer = new SimplePeer({
-            initiator: false,
-            trickle: false,
-            config: {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' }
-                ]
-            }
-        });
-        
-        // Настраиваем обработчики
-        setupPeerHandlers();
-        
-        // Отправляем сигнал
-        peer.signal(signalData);
-        
-        showNotification('Подключаюсь к партнеру...', 'info');
-        
-    } catch (error) {
-        console.error('Ошибка подключения:', error);
-        showNotification('Неверный сигнал: ' + error.message, 'error');
-    }
-}
-
-// Общие обработчики для P2P
-// Общие обработчики для P2P
-function setupPeerHandlers() {
-    if (!peer) {
-        console.error('Peer не определен!');
-        return;
-    }
-    
-    // Когда подключимся
-    peer.on('connect', function() {
-        console.log('✅ P2P соединение установлено!');
-        showNotification('Подключено к партнеру! 🎉', 'success');
-        
-        const myIndex = isHost ? 0 : 1;
-        players[myIndex].ready = true;
-        updatePlayersDisplay();
-        
-        // Активируем кнопку старта
-        updateStartButton();
-        
-        // Показываем кнопки карточек
-        setTimeout(showCardButtons, 500);
-        
-        // Отправляем информацию о себе
-        setTimeout(() => {
-            if (peer.connected) {
-                sendPeerData({
-                    type: 'player_info',
-                    name: playerName,
-                    isHost: isHost
-                });
-            }
-        }, 1000);
-    });
-    
-    // Когда получим сигнал (офер или ответ)
-    peer.on('signal', function(data) {
-        console.log('📡 Сгенерирован сигнал:', data.type);
-        
-        const signalStr = JSON.stringify(data);
-        const encodedSignal = btoa(signalStr);
-        
-        if (isHost && data.type === 'offer') {
-            // Хост показывает свой сигнал для гостя
-            showNotification('Сигнал сгенерирован!', 'success');
-            
-            // Показываем для копирования
-            showSignalForCopy(encodedSignal);
-            
-            // Также добавляем в чат
-            addChatMessage(`📡 Сигнал для подключения готов.`, 'system');
-            
-        } else if (!isHost && data.type === 'answer') {
-            // Гость сгенерировал ответ
-            console.log('Ответный сигнал сгенерирован');
-        }
-    });
-    
-    // Когда получим данные
-    peer.on('data', function(data) {
-        try {
-            const message = JSON.parse(data.toString());
-            console.log('📩 Получены данные:', message);
-            handlePeerData(message);
-        } catch (e) {
-            console.log('Получен текст:', data.toString());
-            addChatMessage(data.toString(), 'Партнер');
-        }
-    });
-    
-    // Обработка ошибок
-    peer.on('error', function(err) {
-        console.error('❌ Ошибка P2P:', err);
-        showNotification('Ошибка соединения: ' + err.message, 'error');
-    });
-    
-    // Закрытие соединения
-    peer.on('close', function() {
-        console.log('Соединение закрыто');
-        showNotification('Соединение с партнером разорвано', 'warning');
-        players[1].ready = false;
-        players[0].ready = false;
-        updatePlayersDisplay();
-    });
-}
-
-// Показать сигнал для копирования (на хосте)
-function showSignalForCopy(encodedSignal) {
-    const signalDiv = document.createElement('div');
-    signalDiv.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        z-index: 10007;
-        max-width: 600px;
-        width: 90%;
-        text-align: center;
-    `;
-    
-    signalDiv.innerHTML = `
-        <h3 style="color:#2196F3; margin-bottom: 15px;">📡 Сигнал для партнера</h3>
-        <p style="color:#666; margin-bottom: 15px;">Скопируйте этот код и отправьте партнеру:</p>
-        
-        <div style="
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px dashed #2196F3;
-            margin-bottom: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 12px;
-            text-align: left;
-        ">
-            ${encodedSignal}
-        </div>
-        
-        <button onclick="copyToClipboard('${encodedSignal}')" style="
-            padding: 12px 25px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        ">
-            📋 Копировать сигнал
-        </button>
-        
-        <button onclick="this.parentElement.remove()" style="
-            padding: 12px 25px;
-            background: #f0f0f0;
-            color: #666;
-            border: none;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 5px;
-        ">
-            Закрыть
-        </button>
-    `;
-    
-    document.body.appendChild(signalDiv);
-}
-
-// Копировать в буфер обмена
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text)
-        .then(() => showNotification('Сигнал скопирован! ✅', 'success'))
-        .catch(err => {
-            // Fallback
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            showNotification('Сигнал скопирован!', 'success');
-        });
-}
-
-
-
