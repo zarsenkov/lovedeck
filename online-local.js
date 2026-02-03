@@ -482,16 +482,18 @@ function createRoom() {
 }
 
 // Подключение к комнате
-async function joinRoom() {
-    console.log('👤 Подключаемся к комнате как игрок...');
+function joinRoom() {
+    console.log('🎯 Присоединяемся к комнате...');
     
     const nameInput = document.getElementById('playerNameInput');
-    const roomInput = document.getElementById('roomIdInput');
+    const roomIdInput = document.getElementById('roomIdInput');
     
-    const playerName = nameInput ? nameInput.value.trim() : ''; // ← УБРАЛ 'Игрок'
-    const roomId = roomInput ? roomInput.value.trim() : '';
+    if (!nameInput || !roomIdInput) return;
     
-    if (!playerName) {
+    const name = nameInput.value.trim();
+    const roomId = roomIdInput.value.trim();
+    
+    if (!name) {
         showNotification('Введите ваше имя', 'error');
         return;
     }
@@ -500,6 +502,8 @@ async function joinRoom() {
         showNotification('Введите ID комнаты', 'error');
         return;
     }
+      currentUsername = name;
+    gameState.playerName = name;
     
     showNotification('Подключаемся к серверу...', 'info');
     
