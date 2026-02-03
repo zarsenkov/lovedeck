@@ -1,6 +1,62 @@
 // LoveCouple Online - Настоящая сетевая игра
 console.log('🚀 Запускаем настоящую сетевую игру...');
 
+// ====================
+// ИМПОРТ МОДУЛЕЙ
+// ====================
+
+let CardManager, StorageManager;
+
+// Функция для загрузки модулей
+async function loadModules() {
+  try {
+    console.log('📦 Загрузка модулей...');
+    
+    // Динамический импорт модулей
+    const cardModule = await import('./shared/modules/card-manager.js');
+    const storageModule = await import('./shared/modules/storage-manager.js');
+    
+    CardManager = cardModule.default.init();
+    StorageManager = storageModule.default.init();
+    
+    console.log('✅ Модули загружены и инициализированы');
+    console.log('📊 Карточек доступно:', CardManager.getStats().total);
+    console.log('👤 Профиль:', StorageManager.profile.id);
+    
+    // Обновляем статистику на странице если есть элемент
+    updateStatsDisplay();
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Ошибка загрузки модулей:', error);
+    console.warn('⚠️ Модули не загружены, продолжается в режиме совместимости');
+    return false;
+  }
+}
+
+// Функция для обновления отображения статистики
+function updateStatsDisplay() {
+  if (!StorageManager) return;
+  
+  try {
+    const stats = StorageManager.getOverallStats();
+    const statsElement = document.getElementById('statsDisplay');
+    
+    if (statsElement) {
+      statsElement.innerHTML = `
+        <div class="mini-stats">
+          <span><i class="fas fa-gamepad"></i> Игр: ${stats.gamesPlayed}</span>
+          <span><i class="fas fa-cards"></i> Карт: ${stats.cardsSent}</span>
+          <span><i class="fas fa-clock"></i> ${stats.totalPlayTime}м</span>
+        </div>
+      `;
+      statsElement.style.display = 'flex';
+    }
+  } catch (error) {
+    console.warn('Не удалось обновить статистику:', error);
+  }
+}
+
 // Глобальное состояние игры
 const gameState = {
     ws: null,
