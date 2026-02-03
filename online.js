@@ -5,7 +5,14 @@ const PEER_CONFIG = {
     host: '0.peerjs.com',
     port: 443,
     path: '/',
-    debug: 2
+    debug: 3,
+    secure: true,
+    config: {
+        'iceServers': [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' }
+        ]
+    }
 };
 
 // Глобальные переменные
@@ -1213,4 +1220,5 @@ function quickStartGame() {
 }
 
 // Экспортируем функцию отправки карты для основной игры
+
 window.sendCardToPartner = sendCardToPartner;
