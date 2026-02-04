@@ -43,7 +43,7 @@ function initCategories() {
         { id: 'celebrities', name: 'Знаменитости', icon: 'fa-star' },
         { id: 'food', name: 'Еда', icon: 'fa-utensils' },
         { id: 'places', name: 'Места', icon: 'fa-globe' },
-        { id: 'abstract', name: '18+', icon: 'fa-brain' },
+        { id: 'adult', name: '18+', icon: 'fa-brain' },
         { id: 'custom', name: 'Свои слова', icon: 'fa-edit' }
     ];
     
@@ -587,7 +587,7 @@ function getCategoryName(category) {
         'celebrities': 'Знаменитости',
         'food': 'Еда',
         'places': 'Места',
-        'abstract': '18+',
+        'adult': '18+',
         'custom': 'Свои слова'
     };
     return names[category] || category;
@@ -636,5 +636,6 @@ function initPWA() {
 
 // Инициализация PWA
 document.addEventListener('DOMContentLoaded', initPWA);
+
 
 
