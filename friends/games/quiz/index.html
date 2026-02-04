@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Викторина | LoveCouple_Friends</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="quiz-container">
+        <!-- Главное меню -->
+        <div id="mainMenu" class="screen active">
+            <div class="quiz-header">
+                <h1><i class="fas fa-brain"></i> Викторина</h1>
+                <p>Проверьте свои знания</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="gamesPlayed">0</div>
+                    <div class="stat-label">Игр сыграно</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="correctAnswers">0</div>
+                    <div class="stat-label">Правильных ответов</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalPoints">0</div>
+                    <div class="stat-label">Всего очков</div>
+                </div>
+            </div>
+            
+            <div class="menu-buttons">
+                <button class="menu-btn primary" onclick="startGame('quick')">
+                    <i class="fas fa-play"></i> Быстрая игра
+                </button>
+                <button class="menu-btn" onclick="showCategories()">
+                    <i class="fas fa-layer-group"></i> Выбор категории
+                </button>
+                <button class="menu-btn" onclick="showCompetitive()">
+                    <i class="fas fa-users"></i> Соревнование
+                </button>
+                <button class="menu-btn" onclick="showStats()">
+                    <i class="fas fa-chart-bar"></i> Статистика
+                </button>
+                <a href="../index.html" class="menu-btn back">
+                    <i class="fas fa-arrow-left"></i> Все игры
+                </a>
+            </div>
+        </div>
+        
+        <!-- Выбор категории -->
+        <div id="categoryMenu" class="screen">
+            <div class="quiz-header">
+                <button class="back-btn" onclick="showMainMenu()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2>Выберите категории</h2>
+            </div>
+            
+            <div class="categories" id="categoriesList">
+                <!-- Категории загружаются динамически -->
+            </div>
+            
+            <div class="game-settings">
+                <div class="setting">
+                    <label>Количество вопросов:</label>
+                    <div class="number-selector">
+                        <button onclick="changeQuestionCount(-5)">-</button>
+                        <span id="questionCount">10</span>
+                        <button onclick="changeQuestionCount(5)">+</button>
+                    </div>
+                </div>
+                
+                <div class="setting">
+                    <label>Сложность:</label>
+                    <select id="difficultySelect">
+                        <option value="mixed">Смешанная</option>
+                        <option value="easy">Легкая</option>
+                        <option value="medium">Средняя</option>
+                        <option value="hard">Сложная</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="start-btn" onclick="startGame('category')">
+                <i class="fas fa-play"></i> Начать игру
+            </button>
+        </div>
+        
+        <!-- Игровой экран -->
+        <div id="gameScreen" class="screen">
+            <div class="game-header">
+                <div class="game-info">
+                    <span id="categoryName">Общие знания</span>
+                    <span class="difficulty" id="difficultyLabel">Средняя</span>
+                </div>
+                
+                <div class="game-stats">
+                    <div class="stat">
+                        <span class="label">Вопрос:</span>
+                        <span id="currentQuestion">1/10</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Очки:</span>
+                        <span id="score">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Время:</span>
+                        <span id="timer">30</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Прогресс бар -->
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <!-- Вопрос -->
+            <div class="question-card">
+                <h3 id="questionText">Загрузка вопроса...</h3>
+            </div>
+            
+            <!-- Варианты ответов -->
+            <div class="answers" id="answersContainer">
+                <!-- Ответы загружаются динамически -->
+            </div>
+            
+            <!-- Подсказки -->
+            <div class="hints">
+                <button class="hint-btn" id="hint50" onclick="useHint('50')">
+                    <i class="fas fa-balance-scale"></i> 50/50
+                </button>
+                <button class="hint-btn" id="hintTime" onclick="useHint('time')">
+                    <i class="fas fa-clock"></i> +30 сек
+                </button>
+                <button class="hint-btn" id="hintHint" onclick="useHint('hint')">
+                    <i class="fas fa-lightbulb"></i> Подсказка
+                </button>
+            </div>
+            
+            <!-- Управление -->
+            <div class="game-controls">
+                <button class="control-btn" onclick="pauseGame()">
+                    <i class="fas fa-pause"></i> Пауза
+                </button>
+                <button class="control-btn" onclick="skipQuestion()">
+                    <i class="fas fa-forward"></i> Пропустить
+                </button>
+            </div>
+        </div>
+        
+        <!-- Экран результата -->
+        <div id="resultScreen" class="screen">
+            <div class="result-content">
+                <div class="result-icon" id="resultIcon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                
+                <h2 id="resultTitle">Правильно!</h2>
+                <p id="resultMessage">Вы заработали 10 очков</p>
+                
+                <div class="correct-answer">
+                    <strong>Правильный ответ:</strong>
+                    <p id="correctAnswerText"></p>
+                </div>
+                
+                <div class="explanation">
+                    <strong>Объяснение:</strong>
+                    <p id="explanationText"></p>
+                </div>
+                
+                <button class="next-btn" onclick="nextQuestion()">
+                    <i class="fas fa-forward"></i> Следующий вопрос
+                </button>
+            </div>
+        </div>
+        
+        <!-- Экран окончания игры -->
+        <div id="endScreen" class="screen">
+            <div class="end-content">
+                <div class="end-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                
+                <h2>Викторина завершена!</h2>
+                <p class="end-score">Ваш результат: <span id="finalScore">0</span> очков</p>
+                
+                <div class="end-stats">
+                    <div class="stat">
+                        <span class="label">Правильных ответов:</span>
+                        <span id="finalCorrect">0/10</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Точность:</span>
+                        <span id="finalAccuracy">0%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Время:</span>
+                        <span id="finalTime">0:00</span>
+                    </div>
+                </div>
+                
+                <div class="end-buttons">
+                    <button class="end-btn primary" onclick="playAgain()">
+                        <i class="fas fa-redo"></i> Играть снова
+                    </button>
+                    <button class="end-btn" onclick="showMainMenu()">
+                        <i class="fas fa-home"></i> Главное меню
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Экран статистики -->
+        <div id="statsScreen" class="screen">
+            <div class="quiz-header">
+                <button class="back-btn" onclick="showMainMenu()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2>Статистика</h2>
+            </div>
+            
+            <div class="stats-content">
+                <div class="stats-grid" id="statsGrid">
+                    <!-- Статистика загружается динамически -->
+                </div>
+                
+                <div class="stats-history">
+                    <h3>Последние игры</h3>
+                    <div id="historyList"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Экран паузы -->
+        <div id="pauseScreen" class="screen overlay">
+            <div class="pause-content">
+                <h2><i class="fas fa-pause-circle"></i> Игра на паузе</h2>
+                
+                <div class="pause-buttons">
+                    <button class="pause-btn" onclick="resumeGame()">
+                        <i class="fas fa-play"></i> Продолжить
+                    </button>
+                    <button class="pause-btn" onclick="restartGame()">
+                        <i class="fas fa-redo"></i> Начать заново
+                    </button>
+                    <button class="pause-btn" onclick="showMainMenu()">
+                        <i class="fas fa-home"></i> Главное меню
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Экран соревнования -->
+        <div id="competitiveScreen" class="screen">
+            <div class="quiz-header">
+                <button class="back-btn" onclick="showMainMenu()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2>Соревнование</h2>
+            </div>
+            
+            <div class="competitive-setup">
+                <div class="setup-section">
+                    <h3>Количество игроков</h3>
+                    <div class="players-selector">
+                        <button class="player-count" onclick="setPlayers(2)">2</button>
+                        <button class="player-count active" onclick="setPlayers(3)">3</button>
+                        <button class="player-count" onclick="setPlayers(4)">4</button>
+                    </div>
+                </div>
+                
+                <div class="setup-section">
+                    <h3>Настройки</h3>
+                    <div class="settings">
+                        <div class="setting">
+                            <label>Вопросов на игрока:</label>
+                            <input type="number" id="questionsPerPlayer" value="5" min="3" max="20">
+                        </div>
+                        <div class="setting">
+                            <label>Время на ответ:</label>
+                            <select id="competitiveTime">
+                                <option value="20">20 сек</option>
+                                <option value="30" selected>30 сек</option>
+                                <option value="45">45 сек</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="players-list" id="playersList">
+                    <!-- Список игроков -->
+                </div>
+                
+                <button class="start-btn" onclick="startCompetitive()">
+                    <i class="fas fa-play"></i> Начать соревнование
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Уведомление -->
+    <div id="notification" class="notification"></div>
+    
+    <script src="data.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
