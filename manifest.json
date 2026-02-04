@@ -1,22 +1,18 @@
 {
   "name": "LoveCouple",
   "short_name": "LoveCouple",
-  "description": "Игра для влюблённых пар",
+  "description": "Карточки для пар - вопросы, задания и идеи для свиданий",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ff4d6d",
+  "background_color": "#fff5f5",
   "theme_color": "#ff4d6d",
   "icons": [
     {
-      "src": "/icon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💖</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
-  ]
+  ],
+  "categories": ["lifestyle", "entertainment"],
+  "lang": "ru"
 }
