@@ -2,422 +2,480 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кто я? | LoveCouple Friends</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Кто я? | Игры для друзей</title>
+    
+    <!-- PWA мета-теги -->
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Стили -->
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="manifest" href="../../manifest.json">
+    
+    <!-- Фавикон -->
     <link rel="icon" href="../../icon.png">
 </head>
 <body>
-    <div class="game-container">
-        <!-- Шапка игры -->
-        <header class="game-header">
-            <div class="header-left">
-                <button class="back-btn" onclick="goBack()">
-                    <i class="fas fa-arrow-left"></i> Назад
-                </button>
+    <div class="app-container">
+        <!-- Шапка -->
+        <header class="header">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="header-title">
+                <h1>КТО Я?</h1>
+                <p class="subtitle">Угадай персонажа</p>
             </div>
-            <div class="header-center">
-                <h1 class="game-title">КТО Я?</h1>
-                <div class="game-subtitle">Угадай персонажа на лбу</div>
-            </div>
-            <div class="header-right">
-                <button class="icon-btn" id="statsBtn" title="Статистика">
-                    <i class="fas fa-chart-bar"></i>
-                </button>
-                <button class="icon-btn" id="settingsBtn" title="Настройки">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </div>
+            <button class="menu-btn" onclick="toggleMenu()">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
         </header>
 
-        <!-- Главный экран игры -->
-        <main class="game-content">
-            <!-- Экран выбора режима -->
-            <section class="screen" id="modeScreen">
-                <div class="screen-header">
-                    <h2>Выберите режим игры</h2>
-                    <p>Выберите подходящий вариант для вашей компании</p>
-                </div>
-                <div class="mode-grid">
-                    <div class="mode-card" onclick="selectMode('classic')">
-                        <div class="mode-icon">
-                            <i class="fas fa-crown"></i>
-                        </div>
-                        <h3>Классический</h3>
-                        <p>По очереди задаем вопросы, угадываем своего персонажа</p>
-                        <div class="mode-tags">
-                            <span class="tag"><i class="fas fa-users"></i> 3-8 игроков</span>
-                            <span class="tag"><i class="fas fa-clock"></i> 15-30 мин</span>
-                        </div>
-                    </div>
-
-                    <div class="mode-card" onclick="selectMode('competitive')">
-                        <div class="mode-icon">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                        <h3>Соревновательный</h3>
-                        <p>На скорость! Кто быстрее угадает - получает очки</p>
-                        <div class="mode-tags">
-                            <span class="tag"><i class="fas fa-users"></i> 4-8 игроков</span>
-                            <span class="tag"><i class="fas fa-clock"></i> 20-40 мин</span>
-                        </div>
-                    </div>
-
-                    <div class="mode-card" onclick="selectMode('team')">
-                        <div class="mode-icon">
-                            <i class="fas fa-people-group"></i>
-                        </div>
-                        <h3>Командный</h3>
-                        <p>Игра командами. Объединяйтесь и побеждайте!</p>
-                        <div class="mode-tags">
-                            <span class="tag"><i class="fas fa-users"></i> 6-12 игроков</span>
-                            <span class="tag"><i class="fas fa-clock"></i> 25-50 мин</span>
-                        </div>
-                    </div>
-
-                    <div class="mode-card" onclick="selectMode('custom')">
-                        <div class="mode-icon">
-                            <i class="fas fa-sliders"></i>
-                        </div>
-                        <h3>Настройка игры</h3>
-                        <p>Создайте свой уникальный режим с нужными правилами</p>
-                        <div class="mode-tags">
-                            <span class="tag"><i class="fas fa-users"></i> 2-∞ игроков</span>
-                            <span class="tag"><i class="fas fa-clock"></i> Настройте</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Экран настройки игры -->
-            <section class="screen hidden" id="setupScreen">
-                <div class="screen-header">
-                    <h2>Настройка игры</h2>
-                    <p>Настройте параметры перед началом</p>
-                </div>
-                
-                <div class="setup-form">
-                    <!-- Количество игроков -->
-                    <div class="form-group">
-                        <label for="playerCount">Количество игроков</label>
-                        <div class="number-selector">
-                            <button class="number-btn" onclick="adjustPlayerCount(-1)">–</button>
-                            <input type="number" id="playerCount" min="3" max="12" value="4">
-                            <button class="number-btn" onclick="adjustPlayerCount(1)">+</button>
-                        </div>
-                    </div>
-
-                    <!-- Имена игроков -->
-                    <div class="form-group">
-                        <label>Имена игроков</label>
-                        <div id="playerNames" class="player-names">
-                            <input type="text" class="player-input" placeholder="Игрок 1" value="Игрок 1">
-                            <input type="text" class="player-input" placeholder="Игрок 2" value="Игрок 2">
-                            <input type="text" class="player-input" placeholder="Игрок 3" value="Игрок 3">
-                            <input type="text" class="player-input" placeholder="Игрок 4" value="Игрок 4">
-                        </div>
-                    </div>
-
-                    <!-- Выбор категорий -->
-                    <div class="form-group">
-                        <label>Выберите категории</label>
-                        <div class="categories-grid" id="categoriesList">
-                            <!-- Категории будут загружены из JSON -->
-                        </div>
-                    </div>
-
-                    <!-- Таймер -->
-                    <div class="form-group">
-                        <label for="timerEnabled">Таймер на раунд</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="timerEnabled" checked>
-                            <span class="toggle-slider"></span>
-                        </div>
-                        <div class="timer-settings" id="timerSettings">
-                            <input type="number" id="timerMinutes" min="1" max="10" value="2" style="display: none;">
-                            <span>2 минуты на раунд</span>
-                        </div>
-                    </div>
-
-                    <!-- Количество раундов -->
-                    <div class="form-group">
-                        <label for="roundsCount">Количество раундов</label>
-                        <select id="roundsCount">
-                            <option value="3">3 раунда</option>
-                            <option value="5" selected>5 раундов</option>
-                            <option value="7">7 раундов</option>
-                            <option value="10">10 раундов</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="btn secondary" onclick="showScreen('modeScreen')">
-                        <i class="fas fa-arrow-left"></i> Назад
+        <!-- Меню (скрытое) -->
+        <div class="menu-overlay" id="menuOverlay">
+            <div class="menu-content">
+                <button class="menu-close" onclick="toggleMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="menu-items">
+                    <button class="menu-item" onclick="showStats()">
+                        <i class="fas fa-chart-bar"></i>
+                        Статистика
                     </button>
-                    <button class="btn primary" onclick="startGame()">
-                        Начать игру <i class="fas fa-play"></i>
+                    <button class="menu-item" onclick="showRules()">
+                        <i class="fas fa-question-circle"></i>
+                        Правила
+                    </button>
+                    <button class="menu-item" onclick="resetGame()">
+                        <i class="fas fa-redo"></i>
+                        Новая игра
+                    </button>
+                    <button class="menu-item" onclick="goHome()">
+                        <i class="fas fa-home"></i>
+                        На главную
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <main class="main-content" id="screenContainer">
+            <!-- ЭКРАН 1: Главный меню -->
+            <section class="screen active" id="homeScreen">
+                <div class="screen-content">
+                    <div class="welcome-section">
+                        <div class="welcome-icon">
+                            <i class="fas fa-theater-masks"></i>
+                        </div>
+                        <h2>Как играть?</h2>
+                        <p class="instructions">
+                            Телефон прислоняется ко лбу экраном наружу. 
+                            Все видят слово, а угадывающий задаёт вопросы "Да/Нет".
+                        </p>
+                    </div>
+                    
+                    <div class="game-options">
+                        <h3>Выберите режим:</h3>
+                        <div class="options-grid">
+                            <button class="option-card" onclick="selectMode('classic')">
+                                <div class="option-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="option-text">
+                                    <h4>Классика</h4>
+                                    <p>3-8 игроков</p>
+                                </div>
+                            </button>
+                            
+                            <button class="option-card" onclick="selectMode('speed')">
+                                <div class="option-icon">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <div class="option-text">
+                                    <h4>На скорость</h4>
+                                    <p>С таймером</p>
+                                </div>
+                            </button>
+                            
+                            <button class="option-card" onclick="selectMode('teams')">
+                                <div class="option-icon">
+                                    <i class="fas fa-people-group"></i>
+                                </div>
+                                <div class="option-text">
+                                    <h4>Команды</h4>
+                                    <p>4-12 игроков</p>
+                                </div>
+                            </button>
+                            
+                            <button class="option-card" onclick="selectMode('custom')">
+                                <div class="option-icon">
+                                    <i class="fas fa-sliders-h"></i>
+                                </div>
+                                <div class="option-text">
+                                    <h4>Настройки</h4>
+                                    <p>Свои правила</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="start-btn" onclick="quickStart()">
+                        <i class="fas fa-play-circle"></i>
+                        Быстрый старт
                     </button>
                 </div>
             </section>
 
-            <!-- Экран игры -->
-            <section class="screen hidden" id="gameScreen">
-                <div class="game-area">
-                    <!-- Информация о текущем раунде -->
-                    <div class="round-info">
-                        <div class="round-counter">
-                            Раунд <span id="currentRound">1</span> из <span id="totalRounds">5</span>
-                        </div>
-                        <div class="timer" id="gameTimer">
-                            <i class="fas fa-clock"></i> <span id="timerDisplay">02:00</span>
-                        </div>
+            <!-- ЭКРАН 2: Настройка игры -->
+            <section class="screen" id="setupScreen">
+                <div class="screen-content">
+                    <div class="setup-header">
+                        <h2>Настройка игры</h2>
+                        <p>Настройте параметры перед началом</p>
                     </div>
-
-                    <!-- Карточка игрока -->
-                    <div class="player-card-container">
-                        <div class="player-card" id="playerCard">
-                            <div class="card-content">
-                                <div class="card-header">
-                                    <div class="player-avatar">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                    <div class="player-info">
-                                        <h3 id="currentPlayerName">Игрок 1</h3>
-                                        <p class="player-turn">Ваш ход!</p>
-                                    </div>
+                    
+                    <div class="setup-sections">
+                        <!-- Игроки -->
+                        <div class="setup-section">
+                            <h3><i class="fas fa-user-friends"></i> Игроки</h3>
+                            <div class="players-container" id="playersContainer">
+                                <!-- Игроки будут здесь -->
+                            </div>
+                            <button class="add-btn" onclick="addPlayer()">
+                                <i class="fas fa-plus"></i> Добавить игрока
+                            </button>
+                        </div>
+                        
+                        <!-- Категории -->
+                        <div class="setup-section">
+                            <h3><i class="fas fa-tags"></i> Категории</h3>
+                            <div class="categories-container" id="categoriesContainer">
+                                <!-- Категории будут здесь -->
+                            </div>
+                        </div>
+                        
+                        <!-- Настройки -->
+                        <div class="setup-section">
+                            <h3><i class="fas fa-cog"></i> Настройки</h3>
+                            <div class="settings">
+                                <div class="setting">
+                                    <label>Таймер (2 мин)</label>
+                                    <label class="switch">
+                                        <input type="checkbox" id="timerToggle" checked>
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
                                 
-                                <div class="card-word">
-                                    <div class="word-container" id="wordContainer">
-                                        <span class="word" id="currentWord">Загрузка...</span>
-                                    </div>
-                                    <div class="word-hint">
-                                        <i class="fas fa-lightbulb"></i>
-                                        <span id="wordHint">Персонаж фильма</span>
-                                    </div>
-                                </div>
-
-                                <div class="card-actions">
-                                    <button class="action-btn success" onclick="guessWord(true)">
-                                        <i class="fas fa-check"></i> Угадал
-                                    </button>
-                                    <button class="action-btn secondary" onclick="skipWord()">
-                                        <i class="fas fa-forward"></i> Пропустить
-                                    </button>
-                                    <button class="action-btn danger" onclick="giveUp()">
-                                        <i class="fas fa-flag"></i> Сдаюсь
-                                    </button>
+                                <div class="setting">
+                                    <label>Количество раундов</label>
+                                    <select id="roundsSelect">
+                                        <option value="3">3 раунда</option>
+                                        <option value="5" selected>5 раундов</option>
+                                        <option value="7">7 раундов</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="action-buttons">
+                        <button class="secondary-btn" onclick="showScreen('homeScreen')">
+                            <i class="fas fa-arrow-left"></i> Назад
+                        </button>
+                        <button class="primary-btn" onclick="startGame()">
+                            Начать игру <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
 
-                    <!-- Статус игры -->
-                    <div class="game-status">
-                        <div class="score-board">
-                            <h4>Счет игры</h4>
-                            <div class="scores-list" id="scoresList">
-                                <!-- Счет игроков будет здесь -->
+            <!-- ЭКРАН 3: Подготовка к ходу -->
+            <section class="screen" id="readyScreen">
+                <div class="screen-content">
+                    <div class="ready-content">
+                        <!-- Графика телефона -->
+                        <div class="phone-demo">
+                            <div class="phone">
+                                <div class="phone-screen">
+                                    <div class="word-display" id="readyWord">???</div>
+                                    <div class="category-display" id="readyCategory">Категория</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="game-controls">
-                            <button class="btn secondary" onclick="pauseGame()">
-                                <i class="fas fa-pause"></i> Пауза
+                        
+                        <!-- Инструкция -->
+                        <div class="instructions-container">
+                            <h2>Прислоните телефон ко лбу!</h2>
+                            <div class="steps">
+                                <div class="step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-text">
+                                        Передайте телефон <strong id="currentPlayerName">Игроку 1</strong>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-text">
+                                        Попросите прислонить ко лбу экраном наружу
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-text">
+                                        Все увидят слово, игрок — нет
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="warning-box">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Не показывайте экран угадывающему!</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Кнопки действий -->
+                        <div class="ready-actions">
+                            <button class="primary-btn large" onclick="showWord()">
+                                <i class="fas fa-eye"></i> Показать слово
                             </button>
-                            <button class="btn danger" onclick="endGame()">
-                                <i class="fas fa-stop"></i> Завершить
+                            <button class="secondary-btn" onclick="skipPlayer()">
+                                Пропустить игрока
                             </button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Экран результатов -->
-            <section class="screen hidden" id="resultsScreen">
-                <div class="results-container">
+            <!-- ЭКРАН 4: Игровой процесс -->
+            <section class="screen" id="gameScreen">
+                <div class="screen-content">
+                    <!-- Информация о раунде -->
+                    <div class="game-header">
+                        <div class="round-info">
+                            Раунд <span id="currentRound">1</span>/<span id="totalRounds">5</span>
+                        </div>
+                        <div class="timer-box" id="timerBox">
+                            <i class="fas fa-clock"></i>
+                            <span id="timerDisplay">02:00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Карточка с словом -->
+                    <div class="game-card">
+                        <div class="player-info">
+                            <div class="player-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="player-details">
+                                <h3 id="currentPlayer">Игрок 1</h3>
+                                <p class="player-status">Ваш ход!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="word-card">
+                            <div class="word" id="currentWord">ЗАГРУЗКА...</div>
+                            <div class="category" id="wordCategory">Категория</div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="action-btn success" onclick="correctGuess()">
+                                <i class="fas fa-check"></i> Угадал!
+                            </button>
+                            <button class="action-btn warning" onclick="skipWord()">
+                                <i class="fas fa-forward"></i> Пропустить
+                            </button>
+                            <button class="action-btn danger" onclick="giveUp()">
+                                <i class="fas fa-flag"></i> Сдаюсь
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Таблица счета -->
+                    <div class="scoreboard">
+                        <h4>Счет игры</h4>
+                        <div class="scores" id="scoresContainer">
+                            <!-- Счет будет здесь -->
+                        </div>
+                        
+                        <div class="game-controls">
+                            <button class="control-btn" onclick="pauseGame()">
+                                <i class="fas fa-pause"></i> Пауза
+                            </button>
+                            <button class="control-btn danger" onclick="endGame()">
+                                <i class="fas fa-stop"></i> Стоп
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ЭКРАН 5: Результаты -->
+            <section class="screen" id="resultsScreen">
+                <div class="screen-content">
                     <div class="results-header">
-                        <div class="winner-trophy">
+                        <div class="trophy-icon">
                             <i class="fas fa-trophy"></i>
                         </div>
                         <h2>Игра завершена!</h2>
-                        <p id="winnerText">Победитель: <span class="winner-name">Игрок 1</span></p>
+                        <p class="winner-text">
+                            Победитель: <span id="winnerName">Игрок 1</span>
+                        </p>
                     </div>
-
+                    
                     <div class="results-table">
-                        <h3>Итоговые результаты</h3>
-                        <table id="finalResults">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Место</th>
                                     <th>Игрок</th>
                                     <th>Очки</th>
                                     <th>Угадано</th>
-                                    <th>Время</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="resultsTable">
                                 <!-- Результаты будут здесь -->
                             </tbody>
                         </table>
                     </div>
-
+                    
                     <div class="results-actions">
-                        <button class="btn secondary" onclick="showStats()">
+                        <button class="secondary-btn" onclick="showStats()">
                             <i class="fas fa-chart-bar"></i> Статистика
                         </button>
-                        <button class="btn primary" onclick="restartGame()">
+                        <button class="primary-btn" onclick="newGame()">
                             <i class="fas fa-redo"></i> Новая игра
                         </button>
-                        <button class="btn success" onclick="goHome()">
+                        <button class="success-btn" onclick="goHome()">
                             <i class="fas fa-home"></i> Главная
                         </button>
                     </div>
                 </div>
             </section>
 
-            <!-- Экран статистики -->
-            <section class="screen hidden" id="statsScreen">
-                <div class="stats-container">
+            <!-- ЭКРАН 6: Статистика -->
+            <section class="screen" id="statsScreen">
+                <div class="screen-content">
                     <div class="stats-header">
-                        <h2>Статистика игр</h2>
-                        <p>Ваши достижения и прогресс</p>
+                        <h2>Статистика</h2>
+                        <p>Ваши достижения</p>
                     </div>
-
+                    
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon">
                                 <i class="fas fa-gamepad"></i>
                             </div>
                             <div class="stat-info">
-                                <h3>Всего игр</h3>
+                                <h3>Игр сыграно</h3>
                                 <p class="stat-value" id="totalGames">0</p>
                             </div>
                         </div>
-
+                        
                         <div class="stat-card">
                             <div class="stat-icon">
                                 <i class="fas fa-check-circle"></i>
                             </div>
                             <div class="stat-info">
-                                <h3>Побед</h3>
-                                <p class="stat-value" id="totalWins">0</p>
+                                <h3>Слов угадано</h3>
+                                <p class="stat-value" id="totalWords">0</p>
                             </div>
                         </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-lightbulb"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>Угадано слов</h3>
-                                <p class="stat-value" id="totalGuessed">0</p>
-                            </div>
-                        </div>
-
+                        
                         <div class="stat-card">
                             <div class="stat-icon">
                                 <i class="fas fa-clock"></i>
                             </div>
                             <div class="stat-info">
                                 <h3>Среднее время</h3>
-                                <p class="stat-value" id="avgTime">0 сек</p>
+                                <p class="stat-value" id="avgTime">0с</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Рекорд</h3>
+                                <p class="stat-value" id="highScore">0</p>
                             </div>
                         </div>
                     </div>
-
-                    <div class="stats-chart">
-                        <h3>Прогресс по категориям</h3>
-                        <div class="chart-container">
-                            <canvas id="categoriesChart"></canvas>
-                        </div>
-                    </div>
-
+                    
                     <div class="stats-actions">
-                        <button class="btn secondary" onclick="clearStats()">
+                        <button class="danger-btn" onclick="clearStats()">
                             <i class="fas fa-trash"></i> Очистить
                         </button>
-                        <button class="btn primary" onclick="goBackFromStats()">
+                        <button class="primary-btn" onclick="showScreen('homeScreen')">
                             <i class="fas fa-arrow-left"></i> Назад
                         </button>
                     </div>
                 </div>
             </section>
+
+            <!-- ЭКРАН 7: Правила -->
+            <section class="screen" id="rulesScreen">
+                <div class="screen-content">
+                    <h2>Правила игры</h2>
+                    
+                    <div class="rules-content">
+                        <div class="rule-section">
+                            <h3><i class="fas fa-mobile-alt"></i> Как играть?</h3>
+                            <p>Телефон прислоняется ко лбу игрока <strong>экраном наружу</strong>. Все видят слово, а угадывающий — нет.</p>
+                        </div>
+                        
+                        <div class="rule-section">
+                            <h3><i class="fas fa-comments"></i> Вопросы</h3>
+                            <p>Угадывающий задает вопросы, на которые можно ответить только:</p>
+                            <ul>
+                                <li><strong>Да</strong></li>
+                                <li><strong>Нет</strong></li>
+                                <li><strong>Не имеет значения</strong></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="rule-section">
+                            <h3><i class="fas fa-trophy"></i> Очки</h3>
+                            <ul>
+                                <li>Угадал слово: <strong>+10 очков</strong></li>
+                                <li>Пропустил слово: <strong>-2 очка</strong></li>
+                                <li>Сдался: <strong>0 очков</strong>, ход переходит дальше</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <button class="primary-btn" onclick="showScreen('homeScreen')">
+                        <i class="fas fa-arrow-left"></i> Понятно!
+                    </button>
+                </div>
+            </section>
         </main>
 
-        <!-- Модальные окна -->
-        <div class="modal" id="pauseModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Игра на паузе</h3>
-                    <button class="modal-close" onclick="closeModal('pauseModal')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>Игра приостановлена. Что хотите сделать?</p>
-                </div>
+        <!-- Модальное окно паузы -->
+        <div class="modal-overlay" id="pauseModal">
+            <div class="modal">
+                <h3>Игра на паузе</h3>
+                <p>Что хотите сделать?</p>
                 <div class="modal-actions">
-                    <button class="btn secondary" onclick="closeModal('pauseModal')">
-                        Продолжить
-                    </button>
-                    <button class="btn danger" onclick="endGame()">
-                        Завершить игру
-                    </button>
-                    <button class="btn" onclick="goHome()">
-                        Выйти в меню
-                    </button>
+                    <button class="primary-btn" onclick="resumeGame()">Продолжить</button>
+                    <button class="secondary-btn" onclick="showScreen('homeScreen')">Новая игра</button>
+                    <button class="danger-btn" onclick="endGame()">Завершить</button>
                 </div>
             </div>
         </div>
 
-        <div class="modal" id="settingsModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Настройки игры</h3>
-                    <button class="modal-close" onclick="closeModal('settingsModal')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="soundEnabled">Звуковые эффекты</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="soundEnabled" checked>
-                            <span class="toggle-slider"></span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="animationsEnabled">Анимации</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="animationsEnabled" checked>
-                            <span class="toggle-slider"></span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="vibrationEnabled">Вибрация</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="vibrationEnabled">
-                            <span class="toggle-slider"></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn primary" onclick="saveSettings()">
-                        Сохранить
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- Уведомление -->
+        <div class="notification" id="notification"></div>
+
+        <!-- Кнопка домой для мобильных -->
+        <button class="home-btn" onclick="goHome()">
+            <i class="fas fa-home"></i>
+        </button>
     </div>
 
     <script src="script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
