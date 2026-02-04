@@ -166,7 +166,7 @@ const crocodileWords = {
         { word: 'Зоопарк', difficulty: 'easy', category: 'places' }
     ],
     
-    abstract: [
+    adult: [
 { word: 'Поцелуй', difficulty: 'easy', category: 'adult' },
         { word: 'Секс', difficulty: 'medium', category: 'adult' },
         { word: 'Оргазм', difficulty: 'medium', category: 'adult' },
@@ -184,5 +184,6 @@ const crocodileWords = {
         { word: 'Эротика', difficulty: 'medium', category: 'adult' }
     ]
 };
+
 
 
