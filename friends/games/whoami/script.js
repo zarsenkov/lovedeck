@@ -490,4 +490,203 @@ function updateScoresDisplay() {
 }
 
 // ===== ЗАВЕРШЕНИЕ ИГРЫ =====
-function endGame
+function endGame() {
+    // Остановка таймера
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+    }
+    
+    gameState.gameActive = false;
+    
+    // Обновление статистики
+    updateStats();
+    
+    // Определение победителя
+    const winner = gameState.players.reduce((prev, current) => 
+        prev.score > current.score ? prev : current
+    );
+    
+    document.getElementById('winnerName').textContent = winner.name;
+    showFinalResults();
+    
+    showScreen('resultsScreen');
+}
+
+function showFinalResults() {
+    const tbody = document.getElementById('resultsTable');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    // Сортируем по очкам
+    const sorted = [...gameState.players].sort((a, b) => b.score - a.score);
+    
+    sorted.forEach((player, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${player.name}</td>
+            <td>${player.score}</td>
+            <td>${player.guessed}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// ===== СТАТИСТИКА =====
+function updateStats() {
+    const totalGuessed = gameState.players.reduce((sum, p) => sum + p.guessed, 0);
+    const maxScore = Math.max(...gameState.players.map(p => p.score));
+    
+    gameState.stats.totalGames++;
+    gameState.stats.totalWords += totalGuessed;
+    gameState.stats.highScore = Math.max(gameState.stats.highScore, maxScore);
+    
+    saveStats();
+    updateStatsDisplay();
+}
+
+function updateStatsDisplay() {
+    document.getElementById('totalGames').textContent = gameState.stats.totalGames;
+    document.getElementById('totalWords').textContent = gameState.stats.totalWords;
+    document.getElementById('highScore').textContent = gameState.stats.highScore;
+    
+    // Среднее время
+    const avgTime = gameState.stats.totalGames > 0 
+        ? Math.round(gameState.stats.totalTime / gameState.stats.totalGames)
+        : 0;
+    document.getElementById('avgTime').textContent = `${avgTime}с`;
+}
+
+function showStats() {
+    updateStatsDisplay();
+    showScreen('statsScreen');
+    toggleMenu(); // Закрываем меню
+}
+
+function clearStats() {
+    if (confirm('Очистить всю статистику?')) {
+        gameState.stats = {
+            totalGames: 0,
+            totalWords: 0,
+            totalTime: 0,
+            highScore: 0
+        };
+        saveStats();
+        updateStatsDisplay();
+        showNotification('Статистика очищена');
+    }
+}
+
+// ===== ПРАВИЛА =====
+function showRules() {
+    showScreen('rulesScreen');
+    toggleMenu(); // Закрываем меню
+}
+
+// ===== УПРАВЛЕНИЕ ИГРОЙ =====
+function pauseGame() {
+    document.getElementById('pauseModal').classList.add('show');
+}
+
+function resumeGame() {
+    document.getElementById('pauseModal').classList.remove('show');
+}
+
+function newGame() {
+    resetGameState();
+    showScreen('homeScreen');
+}
+
+function resetGame() {
+    if (gameState.gameActive) {
+        if (confirm('Начать новую игру? Текущий прогресс будет потерян.')) {
+            newGame();
+        }
+    } else {
+        newGame();
+    }
+}
+
+function resetGameState() {
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+    }
+    
+    gameState.currentRound = 1;
+    gameState.currentPlayerIndex = 0;
+    gameState.usedWords.clear();
+    gameState.scores = {};
+    gameState.gameActive = false;
+    
+    // Сброс счета игроков
+    gameState.players.forEach(player => {
+        player.score = 0;
+        player.guessed = 0;
+    });
+}
+
+// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+function showNotification(text, type = 'success') {
+    const notification = document.getElementById('notification');
+    notification.textContent = text;
+    notification.className = 'notification show';
+    
+    if (type === 'success') {
+        notification.style.background = 'var(--success)';
+    } else if (type === 'error') {
+        notification.style.background = 'var(--danger)';
+    } else if (type === 'warning') {
+        notification.style.background = 'var(--warning)';
+    }
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+function toggleMenu() {
+    document.getElementById('menuOverlay').classList.toggle('show');
+}
+
+function goBack() {
+    if (gameState.gameActive) {
+        pauseGame();
+    } else {
+        window.history.back();
+    }
+}
+
+function goHome() {
+    window.location.href = '../../index.html';
+}
+
+// ===== ИНИЦИАЛИЗАЦИЯ =====
+document.addEventListener('DOMContentLoaded', init);
+
+// Экспорт функций в глобальную область видимости
+window.selectMode = selectMode;
+window.quickStart = quickStart;
+window.addPlayer = addPlayer;
+window.removePlayer = removePlayer;
+window.updatePlayerName = updatePlayerName;
+window.startGame = startGame;
+window.showWord = showWord;
+window.skipPlayer = skipPlayer;
+window.correctGuess = correctGuess;
+window.skipWord = skipWord;
+window.giveUp = giveUp;
+window.pauseGame = pauseGame;
+window.resumeGame = resumeGame;
+window.endGame = endGame;
+window.newGame = newGame;
+window.showStats = showStats;
+window.clearStats = clearStats;
+window.showRules = showRules;
+window.resetGame = resetGame;
+window.toggleMenu = toggleMenu;
+window.showScreen = showScreen;
+window.goBack = goBack;
+window.goHome = goHome;
