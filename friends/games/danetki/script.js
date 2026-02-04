@@ -1,532 +1,334 @@
-// Основные переменные игры
-let currentGame = {
-    players: 6,
-    timeLimit: 10,
-    hintsEnabled: true,
-    difficulty: 'all',
+// Конфигурация игры
+const gameConfig = {
+    players: ['Игрок 1', 'Игрок 2'],
+    scores: {},
     currentDanetka: 0,
-    totalSolved: 0,
-    startTime: null,
-    timerInterval: null,
-    questionsHistory: [],
-    hintsUsed: 0,
-    totalHints: 3
-};
-
-let filteredDanetki = [];
-let currentDanetkaData = null;
-
-// DOM элементы
-const elements = {
-    // Экраны
-    setupScreen: document.getElementById('setup-screen'),
-    gameScreen: document.getElementById('game-screen'),
-    resultScreen: document.getElementById('result-screen'),
-    
-    // Настройки
-    playerCount: document.getElementById('player-count'),
-    timeLimit: document.getElementById('time-limit'),
-    hintsEnabled: document.getElementById('hints-enabled'),
-    startGameBtn: document.getElementById('start-game'),
-    
-    // Игра
-    currentGameSpan: document.getElementById('current-game'),
-    timer: document.getElementById('timer'),
-    questionsAsked: document.getElementById('questions-asked'),
-    hintsAvailable: document.getElementById('hints-available'),
-    categoryBadge: document.getElementById('category-badge'),
-    cardNumber: document.getElementById('card-number'),
-    danetkaText: document.getElementById('danetka-text'),
-    hintText: document.getElementById('hint-text'),
-    getHintBtn: document.getElementById('get-hint'),
-    historyList: document.getElementById('history-list'),
-    clearHistoryBtn: document.getElementById('clear-history'),
-    showSolutionBtn: document.getElementById('show-solution'),
-    nextDanetkaBtn: document.getElementById('next-danetka'),
-    endGameBtn: document.getElementById('end-game'),
-    
-    // Результат
-    resultTitle: document.getElementById('result-title'),
-    solutionText: document.getElementById('solution-text'),
-    statTime: document.getElementById('stat-time'),
-    statQuestions: document.getElementById('stat-questions'),
-    statHints: document.getElementById('stat-hints'),
-    statDifficulty: document.getElementById('stat-difficulty'),
-    playAgainBtn: document.getElementById('play-again'),
-    backToMenuBtn: document.getElementById('back-to-menu'),
-    
-    // Модальные окна
-    hintModal: document.getElementById('hint-modal'),
-    timeoutModal: document.getElementById('timeout-modal'),
-    modalHintText: document.getElementById('modal-hint-text'),
-    showAnswerTimeoutBtn: document.getElementById('show-answer-timeout'),
-    
-    // Прогресс
-    progressFill: document.getElementById('progress-fill')
+    selectedDifficulty: 'all',
+    timer: null,
+    timeLeft: 0,
+    danetkiList: []
 };
 
 // Инициализация игры
 document.addEventListener('DOMContentLoaded', () => {
-    initializeGame();
+    initGame();
     setupEventListeners();
-    filterDanetkiByDifficulty('all');
+    setupPWA();
 });
 
-// Инициализация
-function initializeGame() {
-    // Загружаем сохраненные настройки
-    const savedSettings = JSON.parse(localStorage.getItem('danetkiSettings'));
-    if (savedSettings) {
-        currentGame = { ...currentGame, ...savedSettings };
-        elements.playerCount.value = currentGame.players;
-        elements.timeLimit.value = currentGame.timeLimit;
-        elements.hintsEnabled.checked = currentGame.hintsEnabled;
-        
-        const activeBtn = document.querySelector(`.difficulty-btn[data-level="${currentGame.difficulty}"]`);
-        if (activeBtn) {
-            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
-            activeBtn.classList.add('active');
-        }
+function initGame() {
+    // Загрузка сохраненных данных
+    const saved = localStorage.getItem('danetkiGame');
+    if (saved) {
+        const data = JSON.parse(saved);
+        gameConfig.scores = data.scores || {};
+        gameConfig.players = data.players || ['Игрок 1', 'Игрок 2'];
     }
     
-    // Обновляем статистику
-    updateStatsDisplay();
+    // Инициализация счетов
+    gameConfig.players.forEach(player => {
+        if (!gameConfig.scores[player]) {
+            gameConfig.scores[player] = 0;
+        }
+    });
+    
+    updateScoreDisplay();
+    filterDanetki('all');
 }
 
-// Настройка обработчиков событий
 function setupEventListeners() {
-    // Кнопки сложности
-    document.querySelectorAll('.difficulty-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const level = btn.dataset.level;
-            currentGame.difficulty = level;
-            filterDanetkiByDifficulty(level);
-            saveSettings();
-        });
+    // Добавление PWA установки
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        setTimeout(() => {
+            document.getElementById('install-prompt').classList.add('show');
+        }, 3000);
     });
-    
-    // Начало игры
-    elements.startGameBtn.addEventListener('click', startGame);
-    
-    // Управление в игре
-    elements.getHintBtn.addEventListener('click', showHint);
-    elements.clearHistoryBtn.addEventListener('click', clearHistory);
-    elements.showSolutionBtn.addEventListener('click', showSolution);
-    elements.nextDanetkaBtn.addEventListener('click', nextDanetka);
-    elements.endGameBtn.addEventListener('click', endGame);
-    
-    // Результат
-    elements.playAgainBtn.addEventListener('click', playAgain);
-    elements.backToMenuBtn.addEventListener('click', backToMenu);
-    
-    // Модальные окна
-    document.querySelectorAll('.modal-close').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
-        });
-    });
-    
-    elements.showAnswerTimeoutBtn.addEventListener('click', showSolution);
-    
-    // Клик вне модального окна
-    window.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal')) {
-            e.target.classList.remove('active');
-        }
-    });
-    
-    // Сохранение настроек при изменении
-    elements.playerCount.addEventListener('change', saveSettings);
-    elements.timeLimit.addEventListener('change', saveSettings);
-    elements.hintsEnabled.addEventListener('change', saveSettings);
 }
 
-// Фильтрация данеток по сложности
-function filterDanetkiByDifficulty(level) {
-    if (level === 'all') {
-        filteredDanetki = [...danetkiData];
+// PWA функционал
+function setupPWA() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('../sw.js').then(() => {
+            console.log('Service Worker зарегистрирован');
+        }).catch(err => {
+            console.log('Service Worker ошибка:', err);
+        });
+    }
+}
+
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('PWA установлено');
+            }
+            deferredPrompt = null;
+            document.getElementById('install-prompt').classList.remove('show');
+        });
+    }
+}
+
+function cancelInstall() {
+    document.getElementById('install-prompt').classList.remove('show');
+}
+
+// Управление сложностью
+function selectDifficulty(level) {
+    gameConfig.selectedDifficulty = level;
+    filterDanetki(level);
+    
+    // Обновление кнопок
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+function filterDanetki(difficulty) {
+    if (difficulty === 'all') {
+        gameConfig.danetkiList = [...danetkiData];
     } else {
-        filteredDanetki = danetkiData.filter(d => d.difficulty === level);
+        gameConfig.danetkiList = danetkiData.filter(d => d.difficulty === difficulty);
     }
     
-    elements.currentGameSpan.textContent = `1/${filteredDanetki.length}`;
-    updateProgressBar();
-}
-
-// Сохранение настроек
-function saveSettings() {
-    currentGame.players = parseInt(elements.playerCount.value);
-    currentGame.timeLimit = parseInt(elements.timeLimit.value);
-    currentGame.hintsEnabled = elements.hintsEnabled.checked;
+    // Перемешиваем
+    gameConfig.danetkiList = gameConfig.danetkiList.sort(() => Math.random() - 0.5);
     
-    localStorage.setItem('danetkiSettings', JSON.stringify({
-        players: currentGame.players,
-        timeLimit: currentGame.timeLimit,
-        hintsEnabled: currentGame.hintsEnabled,
-        difficulty: currentGame.difficulty
-    }));
+    // Обновляем счетчик
+    document.getElementById('card-counter').textContent = `1/${gameConfig.danetkiList.length}`;
 }
 
-// Изменение количества игроков
-function changePlayerCount(delta) {
-    let count = parseInt(elements.playerCount.value) + delta;
-    count = Math.max(2, Math.min(15, count));
-    elements.playerCount.value = count;
-    saveSettings();
-}
-
-// Начало игры
+// Управление игрой
 function startGame() {
-    if (filteredDanetki.length === 0) {
-        alert('Нет данеток выбранной сложности!');
+    if (gameConfig.danetkiList.length === 0) {
+        alert('Выберите другую сложность - для выбранной нет данеток!');
         return;
     }
     
-    // Сброс состояния игры
-    currentGame.currentDanetka = 0;
-    currentGame.totalSolved = 0;
-    currentGame.questionsHistory = [];
-    currentGame.hintsUsed = 0;
-    currentGame.totalHints = currentGame.hintsEnabled ? 3 : 0;
-    
-    // Переход к экрану игры
-    elements.setupScreen.classList.remove('active');
-    elements.gameScreen.classList.add('active');
-    elements.resultScreen.classList.remove('active');
-    
-    // Загрузка первой данетки
+    gameConfig.currentDanetka = 0;
+    document.getElementById('menu-screen').classList.remove('active');
+    document.getElementById('game-screen').classList.add('active');
     loadDanetka();
-    startTimer();
+    startTimer(600); // 10 минут
 }
 
-// Загрузка данетки
 function loadDanetka() {
-    if (currentGame.currentDanetka >= filteredDanetki.length) {
+    if (gameConfig.currentDanetka >= gameConfig.danetkiList.length) {
         endGame();
         return;
     }
     
-    currentDanetkaData = filteredDanetki[currentGame.currentDanetka];
+    const danetka = gameConfig.danetkiList[gameConfig.currentDanetka];
     
-    // Обновление интерфейса
-    elements.danetkaText.textContent = currentDanetkaData.question;
-    elements.cardNumber.textContent = `#${currentGame.currentDanetka + 1}`;
+    // Обновляем интерфейс
+    document.getElementById('danetka-text').textContent = danetka.question;
+    document.getElementById('card-counter').textContent = 
+        `${gameConfig.currentDanetka + 1}/${gameConfig.danetkiList.length}`;
     
     // Категория сложности
+    const categoryEl = document.getElementById('category');
     const difficultyText = {
         easy: 'Легкая',
         medium: 'Средняя',
         hard: 'Сложная'
     };
     
-    elements.categoryBadge.textContent = `Сложность: ${difficultyText[currentDanetkaData.difficulty]}`;
-    elements.categoryBadge.className = 'category-badge ' + currentDanetkaData.difficulty;
+    categoryEl.textContent = `Сложность: ${difficultyText[danetka.difficulty]}`;
+    categoryEl.className = `category ${danetka.difficulty}`;
     
-    // Сброс истории вопросов
-    elements.historyList.innerHTML = `
-        <div class="history-empty">
-            <i class="fas fa-comment-dots"></i>
-            <p>Вопросы еще не задавались</p>
-        </div>
-    `;
-    
-    // Обновление подсказок
-    elements.hintText.textContent = 'Нажмите "Получить подсказку" для помощи';
-    elements.getHintBtn.disabled = !currentGame.hintsEnabled;
-    elements.hintsAvailable.textContent = `${currentGame.hintsUsed}/${currentGame.totalHints} подсказок`;
-    
-    // Обновление счетчиков
-    elements.currentGameSpan.textContent = `${currentGame.currentDanetka + 1}/${filteredDanetki.length}`;
-    elements.questionsAsked.textContent = '0 вопросов';
-    
-    // Обновление прогресса
-    updateProgressBar();
-    
-    // Анимация появления
-    elements.danetkaText.classList.add('fade-in-up');
-    setTimeout(() => elements.danetkaText.classList.remove('fade-in-up'), 500);
+    // Сохраняем решение для экрана результата
+    document.getElementById('solution-text').textContent = danetka.solution;
 }
 
-// Таймер
-function startTimer() {
-    if (currentGame.timeLimit === 0) {
-        elements.timer.textContent = '∞';
-        return;
-    }
+function startTimer(seconds) {
+    clearInterval(gameConfig.timer);
+    gameConfig.timeLeft = seconds;
     
-    clearInterval(currentGame.timerInterval);
-    currentGame.startTime = Date.now();
-    const totalSeconds = currentGame.timeLimit * 60;
-    
-    currentGame.timerInterval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - currentGame.startTime) / 1000);
-        const remaining = totalSeconds - elapsed;
+    gameConfig.timer = setInterval(() => {
+        gameConfig.timeLeft--;
         
-        if (remaining <= 0) {
-            clearInterval(currentGame.timerInterval);
-            elements.timeoutModal.classList.add('active');
-            return;
+        const minutes = Math.floor(gameConfig.timeLeft / 60);
+        const secs = gameConfig.timeLeft % 60;
+        document.getElementById('timer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        if (gameConfig.timeLeft <= 0) {
+            clearInterval(gameConfig.timer);
+            showSolution();
         }
-        
-        const minutes = Math.floor(remaining / 60);
-        const seconds = remaining % 60;
-        elements.timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }, 1000);
 }
 
-// Запись ответа
-function recordAnswer(answer) {
-    const question = prompt('Введите вопрос, который задал игрок:');
-    if (!question) return;
-    
-    // Добавление в историю
-    const historyItem = document.createElement('div');
-    historyItem.className = 'history-item';
-    
-    const answerText = {
-        yes: 'ДА',
-        no: 'НЕТ',
-        irrelevant: 'НЕ ИМЕЕТ ЗНАЧЕНИЯ'
-    };
-    
-    const answerClass = {
-        yes: 'answer-yes',
-        no: 'answer-no',
-        irrelevant: 'answer-irrelevant'
-    };
-    
-    historyItem.innerHTML = `
-        <div class="history-question">${question}</div>
-        <div class="history-answer ${answerClass[answer]}">${answerText[answer]}</div>
-    `;
-    
-    // Удаление пустого состояния
-    const emptyState = elements.historyList.querySelector('.history-empty');
-    if (emptyState) {
-        emptyState.remove();
-    }
-    
-    elements.historyList.prepend(historyItem);
-    
-    // Обновление счетчика вопросов
-    currentGame.questionsHistory.push({ question, answer });
-    elements.questionsAsked.textContent = `${currentGame.questionsHistory.length} вопросов`;
-    
-    // Анимация
-    historyItem.classList.add('fade-in-up');
-}
-
-// Быстрые вопросы
-function quickQuestion(type) {
-    const questions = {
-        time: 'Это связано со временем?',
-        location: 'Это связано с местом?',
-        object: 'Это предмет?',
-        person: 'Это человек?'
-    };
-    
-    if (questions[type]) {
-        if (confirm(`Задать вопрос: "${questions[type]}"?`)) {
-            // Определяем правильный ответ на основе типа
-            const answer = 'yes'; // В реальной игре нужно анализировать контекст
-            recordAnswer(answer);
+// Управление игроками
+function addPlayer() {
+    const playerName = prompt('Введите имя игрока:');
+    if (playerName && playerName.trim()) {
+        const name = playerName.trim();
+        if (!gameConfig.players.includes(name)) {
+            gameConfig.players.push(name);
+            gameConfig.scores[name] = 0;
+            updateScoreDisplay();
+            saveGame();
         }
     }
 }
 
-// Показ подсказки
-function showHint() {
-    if (!currentGame.hintsEnabled || currentGame.hintsUsed >= currentGame.totalHints) {
-        alert('Подсказки закончились или отключены!');
+function updateScoreDisplay() {
+    const display = document.getElementById('score-display');
+    const winnerButtons = document.getElementById('winner-buttons');
+    
+    display.innerHTML = '';
+    winnerButtons.innerHTML = '';
+    
+    gameConfig.players.forEach(player => {
+        // Отображение счета
+        const scoreEl = document.createElement('div');
+        scoreEl.className = 'player-score';
+        scoreEl.innerHTML = `
+            <span>${player}</span>
+            <span style="color: var(--primary); font-weight: 700;">${gameConfig.scores[player]}</span>
+            <button class="remove" onclick="removePlayer('${player}')">&times;</button>
+        `;
+        display.appendChild(scoreEl);
+        
+        // Кнопки для победителей
+        const winnerBtn = document.createElement('button');
+        winnerBtn.className = 'winner-btn';
+        winnerBtn.textContent = player;
+        winnerBtn.onclick = () => addPoint(player);
+        winnerButtons.appendChild(winnerBtn);
+    });
+}
+
+function removePlayer(playerName) {
+    if (gameConfig.players.length <= 2) {
+        alert('Должно быть минимум 2 игрока!');
         return;
     }
     
-    currentGame.hintsUsed++;
+    if (confirm(`Удалить игрока ${playerName}?`)) {
+        gameConfig.players = gameConfig.players.filter(p => p !== playerName);
+        delete gameConfig.scores[playerName];
+        updateScoreDisplay();
+        saveGame();
+    }
+}
+
+function addPoint(playerName) {
+    gameConfig.scores[playerName]++;
+    updateScoreDisplay();
+    saveGame();
     
-    // Обновление счетчика
-    elements.hintsAvailable.textContent = `${currentGame.hintsUsed}/${currentGame.totalHints} подсказок`;
+    // Автоматически переходим к следующей данетке через 2 секунды
+    setTimeout(() => {
+        nextDanetka();
+    }, 2000);
+}
+
+function noOneGuessed() {
+    // Никто не получает очков, просто переходим дальше
+    nextDanetka();
+}
+
+// Основные действия игры
+function showAnswer(answer) {
+    // В реальной игре ведущий отвечает устно
+    // Здесь просто показываем кнопку, как напоминание
+    alert(`Ответьте игрокам: ${answer === 'yes' ? 'ДА' : answer === 'no' ? 'НЕТ' : 'НЕ ИМЕЕТ ЗНАЧЕНИЯ'}`);
+}
+
+function showHint() {
+    const currentDanetka = gameConfig.danetkiList[gameConfig.currentDanetka];
     
-    // Показ подсказки
-    if (currentDanetkaData.hints && currentDanetkaData.hints.length > 0) {
-        const randomHint = currentDanetkaData.hints[Math.floor(Math.random() * currentDanetkaData.hints.length)];
-        elements.modalHintText.textContent = randomHint;
-        elements.hintModal.classList.add('active');
-        
-        // Сохраняем последнюю подсказку
-        elements.hintText.textContent = randomHint;
+    if (currentDanetka.hints && currentDanetka.hints.length > 0) {
+        const randomHint = currentDanetka.hints[Math.floor(Math.random() * currentDanetka.hints.length)];
+        document.getElementById('hint-text').textContent = randomHint;
+        document.getElementById('hint-screen').classList.add('active');
     } else {
         alert('Для этой данетки нет подсказок');
     }
-    
-    // Отключение кнопки если подсказки кончились
-    if (currentGame.hintsUsed >= currentGame.totalHints) {
-        elements.getHintBtn.disabled = true;
-    }
 }
 
-// Очистка истории
-function clearHistory() {
-    currentGame.questionsHistory = [];
-    elements.historyList.innerHTML = `
-        <div class="history-empty">
-            <i class="fas fa-comment-dots"></i>
-            <p>Вопросы еще не задавались</p>
-        </div>
-    `;
-    elements.questionsAsked.textContent = '0 вопросов';
+function closeHint() {
+    document.getElementById('hint-screen').classList.remove('active');
 }
 
-// Показать решение
 function showSolution() {
-    // Остановка таймера
-    clearInterval(currentGame.timerInterval);
-    
-    // Закрытие модальных окон
-    document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
-    
-    // Обновление результата
-    elements.resultTitle.textContent = currentGame.totalSolved === filteredDanetki.length 
-        ? 'Все данетки разгаданы!' 
-        : 'Разгадано!';
-    
-    elements.solutionText.textContent = currentDanetkaData.solution;
-    
-    // Статистика
-    const timeSpent = Math.floor((Date.now() - currentGame.startTime) / 1000);
-    const minutes = Math.floor(timeSpent / 60);
-    const seconds = timeSpent % 60;
-    
-    elements.statTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    elements.statQuestions.textContent = currentGame.questionsHistory.length;
-    elements.statHints.textContent = currentGame.hintsUsed;
-    
-    const difficultyText = {
-        easy: 'Легкая',
-        medium: 'Средняя',
-        hard: 'Сложная'
-    };
-    
-    elements.statDifficulty.textContent = difficultyText[currentDanetkaData.difficulty];
-    
-    // Переход к экрану результата
-    elements.gameScreen.classList.remove('active');
-    elements.resultScreen.classList.add('active');
-    
-    // Увеличение счетчика решенных
-    currentGame.totalSolved++;
+    clearInterval(gameConfig.timer);
+    document.getElementById('game-screen').classList.remove('active');
+    document.getElementById('result-screen').classList.add('active');
 }
 
-// Следующая данетка
 function nextDanetka() {
-    currentGame.currentDanetka++;
+    gameConfig.currentDanetka++;
     
-    if (currentGame.currentDanetka >= filteredDanetki.length) {
+    if (gameConfig.currentDanetka >= gameConfig.danetkiList.length) {
         endGame();
         return;
     }
     
-    // Сброс состояния
-    currentGame.questionsHistory = [];
-    currentGame.hintsUsed = 0;
-    
-    // Переход к игре
-    elements.resultScreen.classList.remove('active');
-    elements.gameScreen.classList.add('active');
-    
-    // Загрузка новой данетки
+    document.getElementById('result-screen').classList.remove('active');
+    document.getElementById('game-screen').classList.add('active');
     loadDanetka();
-    startTimer();
+    startTimer(600); // Снова 10 минут
 }
 
-// Завершение игры
-function endGame() {
-    // Остановка таймера
-    clearInterval(currentGame.timerInterval);
-    
-    // Показ финального результата
-    elements.resultTitle.textContent = 'Игра завершена!';
-    elements.solutionText.textContent = `Вы разгадали ${currentGame.totalSolved} из ${filteredDanetki.length} данеток.`;
-    
-    // Обновление статистики
-    elements.statTime.textContent = '-';
-    elements.statQuestions.textContent = currentGame.totalSolved;
-    elements.statHints.textContent = currentGame.hintsUsed;
-    elements.statDifficulty.textContent = 'Завершено';
-    
-    // Переход к результату
-    elements.gameScreen.classList.remove('active');
-    elements.resultScreen.classList.add('active');
-}
-
-// Играть снова
-function playAgain() {
-    elements.resultScreen.classList.remove('active');
-    elements.gameScreen.classList.add('active');
-    
-    // Сброс
-    currentGame.currentDanetka = 0;
-    currentGame.totalSolved = 0;
-    currentGame.questionsHistory = [];
-    currentGame.hintsUsed = 0;
-    
-    // Загрузка первой данетки
-    loadDanetka();
-    startTimer();
-}
-
-// Вернуться в меню
 function backToMenu() {
-    elements.resultScreen.classList.remove('active');
-    elements.setupScreen.classList.add('active');
-    
-    // Сброс состояния
-    currentGame.currentDanetka = 0;
-    currentGame.totalSolved = 0;
-    currentGame.questionsHistory = [];
-    currentGame.hintsUsed = 0;
-    
-    // Обновление прогресса
-    updateProgressBar();
+    document.getElementById('result-screen').classList.remove('active');
+    document.getElementById('menu-screen').classList.add('active');
 }
 
-// Обновление прогресс бара
-function updateProgressBar() {
-    const progress = filteredDanetki.length > 0 
-        ? ((currentGame.currentDanetka + 1) / filteredDanetki.length) * 100 
-        : 0;
+function endGame() {
+    // Определяем победителя
+    let winner = null;
+    let maxScore = -1;
     
-    elements.progressFill.style.width = `${progress}%`;
-}
-
-// Обновление статистики
-function updateStatsDisplay() {
-    const stats = JSON.parse(localStorage.getItem('danetkiStats')) || {
-        totalPlayed: 0,
-        totalSolved: 0,
-        bestTime: 0
-    };
-    
-    // Можно добавить отображение статистики где-то в интерфейсе
-}
-
-// Сохранение статистики
-function saveStats(solved) {
-    const stats = JSON.parse(localStorage.getItem('danetkiStats')) || {
-        totalPlayed: 0,
-        totalSolved: 0,
-        bestTime: 0
-    };
-    
-    stats.totalPlayed++;
-    if (solved) stats.totalSolved++;
-    
-    // Расчет времени
-    const timeSpent = Math.floor((Date.now() - currentGame.startTime) / 1000);
-    if (stats.bestTime === 0 || timeSpent < stats.bestTime) {
-        stats.bestTime = timeSpent;
+    for (const [player, score] of Object.entries(gameConfig.scores)) {
+        if (score > maxScore) {
+            maxScore = score;
+            winner = player;
+        }
     }
     
-    localStorage.setItem('danetkiStats', JSON.stringify(stats));
+    alert(`Игра завершена! Победитель: ${winner} с ${maxScore} очками!`);
+    backToMenu();
+    
+    // Сброс игры
+    gameConfig.currentDanetka = 0;
+    Object.keys(gameConfig.scores).forEach(player => {
+        gameConfig.scores[player] = 0;
+    });
+    updateScoreDisplay();
 }
+
+function saveGame() {
+    const saveData = {
+        players: gameConfig.players,
+        scores: gameConfig.scores,
+        lastPlayed: new Date().toISOString()
+    };
+    
+    localStorage.setItem('danetkiGame', JSON.stringify(saveData));
+}
+
+// Обработка offline/online
+window.addEventListener('online', () => {
+    console.log('Приложение онлайн');
+});
+
+window.addEventListener('offline', () => {
+    console.log('Приложение оффлайн - игра продолжается!');
+});
+
+// Предотвращение закрытия при игре
+window.addEventListener('beforeunload', (e) => {
+    if (document.getElementById('game-screen').classList.contains('active')) {
+        e.preventDefault();
+        e.returnValue = 'Вы уверены, что хотите выйти? Ведущий игры будет потерян!';
+        return e.returnValue;
+    }
+});
