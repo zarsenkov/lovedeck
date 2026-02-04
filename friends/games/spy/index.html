@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <div class="game-container">
@@ -46,14 +47,14 @@
                         <!-- Количество игроков -->
                         <div class="option-group">
                             <label for="playerCount">
-                                <i class="fas fa-users"></i> Количество игроков
+                                <i class="fas fa-users"></i> Количество игроков (3-12)
                             </label>
                             <div class="number-selector">
-                                <button class="number-btn" onclick="changePlayerCount(-1)">
+                                <button class="number-btn" onclick="changeValue('playerCount', -1)">
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <input type="number" id="playerCount" min="3" max="12" value="5" readonly>
-                                <button class="number-btn" onclick="changePlayerCount(1)">
+                                <button class="number-btn" onclick="changeValue('playerCount', 1)">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
@@ -65,11 +66,11 @@
                                 <i class="fas fa-user-secret"></i> Количество шпионов
                             </label>
                             <div class="number-selector">
-                                <button class="number-btn" onclick="changeSpyCount(-1)">
+                                <button class="number-btn" onclick="changeValue('spyCount', -1)">
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <input type="number" id="spyCount" min="1" max="3" value="1" readonly>
-                                <button class="number-btn" onclick="changeSpyCount(1)">
+                                <button class="number-btn" onclick="changeValue('spyCount', 1)">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
@@ -77,14 +78,14 @@
 
                         <!-- Время на обсуждение -->
                         <div class="option-group">
-                            <label for="discussionTime">
-                                <i class="fas fa-clock"></i> Время на обсуждение (минут)
+                            <label>
+                                <i class="fas fa-clock"></i> Время на обсуждение
                             </label>
                             <div class="time-options">
-                                <button class="time-btn" data-time="3" onclick="selectTime(3)">3</button>
-                                <button class="time-btn active" data-time="5" onclick="selectTime(5)">5</button>
-                                <button class="time-btn" data-time="7" onclick="selectTime(7)">7</button>
-                                <button class="time-btn" data-time="10" onclick="selectTime(10)">10</button>
+                                <button class="time-btn active" onclick="selectTime(3)">3 мин</button>
+                                <button class="time-btn" onclick="selectTime(5)">5 мин</button>
+                                <button class="time-btn" onclick="selectTime(7)">7 мин</button>
+                                <button class="time-btn" onclick="selectTime(10)">10 мин</button>
                             </div>
                         </div>
 
@@ -129,7 +130,7 @@
                     </div>
 
                     <div class="setup-actions">
-                        <button class="btn-secondary" onclick="randomizeLocation()">
+                        <button class="btn-secondary" onclick="showRandomLocation()">
                             <i class="fas fa-random"></i> Случайная локация
                         </button>
                         <button class="btn-primary" onclick="startGame()">
@@ -142,8 +143,8 @@
             <!-- Экран распределения ролей -->
             <section id="roleScreen" class="screen">
                 <div class="role-card">
-                    <h2>Распределение ролей</h2>
-                    <p class="role-subtitle">Передавайте устройство каждому игроку</p>
+                    <h2>Передавайте устройство игрокам</h2>
+                    <p class="role-subtitle">Каждый игрок нажимает на свою карточку, смотрит роль и передает дальше</p>
                     
                     <div class="players-list">
                         <!-- Сгенерируется динамически -->
@@ -151,77 +152,83 @@
                     
                     <div class="role-actions">
                         <button class="btn-secondary" onclick="backToSetup()">
-                            <i class="fas fa-arrow-left"></i> Назад
+                            <i class="fas fa-arrow-left"></i> Назад к настройкам
                         </button>
                         <button class="btn-primary" onclick="startDiscussion()">
-                            <i class="fas fa-comments"></i> Начать обсуждение
+                            <i class="fas fa-comments"></i> Все готовы → Обсуждение
                         </button>
                     </div>
                 </div>
             </section>
 
-            <!-- Экран игрока -->
-            <section id="playerScreen" class="screen">
-                <div class="player-card">
-                    <h2>Твоя роль</h2>
-                    
+            <!-- Экран роли игрока -->
+            <section id="playerRoleScreen" class="screen">
+                <div class="role-display-card">
                     <div class="role-display">
                         <div id="roleIcon" class="role-icon">
                             <i class="fas fa-user"></i>
                         </div>
-                        <h3 id="roleTitle">Игрок</h3>
-                        <p id="roleDescription" class="role-desc">
-                            Ты обычный игрок. Твоя задача — вычислить шпиона!
-                        </p>
+                        <h2 id="roleTitle">Твоя роль</h2>
+                        <div id="roleDescription" class="role-desc">
+                            <!-- Заполнится динамически -->
+                        </div>
                         
                         <div class="location-info" id="locationInfo">
                             <div class="location-icon">
                                 <i class="fas fa-map-marker-alt"></i>
                             </div>
                             <div>
-                                <h4>Локация:</h4>
-                                <p id="locationText">Ресторан</p>
+                                <h3>Локация:</h3>
+                                <p id="locationText"></p>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="player-actions">
-                        <button class="btn-primary" onclick="nextPlayer()">
-                            Следующий игрок
+                    <div class="instructions">
+                        <h3><i class="fas fa-lightbulb"></i> Важно:</h3>
+                        <ul>
+                            <li>Не показывайте экран другим игрокам!</li>
+                            <li>Запомните свою роль и локацию</li>
+                            <li>Когда будете готовы, нажмите кнопку ниже</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="role-actions">
+                        <button class="btn-primary" onclick="hideRole()">
+                            <i class="fas fa-eye-slash"></i> Я понял, передать дальше
                         </button>
                     </div>
                 </div>
             </section>
 
             <!-- Экран шпиона -->
-            <section id="spyScreen" class="screen">
-                <div class="spy-card">
-                    <h2><i class="fas fa-user-secret"></i> Ты шпион!</h2>
-                    
-                    <div class="spy-content">
-                        <div class="spy-icon">
-                            <i class="fas fa-mask"></i>
+            <section id="spyRoleScreen" class="screen">
+                <div class="spy-role-card">
+                    <div class="role-display">
+                        <div class="role-icon spy">
+                            <i class="fas fa-user-secret"></i>
+                        </div>
+                        <h2>Ты Шпион!</h2>
+                        
+                        <div class="spy-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p><strong>Ты НЕ ЗНАЕШЬ локацию!</strong></p>
                         </div>
                         
-                        <div class="spy-instructions">
-                            <p><strong>Твоя задача:</strong> остаться незамеченным!</p>
-                            <ul class="spy-tips">
+                        <div class="spy-tips">
+                            <h3><i class="fas fa-brain"></i> Тактика шпиона:</h3>
+                            <ul>
                                 <li>Задавайте общие вопросы</li>
-                                <li>Не выделяйтесь из толпы</li>
-                                <li>Слушайте внимательно других игроков</li>
-                                <li>Предлагайте разумные предположения</li>
+                                <li>Не выделяйтесь</li>
+                                <li>Слушайте внимательно других</li>
+                                <li>Предлагайте разумные версии</li>
                             </ul>
-                            
-                            <div class="spy-warning">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <p>Ты НЕ знаешь локацию! Будь осторожен в вопросах.</p>
-                            </div>
                         </div>
                     </div>
                     
-                    <div class="player-actions">
-                        <button class="btn-primary" onclick="nextPlayer()">
-                            Я понял
+                    <div class="role-actions">
+                        <button class="btn-primary" onclick="hideSpyRole()">
+                            <i class="fas fa-eye-slash"></i> Я понял, передать дальше
                         </button>
                     </div>
                 </div>
@@ -234,54 +241,53 @@
                         <h2>Обсуждение</h2>
                         <div class="timer-wrapper">
                             <div class="timer-circle">
-                                <svg width="60" height="60">
-                                    <circle class="timer-bg" cx="30" cy="30" r="28"></circle>
-                                    <circle class="timer-progress" cx="30" cy="30" r="28"></circle>
+                                <svg width="80" height="80">
+                                    <circle class="timer-bg" cx="40" cy="40" r="36"></circle>
+                                    <circle class="timer-progress" cx="40" cy="40" r="36"></circle>
                                 </svg>
                                 <div class="timer-text" id="timerText">05:00</div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="discussion-info">
-                        <div class="location-card">
+                    <div class="discussion-content">
+                        <div class="location-display">
                             <div class="location-icon">
                                 <i class="fas fa-map-marker-alt"></i>
                             </div>
                             <div>
-                                <h4>Локация для всех игроков:</h4>
-                                <p id="discussionLocation">Ресторан</p>
+                                <h3>Локация для всех игроков:</h3>
+                                <p id="currentLocation">Ресторан</p>
                             </div>
                         </div>
                         
-                        <div class="game-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Игроков:</span>
-                                <span class="stat-value" id="statPlayers">5</span>
+                        <div class="game-info">
+                            <div class="info-card">
+                                <h4><i class="fas fa-users"></i> Игроков:</h4>
+                                <p id="infoPlayers">5</p>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Шпионов:</span>
-                                <span class="stat-value spy-count" id="statSpies">1</span>
+                            <div class="info-card">
+                                <h4><i class="fas fa-user-secret"></i> Шпионов:</h4>
+                                <p id="infoSpies">1</p>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Время:</span>
-                                <span class="stat-value" id="statTime">5 мин</span>
+                            <div class="info-card">
+                                <h4><i class="fas fa-clock"></i> Время:</h4>
+                                <p id="infoTime">5 мин</p>
                             </div>
+                        </div>
+                        
+                        <div class="discussion-tips">
+                            <h4><i class="fas fa-lightbulb"></i> Как играть:</h4>
+                            <ul>
+                                <li>Задавайте вопросы, на которые можно ответить "Да" или "Нет"</li>
+                                <li>Шпион не знает локацию — поймайте его на ошибках!</li>
+                                <li>В конце игры проголосуйте за подозреваемого</li>
+                            </ul>
                         </div>
                     </div>
                     
-                    <div class="discussion-tips">
-                        <h4><i class="fas fa-lightbulb"></i> Как играть:</h4>
-                        <ul>
-                            <li>Задавайте вопросы, на которые можно ответить "Да" или "Нет"</li>
-                            <li>Шпион не знает локацию</li>
-                            <li>В конце игры голосуйте за подозреваемого</li>
-                            <li>Шпион выигрывает, если его не раскроют</li>
-                        </ul>
-                    </div>
-                    
                     <div class="discussion-controls">
-                        <button class="btn-secondary" onclick="pauseTimer()">
+                        <button class="btn-secondary" id="pauseBtn" onclick="toggleTimer()">
                             <i class="fas fa-pause"></i> Пауза
                         </button>
                         <button class="btn-primary" onclick="startVoting()">
@@ -294,16 +300,30 @@
             <!-- Экран голосования -->
             <section id="votingScreen" class="screen">
                 <div class="voting-card">
-                    <h2>Голосование</h2>
-                    <p class="voting-subtitle">Кто по-вашему шпион?</p>
+                    <h2>Кто по-вашему Шпион?</h2>
+                    <p class="voting-subtitle">Выберите подозреваемого. У каждого игрока по одному голосу.</p>
                     
                     <div class="voting-list">
                         <!-- Сгенерируется динамически -->
                     </div>
                     
+                    <div class="voting-summary">
+                        <div class="summary-item">
+                            <span class="summary-number" id="totalVotes">0</span>
+                            <span class="summary-label">Всего голосов</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-number" id="remainingVotes">5</span>
+                            <span class="summary-label">Осталось проголосовать</span>
+                        </div>
+                    </div>
+                    
                     <div class="voting-controls">
                         <button class="btn-secondary" onclick="backToDiscussion()">
                             <i class="fas fa-arrow-left"></i> Назад к обсуждению
+                        </button>
+                        <button class="btn-primary" onclick="finishVoting()">
+                            <i class="fas fa-flag-checkered"></i> Завершить голосование
                         </button>
                     </div>
                 </div>
@@ -369,15 +389,6 @@
                         <h4>🤔 Голосование</h4>
                         <p>После обсуждения игроки голосуют, кто по их мнению шпион. Если большинство голосует за шпиона — побеждают игроки. Если шпиона не нашли — побеждает шпион.</p>
                     </div>
-                    
-                    <div class="rules-section">
-                        <h4>🏆 Подсчет очков</h4>
-                        <ul>
-                            <li><strong>Игроки:</strong> +1 очко за раскрытие шпиона</li>
-                            <li><strong>Шпион:</strong> +3 очка за победу</li>
-                            <li><strong>Шпион:</strong> +1 очко за каждого нераскрытого шпиона</li>
-                        </ul>
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn-primary" onclick="closeModal('rulesModal')">
@@ -418,16 +429,9 @@
                             <h4>Победы шпионов</h4>
                             <p class="stat-number" id="spyWins">0</p>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <h4>Среднее время</h4>
-                            <p class="stat-number" id="avgTime">0 мин</p>
-                        </div>
                     </div>
                     
-                    <div class="stats-chart">
+                    <div class="recent-games">
                         <h4>Последние игры:</h4>
                         <div id="recentGamesList" class="games-list">
                             <!-- Сгенерируется динамически -->
