@@ -43,7 +43,7 @@ function initCategories() {
         { id: 'celebrities', name: 'Знаменитости', icon: 'fa-star' },
         { id: 'food', name: 'Еда', icon: 'fa-utensils' },
         { id: 'places', name: 'Места', icon: 'fa-globe' },
-        { id: 'abstract', name: 'Абстрактные', icon: 'fa-brain' },
+        { id: 'abstract', name: '18+', icon: 'fa-brain' },
         { id: 'custom', name: 'Свои слова', icon: 'fa-edit' }
     ];
     
@@ -636,3 +636,4 @@ function initPWA() {
 
 // Инициализация PWA
 document.addEventListener('DOMContentLoaded', initPWA);
+
