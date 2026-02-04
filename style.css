@@ -706,49 +706,6 @@ h2 {
     }
 }
 
-/* Тёмная тема */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --dark: #ffffff;
-        --light: #1a1a1a;
-        --gray: #aaaaaa;
-    }
-    
-    body {
-        background: #121212;
-    }
-    
-    .app-container,
-    .card,
-    .game-card,
-    .theme-btn {
-        background: #2d2d2d;
-        color: white;
-    }
-    
-    .card-header,
-    .card-footer,
-    .card-details,
-    .stat-item,
-    .favorite-item {
-        background: #3d3d3d;
-    }
-    
-    .name-group input,
-    .custom-select,
-    .custom-form textarea {
-        background: #3d3d3d;
-        color: white;
-        border-color: #4d4d4d;
-    }
-    
-    .btn-secondary,
-    .btn-extra {
-        background: #3d3d3d;
-        color: white;
-        border-color: #4d4d4d;
-    }
-}
 /* Меняем цвет эмодзи только для 18+ при наведении */
 .theme-btn.adult:hover .theme-emoji {
     color: #ff4d6d;
@@ -1059,3 +1016,4 @@ h2 {
     line-height: 1.5;
     max-width: 100%;
 }
+
