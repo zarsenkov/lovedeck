@@ -2,16 +2,163 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
     <title>LoveCouple: Игры для друзей</title>
-    <meta name="description" content="Современные игры для компании: Бункер, Шпион, Крокодил, Алиас, Мафия и другие">
+    <meta name="description" content="Современные игры для компании: Кто я?, Шпион, Крокодил, Алиас, Данетки и Викторина">
+    
+    <!-- PWA метаданные -->
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LoveCouple Games">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Иконки -->
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
+    <link rel="apple-touch-icon" href="assets/apple-icon.png">
+    
+    <!-- Манифест PWA -->
+    <link rel="manifest" href="manifest.webmanifest">
+    
+    <!-- Стили -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js').then(
+                    function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    },
+                    function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    }
+                );
+            });
+        }
+    </script>
+    
+    <style>
+        /* Стили для установки PWA */
+        .pwa-install-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .pwa-install-banner.show {
+            display: flex;
+            animation: slideUp 0.3s ease;
+        }
+        
+        .pwa-install-banner.hide {
+            animation: slideDown 0.3s ease forwards;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(0); }
+            to { transform: translateY(100%); }
+        }
+        
+        .pwa-install-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .pwa-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+        }
+        
+        /* Мобильная навигация */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 0.5rem;
+            border-top: 1px solid var(--border);
+            z-index: 999;
+        }
+        
+        .mobile-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+        
+        .mobile-nav-item.active {
+            color: var(--primary);
+        }
+        
+        .mobile-nav-item i {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Адаптивность контейнера */
+        @media (max-width: 480px) {
+            .container {
+                padding-bottom: 70px; /* Для мобильной навигации */
+            }
+            
+            .mobile-nav {
+                display: flex;
+                justify-content: space-around;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Баннер установки PWA -->
+    <div id="pwaInstallBanner" class="pwa-install-banner">
+        <div>
+            <strong>Установите приложение</strong>
+            <p style="margin-top: 0.25rem; font-size: 0.875rem; opacity: 0.9;">Играйте офлайн и быстро запускайте игры</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button id="pwaInstallBtn" class="pwa-install-btn">Установить</button>
+            <button id="pwaCloseBtn" class="pwa-close-btn">×</button>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Шапка -->
         <header class="main-header">
@@ -141,46 +288,168 @@
         </footer>
     </div>
 
+    <!-- Мобильная навигация -->
+    <nav class="mobile-nav">
+        <a href="#" class="mobile-nav-item active">
+            <i class="fas fa-gamepad"></i>
+            <span>Игры</span>
+        </a>
+        <a href="https://lovecouple.ru" class="mobile-nav-item">
+            <i class="fas fa-heart"></i>
+            <span>LoveCouple</span>
+        </a>
+        <a href="#" class="mobile-nav-item" id="mobileInstallBtn">
+            <i class="fas fa-download"></i>
+            <span>Установить</span>
+        </a>
+        <a href="#" class="mobile-nav-item">
+            <i class="fas fa-info-circle"></i>
+            <span>О нас</span>
+        </a>
+    </nav>
+
+    <script src="script.js"></script>
     <script>
-        // Загрузка игры
-        function loadGame(gameName) {
-            // Сохраняем в localStorage
-            localStorage.setItem('selectedGame', gameName);
+        // PWA установка
+        let deferredPrompt;
+        const pwaInstallBanner = document.getElementById('pwaInstallBanner');
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+        const pwaCloseBtn = document.getElementById('pwaCloseBtn');
+        const mobileInstallBtn = document.getElementById('mobileInstallBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
             
-            // Показываем loading state
-            const btn = event.target.closest('.play-btn') || event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
-            btn.disabled = true;
-            
-            // Переход через секунду (для плавности)
+            // Показываем баннер через 5 секунд
             setTimeout(() => {
-                window.location.href = `games/${gameName}/index.html`;
-            }, 500);
+                if (!isAppInstalled()) {
+                    pwaInstallBanner.classList.add('show');
+                }
+            }, 5000);
+        });
+
+        pwaInstallBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('PWA установлен');
+                }
+                deferredPrompt = null;
+                pwaInstallBanner.classList.remove('show');
+            }
+        });
+
+        pwaCloseBtn.addEventListener('click', () => {
+            pwaInstallBanner.classList.remove('show');
+            localStorage.setItem('pwaBannerClosed', 'true');
+        });
+
+        mobileInstallBtn.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+            } else {
+                alert('Откройте меню браузера и выберите "Установить приложение"');
+            }
+        });
+
+        function isAppInstalled() {
+            return window.matchMedia('(display-mode: standalone)').matches || 
+                   window.navigator.standalone ||
+                   document.referrer.includes('android-app://');
         }
 
-        // Анимация при загрузке
-        document.addEventListener('DOMContentLoaded', () => {
-            // Плавное появление контента
-            document.body.style.opacity = '0';
-            setTimeout(() => {
-                document.body.style.transition = 'opacity 0.5s ease';
-                document.body.style.opacity = '1';
-            }, 100);
+        // Проверяем, был ли баннер закрыт ранее
+        if (localStorage.getItem('pwaBannerClosed') === 'true') {
+            pwaInstallBanner.style.display = 'none';
+        }
+
+        // Улучшенная загрузка игры для мобильных устройств
+        function loadGame(gameName) {
+            // Показываем состояние загрузки
+            const eventTarget = event.target;
+            let playBtn;
             
-            // Добавляем hover-эффекты для карточек
+            if (eventTarget.classList.contains('play-btn')) {
+                playBtn = eventTarget;
+            } else if (eventTarget.closest('.play-btn')) {
+                playBtn = eventTarget.closest('.play-btn');
+            } else {
+                playBtn = eventTarget.querySelector('.play-btn') || 
+                         eventTarget.closest('.game-card').querySelector('.play-btn');
+            }
+            
+            if (playBtn) {
+                const originalText = playBtn.innerHTML;
+                playBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+                playBtn.disabled = true;
+                
+                // Сохраняем выбранную игру
+                localStorage.setItem('selectedGame', gameName);
+                
+                // Для мобильных устройств добавляем вибрацию
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(50);
+                }
+                
+                // Задержка для плавности анимации
+                setTimeout(() => {
+                    window.location.href = `games/${gameName}/index.html`;
+                }, 300);
+            }
+        }
+
+        // Оптимизация для мобильных устройств
+        document.addEventListener('DOMContentLoaded', function() {
+            // Адаптивная сетка игр
+            function adjustGrid() {
+                const grid = document.querySelector('.games-grid');
+                if (window.innerWidth < 768) {
+                    grid.style.gridTemplateColumns = '1fr';
+                } else if (window.innerWidth < 1024) {
+                    grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                } else {
+                    grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                }
+            }
+            
+            adjustGrid();
+            window.addEventListener('resize', adjustGrid);
+            
+            // Анимация карточек
             const cards = document.querySelectorAll('.game-card');
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', () => {
-                    if (!card.classList.contains('coming-soon')) {
-                        card.style.transform = 'translateY(-4px) scale(1.02)';
-                    }
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                
+                // Добавляем тач-эффекты для мобильных
+                card.addEventListener('touchstart', function() {
+                    this.style.transform = 'translateY(-2px)';
                 });
                 
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = 'translateY(0) scale(1)';
+                card.addEventListener('touchend', function() {
+                    this.style.transform = 'translateY(0)';
                 });
             });
+            
+            // Сохраняем размер вьюпорта для мобильных
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            
+            window.addEventListener('resize', () => {
+                let vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            });
+            
+            // Проверка поддержки PWA
+            if ('serviceWorker' in navigator) {
+                console.log('Service Worker поддерживается');
+            }
+            
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('Запущено как PWA');
+                document.body.classList.add('pwa-mode');
+            }
         });
     </script>
 </body>
