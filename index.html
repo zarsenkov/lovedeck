@@ -3,502 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👫 LoveCouple | Игра для вашей пары</title>
-    <!-- PWA настройки -->
-    <link rel="manifest" href="/manifest.json">
+    <title>LoveCouple | Карточки для пар</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ff4d6d">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="LoveCouple">
-
-    <!-- Service Worker -->
-    <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js')
-                .then(function(registration) {
-                    console.log('Service Worker зарегистрирован');
-                })
-                .catch(function(error) {
-                    console.log('Ошибка Service Worker:', error);
-                });
-        });
-    }
-    </script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💖</text></svg>">
+    
+    <!-- Стили -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Шрифт -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- КНОПКА ОНЛАЙН-РЕЖИМА -->
-    <a href="online.html" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 24px;
-    background: linear-gradient(45deg, #2196F3, #21CBF3);
-    color: white;
-    text-decoration: none;
-    border-radius: 25px;
-    font-weight: bold;
-    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-    z-index: 1000;
-    transition: transform 0.3s;
-">
-    🌐 Играть онлайн
-</a>
-    <!-- Экран загрузки с цитатой -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-content">
-            <div class="loading-logo">👩‍❤️‍💋‍👨</div>
-            <div class="loading-title">LoveCouple</div>
-            <div class="loading-quote" id="loadingQuote">
-                <!-- Цитата появится здесь -->
-            </div>
-            <div class="loading-bar">
-                <div class="loading-progress"></div>
-            </div>
-            <div class="loading-hint">Настраиваем сердца...</div>
+<!-- Экран загрузки -->
+<div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+        <div class="loading-heart">💖</div>
+        <h1>LoveCouple</h1>
+        <p class="loading-quote" id="loading-quote">Загружаем романтику...</p>
+        
+        <!-- Добавляем полосу загрузки -->
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
         </div>
+        
+        <p class="loading-hint">Подготавливаем карточки...</p>
     </div>
-    
-    <div class="container">
+</div>
+
+    <!-- Основное приложение -->
+    <div class="app-container">
         <!-- Шапка -->
         <header class="header">
-            <div class="logo">
-                <div class="logo-icon">👩‍❤️‍💋‍👨</div>
-                <div class="logo-text">LoveCouple</div>
+            <div class="logo" onclick="location.reload()">
+                <span class="logo-icon">👩‍❤️‍💋‍👨</span>
+                <span class="logo-text">LoveCouple</span>
             </div>
-            <div class="header-buttons">
-                <button id="settingsBtn" class="icon-button" title="Настройки">⚙️</button>
-                <button id="aboutBtn" class="icon-button" title="О проекте">ℹ️</button>
-            </div>
+            
+<div class="header-buttons">
+    <button class="header-btn" onclick="showStats()" title="Статистика">📊</button>
+    <button class="header-btn" onclick="window.open('https://lovecouple.ru/friends/', '_blank')" title="Для компаний">👥</button>
+    <button class="header-btn" onclick="window.open('https://lovecouple.ru/online.html', '_blank')" title="Онлайн игра">🌐</button>
+    <button class="header-btn" onclick="window.open('https://t.me/LoveCouple_news', '_blank')" title="Telegram">📢</button>
+</div>
         </header>
 
-        <!-- ЭКРАН МЕНЮ -->
-        <div id="menu" class="screen active">
-            <div class="welcome-section">
-                <h1 class="welcome-title">LoveCouple</h1>
-                <p class="welcome-subtitle">Для вас двоих ❣️</p>
-                
-<div class="profiles-improved">
-    <h3 class="profiles-title">👥 Ваши имена</h3>
-    <p class="profiles-hint">Используются в карточках для персонализации</p>
-    
-    <div class="names-inputs">
-        <div class="name-input-group">
-            <label class="name-label">Первый участник</label>
-            <input type="text" id="userNameInput" class="name-input" 
-                   placeholder="Например: Алекс" maxlength="20">
-        </div>
-        
-        <div class="heart-between">❤️</div>
-        
-        <div class="name-input-group">
-            <label class="name-label">Второй участник</label>
-            <input type="text" id="partnerNameInput" class="name-input" 
-                   placeholder="Например: Мария" maxlength="20">
-        </div>
-    </div>
-    
-    <div class="names-example">
-        <span class="example-text">Будет в карточках:</span>
-        <span class="example-card">"<span id="name1Example">Алекс</span>, какой момент самый романтичный?"</span>
-    </div>
-</div>
-                
-                <div class="selection-info" id="selectionInfo">
-                    Выберите настроение и тип карточек
-                </div>
-            </div>
-
-            <!-- Выбор настроения -->
-            <div class="mood-section">
-                <h2 class="section-title">Выберите настроение</h2>
-<div class="modes-grid">
-    <button class="mode-button" data-mode="Пикантное 🔥">
-        <span class="mode-emoji">🔥</span>
-        Пикантное
-    </button>
-    <button class="mode-button" data-mode="Экстрим ⚡">
-        <span class="mode-emoji">⚡</span>
-        Экстрим
-    </button>
-    <button class="mode-button" data-mode="Романтика 💖">
-        <span class="mode-emoji">💖</span>
-        Романтика
-    </button>
-    <button class="mode-button" data-mode="Веселье 😄">
-        <span class="mode-emoji">😄</span>
-        Веселье
-    </button>
-    <button class="mode-button" data-mode="Задумчивое 🤔">
-        <span class="mode-emoji">🤔</span>
-        Задумчивое
-    </button>
-</div>
-            </div>
-
-            <!-- Выбор типа карточек -->
-            <div class="type-section">
-                <h2 class="section-title">Выберите тип карточек</h2>
-                <div class="types-grid">
-                    <button class="type-button select" data-type="вопросы">
-                        <span class="type-emoji">💬</span>
-                        Вопросы
-                    </button>
-                    <button class="type-button select" data-type="действия">
-                        <span class="type-emoji">🔥</span>
-                        Действия
-                    </button>
-                    <button class="type-button select" data-type="свидания">
-                        <span class="type-emoji">🌹</span>
-                        Свидания
-                    </button>
-                    <button class="type-button select" data-type="random">
-                        <span class="type-emoji">🎲</span>
-                        Случайно
-                    </button>
-                            <button class="type-button" id="addCustomCardBtn" style="background: linear-gradient(135deg, #ffd166, #ffb347);">
-            <span class="type-emoji">✨</span>
-            + Своя карточка
-        </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ЭКРАН ИГРЫ -->
-        <div id="game" class="screen">
-            <div class="game-container">
-                <!-- Карточка -->
+        <main class="main">
+            <!-- Экран 1: Ввод имен -->
+            <div id="screen-names" class="screen active">
                 <div class="card">
+                    <h2>👋 Давайте познакомимся!</h2>
+                    <p class="subtitle">Введите ваши имена для персонализации карточек</p>
+                    
+                    <div class="names-inputs">
+                        <div class="name-group">
+                            <input type="text" id="name1" placeholder="Твоё имя" maxlength="20">
+                            <label for="name1">Первый партнёр</label>
+                        </div>
+                        
+                        <div class="heart-between">❤️</div>
+                        
+                        <div class="name-group">
+                            <input type="text" id="name2" placeholder="Имя партнёра" maxlength="20">
+                            <label for="name2">Второй партнёр</label>
+                        </div>
+                    </div>
+                    
+                    <div class="example">
+                        <small>Пример: "<span id="name-example">Алекс</span>, какой наш лучший момент?"</small>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="saveNames()">Начать игру</button>
+                </div>
+            </div>
+
+            <!-- Экран 2: Выбор темы -->
+            <div id="screen-theme" class="screen">
+                <div class="card">
+                    <h2>🎭 Выберите тему</h2>
+                    <p class="subtitle">Какую игру хотите сегодня?</p>
+                    
+                    <div class="themes">
+                        <button class="theme-btn" onclick="selectTheme('romance')">
+                            <span class="theme-emoji">💖</span>
+                            <span class="theme-name">Романтика</span>
+                            <small>Нежные вопросы</small>
+                        </button>
+                        
+                        <button class="theme-btn" onclick="selectTheme('fun')">
+                            <span class="theme-emoji">😄</span>
+                            <span class="theme-name">Весёлое</span>
+                            <small>Смех и игры</small>
+                        </button>
+                        
+                        <button class="theme-btn adult" onclick="selectTheme('adult')">
+                            <span class="theme-emoji">🔥</span>
+                            <span class="theme-name">18+</span>
+                            <small>Только для взрослых</small>
+                        </button>
+                        
+                        <button class="theme-btn" onclick="selectTheme('dates')">
+                            <span class="theme-emoji">🗺️</span>
+                            <span class="theme-name">Свидания</span>
+                            <small>Идеи для встреч</small>
+                        </button>
+                    </div>
+                    
+                    <div class="back-buttons">
+                        <button class="btn-secondary" onclick="goToScreen('screen-names')">
+                            ← Изменить имена
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Экран 3: Игра -->
+            <div id="screen-game" class="screen">
+                <!-- Карточка -->
+                <div class="game-card">
                     <div class="card-header">
-                        <div class="card-type" id="typeLabel">💬 Вопрос</div>
-                        <div class="card-mode" id="modeLabel">Настроение: Романтика</div>
+                        <div class="card-type" id="card-type">💬 Вопрос</div>
+                        <div class="card-theme" id="card-theme">Тема: Романтика</div>
                     </div>
+                    
                     <div class="card-body">
-                        <div class="card-text" id="cardText">
-                            Здесь появится ваша карточка...
+                        <div class="card-text" id="card-text">
+                            Нажмите "Новая карточка", чтобы начать игру!
                         </div>
+                        
+                        <!-- Детали для мест -->
+<div class="card-details" id="card-details" style="display: none;">
+    <div class="detail-row">
+        <span class="detail-label">📍 Где:</span>
+        <span class="detail-value" id="detail-location">-</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">💰 Бюджет:</span>
+        <span class="detail-value" id="detail-budget">-</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">💡 Совет:</span>
+        <span class="detail-value" id="detail-tip">-</span>
+    </div>
+</div>
                     </div>
+                    
                     <div class="card-footer">
-                        <div class="card-counter" id="progress">Карточка #1</div>
-                        <div class="card-timer" id="timer">⏱️</div>
+                        <div class="card-counter" id="card-counter">Карточка #0</div>
+                        <div class="card-timer" id="card-timer">⏱️</div>
                     </div>
                 </div>
+                
+<!-- Кнопки управления -->
+<div class="game-buttons">
+    <button class="btn-next" onclick="nextCard()" id="btn-next">
+        🎲 Новая карточка
+    </button>
+    
+    <button class="btn-favorite" onclick="toggleFavorite()" id="btn-favorite" title="В избранное">
+        ☆
+    </button>
+</div>
+                
+<!-- Дополнительные кнопки -->
+<div class="extra-buttons">
+    <button class="btn-extra" onclick="startTimer(5)">
+        ⏱️ Таймер 5 мин
+    </button>
+    <button class="btn-extra" onclick="createCustomCard()">
+        ✨ Создать карточку
+    </button>
+    <button class="btn-extra" onclick="showMyCards()">
+        📝 Мои карточки
+    </button>
+    <button class="btn-extra" onclick="showFavorites()">
+        ⭐ Избранное
+    </button>
+</div>
 
-                <!-- Основные кнопки управления -->
-                <div class="game-controls">
-                    <button id="backBtn" class="control-button back-button">
-                        ← Меню
-                    </button>
-                    <button id="doneBtn" class="control-button done-button" style="display: none;">
-                        ✅ Выполнено
-                    </button>
-                    <button id="nextBtn" class="control-button next-button">
-                        Дальше →
-                    </button>
-                </div>
+<div class="back-buttons">
+    <button class="btn-secondary" onclick="goToScreen('screen-theme')">
+        ← Выбрать другую тему
+    </button>
+</div>
 
-                <!-- Дополнительные кнопки -->
-                <div class="extra-controls">
-                    <button id="saveBtn" class="extra-button" title="Сохранить в избранное">💾</button>
-                    <button id="timerBtn" class="extra-button" title="Запустить таймер">⏱️</button>
-                    <button id="complimentBtn" class="extra-button" title="Случайный комплимент">💝</button>
-                    <button id="challengeBtn" class="extra-button" title="Интимный челлендж">🎯</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Плавающие кнопки -->
-    <div class="floating-buttons">
-        <button id="favoritesBtn" class="floating-button" title="Избранное">⭐</button>
-        <button id="myCardsBtn" class="floating-button" title="Мои карточки">✨</button>
-    </div>
-
-    <!-- МОДАЛЬНЫЕ ОКНА -->
-
-    <!-- Статистика -->
-    <div id="statsModal" class="modal">
+    <!-- Модальные окна -->
+    <div id="modal-stats" class="modal">
         <div class="modal-content">
-            <h2 class="modal-title">📊 Статистика</h2>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value" id="statTotal">0</div>
-                    <div class="stat-label">Всего карточек</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="statQuestions">0</div>
-                    <div class="stat-label">Вопросов</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="statActions">0</div>
-                    <div class="stat-label">Действий</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="statDates">0</div>
-                    <div class="stat-label">Свиданий</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="statSecrets">0</div>
-                    <div class="stat-label">Секретов</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="statCompleted">0</div>
-                    <div class="stat-label">Выполнено</div>
-                </div>
+            <h2>📊 Ваша статистика</h2>
+            <div class="stats-grid" id="stats-content">
+                <!-- Заполнится JavaScript -->
             </div>
-            <div class="modal-buttons">
-                <button id="resetStats" class="danger-button">Сбросить статистику</button>
-                <button id="closeStats" class="primary-button">Закрыть</button>
-            </div>
+            <button class="btn-primary" onclick="closeModal('modal-stats')">Закрыть</button>
         </div>
     </div>
-
-    <!-- Настройки -->
-    <div id="settingsModal" class="modal">
+    
+    <div id="modal-favorites" class="modal">
         <div class="modal-content">
-            <h2 class="modal-title">⚙️ Настройки</h2>
-            <div class="setting-item">
-                <label class="setting-label">
-                    <input type="checkbox" id="soundToggle" class="setting-checkbox">
-                    Включить звуки
-                </label>
+            <h2>⭐ Избранные карточки</h2>
+            <div class="favorites-list" id="favorites-list">
+                <!-- Заполнится JavaScript -->
             </div>
-            <div class="setting-item">
-                <label class="setting-label">
-                    <input type="checkbox" id="notificationsToggle" class="setting-checkbox">
-                    Уведомления
-                </label>
-            </div>
-            <div class="setting-item">
-                <label class="setting-label">
-                    Таймер для действий (минут):
-                    <input type="number" id="timerSetting" class="setting-input" min="1" max="10" value="2">
-                </label>
-            </div>
-            <div class="modal-buttons">
-                <button id="closeSettings" class="primary-button">Сохранить</button>
-            </div>
+            <button class="btn-primary" onclick="closeModal('modal-favorites')">Закрыть</button>
         </div>
     </div>
-
-<!-- Избранное -->
-<div id="favoritesModal" class="modal">
-    <div class="modal-content">
-        <h2 class="modal-title">⭐ Избранные карточки</h2>
-        
-        <!-- Простой список без фильтров -->
-        <div class="favorites-list" id="favoritesList">
-            <div class="empty-message">
-                Нет избранных карточек<br>
-                Нажимайте 💾 на карточках, чтобы добавить их сюда!
-            </div>
-        </div>
-        
-        <div class="modal-buttons">
-            <button id="closeFavorites" class="primary-button">Закрыть</button>
-            <button id="clearAllFavorites" class="secondary-button">🗑️ Очистить всё</button>
-        </div>
-    </div>
-</div>
-
-    <!-- Модалка комплимента -->
-    <div id="complimentModal" class="modal">
+    
+    <div id="modal-custom" class="modal">
         <div class="modal-content">
-            <h2 class="modal-title">💝 Комплимент для партнёра</h2>
-            <div class="compliment-content">
-                <div class="compliment-emoji">💖</div>
-                <div class="compliment-text" id="complimentText">
-                    Загрузка комплимента...
-                </div>
-                <div class="compliment-hint">
-                    Нажмите на комплимент, чтобы скопировать
-                </div>
-            </div>
-            <div class="modal-buttons">
-                <button id="newCompliment" class="primary-button">🎲 Новый комплимент</button>
-                <button id="closeCompliment" class="secondary-button">Закрыть</button>
+            <h2>✨ Создать свою карточку</h2>
+            <div class="custom-form">
+                <select id="custom-theme" class="custom-select">
+                    <option value="romance">💖 Романтика</option>
+                    <option value="fun">😄 Весёлое</option>
+                    <option value="adult">🔥 18+</option>
+                    <option value="dates">🗺️ Свидания</option>
+                </select>
+                
+                <select id="custom-type" class="custom-select">
+                    <option value="question">💬 Вопрос</option>
+                    <option value="action">🎯 Действие</option>
+                </select>
+                
+                <textarea id="custom-text" placeholder="Напишите текст карточки..." maxlength="200"></textarea>
+                <div class="char-count"><span id="char-counter">0</span>/200</div>
+                
+                <button class="btn-primary" onclick="saveCustomCard()">💾 Сохранить</button>
+                <button class="btn-secondary" onclick="closeModal('modal-custom')">Отмена</button>
             </div>
         </div>
     </div>
 
-<!-- О проекте -->
-<div id="aboutModal" class="modal">
-    <div class="modal-content">
-        <h2 class="modal-title">ℹ️ О LoveCouple</h2>
-        
-        <div class="about-sections">
-            <!-- Цель -->
-            <div class="about-section">
-                <h3 class="about-subtitle">🎯 Цель</h3>
-                <p>Помогать парам укреплять отношения через простые вопросы и действия.</p>
-            </div>
-            
-            <!-- Как играть -->
-            <div class="about-section">
-                <h3 class="about-subtitle">🎮 Как играть</h3>
-                <ol class="about-list">
-                    <li>Введите ваши имена</li>
-                    <li>Выберите настроение</li>
-                    <li>Выберите тип карточек</li>
-                    <li>Отвечайте на вопросы или выполняйте действия</li>
-                </ol>
-            </div>
-            
-            <!-- Особенности -->
-            <div class="about-section">
-                <h3 class="about-subtitle">✨ Особенности</h3>
-                <ul class="about-list">
-                    <li>Без регистрации</li>
-                    <li>Работает оффлайн</li>
-                    <li>Простой и понятный интерфейс</li>
-                    <li>Бесплатно навсегда</li>
-                </ul>
-            </div>
-            
-            <!-- Поддержать проект -->
-            <div class="about-section">
-                <h3 class="about-subtitle">❤️ Поддержать проект</h3>
-                <div class="support-options">
-                    <div class="support-option">
-                        <div class="support-icon">💳</div>
-                        <div class="support-text">
-                            <strong>Донатная система</strong>
-                            <div class="support-details">Позже появится</div>
-                        </div>
-                    </div>
-                    <div class="support-option">
-                        <div class="support-icon">🤝</div>
-                        <div class="support-text">
-                            <strong>Другие способы</strong>
-                            <div class="support-details">Напишите — обсудим</div>
-                        </div>
-                    </div>
-                </div>
-                <p class="support-note">Любая поддержка помогает развивать проект!</p>
-            </div>
-            
-            <!-- Связаться -->
-            <div class="about-section">
-                <h3 class="about-subtitle">📮 Связаться</h3>
-                <div class="contact-info">
-                    <p><strong>Для идей и предложений:</strong></p>
-                    <div class="contact-details">
-                        <p>✉️ Telegram: <a href="https://t.me/LoveCouple_news" target="_blank" class="contact-link">LoveCouple_news</a></p>
-                        <p>📧 Email: <a href="-" class="contact-link">-</a></p>
-                    </div>
-                    <p class="contact-note">Открыт для предложений по улучшению!</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="about-footer">
-            <p class="about-version">Версия 1.4.0 • Сделано с ❤️ для пар</p>
-        </div>
-        
-        <div class="modal-buttons">
-            <button id="closeAbout" class="primary-button">Закрыть</button>
-        </div>
-    </div>
-</div>
+    <!-- Уведомления -->
+    <div id="notification" class="notification"></div>
 
-<!-- Модалка для просмотра своих карточек -->
-<div id="myCardsModal" class="modal">
-    <div class="modal-content">
-        <h2 class="modal-title">✨ Мои карточки</h2>
-        
-        <!-- Статистика сверху -->
-        <div class="custom-cards-stats" id="customCardsStats">
-            <div class="stat-item">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Всего</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Вопросов</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Действий</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Свиданий</div>
-            </div>
-        </div>
-        
-        <!-- Список карточек -->
-        <div class="my-cards-list" id="myCardsList">
-            <div class="empty-message">
-                У вас пока нет своих карточек<br>
-                Нажмите "+ Своя карточка" в меню, чтобы добавить первую! ✨
-            </div>
-        </div>
-        
-        <div class="modal-buttons">
-            <button id="exportCards" class="secondary-button">📥 Экспорт</button>
-            <button id="closeMyCards" class="primary-button">Закрыть</button>
-        </div>
-    </div>
-</div>
-
-<!-- Модалка для создания своей карточки -->
-<div id="customCardModal" class="modal">
-    <div class="modal-content">
-        <h2 class="modal-title">✨ Создать свою карточку</h2>
-        
-        <div class="custom-card-form">
-            <!-- Выбор режима -->
-            <div class="form-group">
-                <label class="form-label">Режим:</label>
-                <div class="mode-selector">
-                    <button class="mode-option active" data-mode="Пикантное 🔥">🔥 Пикантное</button>
-                    <button class="mode-option" data-mode="Экстрим ⚡">⚡ Экстрим</button>
-                    <button class="mode-option" data-mode="Романтика 💖">💖 Романтика</button>
-                    <button class="mode-option" data-mode="Веселье 😄">😄 Веселье</button>
-                    <button class="mode-option" data-mode="Задумчивое 🤔">🤔 Задумчивое</button>
-                </div>
-            </div>
-            
-            <!-- Выбор типа -->
-            <div class="form-group">
-                <label class="form-label">Тип карточки:</label>
-                <div class="type-selector">
-                    <button class="type-option active" data-type="вопросы">💬 Вопрос</button>
-                    <button class="type-option" data-type="действия">🔥 Действие</button>
-                    <button class="type-option" data-type="свидания">🌹 Свидание</button>
-                </div>
-            </div>
-            
-<!-- Текст карточки -->
-<div class="form-group">
-    <label class="form-label">Текст карточки:</label>
-    <textarea id="customCardText" placeholder="Напишите ваш вопрос, задание или идею для свидания..." maxlength="300"></textarea>
-    <div class="char-counter">
-        <span id="customCharCount">0</span>/300 символов
-    </div>
-</div>
-            
-            <!-- Подсказки -->
-            <div class="form-hints">
-                <div class="hint-item">💡 Совет: Пишите так, как говорите друг другу</div>
-                <div class="hint-item">🎯 Идея: Добавьте ваши личные шутки или воспоминания</div>
-                <div class="hint-item">✨ Подсказка: Можно создать карточку для особого случая</div>
-            </div>
-        </div>
-        
-        <div class="modal-buttons">
-            <button id="saveCustomCard" class="primary-button">💾 Сохранить карточку</button>
-            <button id="closeCustomCard" class="secondary-button">✖️ Отмена</button>
-        </div>
-    </div>
-</div>
-
-<!-- Подключаем отдельный файл для управления карточками -->
-<script src="custom_cards.js"></script>
-
+    <!-- Скрипты -->
     <script src="app.js"></script>
-    <script src="custom_cards.js"></script>
+    <script src="cards.js"></script>
 </body>
 </html>
-
