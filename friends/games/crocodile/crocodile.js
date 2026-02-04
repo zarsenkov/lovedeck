@@ -759,3 +759,158 @@ function getModeName(mode) {
     };
     return names[mode] || mode;
 }
+// Инициализация PWA
+function initPWA() {
+    // Проверка поддержки Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('../../sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker зарегистрирован:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('Ошибка регистрации ServiceWorker:', error);
+                });
+        });
+    }
+    
+    // Предотвращение масштабирования на мобильных
+    document.addEventListener('touchmove', function(e) {
+        if(e.scale !== 1) e.preventDefault();
+    }, { passive: false });
+    
+    // Предотвращение контекстного меню на длинный тап
+    document.addEventListener('contextmenu', function(e) {
+        if (window.innerWidth <= 768) {
+            e.preventDefault();
+        }
+    });
+    
+    // Фикс для iOS 100vh
+    function setVH() {
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+    
+    // Добавление класса для тач-устройств
+    if ('ontouchstart' in window || navigator.maxTouchPoints) {
+        document.body.classList.add('touch-device');
+    }
+}
+
+// Добавить обработчики тапов для мобильных
+function addMobileTouchEvents() {
+    // Для всех интерактивных элементов добавляем класс для анимации тапа
+    const interactiveElements = document.querySelectorAll(
+        'button, .category-btn, .difficulty-btn, .mode-btn, .timer-preset, .control-btn, .menu-item'
+    );
+    
+    interactiveElements.forEach(element => {
+        element.addEventListener('touchstart', function() {
+            this.classList.add('mobile-tap-feedback');
+        });
+        
+        element.addEventListener('touchend', function() {
+            this.classList.remove('mobile-tap-feedback');
+        });
+        
+        element.addEventListener('touchcancel', function() {
+            this.classList.remove('mobile-tap-feedback');
+        });
+    });
+    
+    // Предотвращение двойного тапа для масштабирования
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+}
+
+// Оптимизация клавиатуры для мобильных
+function optimizeMobileKeyboard() {
+    const textarea = document.getElementById('customWordsInput');
+    if (textarea) {
+        // Автофокус с задержкой для мобильных
+        textarea.addEventListener('focus', function() {
+            setTimeout(() => {
+                this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        });
+        
+        // Скрытие клавиатуры при нажатии вне поля
+        document.addEventListener('click', function(e) {
+            if (e.target !== textarea && !textarea.contains(e.target)) {
+                textarea.blur();
+            }
+        });
+    }
+}
+
+// Обновить функцию initGame() - добавить в начало:
+function initGame() {
+    initPWA(); // Добавить эту строку
+    addMobileTouchEvents(); // Добавить эту строку
+    optimizeMobileKeyboard(); // Добавить эту строку
+    
+    // Остальной существующий код...
+    initCategories();
+    initTimer();
+    loadWords();
+    loadSettings();
+}
+
+// Добавить проверку ориентации экрана
+function checkOrientation() {
+    if (window.innerWidth < window.innerHeight && window.innerWidth < 768) {
+        // Вертикальная ориентация на мобильных
+        document.body.classList.add('portrait');
+        document.body.classList.remove('landscape');
+    } else {
+        document.body.classList.add('landscape');
+        document.body.classList.remove('portrait');
+    }
+}
+
+// Вызывать при загрузке и изменении размера
+window.addEventListener('load', checkOrientation);
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', function() {
+    setTimeout(checkOrientation, 100);
+});
+
+// Добавить CSS классы для портретной/ландшафтной ориентации
+const style = document.createElement('style');
+style.textContent = `
+    body.portrait .game-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    body.landscape .game-stats {
+        grid-template-columns: repeat(6, 1fr);
+    }
+    
+    @media (max-height: 500px) and (orientation: landscape) {
+        .word-display {
+            min-height: 100px;
+            padding: 10px;
+        }
+        
+        .word-display h2 {
+            font-size: 1.4rem;
+        }
+        
+        .game-controls {
+            padding: 10px;
+        }
+    }
+`;
+document.head.appendChild(style);
+
