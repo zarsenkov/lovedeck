@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoveCouple: Игры для друзей</title>
+    <meta name="description" content="Современные игры для компании: Бункер, Шпион, Крокодил, Алиас, Мафия и другие">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <header class="main-header">
+            <div class="header-content">
+                <h1 class="header-title">
+                    <i class="fas fa-sparkles"></i> LoveCouple Friends
+                </h1>
+                <p class="header-subtitle">
+                    Современные игры для вашей компании. Красиво, удобно, без рекламы.
+                </p>
+            </div>
+        </header>
+
+        <!-- Сетка игр -->
+        <main class="games-grid">
+            <!-- Кто я? -->
+            <div class="game-card" onclick="loadGame('whoami')">
+                <div class="game-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Кто я?</h3>
+                <p>Веселая игра для компании, попытайтесь угадать, что вы за персонаж, предмет или явление</p>
+                <div class="game-meta">
+                    <span><i class="fas fa-users"></i> 4-8 игроков</span>
+                    <span><i class="fas fa-clock"></i> 20-40 мин</span>
+                </div>
+                <button class="play-btn">
+                    <i class="fas fa-play"></i> Начать игру
+                </button>
+            </div>
+
+            <!-- Шпион -->
+            <div class="game-card" onclick="loadGame('spy')">
+                <div class="game-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                    <i class="fas fa-user-secret"></i>
+                </div>
+                <h3>Шпион</h3>
+                <p>Найди шпиона среди друзей! Блеф, дедукция и напряженные обсуждения.</p>
+                <div class="game-meta">
+                    <span><i class="fas fa-users"></i> 3-8 игроков</span>
+                    <span><i class="fas fa-clock"></i> 10-25 мин</span>
+                </div>
+                <button class="play-btn">
+                    <i class="fas fa-play"></i> Начать игру
+                </button>
+            </div>
+
+            <!-- Крокодил -->
+            <div class="game-card" onclick="loadGame('crocodile')">
+                <div class="game-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <i class="fas fa-hand-sparkles"></i>
+                </div>
+                <h3>Крокодил</h3>
+                <p>Объясняй слова без слов! Жесты, мимика и безудержный смех гарантированы.</p>
+                <div class="game-meta">
+                    <span><i class="fas fa-users"></i> 2-∞ игроков</span>
+                    <span><i class="fas fa-clock"></i> 5-30 мин</span>
+                </div>
+                <button class="play-btn">
+                    <i class="fas fa-play"></i> Начать игру
+                </button>
+            </div>
+
+            <!-- Алиас -->
+            <div class="game-card" onclick="loadGame('alias')">
+                <div class="game-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3>Алиас</h3>
+                <p>Объясняй слова другими словами. Скорость, сообразительность и веселье.</p>
+                <div class="game-meta">
+                    <span><i class="fas fa-users"></i> 4+ игроков</span>
+                    <span><i class="fas fa-clock"></i> 15-45 мин</span>
+                </div>
+                <button class="play-btn">
+                    <i class="fas fa-play"></i> Начать игру
+                </button>
+            </div>
+
+            <!-- ДАНЕТКИ -->
+            <div class="game-card" onclick="loadGame('danetki')">
+                <div class="game-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                    <i class="fas fa-mask"></i>
+                </div>
+                <h3>ДАНЕТКИ</h3>
+                <p>Угадай, что произошло дальше?</p>
+                <div class="game-meta">
+                    <span><i class="fas fa-users"></i> 6-15 игроков</span>
+                    <span><i class="fas fa-clock"></i> 20-60 мин</span>
+                </div>
+                <button class="play-btn">
+                    <i class="fas fa-play"></i> Начать игру
+                </button>
+            </div>
+
+           <!-- Викторина -->
+            <div class="game-card" onclick="loadGame('quiz')">
+                <div class="game-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                    <i class="fas fa-mask"></i>
+                </div>
+                <h3>Викторина</h3>
+                <p>Проверьте свои знания в 7 категориях. 3 уровня сложности, достижения!</p>
+                <div class="game-meta">
+                    <span><i class="fas fa-users"></i> 1-6 игроков</span>
+                    <span><i class="fas fa-clock"></i> 20-60 мин</span>
+                </div>
+                <button class="play-btn">
+                    <i class="fas fa-play"></i> Начать игру
+                </button>
+            </div>
+        </main>
+
+        <!-- Футер -->
+        <footer class="main-footer">
+            <p>© 2024 LoveCouple Game Studio. Все игры созданы с ❤️ для вашей компании.</p>
+            <div class="footer-links">
+                <a href="https://lovecouple.ru">Основная игра</a>
+                <a href="#">Правила игр</a>
+                <a href="#">Контакты</a>
+                <a href="#">Поддержка</a>
+            </div>
+            <div class="social-links">
+                <a href="#" title="Telegram"><i class="fab fa-telegram"></i></a>
+                <a href="#" title="VK"><i class="fab fa-vk"></i></a>
+                <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Загрузка игры
+        function loadGame(gameName) {
+            // Сохраняем в localStorage
+            localStorage.setItem('selectedGame', gameName);
+            
+            // Показываем loading state
+            const btn = event.target.closest('.play-btn') || event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+            btn.disabled = true;
+            
+            // Переход через секунду (для плавности)
+            setTimeout(() => {
+                window.location.href = `games/${gameName}/index.html`;
+            }, 500);
+        }
+
+        // Анимация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            // Плавное появление контента
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.5s ease';
+                document.body.style.opacity = '1';
+            }, 100);
+            
+            // Добавляем hover-эффекты для карточек
+            const cards = document.querySelectorAll('.game-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    if (!card.classList.contains('coming-soon')) {
+                        card.style.transform = 'translateY(-4px) scale(1.02)';
+                    }
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
