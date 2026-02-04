@@ -43,9 +43,39 @@ class AliasGame {
         this.renderTeams();
         this.updateDisplay();
         
+        // Инициализация PWA
+        this.initPWA();
+        
         // Сохраняем контекст для обработчиков событий
         this.handleKeyPress = this.handleKeyPress.bind(this);
         document.addEventListener('keydown', this.handleKeyPress);
+    }
+    
+    initPWA() {
+        // Проверка PWA и добавление индикатора мобильной версии
+        if (window.matchMedia('(display-mode: standalone)').matches || 
+            window.navigator.standalone ||
+            document.referrer.includes('android-app://')) {
+            document.body.classList.add('pwa-mode');
+        }
+        
+        // Добавляем класс для мобильных устройств
+        if ('ontouchstart' in window || navigator.maxTouchPoints) {
+            document.body.classList.add('touch-device');
+        }
+        
+        // Определение типа устройства
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            document.body.classList.add('mobile-device');
+            
+            // Автоматические настройки для мобильных
+            if (!localStorage.getItem('aliasMobileSettingsSet')) {
+                this.settings.timePerRound = 90; // Больше времени на мобильных
+                this.saveSettings();
+                localStorage.setItem('aliasMobileSettingsSet', 'true');
+            }
+        }
     }
     
     loadSettings() {
@@ -79,10 +109,25 @@ class AliasGame {
                 btn.dataset.diff === this.settings.difficulty);
         });
         
-        // Устанавливаем темы
+        // Устанавливаем темы с улучшенным стилем
         const themeSelect = document.getElementById('themeSelect');
         Array.from(themeSelect.options).forEach(option => {
             option.selected = this.settings.themes.includes(option.value);
+            
+            // Добавляем классы для стилизации
+            if (option.value === 'all') {
+                option.className = 'theme-option theme-all';
+            } else if (option.value === 'Кино и сериалы') {
+                option.className = 'theme-option theme-movies';
+            } else if (option.value === 'Еда и напитки') {
+                option.className = 'theme-option theme-food';
+            } else if (option.value === 'Путешествия') {
+                option.className = 'theme-option theme-travel';
+            } else if (option.value === 'IT и технологии') {
+                option.className = 'theme-option theme-tech';
+            } else if (option.value === 'Спорт и активность') {
+                option.className = 'theme-option theme-sport';
+            }
         });
         
         // Устанавливаем чекбоксы
@@ -144,6 +189,61 @@ class AliasGame {
             this.generateWords();
             this.saveSettings();
         });
+        
+        // Обработчики свайпов для мобильных
+        this.setupSwipeGestures();
+    }
+    
+    setupSwipeGestures() {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            if (!this.roundActive || !document.body.classList.contains('mobile-device')) return;
+            
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            if (!this.roundActive || !document.body.classList.contains('mobile-device')) return;
+            
+            const touchEndX = e.changedTouches[0].screenX;
+            const touchEndY = e.changedTouches[0].screenY;
+            
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+            
+            // Минимальная дистанция свайпа
+            if (Math.abs(diffX) < 50 && Math.abs(diffY) < 50) return;
+            
+            // Горизонтальный свайп (лево/право)
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > 0) {
+                    // Свайп вправо - угадали
+                    this.correctWord();
+                    this.showSwipeFeedback('right');
+                } else {
+                    // Свайп влево - пропустить
+                    this.skipWord();
+                    this.showSwipeFeedback('left');
+                }
+            }
+        });
+    }
+    
+    showSwipeFeedback(direction) {
+        const feedback = document.createElement('div');
+        feedback.className = `swipe-feedback swipe-${direction}`;
+        feedback.innerHTML = direction === 'right' ? 
+            '<i class="fas fa-check"></i>' : 
+            '<i class="fas fa-forward"></i>';
+        
+        document.body.appendChild(feedback);
+        
+        setTimeout(() => {
+            feedback.remove();
+        }, 500);
     }
     
     generateTeams() {
@@ -311,6 +411,11 @@ class AliasGame {
         // Обновляем интерфейс
         this.updateCurrentTeamDisplay();
         this.updateCounters();
+        
+        // Вибрация для мобильных (если разрешено)
+        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
+            navigator.vibrate(100);
+        }
     }
     
     startTimer() {
@@ -321,6 +426,15 @@ class AliasGame {
         this.timer = setInterval(() => {
             this.timeLeft--;
             this.updateTimerDisplay();
+            
+            // Вибрация при низком времени
+            if (this.timeLeft === 10 && navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+            
+            if (this.timeLeft === 5 && navigator.vibrate) {
+                navigator.vibrate([100, 100, 100]);
+            }
             
             if (this.timeLeft <= 0) {
                 this.endRound();
@@ -338,14 +452,25 @@ class AliasGame {
             // Меняем цвет при низком времени
             if (this.timeLeft <= 10) {
                 timerElement.classList.add('warning');
+                timerElement.classList.add('pulse');
             } else {
                 timerElement.classList.remove('warning');
+                timerElement.classList.remove('pulse');
             }
             
             // Обновляем прогресс-бар
             if (progressFill) {
                 const percent = (this.timeLeft / this.settings.timePerRound) * 100;
                 progressFill.style.width = `${percent}%`;
+                
+                // Меняем цвет прогресс-бара
+                if (this.timeLeft <= 10) {
+                    progressFill.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+                } else if (this.timeLeft <= 30) {
+                    progressFill.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+                } else {
+                    progressFill.style.background = 'linear-gradient(90deg, var(--primary), var(--secondary))';
+                }
             }
         }
     }
@@ -354,7 +479,18 @@ class AliasGame {
         if (!this.roundActive) return;
         
         const word = this.getNextWord();
-        document.getElementById('currentWord').textContent = word;
+        const wordDisplay = document.getElementById('currentWord');
+        
+        // Анимация смены слова
+        wordDisplay.style.opacity = '0';
+        wordDisplay.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            wordDisplay.textContent = word;
+            wordDisplay.style.opacity = '1';
+            wordDisplay.style.transform = 'translateY(0)';
+        }, 150);
+        
         this.updateCounters();
     }
     
@@ -371,6 +507,11 @@ class AliasGame {
         
         // Анимация угадывания
         this.showWordFeedback('correct');
+        
+        // Вибрация для мобильных
+        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
+            navigator.vibrate(50);
+        }
     }
     
     skipWord() {
@@ -380,6 +521,11 @@ class AliasGame {
         if (this.settings.skipLimit > 0 && 
             this.currentRound.skipsUsed >= this.settings.skipLimit) {
             this.showNotification('Лимит пропусков исчерпан!', 'warning');
+            
+            // Вибрация для уведомления
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 100, 100]);
+            }
             return;
         }
         
@@ -391,6 +537,11 @@ class AliasGame {
         this.showNextWord();
         
         this.showWordFeedback('skipped');
+        
+        // Вибрация для мобильных
+        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
+            navigator.vibrate(100);
+        }
     }
     
     wrongWord() {
@@ -408,6 +559,11 @@ class AliasGame {
         this.showNextWord();
         
         this.showWordFeedback('wrong');
+        
+        // Вибрация для мобильных
+        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
+            navigator.vibrate([200, 100, 200]);
+        }
     }
     
     showWordFeedback(type) {
@@ -418,10 +574,59 @@ class AliasGame {
         wordDisplay.classList.remove('correct', 'skipped', 'wrong');
         wordDisplay.classList.add(type);
         
+        // Создаем плавающий feedback
+        this.createFloatingFeedback(type);
+        
         // Через короткое время убираем класс
         setTimeout(() => {
             wordDisplay.classList.remove(type);
         }, 300);
+    }
+    
+    createFloatingFeedback(type) {
+        const feedback = document.createElement('div');
+        feedback.className = `floating-feedback ${type}`;
+        
+        let icon, text;
+        switch(type) {
+            case 'correct':
+                icon = '✓';
+                text = '+1 очко';
+                break;
+            case 'skipped':
+                icon = '→';
+                text = 'Пропущено';
+                break;
+            case 'wrong':
+                icon = '✗';
+                text = '-1 очко';
+                break;
+        }
+        
+        feedback.innerHTML = `<span class="feedback-icon">${icon}</span><span class="feedback-text">${text}</span>`;
+        
+        // Позиционируем относительно слова
+        const wordDisplay = document.getElementById('currentWord');
+        const rect = wordDisplay.getBoundingClientRect();
+        
+        feedback.style.position = 'fixed';
+        feedback.style.left = `${rect.left + rect.width/2}px`;
+        feedback.style.top = `${rect.top}px`;
+        feedback.style.transform = 'translate(-50%, -100%)';
+        
+        document.body.appendChild(feedback);
+        
+        // Анимация
+        setTimeout(() => {
+            feedback.style.opacity = '0';
+            feedback.style.transform = 'translate(-50%, -150%)';
+            feedback.style.transition = 'all 0.5s ease';
+        }, 100);
+        
+        // Удаляем через секунду
+        setTimeout(() => {
+            feedback.remove();
+        }, 1000);
     }
     
     endRound() {
@@ -433,6 +638,11 @@ class AliasGame {
         
         // Сохраняем статистику
         this.saveRoundStats();
+        
+        // Вибрация для завершения раунда
+        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
+            navigator.vibrate([300, 100, 300]);
+        }
         
         // Показываем экран результатов
         this.showResultsScreen();
@@ -493,10 +703,17 @@ class AliasGame {
     }
     
     newGame() {
-        if (confirm('Начать новую игу? Текущий прогресс будет потерян.')) {
-            this.resetGame();
-            this.showScreen('setupScreen');
-        }
+        this.showCustomConfirm(
+            'Начать новую игру?',
+            'Текущий прогресс будет потерян.',
+            () => {
+                this.resetGame();
+                this.showScreen('setupScreen');
+            },
+            () => {
+                // Ничего не делаем при отмене
+            }
+        );
     }
     
     resetGame() {
@@ -569,16 +786,23 @@ class AliasGame {
     }
     
     resetStatistics() {
-        if (confirm('Вы уверены, что хотите сбросить всю статистику?')) {
-            this.stats = {
-                totalGames: 0,
-                totalRounds: 0,
-                totalWords: 0,
-                rounds: []
-            };
-            this.saveStats();
-            this.showStatistics();
-        }
+        this.showCustomConfirm(
+            'Сбросить статистику?',
+            'Вся статистика будет удалена безвозвратно.',
+            () => {
+                this.stats = {
+                    totalGames: 0,
+                    totalRounds: 0,
+                    totalWords: 0,
+                    rounds: []
+                };
+                this.saveStats();
+                this.showStatistics();
+            },
+            () => {
+                // Ничего не делаем при отмене
+            }
+        );
     }
     
     showStatistics() {
@@ -673,8 +897,10 @@ class AliasGame {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
-            <span>${message}</span>
-            <button onclick="this.parentElement.remove()">&times;</button>
+            <div class="notification-content">
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+            </div>
         `;
         
         document.body.appendChild(notification);
@@ -685,6 +911,42 @@ class AliasGame {
                 notification.remove();
             }
         }, 3000);
+    }
+    
+    showCustomConfirm(title, message, onConfirm, onCancel) {
+        const modal = document.createElement('div');
+        modal.className = 'custom-confirm-modal';
+        modal.innerHTML = `
+            <div class="custom-confirm-content">
+                <h3>${title}</h3>
+                <p>${message}</p>
+                <div class="confirm-buttons">
+                    <button class="confirm-btn cancel">Отмена</button>
+                    <button class="confirm-btn confirm">Продолжить</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Обработчики кнопок
+        modal.querySelector('.confirm-btn.confirm').addEventListener('click', () => {
+            modal.remove();
+            if (onConfirm) onConfirm();
+        });
+        
+        modal.querySelector('.confirm-btn.cancel').addEventListener('click', () => {
+            modal.remove();
+            if (onCancel) onCancel();
+        });
+        
+        // Закрытие по клику на фон
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+                if (onCancel) onCancel();
+            }
+        });
     }
     
     handleKeyPress(event) {
@@ -729,9 +991,16 @@ class AliasGame {
 let game;
 
 function goToMainMenu() {
-    if (confirm('Вернуться в главное меню? Несохраненный прогресс будет потерян.')) {
-        window.location.href = '../index.html';
-    }
+    game.showCustomConfirm(
+        'Вернуться в главное меню?',
+        'Несохраненный прогресс будет потерян.',
+        () => {
+            window.location.href = 'https://lovecouple.ru/friends/';
+        },
+        () => {
+            // Ничего не делаем при отмене
+        }
+    );
 }
 
 function showRules() {
@@ -823,19 +1092,28 @@ function goBackFromStats() {
 function showWordsList() {
     if (!game || !game.roundActive) return;
     
-    const currentRound = game.currentRound;
-    let message = `Текущие слова (${currentRound.words.length}):\n\n`;
-    
-    currentRound.words.forEach((word, index) => {
-        let status = '○';
-        if (currentRound.guessed.includes(word)) status = '✓';
-        if (currentRound.skipped.includes(word)) status = '→';
-        if (currentRound.wrong.includes(word)) status = '✗';
-        
-        message += `${index + 1}. ${status} ${word}\n`;
-    });
-    
-    alert(message);
+    game.showCustomConfirm(
+        'Показать список слов?',
+        'Это может помешать игре, если участники увидят будущие слова.',
+        () => {
+            const currentRound = game.currentRound;
+            let message = `Текущие слова (${currentRound.words.length}):\n\n`;
+            
+            currentRound.words.forEach((word, index) => {
+                let status = '○';
+                if (currentRound.guessed.includes(word)) status = '✓';
+                if (currentRound.skipped.includes(word)) status = '→';
+                if (currentRound.wrong.includes(word)) status = '✗';
+                
+                message += `${index + 1}. ${status} ${word}\n`;
+            });
+            
+            alert(message);
+        },
+        () => {
+            // Ничего не делаем при отмене
+        }
+    );
 }
 
 function showStatsTab(tabName) {
@@ -875,55 +1153,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Стили для уведомлений
-    const style = document.createElement('style');
-    style.textContent = `
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: var(--radius-md);
-            background: var(--surface);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-lg);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideIn 0.3s ease;
-        }
+    // Добавляем инструкцию по PWA для мобильных
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+        navigator.serviceWorker.register('../sw.js')
+            .then(() => {
+                console.log('Service Worker зарегистрирован');
+            })
+            .catch(err => {
+                console.log('Ошибка регистрации Service Worker:', err);
+            });
+    }
+    
+    // Добавляем кнопку "Установить приложение" для мобильных
+    let deferredPrompt;
+    const installBtn = document.createElement('button');
+    installBtn.className = 'install-app-btn';
+    installBtn.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
+    installBtn.style.display = 'none';
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
         
-        .notification.info {
-            border-left: 4px solid var(--primary);
-        }
+        // Показываем кнопку через 5 секунд после загрузки
+        setTimeout(() => {
+            installBtn.style.display = 'block';
+            document.body.appendChild(installBtn);
+        }, 5000);
         
-        .notification.warning {
-            border-left: 4px solid #f59e0b;
+        installBtn.addEventListener('click', () => {
+            installBtn.style.display = 'none';
+            deferredPrompt.prompt();
+            
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Пользователь установил приложение');
+                }
+                deferredPrompt = null;
+            });
+        });
+    });
+    
+    // Проверка ориентации устройства
+    function checkOrientation() {
+        if (window.matchMedia("(orientation: portrait)").matches && 
+            document.body.classList.contains('mobile-device')) {
+            document.body.classList.add('portrait');
+            document.body.classList.remove('landscape');
+        } else if (document.body.classList.contains('mobile-device')) {
+            document.body.classList.add('landscape');
+            document.body.classList.remove('portrait');
         }
-        
-        .notification.success {
-            border-left: 4px solid #10b981;
-        }
-        
-        .notification button {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: var(--text-tertiary);
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-    `;
-    document.head.appendChild(style);
+    }
+    
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
 });
