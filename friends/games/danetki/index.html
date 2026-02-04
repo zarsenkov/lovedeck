@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Данетки | LoveCouple_Friends</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="icon" href="../favicon.ico">
+</head>
+<body>
+    <!-- Главный экран -->
+    <div id="mainScreen" class="screen active">
+        <div class="container">
+            <div class="header">
+                <a href="../index.html" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Все игры</span>
+                </a>
+                <h1><i class="fas fa-question-circle"></i> Данетки</h1>
+                <p class="subtitle">Сюжетные загадки на логику</p>
+            </div>
+
+            <div class="stats-card">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalPlayed">0</div>
+                    <div class="stat-label">Сыграно игр</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalSolved">0</div>
+                    <div class="stat-label">Разгадано</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTime">0</div>
+                    <div class="stat-label">Минут игры</div>
+                </div>
+            </div>
+
+            <div class="menu-options">
+                <div class="option-card" onclick="startGame()">
+                    <div class="option-icon">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <div class="option-content">
+                        <h3>Начать игру</h3>
+                        <p>Новая данетка со случайной сложностью</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+
+                <div class="option-card" onclick="showDifficultySelection()">
+                    <div class="option-icon">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div class="option-content">
+                        <h3>Выбрать сложность</h3>
+                        <p>Легкая, средняя или сложная</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+
+                <div class="option-card" onclick="showHistory()">
+                    <div class="option-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="option-content">
+                        <h3>История игр</h3>
+                        <p>Просмотр предыдущих загадок</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+
+                <div class="option-card" onclick="showRules()">
+                    <div class="option-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="option-content">
+                        <h3>Правила игры</h3>
+                        <p>Как играть в Данетки</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <div class="difficulty-indicator">
+                <div class="difficulty-label">Текущая сложность:</div>
+                <div class="difficulty-badges">
+                    <span class="difficulty-badge active" data-level="all">Все</span>
+                    <span class="difficulty-badge" data-level="easy">Легкая</span>
+                    <span class="difficulty-badge" data-level="medium">Средняя</span>
+                    <span class="difficulty-badge" data-level="hard">Сложная</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран выбора сложности -->
+    <div id="difficultyScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-button" onclick="showScreen('mainScreen')">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Назад</span>
+                </button>
+                <h2>Выберите сложность</h2>
+            </div>
+
+            <div class="difficulty-options">
+                <div class="difficulty-card easy" onclick="startGameWithDifficulty('easy')">
+                    <div class="difficulty-header">
+                        <i class="fas fa-seedling"></i>
+                        <h3>Легкая</h3>
+                    </div>
+                    <p>Простые загадки для новичков. Отлично подходит для знакомства с игрой.</p>
+                    <div class="difficulty-stats">
+                        <span><i class="fas fa-puzzle-piece"></i> 10 загадок</span>
+                        <span><i class="fas fa-clock"></i> ~5 мин</span>
+                    </div>
+                </div>
+
+                <div class="difficulty-card medium" onclick="startGameWithDifficulty('medium')">
+                    <div class="difficulty-header">
+                        <i class="fas fa-balance-scale"></i>
+                        <h3>Средняя</h3>
+                    </div>
+                    <p>Более сложные сюжеты. Потребует логического мышления.</p>
+                    <div class="difficulty-stats">
+                        <span><i class="fas fa-puzzle-piece"></i> 15 загадок</span>
+                        <span><i class="fas fa-clock"></i> ~10 мин</span>
+                    </div>
+                </div>
+
+                <div class="difficulty-card hard" onclick="startGameWithDifficulty('hard')">
+                    <div class="difficulty-header">
+                        <i class="fas fa-fire"></i>
+                        <h3>Сложная</h3>
+                    </div>
+                    <p>Сложные данетки для опытных игроков. Могут потребовать нестандартного мышления.</p>
+                    <div class="difficulty-stats">
+                        <span><i class="fas fa-puzzle-piece"></i> 8 загадок</span>
+                        <span><i class="fas fa-clock"></i> ~15 мин</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран игры -->
+    <div id="gameScreen" class="screen">
+        <div class="container">
+            <div class="game-header">
+                <div class="game-info">
+                    <div class="difficulty-badge-small" id="currentDifficulty">Средняя</div>
+                    <div class="game-timer">
+                        <i class="fas fa-clock"></i>
+                        <span id="timer">10:00</span>
+                    </div>
+                </div>
+                
+                <div class="game-stats">
+                    <div class="stat">
+                        <span class="stat-label">Вопросов:</span>
+                        <span class="stat-value" id="questionCount">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Подсказки:</span>
+                        <span class="stat-value" id="hintCount">3</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-content">
+                <div class="riddle-card">
+                    <div class="riddle-header">
+                        <h3>Загадка</h3>
+                        <span class="riddle-number">#<span id="riddleNumber">1</span></span>
+                    </div>
+                    <div class="riddle-text" id="riddleText">
+                        Загрузка загадки...
+                    </div>
+                </div>
+
+                <div class="answer-buttons">
+                    <button class="answer-btn yes" onclick="giveAnswer('yes')">
+                        <i class="fas fa-check"></i>
+                        Да
+                    </button>
+                    <button class="answer-btn no" onclick="giveAnswer('no')">
+                        <i class="fas fa-times"></i>
+                        Нет
+                    </button>
+                    <button class="answer-btn irrelevant" onclick="giveAnswer('irrelevant')">
+                        <i class="fas fa-minus"></i>
+                        Не важно
+                    </button>
+                </div>
+
+                <div class="questions-log" id="questionsLog">
+                    <h4>История вопросов:</h4>
+                    <div class="log-empty" id="emptyLog">
+                        <i class="fas fa-comment-alt"></i>
+                        <p>Здесь будут появляться ваши вопросы и ответы</p>
+                    </div>
+                    <div class="log-entries" id="logEntries"></div>
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <button class="control-btn hint-btn" onclick="useHint()" id="hintButton">
+                    <i class="fas fa-lightbulb"></i>
+                    Подсказка (<span id="hintsLeft">3</span>)
+                </button>
+                <button class="control-btn solve-btn" onclick="showSolution()">
+                    <i class="fas fa-eye"></i>
+                    Показать ответ
+                </button>
+                <button class="control-btn skip-btn" onclick="skipRiddle()">
+                    <i class="fas fa-forward"></i>
+                    Пропустить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран подсказки -->
+    <div id="hintScreen" class="screen overlay">
+        <div class="container">
+            <div class="hint-card">
+                <div class="hint-header">
+                    <h3><i class="fas fa-lightbulb"></i> Подсказка</h3>
+                    <button class="close-btn" onclick="closeHint()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="hint-content" id="hintContent">
+                    Загрузка подсказки...
+                </div>
+                <div class="hint-footer">
+                    <p>Подсказок осталось: <span id="remainingHints">3</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран решения -->
+    <div id="solutionScreen" class="screen">
+        <div class="container">
+            <div class="solution-header">
+                <h2><i class="fas fa-check-circle"></i> Разгадка</h2>
+                <p class="subtitle">Что произошло на самом деле</p>
+            </div>
+
+            <div class="solution-card">
+                <div class="solution-text" id="solutionText">
+                    Загрузка решения...
+                </div>
+                
+                <div class="solution-stats">
+                    <div class="solution-stat">
+                        <span class="stat-label">Вопросов задано:</span>
+                        <span class="stat-value" id="totalQuestions">0</span>
+                    </div>
+                    <div class="solution-stat">
+                        <span class="stat-label">Время решения:</span>
+                        <span class="stat-value" id="solveTime">0:00</span>
+                    </div>
+                    <div class="solution-stat">
+                        <span class="stat-label">Подсказок использовано:</span>
+                        <span class="stat-value" id="usedHints">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="solution-buttons">
+                <button class="btn primary" onclick="nextRiddle()">
+                    <i class="fas fa-forward"></i>
+                    Следующая загадка
+                </button>
+                <button class="btn secondary" onclick="showScreen('mainScreen')">
+                    <i class="fas fa-home"></i>
+                    В главное меню
+                </button>
+                <button class="btn outline" onclick="shareResult()">
+                    <i class="fas fa-share-alt"></i>
+                    Поделиться
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран истории -->
+    <div id="historyScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-button" onclick="showScreen('mainScreen')">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Назад</span>
+                </button>
+                <h2>История игр</h2>
+            </div>
+
+            <div class="history-list" id="historyList">
+                <!-- История будет загружена динамически -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран правил -->
+    <div id="rulesScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-button" onclick="showScreen('mainScreen')">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Назад</span>
+                </button>
+                <h2>Правила игры</h2>
+            </div>
+
+            <div class="rules-content">
+                <div class="rule-card">
+                    <div class="rule-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="rule-text">
+                        <h3>Что такое данетка?</h3>
+                        <p>Данетка - это сюжетная загадка, где игрокам предстоит восстановить полную картину произошедшего, задавая вопросы, на которые можно ответить только "Да", "Нет" или "Не имеет значения".</p>
+                    </div>
+                </div>
+
+                <div class="rule-card">
+                    <div class="rule-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="rule-text">
+                        <h3>Как играть?</h3>
+                        <ol>
+                            <li>Ведущий зачитывает загадку</li>
+                            <li>Игроки по очереди задают вопросы</li>
+                            <li>Ведущий отвечает только "Да", "Нет" или "Не имеет значения"</li>
+                            <li>Цель - понять, что произошло на самом деле</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="rule-card">
+                    <div class="rule-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="rule-text">
+                        <h3>Советы по игре</h3>
+                        <ul>
+                            <li>Начинайте с общих вопросов, затем переходите к деталям</li>
+                            <li>Используйте подсказки, если застряли</li>
+                            <li>Не бойтесь пропускать сложные загадки</li>
+                            <li>Работайте в команде - обсуждайте версии</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="rule-card">
+                    <div class="rule-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="rule-text">
+                        <h3>Система подсчета</h3>
+                        <p>Чем меньше вопросов и подсказок вы используете, тем больше очков получаете. Старайтесь решить загадку за минимальное время!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="notification" class="notification"></div>
+
+    <script src="../shared/utils.js"></script>
+    <script src="data.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
