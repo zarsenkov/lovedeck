@@ -587,7 +587,7 @@ function getCategoryName(category) {
         'celebrities': 'Знаменитости',
         'food': 'Еда',
         'places': 'Места',
-        'abstract': 'Абстрактные',
+        'abstract': '18+',
         'custom': 'Свои слова'
     };
     return names[category] || category;
@@ -636,4 +636,5 @@ function initPWA() {
 
 // Инициализация PWA
 document.addEventListener('DOMContentLoaded', initPWA);
+
 
