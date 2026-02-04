@@ -1,714 +1,465 @@
-/* ===== СБРОС И БАЗОВЫЕ СТИЛИ ===== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
-
 :root {
-    --primary: #8b5cf6;
-    --primary-light: #a78bfa;
-    --primary-dark: #7c3aed;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --gray: #6b7280;
-    --light-gray: #f3f4f6;
-    --white: #ffffff;
-    --black: #111827;
+    --danetki-primary: #8b5cf6;
+    --danetki-secondary: #7c3aed;
+    --danetki-accent: #f59e0b;
+    --danetki-success: #10b981;
+    --danetki-warning: #f59e0b;
+    --danetki-danger: #ef4444;
 }
 
-body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: var(--black);
-    line-height: 1.5;
-    min-height: 100vh;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    overflow-x: hidden;
-}
-
-.container {
-    max-width: 100%;
-    min-height: 100vh;
-    background: var(--white);
-    position: relative;
-    overflow: hidden;
-}
-
-/* ===== ШАПКА ===== */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.danetki-container {
+    max-width: 800px;
+    margin: 0 auto;
     padding: 1rem;
-    background: var(--white);
-    border-bottom: 1px solid var(--light-gray);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    height: 60px;
-}
-
-.back-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: var(--light-gray);
-    color: var(--gray);
-    font-size: 1.2rem;
+    min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
+    flex-direction: column;
 }
 
-.back-btn:hover {
-    background: var(--primary-light);
-    color: white;
+/* Хедер игры */
+.game-header {
+    text-align: center;
+    padding: 1.5rem 0;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 2rem;
 }
 
-.header h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin: 0;
+.game-header h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--danetki-primary), var(--danetki-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
 }
 
-.stats {
-    background: var(--light-gray);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
-    color: var(--gray);
-    font-size: 0.9rem;
+.game-header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
 }
 
-/* ===== ЭКРАНЫ ===== */
+/* Основные экраны */
 .screen {
     display: none;
-    position: absolute;
-    top: 60px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-y: auto;
-    padding-bottom: 1rem;
+    flex: 1;
+    animation: fadeIn 0.3s ease;
 }
 
 .screen.active {
     display: block;
 }
 
-/* ===== ЭКРАН МЕНЮ ===== */
-.menu-content {
-    padding: 2rem 1.5rem;
-    text-align: center;
-    max-width: 500px;
-    margin: 0 auto;
+/* Экран настроек */
+.settings-card {
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
 }
 
-.menu-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    border-radius: 50%;
+.settings-group {
+    margin-bottom: 1.5rem;
+}
+
+.settings-group h3 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-    color: white;
-    font-size: 2rem;
-}
-
-.menu-content h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: var(--black);
-}
-
-.menu-description {
-    color: var(--gray);
-    margin-bottom: 2rem;
-    font-size: 1.1rem;
-    line-height: 1.6;
-}
-
-.difficulty-selector {
-    background: var(--light-gray);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.difficulty-selector h3 {
-    margin-bottom: 1rem;
-    color: var(--black);
+    gap: 0.5rem;
 }
 
 .difficulty-buttons {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .difficulty-btn {
-    padding: 0.75rem 1.5rem;
-    border: 2px solid var(--primary-light);
-    background: var(--white);
-    border-radius: 12px;
-    color: var(--primary);
-    font-weight: 600;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    text-align: center;
 }
 
 .difficulty-btn.active {
-    background: var(--primary);
+    background: var(--danetki-primary);
     color: white;
-    border-color: var(--primary);
-}
-
-.start-btn {
-    width: 100%;
-    padding: 1.25rem;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    border: none;
-    border-radius: 16px;
-    color: white;
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-}
-
-.start-btn:hover {
+    border-color: var(--danetki-primary);
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+    box-shadow: var(--shadow-md);
 }
 
-.menu-footer {
-    color: var(--gray);
-    font-size: 0.9rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--light-gray);
-}
-
-/* ===== КАРТОЧКА ДАНЕТКИ ===== */
-.danetka-card {
-    background: var(--white);
-    border-radius: 0 0 24px 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-}
-
-.card-header {
+/* Кнопки действий */
+.action-buttons {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    background: var(--light-gray);
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.category {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.easy { background: #d1fae5; color: #065f46; }
-.medium { background: #fef3c7; color: #92400e; }
-.hard { background: #fee2e2; color: #991b1b; }
-
-.timer {
-    font-family: 'Courier New', monospace;
-    font-weight: 600;
-    color: var(--gray);
-    font-size: 1.1rem;
-}
-
-.danetka-text {
-    padding: 2rem 1.5rem;
-    font-size: 1.25rem;
-    line-height: 1.6;
-    color: var(--black);
-    min-height: 200px;
-    border-bottom: 1px solid var(--light-gray);
-}
-
-.answer-buttons {
-    display: flex;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: var(--light-gray);
-}
-
-.answer-btn {
-    flex: 1;
-    padding: 1.25rem;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.answer-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.answer-btn.yes {
-    background: linear-gradient(135deg, var(--success), #059669);
-    color: white;
-}
-
-.answer-btn.no {
-    background: linear-gradient(135deg, var(--danger), #dc2626);
-    color: white;
-}
-
-.answer-btn.irrelevant {
-    background: linear-gradient(135deg, var(--gray), #4b5563);
-    color: white;
-}
-
-/* ===== ПАНЕЛЬ УПРАВЛЕНИЯ ===== */
-.control-panel {
-    padding: 0 1.5rem;
-}
-
-.players-score {
-    background: var(--light-gray);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.players-score h3 {
-    margin-bottom: 1rem;
-    color: var(--black);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.score-display {
-    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
 }
 
-.player-score {
-    background: var(--white);
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.player-score .remove {
-    color: var(--danger);
-    background: none;
-    border: none;
+.btn {
+    padding: 1rem 2rem;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    padding: 0 0.25rem;
-}
-
-.small-btn {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px dashed var(--primary-light);
-    background: var(--white);
-    border-radius: 12px;
-    color: var(--primary);
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.2s;
-}
-
-.small-btn:hover {
-    border-color: var(--primary);
-    background: var(--primary-light);
-    color: white;
-}
-
-.game-controls {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.control-btn {
-    padding: 1rem;
+    transition: all 0.2s ease;
     border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.control-btn.hint {
-    background: var(--warning);
-    color: white;
-}
-
-.control-btn.solve {
-    background: var(--primary);
-    color: white;
-}
-
-.control-btn.next {
-    background: var(--success);
-    color: white;
-}
-
-.control-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* ===== ЭКРАН РЕЗУЛЬТАТА ===== */
-.result-content {
-    padding: 2rem 1.5rem;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.result-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, var(--success), #059669);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-    color: white;
-    font-size: 2rem;
-}
-
-.result-content h2 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: var(--black);
-}
-
-.solution-text {
-    background: var(--light-gray);
-    padding: 1.5rem;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    border-left: 4px solid var(--success);
-}
-
-.winner-section {
-    background: var(--light-gray);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.winner-section h3 {
-    margin-bottom: 1rem;
-    color: var(--black);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.winner-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.winner-btn {
-    padding: 0.75rem 1.5rem;
-    border: 2px solid var(--success);
-    background: var(--white);
-    border-radius: 12px;
-    color: var(--success);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.9rem;
-}
-
-.winner-btn:hover {
-    background: var(--success);
-    color: white;
-}
-
-.result-controls {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.result-btn {
     flex: 1;
-    padding: 1.25rem;
-    border: none;
-    border-radius: 16px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    min-width: 200px;
 }
 
-.result-btn.next {
-    background: linear-gradient(135deg, var(--success), #059669);
+.btn-primary {
+    background: linear-gradient(135deg, var(--danetki-primary), var(--danetki-secondary));
     color: white;
 }
 
-.result-btn.menu {
-    background: var(--light-gray);
-    color: var(--gray);
+.btn-secondary {
+    background: var(--surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
 }
 
-.result-btn:hover {
+.btn-success {
+    background: linear-gradient(135deg, var(--danetki-success), #059669);
+    color: white;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--danetki-warning), #d97706);
+    color: white;
+}
+
+.btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
 }
 
-/* ===== ЭКРАН ПОДСКАЗКИ ===== */
-#hint-screen {
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.hint-content {
-    background: var(--white);
-    border-radius: 24px;
-    padding: 2rem;
-    max-width: 90%;
-    width: 400px;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.hint-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--light-gray);
-}
-
-.hint-header h2 {
-    color: var(--warning);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.close-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: var(--light-gray);
-    color: var(--gray);
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.close-btn:hover {
-    background: var(--danger);
-    color: white;
-}
-
-.hint-text {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    color: var(--black);
-}
-
-/* ===== PWA УСТАНОВКА ===== */
-.install-prompt {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--white);
-    padding: 1rem;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-    z-index: 1000;
-}
-
-.install-prompt.show {
+.btn:active {
     transform: translateY(0);
 }
 
-.install-content {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-    text-align: center;
+/* Экран загадки */
+.riddle-container {
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    padding: 2.5rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
 }
 
-.install-content p {
-    font-size: 1rem;
-    color: var(--black);
+.riddle-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--danetki-primary), var(--danetki-accent));
+}
+
+.riddle-text {
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    padding-left: 1rem;
+}
+
+/* Таймер */
+.timer-container {
+    text-align: center;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+    border-radius: var(--radius-lg);
+}
+
+.timer {
+    font-size: 3rem;
+    font-weight: 800;
+    font-family: 'Inter', monospace;
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+}
+
+.timer.warning {
+    color: var(--danetki-warning);
+    animation: pulse 1s infinite;
+}
+
+.timer.danger {
+    color: var(--danetki-danger);
+    animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Кнопки Да/Нет */
+.yesno-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.yesno-btn {
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    font-size: 1.25rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.yes-btn {
+    background: linear-gradient(135deg, var(--danetki-success), #059669);
+    color: white;
+}
+
+.no-btn {
+    background: linear-gradient(135deg, var(--danetki-danger), #dc2626);
+    color: white;
+}
+
+.irrelevant-btn {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+.yesno-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Экран ответа */
+.answer-container {
+    background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+    border-radius: var(--radius-xl);
+    padding: 2.5rem;
+    margin: 2rem 0;
+    border-left: 6px solid var(--danetki-success);
+}
+
+.answer-title {
+    color: var(--danetki-success);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.install-buttons {
-    display: flex;
-    gap: 0.75rem;
-    width: 100%;
+.answer-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    background: var(--surface);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
 }
 
-.install-btn, .cancel-btn {
-    flex: 1;
-    padding: 0.75rem;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
+/* Статистика */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--danetki-primary);
+    margin: 0.5rem 0;
+}
+
+.stat-label {
+    color: var(--text-secondary);
     font-size: 0.9rem;
 }
 
-.install-btn {
-    background: var(--primary);
-    color: white;
+/* Навигация */
+.game-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.cancel-btn {
-    background: var(--light-gray);
-    color: var(--gray);
+.back-btn {
+    background: none;
+    border: 2px solid var(--border);
+    color: var(--text-secondary);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-/* ===== АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ ===== */
-@media (max-width: 480px) {
-    .menu-content, .result-content {
-        padding: 1.5rem 1rem;
+.back-btn:hover {
+    background: var(--surface-2);
+    transform: translateX(-3px);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .danetki-container {
+        padding: 0.5rem;
     }
     
-    .danetka-text {
+    .game-header h1 {
+        font-size: 2rem;
+    }
+    
+    .riddle-container,
+    .settings-card,
+    .answer-container {
+        padding: 1.5rem;
+    }
+    
+    .riddle-text {
         font-size: 1.1rem;
-        padding: 1.5rem 1rem;
+        padding-left: 0.5rem;
     }
     
-    .answer-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .answer-btn {
-        padding: 1rem;
-    }
-    
-    .game-controls {
+    .yesno-buttons {
         grid-template-columns: 1fr;
     }
     
-    .control-btn {
-        padding: 1.25rem;
+    .difficulty-buttons {
+        grid-template-columns: 1fr;
     }
     
-    .result-controls {
+    .btn {
+        min-width: 100%;
+    }
+    
+    .action-buttons {
         flex-direction: column;
     }
     
-    .winner-buttons {
-        flex-direction: column;
+    .timer {
+        font-size: 2.5rem;
     }
     
-    .winner-btn {
-        width: 100%;
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-container {
+        grid-template-columns: 1fr;
     }
     
-    .hint-content {
-        padding: 1.5rem;
+    .riddle-container::before {
+        width: 4px;
     }
 }
 
 /* Анимации */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .fade-in {
     animation: fadeIn 0.3s ease;
 }
 
-.slide-up {
-    animation: slideUp 0.3s ease;
+/* Подсказки */
+.hint-container {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    margin: 1rem 0;
+    border-left: 4px solid var(--danetki-warning);
+    display: none;
 }
 
-/* Улучшения для касаний */
-button {
-    touch-action: manipulation;
+.hint-container.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
 }
 
-/* Предотвращение выделения при тапе */
-.no-select {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
+.hint-title {
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-/* Адаптация под вырез камеры */
-.safe-area-padding {
-    padding-top: constant(safe-area-inset-top);
-    padding-top: env(safe-area-inset-top);
+.hint-text {
+    color: #78350f;
+    font-size: 0.95rem;
+}
+
+/* Прогресс */
+.progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--danetki-primary), var(--danetki-accent);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.counter {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+    text-align: right;
 }
