@@ -2,179 +2,686 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ДАНЕТКИ - LoveCouple</title>
-    <meta name="description" content="Сюжетные загадки для компании. Одна игра на всех!">
-    <meta name="theme-color" content="#8b5cf6">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ДАНЕТКИ - LoveCouple Friends</title>
+    <link rel="stylesheet" href="../../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --danetki-primary: #8b5cf6;
+            --danetki-secondary: #7c3aed;
+            --danetki-accent: #f59e0b;
+            --danetki-success: #10b981;
+            --danetki-warning: #f59e0b;
+            --danetki-danger: #ef4444;
+        }
+        
+        .danetki-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Хедер игры */
+        .game-header {
+            text-align: center;
+            padding: 1.5rem 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        
+        .game-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--danetki-primary), var(--danetki-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .game-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        /* Основные экраны */
+        .screen {
+            display: none;
+            flex: 1;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        /* Экран настроек */
+        .settings-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .settings-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .settings-group h3 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .difficulty-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .difficulty-btn {
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .difficulty-btn.active {
+            background: var(--danetki-primary);
+            color: white;
+            border-color: var(--danetki-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Кнопки действий */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--danetki-primary), var(--danetki-secondary));
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: var(--surface-2);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--danetki-success), #059669);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--danetki-warning), #d97706);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Экран загадки */
+        .riddle-container {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .riddle-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--danetki-primary), var(--danetki-accent));
+        }
+        
+        .riddle-text {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            padding-left: 1rem;
+        }
+        
+        /* Таймер */
+        .timer-container {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+            border-radius: var(--radius-lg);
+        }
+        
+        .timer {
+            font-size: 3rem;
+            font-weight: 800;
+            font-family: 'Inter', monospace;
+            color: var(--text-primary);
+            margin: 0.5rem 0;
+        }
+        
+        .timer.warning {
+            color: var(--danetki-warning);
+            animation: pulse 1s infinite;
+        }
+        
+        .timer.danger {
+            color: var(--danetki-danger);
+            animation: pulse 0.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Кнопки Да/Нет */
+        .yesno-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .yesno-btn {
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            font-size: 1.25rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .yes-btn {
+            background: linear-gradient(135deg, var(--danetki-success), #059669);
+            color: white;
+        }
+        
+        .no-btn {
+            background: linear-gradient(135deg, var(--danetki-danger), #dc2626);
+            color: white;
+        }
+        
+        .irrelevant-btn {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+        
+        .yesno-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Экран ответа */
+        .answer-container {
+            background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+            border-radius: var(--radius-xl);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-left: 6px solid var(--danetki-success);
+        }
+        
+        .answer-title {
+            color: var(--danetki-success);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .answer-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+        }
+        
+        /* Статистика */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--danetki-primary);
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Навигация */
+        .game-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .back-btn {
+            background: none;
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-btn:hover {
+            background: var(--surface-2);
+            transform: translateX(-3px);
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .danetki-container {
+                padding: 0.5rem;
+            }
+            
+            .game-header h1 {
+                font-size: 2rem;
+            }
+            
+            .riddle-container,
+            .settings-card,
+            .answer-container {
+                padding: 1.5rem;
+            }
+            
+            .riddle-text {
+                font-size: 1.1rem;
+                padding-left: 0.5rem;
+            }
+            
+            .yesno-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .difficulty-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn {
+                min-width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .timer {
+                font-size: 2.5rem;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .riddle-container::before {
+                width: 4px;
+            }
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        /* Подсказки */
+        .hint-container {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--danetki-warning);
+            display: none;
+        }
+        
+        .hint-container.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .hint-title {
+            color: #92400e;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .hint-text {
+            color: #78350f;
+            font-size: 0.95rem;
+        }
+        
+        /* Прогресс */
+        .progress-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--danetki-primary), var(--danetki-accent));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .counter {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+            text-align: right;
+        }
+    </style>
 </head>
 <body>
-    <!-- Главный экран -->
-    <div class="container">
-        <!-- Шапка -->
-        <header class="header">
-            <button class="back-btn" onclick="window.history.back()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <h1>ДАНЕТКИ</h1>
-            <div class="stats">
-                <span id="card-counter">1/50</span>
-            </div>
-        </header>
-
-        <!-- Экран меню -->
-        <div id="menu-screen" class="screen active">
-            <div class="menu-content">
-                <div class="menu-icon">
-                    <i class="fas fa-brain"></i>
-                </div>
-                
-                <h2>ДАНЕТКИ</h2>
-                <p class="menu-description">
-                    Ведущий читает историю. Игроки задают вопросы "Да/Нет". Кто первый угадает — побеждает!
-                </p>
-                
-                <div class="difficulty-selector">
-                    <h3>Сложность:</h3>
+    <div class="danetki-container">
+        <!-- Хедер игры -->
+        <div class="game-header">
+            <h1><i class="fas fa-mask"></i> ДАНЕТКИ</h1>
+            <p class="subtitle">Сюжетные загадки для интеллектуальных посиделок</p>
+        </div>
+        
+        <!-- Экран 1: Настройки -->
+        <div id="screen-settings" class="screen active">
+            <div class="settings-card">
+                <div class="settings-group">
+                    <h3><i class="fas fa-sliders-h"></i> Сложность загадок</h3>
                     <div class="difficulty-buttons">
-                        <button class="difficulty-btn active" onclick="selectDifficulty('all')">Все</button>
-                        <button class="difficulty-btn" onclick="selectDifficulty('easy')">Легкие</button>
-                        <button class="difficulty-btn" onclick="selectDifficulty('medium')">Средние</button>
-                        <button class="difficulty-btn" onclick="selectDifficulty('hard')">Сложные</button>
+                        <button class="difficulty-btn active" data-difficulty="easy">
+                            <i class="fas fa-seedling"></i> Легкие
+                            <small>Для разминки</small>
+                        </button>
+                        <button class="difficulty-btn" data-difficulty="medium">
+                            <i class="fas fa-brain"></i> Средние
+                            <small>Интересные</small>
+                        </button>
+                        <button class="difficulty-btn" data-difficulty="hard">
+                            <i class="fas fa-crown"></i> Сложные
+                            <small>Для экспертов</small>
+                        </button>
                     </div>
                 </div>
                 
-                <button class="start-btn" onclick="startGame()">
-                    <i class="fas fa-play"></i> Начать игру
-                </button>
+                <div class="settings-group">
+                    <h3><i class="fas fa-clock"></i> Таймер обсуждения</h3>
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn" data-time="180">
+                            <i class="fas fa-hourglass-start"></i> 3 мин
+                        </button>
+                        <button class="difficulty-btn active" data-time="300">
+                            <i class="fas fa-hourglass-half"></i> 5 мин
+                        </button>
+                        <button class="difficulty-btn" data-time="600">
+                            <i class="fas fa-hourglass-end"></i> 10 мин
+                        </button>
+                        <button class="difficulty-btn" data-time="0">
+                            <i class="fas fa-infinity"></i> Без таймера
+                        </button>
+                    </div>
+                </div>
                 
-                <div class="menu-footer">
-                    <p>Игра для компании на одном устройстве</p>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="start-game">
+                        <i class="fas fa-play"></i> Начать игру
+                    </button>
+                    <button class="btn btn-secondary" id="how-to-play">
+                        <i class="fas fa-question-circle"></i> Как играть?
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Статистика -->
+            <div id="stats-section" class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-label">Всего загадок</div>
+                    <div class="stat-value" id="total-riddles">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Разгадано</div>
+                    <div class="stat-value" id="solved-riddles">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Рекорд</div>
+                    <div class="stat-value" id="best-time">0:00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Сложность</div>
+                    <div class="stat-value" id="avg-difficulty">-</div>
                 </div>
             </div>
         </div>
-
-        <!-- Экран игры -->
-        <div id="game-screen" class="screen">
-            <!-- Карточка данетки -->
-            <div class="danetka-card">
-                <div class="card-header">
-                    <div class="category" id="category">Сложность: Средняя</div>
-                    <div class="timer" id="timer">--:--</div>
+        
+        <!-- Экран 2: Игра (загадка) -->
+        <div id="screen-game" class="screen">
+            <div class="riddle-container">
+                <h3><i class="fas fa-scroll"></i> Сюжетная загадка</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="counter">
+                    <span id="current-riddle">1</span> из <span id="total-riddles-count">0</span>
                 </div>
                 
-                <div class="danetka-text" id="danetka-text">
-                    Загрузка истории...
+                <div class="riddle-text" id="riddle-text">
+                    Загрузка загадки...
                 </div>
                 
-                <div class="answer-buttons">
-                    <button class="answer-btn yes" onclick="showAnswer('yes')">
-                        <i class="fas fa-check"></i> ДА
-                    </button>
-                    <button class="answer-btn no" onclick="showAnswer('no')">
-                        <i class="fas fa-times"></i> НЕТ
-                    </button>
-                    <button class="answer-btn irrelevant" onclick="showAnswer('irrelevant')">
-                        <i class="fas fa-minus"></i> НЕ ИМЕЕТ ЗНАЧЕНИЯ
-                    </button>
+                <!-- Подсказки -->
+                <div class="hint-container" id="hint-container">
+                    <div class="hint-title">
+                        <i class="fas fa-lightbulb"></i> Подсказка
+                    </div>
+                    <div class="hint-text" id="hint-text"></div>
                 </div>
             </div>
-
-            <!-- Панель управления -->
-            <div class="control-panel">
-                <div class="players-score">
-                    <h3><i class="fas fa-users"></i> Счет игроков:</h3>
-                    <div class="score-display" id="score-display">
-                        <!-- Счет будет добавляться динамически -->
-                    </div>
-                    <button class="small-btn" onclick="addPlayer()">
-                        <i class="fas fa-plus"></i> Добавить игрока
+            
+            <!-- Таймер -->
+            <div class="timer-container">
+                <div class="timer-label">Время на обсуждение</div>
+                <div class="timer" id="timer">05:00</div>
+                <div class="timer-actions">
+                    <button class="btn btn-secondary" id="pause-timer">
+                        <i class="fas fa-pause"></i> Пауза
                     </button>
-                </div>
-                
-                <div class="game-controls">
-                    <button class="control-btn hint" onclick="showHint()">
+                    <button class="btn btn-warning" id="show-hint">
                         <i class="fas fa-lightbulb"></i> Подсказка
                     </button>
-                    <button class="control-btn solve" onclick="showSolution()">
-                        <i class="fas fa-eye"></i> Показать ответ
-                    </button>
-                    <button class="control-btn next" onclick="nextDanetka()">
-                        <i class="fas fa-forward"></i> Следующая
+                </div>
+            </div>
+            
+            <!-- Кнопки ответов -->
+            <div class="yesno-buttons">
+                <button class="yesno-btn yes-btn" data-answer="yes">
+                    <i class="fas fa-check-circle"></i> ДА
+                </button>
+                <button class="yesno-btn irrelevant-btn" data-answer="irrelevant">
+                    <i class="fas fa-minus-circle"></i> Не имеет значения
+                </button>
+                <button class="yesno-btn no-btn" data-answer="no">
+                    <i class="fas fa-times-circle"></i> НЕТ
+                </button>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <button class="btn btn-success" id="show-answer">
+                    <i class="fas fa-eye"></i> Показать ответ
+                </button>
+                <button class="btn btn-secondary" id="skip-riddle">
+                    <i class="fas fa-forward"></i> Следующая загадка
+                </button>
+            </div>
+        </div>
+        
+        <!-- Экран 3: Ответ -->
+        <div id="screen-answer" class="screen">
+            <div class="answer-container">
+                <div class="answer-title">
+                    <i class="fas fa-check-circle"></i> Ответ
+                </div>
+                <div class="answer-text" id="answer-text">
+                    Загрузка ответа...
+                </div>
+            </div>
+            
+            <!-- Кнопки действий после ответа -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="next-riddle">
+                    <i class="fas fa-forward"></i> Следующая загадка
+                </button>
+                <button class="btn btn-secondary" id="back-to-settings">
+                    <i class="fas fa-cog"></i> Настройки
+                </button>
+            </div>
+        </div>
+        
+        <!-- Экран 4: Правила -->
+        <div id="screen-rules" class="screen">
+            <div class="settings-card">
+                <h3><i class="fas fa-book"></i> Как играть в ДАНЕТКИ?</h3>
+                
+                <div style="margin: 2rem 0;">
+                    <p><strong>ДАНЕТКИ</strong> — это сюжетные загадки, где игроки должны восстановить полную картину произошедшего, задавая вопросы, на которые можно ответить только "Да", "Нет" или "Не имеет значения".</p>
+                    
+                    <h4 style="margin: 1.5rem 0 1rem; color: var(--text-primary);">Правила игры:</h4>
+                    <ol style="padding-left: 1.5rem; margin-bottom: 1.5rem; line-height: 1.8;">
+                        <li><strong>Ведущий</strong> зачитывает загадку вслух</li>
+                        <li><strong>Игроки</strong> по очереди задают вопросы</li>
+                        <li><strong>Ведущий</strong> отвечает только "Да", "Нет" или "Не имеет значения"</li>
+                        <li>Игроки обсуждают и выдвигают версии</li>
+                        <li>Побеждает тот, кто первым правильно восстановит всю историю</li>
+                    </ol>
+                    
+                    <h4 style="margin: 1.5rem 0 1rem; color: var(--text-primary);">Советы:</h4>
+                    <ul style="padding-left: 1.5rem; line-height: 1.8;">
+                        <li>Задавайте конкретные вопросы</li>
+                        <li>Используйте логику и дедукцию</li>
+                        <li>Обращайте внимание на детали в тексте</li>
+                        <li>Не бойтесь ошибаться — это часть игры!</li>
+                    </ul>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="back-from-rules">
+                        <i class="fas fa-arrow-left"></i> Вернуться
                     </button>
                 </div>
             </div>
         </div>
-
-        <!-- Экран результата -->
-        <div id="result-screen" class="screen">
-            <div class="result-content">
-                <div class="result-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                
-                <h2>Правильный ответ:</h2>
-                
-                <div class="solution-text" id="solution-text">
-                    Решение загружается...
-                </div>
-                
-                <div class="winner-section">
-                    <h3><i class="fas fa-trophy"></i> Кто угадал?</h3>
-                    <div class="winner-buttons" id="winner-buttons">
-                        <!-- Кнопки игроков будут добавляться динамически -->
-                    </div>
-                    <button class="small-btn" onclick="noOneGuessed()">
-                        <i class="fas fa-times"></i> Никто не угадал
-                    </button>
-                </div>
-                
-                <div class="result-controls">
-                    <button class="result-btn next" onclick="nextDanetka()">
-                        <i class="fas fa-forward"></i> Следующая данетка
-                    </button>
-                    <button class="result-btn menu" onclick="backToMenu()">
-                        <i class="fas fa-home"></i> В меню
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Экран подсказки -->
-        <div id="hint-screen" class="screen">
-            <div class="hint-content">
-                <div class="hint-header">
-                    <h2><i class="fas fa-lightbulb"></i> Подсказка</h2>
-                    <button class="close-btn" onclick="closeHint()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="hint-text" id="hint-text">
-                    Подсказка загружается...
-                </div>
+        
+        <!-- Навигация -->
+        <div class="game-nav">
+            <button class="back-btn" id="back-to-main">
+                <i class="fas fa-arrow-left"></i> На главную
+            </button>
+            <div style="color: var(--text-tertiary); font-size: 0.9rem;">
+                <i class="fas fa-users"></i> Игра для компании друзей
             </div>
         </div>
     </div>
-
-    <!-- PWA установка -->
-    <div id="install-prompt" class="install-prompt">
-        <div class="install-content">
-            <p><i class="fas fa-mobile-alt"></i> Установить игру на главный экран?</p>
-            <div class="install-buttons">
-                <button class="install-btn" onclick="installApp()">Установить</button>
-                <button class="cancel-btn" onclick="cancelInstall()">Позже</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="cards.js"></script>
-    <script src="script.js"></script>
+    
+    <script src="danetki.js"></script>
 </body>
 </html>
