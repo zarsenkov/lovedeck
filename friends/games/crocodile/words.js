@@ -167,21 +167,22 @@ const crocodileWords = {
     ],
     
     abstract: [
-{ word: 'Любовь', difficulty: 'easy', category: 'abstract' },
-        { word: 'Счастье', difficulty: 'easy', category: 'abstract' },
-        { word: 'Грусть', difficulty: 'easy', category: 'abstract' },
-        { word: 'Время', difficulty: 'medium', category: 'abstract' },
-        { word: 'Мечта', difficulty: 'medium', category: 'abstract' },
-        { word: 'Надежда', difficulty: 'medium', category: 'abstract' },
-        { word: 'Свобода', difficulty: 'medium', category: 'abstract' },
-        { word: 'Вера', difficulty: 'medium', category: 'abstract' },
-        { word: 'Мудрость', difficulty: 'hard', category: 'abstract' },
-        { word: 'Вечность', difficulty: 'hard', category: 'abstract' },
-        { word: 'Страх', difficulty: 'medium', category: 'abstract' },
-        { word: 'Ревность', difficulty: 'medium', category: 'abstract' },
-        { word: 'Дружба', difficulty: 'easy', category: 'abstract' },
-        { word: 'Предательство', difficulty: 'hard', category: 'abstract' },
-        { word: 'Скука', difficulty: 'medium', category: 'abstract' }
+{ word: 'Поцелуй', difficulty: 'easy', category: 'adult' },
+        { word: 'Секс', difficulty: 'medium', category: 'adult' },
+        { word: 'Оргазм', difficulty: 'medium', category: 'adult' },
+        { word: 'Минет', difficulty: 'medium', category: 'adult' },
+        { word: 'Стриптиз', difficulty: 'medium', category: 'adult' },
+        { word: 'Эрекция', difficulty: 'hard', category: 'adult' },
+        { word: 'Презерватив', difficulty: 'medium', category: 'adult' },
+        { word: 'Вибратор', difficulty: 'medium', category: 'adult' },
+        { word: 'БДСМ', difficulty: 'hard', category: 'adult' },
+        { word: 'Связывание', difficulty: 'hard', category: 'adult' },
+        { word: 'Шлепки', difficulty: 'medium', category: 'adult' },
+        { word: 'Ролевые игры', difficulty: 'medium', category: 'adult' },
+        { word: 'Секс втроем', difficulty: 'hard', category: 'adult' },
+        { word: 'Мастурбация', difficulty: 'medium', category: 'adult' },
+        { word: 'Эротика', difficulty: 'medium', category: 'adult' }
     ]
 };
+
 
