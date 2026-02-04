@@ -1,313 +1,213 @@
-// games/alias/script.js
-
-class AliasGame {
-    constructor() {
-        this.teams = [];
-        this.currentTeam = 0;
-        this.currentPlayer = 0;
-        this.words = [];
-        this.usedWords = new Set();
-        this.currentWordIndex = 0;
-        this.timer = null;
-        this.timeLeft = 60;
-        this.gameStarted = false;
-        this.roundActive = false;
-        this.stats = this.loadStats();
-        
-        // Настройки по умолчанию
-        this.settings = {
-            teamCount: 2,
-            timePerRound: 60,
-            difficulty: 'medium',
-            themes: ['all'],
-            skipLimit: 3,
-            oneWordRule: false,
-            englishWords: false
-        };
-        
-        this.currentRound = {
+// Основной объект игры
+const Game = {
+    // Настройки по умолчанию
+    settings: {
+        teamCount: 3,
+        timePerRound: 60,
+        difficulty: 'medium',
+        themes: ['all'],
+        skipLimit: 3,
+        oneWordRule: false
+    },
+    
+    // Состояние игры
+    state: {
+        teams: [],
+        currentTeam: 0,
+        currentPlayer: 0,
+        words: [],
+        usedWords: new Set(),
+        currentWordIndex: 0,
+        timer: null,
+        timeLeft: 60,
+        roundActive: false,
+        currentRound: {
             words: [],
             guessed: [],
             skipped: [],
-            wrong: [],
-            skipsUsed: 0
-        };
-        
-        this.init();
-    }
+            wrong: []
+        },
+        stats: {
+            gamesPlayed: 0,
+            totalWords: 0,
+            bestScore: 0,
+            avgScore: 0
+        }
+    },
     
+    // Инициализация
     init() {
-        this.loadSettings();
+        this.loadStats();
         this.bindEvents();
-        this.generateWords();
-        this.renderTeams();
-        this.updateDisplay();
-        
-        // Инициализация PWA
-        this.initPWA();
-        
-        // Сохраняем контекст для обработчиков событий
-        this.handleKeyPress = this.handleKeyPress.bind(this);
-        document.addEventListener('keydown', this.handleKeyPress);
-    }
+        this.updateMenuStats();
+        this.showScreen('menuScreen');
+    },
     
-    initPWA() {
-        // Проверка PWA и добавление индикатора мобильной версии
-        if (window.matchMedia('(display-mode: standalone)').matches || 
-            window.navigator.standalone ||
-            document.referrer.includes('android-app://')) {
-            document.body.classList.add('pwa-mode');
-        }
-        
-        // Добавляем класс для мобильных устройств
-        if ('ontouchstart' in window || navigator.maxTouchPoints) {
-            document.body.classList.add('touch-device');
-        }
-        
-        // Определение типа устройства
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile) {
-            document.body.classList.add('mobile-device');
-            
-            // Автоматические настройки для мобильных
-            if (!localStorage.getItem('aliasMobileSettingsSet')) {
-                this.settings.timePerRound = 90; // Больше времени на мобильных
-                this.saveSettings();
-                localStorage.setItem('aliasMobileSettingsSet', 'true');
-            }
-        }
-    }
-    
-    loadSettings() {
-        const saved = localStorage.getItem('aliasSettings');
+    // Загрузка статистики
+    loadStats() {
+        const saved = localStorage.getItem('aliasStats');
         if (saved) {
-            this.settings = { ...this.settings, ...JSON.parse(saved) };
+            this.state.stats = JSON.parse(saved);
         }
-        
-        // Применяем настройки к UI
-        this.updateSettingsUI();
-    }
+    },
     
-    saveSettings() {
-        localStorage.setItem('aliasSettings', JSON.stringify(this.settings));
-    }
+    // Сохранение статистики
+    saveStats() {
+        localStorage.setItem('aliasStats', JSON.stringify(this.state.stats));
+    },
     
-    updateSettingsUI() {
-        // Устанавливаем активные кнопки
-        document.querySelectorAll('.team-count-selector .count-btn').forEach(btn => {
-            btn.classList.toggle('active', 
-                parseInt(btn.dataset.count) === this.settings.teamCount);
-        });
-        
-        document.querySelectorAll('.time-selector .time-btn').forEach(btn => {
-            btn.classList.toggle('active', 
-                parseInt(btn.dataset.time) === this.settings.timePerRound);
-        });
-        
-        document.querySelectorAll('.difficulty-selector .diff-btn').forEach(btn => {
-            btn.classList.toggle('active', 
-                btn.dataset.diff === this.settings.difficulty);
-        });
-        
-        // Устанавливаем темы с улучшенным стилем
-        const themeSelect = document.getElementById('themeSelect');
-        Array.from(themeSelect.options).forEach(option => {
-            option.selected = this.settings.themes.includes(option.value);
-            
-            // Добавляем классы для стилизации
-            if (option.value === 'all') {
-                option.className = 'theme-option theme-all';
-            } else if (option.value === 'Кино и сериалы') {
-                option.className = 'theme-option theme-movies';
-            } else if (option.value === 'Еда и напитки') {
-                option.className = 'theme-option theme-food';
-            } else if (option.value === 'Путешествия') {
-                option.className = 'theme-option theme-travel';
-            } else if (option.value === 'IT и технологии') {
-                option.className = 'theme-option theme-tech';
-            } else if (option.value === 'Спорт и активность') {
-                option.className = 'theme-option theme-sport';
-            }
-        });
-        
-        // Устанавливаем чекбоксы
-        document.getElementById('skipLimit').checked = this.settings.skipLimit > 0;
-        document.getElementById('oneWordRule').checked = this.settings.oneWordRule;
-        document.getElementById('englishWords').checked = this.settings.englishWords;
-    }
+    // Обновление статистики в меню
+    updateMenuStats() {
+        document.getElementById('gamesPlayed').textContent = this.state.stats.gamesPlayed;
+        document.getElementById('bestScore').textContent = this.state.stats.bestScore;
+    },
     
+    // Привязка событий
     bindEvents() {
         // Кнопки настроек
-        document.querySelectorAll('.count-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.settings.teamCount = parseInt(btn.dataset.count);
-                this.updateSettingsUI();
-                this.generateTeams();
-                this.saveSettings();
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const group = e.target.closest('.option-group');
+                group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const setting = e.target.closest('.setting-group').querySelector('h3').textContent;
+                const value = e.target.dataset.value;
+                
+                switch(true) {
+                    case setting.includes('команд'):
+                        this.settings.teamCount = parseInt(value);
+                        break;
+                    case setting.includes('Время'):
+                        this.settings.timePerRound = parseInt(value);
+                        break;
+                    case setting.includes('Сложность'):
+                        this.settings.difficulty = value;
+                        break;
+                }
             });
         });
         
-        document.querySelectorAll('.time-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.settings.timePerRound = parseInt(btn.dataset.time);
-                this.saveSettings();
+        // Чекбоксы тем
+        document.querySelectorAll('.theme-checkbox input').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const themes = [];
+                document.querySelectorAll('.theme-checkbox input:checked').forEach(checked => {
+                    const theme = checked.nextElementSibling.textContent.toLowerCase();
+                    if (theme === 'все слова') {
+                        themes.push('all');
+                    } else {
+                        themes.push(checked.nextElementSibling.textContent);
+                    }
+                });
+                this.settings.themes = themes;
             });
         });
         
-        document.querySelectorAll('.diff-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.settings.difficulty = btn.dataset.diff;
-                this.generateWords();
-                this.saveSettings();
-            });
-        });
-        
-        document.getElementById('themeSelect').addEventListener('change', (e) => {
-            const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
-            this.settings.themes = selected;
-            this.generateWords();
-            this.saveSettings();
-        });
-        
-        // Чекбоксы
+        // Чекбоксы правил
         document.getElementById('skipLimit').addEventListener('change', (e) => {
-            this.settings.skipLimit = e.target.checked ? 3 : 0;
-            this.saveSettings();
+            this.settings.skipLimit = e.target.checked ? 3 : 999;
         });
         
         document.getElementById('oneWordRule').addEventListener('change', (e) => {
             this.settings.oneWordRule = e.target.checked;
-            this.saveSettings();
         });
         
-        document.getElementById('englishWords').addEventListener('change', (e) => {
-            this.settings.englishWords = e.target.checked;
-            this.generateWords();
-            this.saveSettings();
-        });
-        
-        // Обработчики свайпов для мобильных
-        this.setupSwipeGestures();
-    }
-    
-    setupSwipeGestures() {
-        let touchStartX = 0;
-        let touchStartY = 0;
-        
-        document.addEventListener('touchstart', (e) => {
-            if (!this.roundActive || !document.body.classList.contains('mobile-device')) return;
+        // Горячие клавиши
+        document.addEventListener('keydown', (e) => {
+            if (!this.state.roundActive) return;
             
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        });
-        
-        document.addEventListener('touchend', (e) => {
-            if (!this.roundActive || !document.body.classList.contains('mobile-device')) return;
-            
-            const touchEndX = e.changedTouches[0].screenX;
-            const touchEndY = e.changedTouches[0].screenY;
-            
-            const diffX = touchEndX - touchStartX;
-            const diffY = touchEndY - touchStartY;
-            
-            // Минимальная дистанция свайпа
-            if (Math.abs(diffX) < 50 && Math.abs(diffY) < 50) return;
-            
-            // Горизонтальный свайп (лево/право)
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-                if (diffX > 0) {
-                    // Свайп вправо - угадали
+            switch(e.key) {
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
                     this.correctWord();
-                    this.showSwipeFeedback('right');
-                } else {
-                    // Свайп влево - пропустить
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    this.correctWord();
+                    break;
+                case 'ArrowDown':
+                case 's':
+                    e.preventDefault();
                     this.skipWord();
-                    this.showSwipeFeedback('left');
-                }
+                    break;
+                case 'ArrowLeft':
+                case 'x':
+                    e.preventDefault();
+                    this.wrongWord();
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    this.pauseGame();
+                    break;
             }
         });
-    }
+    },
     
-    showSwipeFeedback(direction) {
-        const feedback = document.createElement('div');
-        feedback.className = `swipe-feedback swipe-${direction}`;
-        feedback.innerHTML = direction === 'right' ? 
-            '<i class="fas fa-check"></i>' : 
-            '<i class="fas fa-forward"></i>';
-        
-        document.body.appendChild(feedback);
-        
-        setTimeout(() => {
-            feedback.remove();
-        }, 500);
-    }
+    // Показать экран
+    showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById(screenId).classList.add('active');
+    },
     
-    generateTeams() {
-        this.teams = [];
-        const teamColors = ['team-1', 'team-2', 'team-3', 'team-4'];
-        const teamNames = ['Команда 1', 'Команда 2', 'Команда 3', 'Команда 4'];
-        
+    // Показать меню настроек
+    showSetupScreen() {
+        this.showScreen('setupScreen');
+    },
+    
+    // Начать игру
+    startGame() {
+        // Создаем команды
+        this.state.teams = [];
         for (let i = 0; i < this.settings.teamCount; i++) {
-            this.teams.push({
-                id: i + 1,
-                name: teamNames[i],
-                color: teamColors[i],
+            this.state.teams.push({
+                name: `Команда ${i + 1}`,
                 score: 0,
-                totalWords: 0,
-                roundsWon: 0
+                color: `team-${i + 1}`
             });
         }
         
-        this.renderTeams();
-    }
+        // Генерируем слова
+        this.generateWords();
+        
+        // Сбрасываем состояние раунда
+        this.state.currentTeam = 0;
+        this.state.currentPlayer = 0;
+        this.state.currentRound = {
+            words: [],
+            guessed: [],
+            skipped: [],
+            wrong: []
+        };
+        this.state.timeLeft = this.settings.timePerRound;
+        this.state.roundActive = false;
+        
+        // Обновляем интерфейс
+        this.updateScores();
+        this.updateCurrentTeam();
+        this.showScreen('gameScreen');
+        
+        // Показываем первое слово через секунду
+        setTimeout(() => {
+            this.state.roundActive = true;
+            this.startTimer();
+            this.showNextWord();
+        }, 1000);
+    },
     
-    renderTeams() {
-        if (!this.teams.length) {
-            this.generateTeams();
-        }
-        
-        const scoresContainer = document.getElementById('teamsScores');
-        const resultsContainer = document.getElementById('teamsResultsList');
-        
-        scoresContainer.innerHTML = '';
-        resultsContainer.innerHTML = '';
-        
-        this.teams.forEach(team => {
-            // Для экрана игры
-            const scoreElement = document.createElement('div');
-            scoreElement.className = `team-score ${team.color}`;
-            scoreElement.innerHTML = `
-                <span class="team-name">${team.name}</span>
-                <span class="team-points">${team.score} очков</span>
-            `;
-            scoresContainer.appendChild(scoreElement);
-            
-            // Для экрана результатов
-            const resultElement = document.createElement('div');
-            resultElement.className = `team-result ${team.color}`;
-            resultElement.innerHTML = `
-                <div class="team-result-info">
-                    <span class="team-result-name">${team.name}</span>
-                    <span class="team-result-score">${team.score} очков</span>
-                </div>
-            `;
-            resultsContainer.appendChild(resultElement);
-        });
-    }
-    
+    // Генерация слов
     generateWords() {
         let words = [];
         
-        // Выбираем слова в зависимости от сложности
+        // Добавляем слова по сложности
         if (this.settings.difficulty === 'mix') {
             words = [
-                ...ALIAS_WORDS.easy.slice(0, 20),
-                ...ALIAS_WORDS.medium.slice(0, 20),
-                ...ALIAS_WORDS.hard.slice(0, 20)
+                ...ALIAS_WORDS.easy,
+                ...ALIAS_WORDS.medium,
+                ...ALIAS_WORDS.hard
             ];
         } else {
             words = [...ALIAS_WORDS[this.settings.difficulty]];
@@ -315,46 +215,27 @@ class AliasGame {
         
         // Добавляем тематические слова
         if (!this.settings.themes.includes('all')) {
-            let themeWords = [];
+            const themeWords = [];
             this.settings.themes.forEach(theme => {
                 if (ALIAS_WORDS.themes[theme]) {
-                    themeWords = [...themeWords, ...ALIAS_WORDS.themes[theme]];
+                    themeWords.push(...ALIAS_WORDS.themes[theme]);
                 }
             });
             
             if (themeWords.length > 0) {
-                // Смешиваем 60% тематических и 40% обычных
-                const themeCount = Math.min(Math.floor(words.length * 0.6), themeWords.length);
-                const regularCount = words.length - themeCount;
-                
-                const selectedThemeWords = this.getRandomItems(themeWords, themeCount);
-                const selectedRegularWords = this.getRandomItems(words, regularCount);
-                
-                words = [...selectedThemeWords, ...selectedRegularWords];
+                // Смешиваем 50% тематических и 50% обычных
+                const mixCount = Math.min(words.length, themeWords.length);
+                words = [...words.slice(0, mixCount), ...themeWords.slice(0, mixCount)];
             }
         }
         
-        // Добавляем английские слова если нужно
-        if (this.settings.englishWords) {
-            const englishWords = [
-                'Computer', 'Phone', 'Table', 'Chair', 'Window', 'Door',
-                'Book', 'Pen', 'Paper', 'Water', 'Food', 'House', 'Car',
-                'Tree', 'Flower', 'Sun', 'Moon', 'Star', 'Cloud', 'Rain'
-            ];
-            words = [...words, ...englishWords];
-        }
-        
-        // Перемешиваем слова
-        this.words = this.shuffleArray([...words]);
-        this.usedWords.clear();
-        this.currentWordIndex = 0;
-    }
+        // Перемешиваем
+        this.state.words = this.shuffleArray(words);
+        this.state.usedWords.clear();
+        this.state.currentWordIndex = 0;
+    },
     
-    getRandomItems(array, count) {
-        const shuffled = this.shuffleArray([...array]);
-        return shuffled.slice(0, count);
-    }
-    
+    // Перемешивание массива
     shuffleArray(array) {
         const newArray = [...array];
         for (let i = newArray.length - 1; i > 0; i--) {
@@ -362,851 +243,439 @@ class AliasGame {
             [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
         }
         return newArray;
-    }
+    },
     
-    getNextWord() {
-        if (this.currentWordIndex >= this.words.length) {
-            this.generateWords(); // Перегенерируем если слова закончились
+    // Показать следующее слово
+    showNextWord() {
+        if (this.state.currentWordIndex >= this.state.words.length) {
+            this.generateWords();
         }
         
         let word;
         do {
-            word = this.words[this.currentWordIndex];
-            this.currentWordIndex = (this.currentWordIndex + 1) % this.words.length;
-        } while (this.usedWords.has(word) && this.usedWords.size < this.words.length * 0.8);
+            word = this.state.words[this.state.currentWordIndex];
+            this.state.currentWordIndex = (this.state.currentWordIndex + 1) % this.state.words.length;
+        } while (this.state.usedWords.has(word) && this.state.usedWords.size < this.state.words.length * 0.7);
         
-        this.usedWords.add(word);
-        this.currentRound.words.push(word);
+        this.state.usedWords.add(word);
+        this.state.currentRound.words.push(word);
         
-        return word;
-    }
+        const wordElement = document.getElementById('currentWord');
+        wordElement.style.opacity = '0';
+        wordElement.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            wordElement.textContent = word;
+            wordElement.style.opacity = '1';
+            wordElement.style.transform = 'translateY(0)';
+            this.updateWordCounter();
+        }, 200);
+    },
     
-    startGame() {
-        this.gameStarted = true;
-        this.generateTeams();
-        this.generateWords();
-        this.showScreen('gameScreen');
-        this.startRound();
-    }
+    // Обновить счетчик слов
+    updateWordCounter() {
+        const total = this.state.currentRound.words.length;
+        document.getElementById('wordCounter').textContent = total;
+    },
     
-    startRound() {
-        this.roundActive = true;
-        this.currentRound = {
-            words: [],
-            guessed: [],
-            skipped: [],
-            wrong: [],
-            skipsUsed: 0
-        };
-        
-        this.timeLeft = this.settings.timePerRound;
-        this.updateTimerDisplay();
-        
-        // Показываем первое слово
-        this.showNextWord();
-        
-        // Запускаем таймер
-        this.startTimer();
-        
-        // Обновляем интерфейс
-        this.updateCurrentTeamDisplay();
-        this.updateCounters();
-        
-        // Вибрация для мобильных (если разрешено)
-        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
-            navigator.vibrate(100);
-        }
-    }
+    // Обновить счетчик пропусков
+    updateSkipCounter() {
+        const used = this.state.currentRound.skipped.length;
+        document.getElementById('skipCounter').textContent = `${used}/${this.settings.skipLimit}`;
+    },
     
-    startTimer() {
-        if (this.timer) {
-            clearInterval(this.timer);
-        }
-        
-        this.timer = setInterval(() => {
-            this.timeLeft--;
-            this.updateTimerDisplay();
-            
-            // Вибрация при низком времени
-            if (this.timeLeft === 10 && navigator.vibrate) {
-                navigator.vibrate(200);
-            }
-            
-            if (this.timeLeft === 5 && navigator.vibrate) {
-                navigator.vibrate([100, 100, 100]);
-            }
-            
-            if (this.timeLeft <= 0) {
-                this.endRound();
-            }
-        }, 1000);
-    }
-    
-    updateTimerDisplay() {
+    // Обновить таймер
+    updateTimer() {
         const timerElement = document.getElementById('timer');
         const progressFill = document.getElementById('progressFill');
         
-        if (timerElement) {
-            timerElement.textContent = this.timeLeft;
-            
-            // Меняем цвет при низком времени
-            if (this.timeLeft <= 10) {
-                timerElement.classList.add('warning');
-                timerElement.classList.add('pulse');
-            } else {
-                timerElement.classList.remove('warning');
-                timerElement.classList.remove('pulse');
-            }
-            
-            // Обновляем прогресс-бар
-            if (progressFill) {
-                const percent = (this.timeLeft / this.settings.timePerRound) * 100;
-                progressFill.style.width = `${percent}%`;
-                
-                // Меняем цвет прогресс-бара
-                if (this.timeLeft <= 10) {
-                    progressFill.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
-                } else if (this.timeLeft <= 30) {
-                    progressFill.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
-                } else {
-                    progressFill.style.background = 'linear-gradient(90deg, var(--primary), var(--secondary))';
-                }
-            }
+        timerElement.textContent = this.state.timeLeft;
+        
+        // Меняем цвет при низком времени
+        if (this.state.timeLeft <= 10) {
+            timerElement.classList.add('warning');
+        } else {
+            timerElement.classList.remove('warning');
         }
-    }
+        
+        // Обновляем прогресс-бар
+        if (progressFill) {
+            const percent = (this.state.timeLeft / this.settings.timePerRound) * 100;
+            progressFill.style.width = `${percent}%`;
+        }
+    },
     
-    showNextWord() {
-        if (!this.roundActive) return;
+    // Запустить таймер
+    startTimer() {
+        if (this.state.timer) {
+            clearInterval(this.state.timer);
+        }
         
-        const word = this.getNextWord();
-        const wordDisplay = document.getElementById('currentWord');
-        
-        // Анимация смены слова
-        wordDisplay.style.opacity = '0';
-        wordDisplay.style.transform = 'translateY(10px)';
-        
-        setTimeout(() => {
-            wordDisplay.textContent = word;
-            wordDisplay.style.opacity = '1';
-            wordDisplay.style.transform = 'translateY(0)';
-        }, 150);
-        
-        this.updateCounters();
-    }
+        this.state.timer = setInterval(() => {
+            this.state.timeLeft--;
+            this.updateTimer();
+            
+            if (this.state.timeLeft <= 0) {
+                this.endRound();
+            }
+        }, 1000);
+    },
     
+    // Остановить таймер
+    stopTimer() {
+        if (this.state.timer) {
+            clearInterval(this.state.timer);
+            this.state.timer = null;
+        }
+    },
+    
+    // Слово угадано
     correctWord() {
-        if (!this.roundActive) return;
+        if (!this.state.roundActive) return;
         
         const currentWord = document.getElementById('currentWord').textContent;
-        this.currentRound.guessed.push(currentWord);
-        this.teams[this.currentTeam].score++;
-        this.teams[this.currentTeam].totalWords++;
+        this.state.currentRound.guessed.push(currentWord);
+        this.state.teams[this.state.currentTeam].score++;
         
-        this.updateCounters();
+        this.updateScores();
         this.showNextWord();
+        this.showNotification('+1 очко!', 'success');
         
-        // Анимация угадывания
-        this.showWordFeedback('correct');
-        
-        // Вибрация для мобильных
-        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
-            navigator.vibrate(50);
-        }
-    }
+        // Анимация
+        const wordElement = document.getElementById('currentWord');
+        wordElement.classList.add('correct-animation');
+        setTimeout(() => wordElement.classList.remove('correct-animation'), 300);
+    },
     
+    // Пропустить слово
     skipWord() {
-        if (!this.roundActive) return;
+        if (!this.state.roundActive) return;
         
         // Проверяем лимит пропусков
-        if (this.settings.skipLimit > 0 && 
-            this.currentRound.skipsUsed >= this.settings.skipLimit) {
+        if (this.state.currentRound.skipped.length >= this.settings.skipLimit) {
             this.showNotification('Лимит пропусков исчерпан!', 'warning');
-            
-            // Вибрация для уведомления
-            if (navigator.vibrate) {
-                navigator.vibrate([100, 100, 100]);
-            }
             return;
         }
         
         const currentWord = document.getElementById('currentWord').textContent;
-        this.currentRound.skipped.push(currentWord);
-        this.currentRound.skipsUsed++;
+        this.state.currentRound.skipped.push(currentWord);
         
-        this.updateCounters();
+        this.updateSkipCounter();
         this.showNextWord();
-        
-        this.showWordFeedback('skipped');
-        
-        // Вибрация для мобильных
-        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
-            navigator.vibrate(100);
-        }
-    }
-    
-    wrongWord() {
-        if (!this.roundActive) return;
-        
-        const currentWord = document.getElementById('currentWord').textContent;
-        this.currentRound.wrong.push(currentWord);
-        
-        // Штраф за ошибку (по желанию можно изменить)
-        if (this.teams[this.currentTeam].score > 0) {
-            this.teams[this.currentTeam].score--;
-        }
-        
-        this.updateCounters();
-        this.showNextWord();
-        
-        this.showWordFeedback('wrong');
-        
-        // Вибрация для мобильных
-        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
-            navigator.vibrate([200, 100, 200]);
-        }
-    }
-    
-    showWordFeedback(type) {
-        const wordDisplay = document.getElementById('currentWord');
-        const originalText = wordDisplay.textContent;
-        
-        // Добавляем класс для анимации
-        wordDisplay.classList.remove('correct', 'skipped', 'wrong');
-        wordDisplay.classList.add(type);
-        
-        // Создаем плавающий feedback
-        this.createFloatingFeedback(type);
-        
-        // Через короткое время убираем класс
-        setTimeout(() => {
-            wordDisplay.classList.remove(type);
-        }, 300);
-    }
-    
-    createFloatingFeedback(type) {
-        const feedback = document.createElement('div');
-        feedback.className = `floating-feedback ${type}`;
-        
-        let icon, text;
-        switch(type) {
-            case 'correct':
-                icon = '✓';
-                text = '+1 очко';
-                break;
-            case 'skipped':
-                icon = '→';
-                text = 'Пропущено';
-                break;
-            case 'wrong':
-                icon = '✗';
-                text = '-1 очко';
-                break;
-        }
-        
-        feedback.innerHTML = `<span class="feedback-icon">${icon}</span><span class="feedback-text">${text}</span>`;
-        
-        // Позиционируем относительно слова
-        const wordDisplay = document.getElementById('currentWord');
-        const rect = wordDisplay.getBoundingClientRect();
-        
-        feedback.style.position = 'fixed';
-        feedback.style.left = `${rect.left + rect.width/2}px`;
-        feedback.style.top = `${rect.top}px`;
-        feedback.style.transform = 'translate(-50%, -100%)';
-        
-        document.body.appendChild(feedback);
+        this.showNotification('Слово пропущено', 'warning');
         
         // Анимация
-        setTimeout(() => {
-            feedback.style.opacity = '0';
-            feedback.style.transform = 'translate(-50%, -150%)';
-            feedback.style.transition = 'all 0.5s ease';
-        }, 100);
-        
-        // Удаляем через секунду
-        setTimeout(() => {
-            feedback.remove();
-        }, 1000);
-    }
+        const wordElement = document.getElementById('currentWord');
+        wordElement.classList.add('skip-animation');
+        setTimeout(() => wordElement.classList.remove('skip-animation'), 300);
+    },
     
-    endRound() {
-        this.roundActive = false;
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
+    // Ошибка в слове
+    wrongWord() {
+        if (!this.state.roundActive) return;
+        
+        const currentWord = document.getElementById('currentWord').textContent;
+        this.state.currentRound.wrong.push(currentWord);
+        
+        // Штраф за ошибку
+        if (this.state.teams[this.state.currentTeam].score > 0) {
+            this.state.teams[this.state.currentTeam].score--;
         }
         
-        // Сохраняем статистику
-        this.saveRoundStats();
+        this.updateScores();
+        this.showNextWord();
+        this.showNotification('Ошибка! -1 очко', 'error');
         
-        // Вибрация для завершения раунда
-        if (navigator.vibrate && document.body.classList.contains('mobile-device')) {
-            navigator.vibrate([300, 100, 300]);
-        }
-        
-        // Показываем экран результатов
-        this.showResultsScreen();
-    }
+        // Анимация
+        const wordElement = document.getElementById('currentWord');
+        wordElement.classList.add('wrong-animation');
+        setTimeout(() => wordElement.classList.remove('wrong-animation'), 300);
+    },
     
-    showResultsScreen() {
-        this.showScreen('resultsScreen');
+    // Обновить счёт команд
+    updateScores() {
+        const scoresGrid = document.getElementById('scoresGrid');
+        scoresGrid.innerHTML = '';
         
-        // Обновляем статистику раунда
-        document.getElementById('wordsGuessed').textContent = this.currentRound.guessed.length;
-        document.getElementById('wordsSkipped').textContent = this.currentRound.skipped.length;
-        document.getElementById('pointsEarned').textContent = 
-            this.currentRound.guessed.length - this.currentRound.wrong.length;
-        document.getElementById('mistakesMade').textContent = this.currentRound.wrong.length;
-        
-        // Показываем слова раунда
-        const wordsList = document.getElementById('roundWordsList');
-        wordsList.innerHTML = '';
-        
-        this.currentRound.words.forEach(word => {
-            const wordElement = document.createElement('div');
-            wordElement.className = 'word-result-item';
-            
-            let statusClass = '';
-            let statusIcon = '';
-            
-            if (this.currentRound.guessed.includes(word)) {
-                statusClass = 'guessed';
-                statusIcon = '<i class="fas fa-check-circle"></i>';
-            } else if (this.currentRound.skipped.includes(word)) {
-                statusClass = 'skipped';
-                statusIcon = '<i class="fas fa-forward"></i>';
-            } else {
-                statusClass = 'wrong';
-                statusIcon = '<i class="fas fa-times-circle"></i>';
-            }
-            
-            wordElement.innerHTML = `
-                <span class="word-result-text">${word}</span>
-                <span class="word-result-status ${statusClass}">${statusIcon}</span>
+        this.state.teams.forEach((team, index) => {
+            const card = document.createElement('div');
+            card.className = `team-score-card ${team.color}`;
+            card.innerHTML = `
+                <div class="team-name">${team.name}</div>
+                <div class="team-points">${team.score}</div>
             `;
-            
-            wordsList.appendChild(wordElement);
+            scoresGrid.appendChild(card);
         });
-        
-        // Обновляем счет команд
-        this.renderTeams();
-    }
+    },
     
-    nextRound() {
-        // Переходим к следующей команде
-        this.currentTeam = (this.currentTeam + 1) % this.teams.length;
-        this.currentPlayer = (this.currentPlayer + 1) % 2; // Простая ротация игроков
+    // Обновить текущую команду
+    updateCurrentTeam() {
+        const team = this.state.teams[this.state.currentTeam];
+        const teamElement = document.getElementById('currentTeam');
+        const playerElement = document.getElementById('currentPlayer');
         
-        // Начинаем новый раунд
-        this.showScreen('gameScreen');
-        this.startRound();
-    }
+        teamElement.textContent = team.name;
+        teamElement.className = team.color;
+        
+        // Простая ротация игроков
+        const playerNumber = (this.state.currentPlayer % 4) + 1;
+        playerElement.textContent = `Игрок ${playerNumber}`;
+    },
     
-    newGame() {
-        this.showCustomConfirm(
-            'Начать новую игру?',
-            'Текущий прогресс будет потерян.',
-            () => {
-                this.resetGame();
-                this.showScreen('setupScreen');
-            },
-            () => {
-                // Ничего не делаем при отмене
-            }
+    // Завершить раунд
+    endRound() {
+        this.state.roundActive = false;
+        this.stopTimer();
+        
+        // Обновляем статистику
+        const guessedCount = this.state.currentRound.guessed.length;
+        this.state.stats.totalWords += this.state.currentRound.words.length;
+        this.state.stats.gamesPlayed++;
+        
+        if (guessedCount > this.state.stats.bestScore) {
+            this.state.stats.bestScore = guessedCount;
+        }
+        
+        this.state.stats.avgScore = Math.round(
+            (this.state.stats.avgScore * (this.state.stats.gamesPlayed - 1) + guessedCount) / 
+            this.state.stats.gamesPlayed
         );
-    }
-    
-    resetGame() {
-        this.teams.forEach(team => {
-            team.score = 0;
-            team.totalWords = 0;
-        });
-        
-        this.currentTeam = 0;
-        this.currentPlayer = 0;
-        this.usedWords.clear();
-        this.currentWordIndex = 0;
-        this.gameStarted = false;
-        this.roundActive = false;
-        
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-    }
-    
-    pauseGame() {
-        if (!this.roundActive) return;
-        
-        this.roundActive = false;
-        if (this.timer) {
-            clearInterval(this.timer);
-        }
-        
-        this.showModal('pauseModal');
-    }
-    
-    resumeGame() {
-        this.roundActive = true;
-        this.startTimer();
-        this.closeModal('pauseModal');
-    }
-    
-    saveRoundStats() {
-        const roundStats = {
-            date: new Date().toISOString(),
-            team: this.teams[this.currentTeam].name,
-            wordsGuessed: this.currentRound.guessed.length,
-            wordsSkipped: this.currentRound.skipped.length,
-            wordsWrong: this.currentRound.wrong.length,
-            totalWords: this.currentRound.words.length,
-            timeUsed: this.settings.timePerRound - this.timeLeft
-        };
-        
-        this.stats.rounds.push(roundStats);
-        this.stats.totalRounds++;
-        this.stats.totalWords += this.currentRound.words.length;
-        this.stats.totalGames = Math.ceil(this.stats.totalRounds / (this.settings.teamCount * 3)); // Предполагаем 3 раунда на игру
         
         this.saveStats();
-    }
-    
-    loadStats() {
-        const saved = localStorage.getItem('aliasStats');
-        return saved ? JSON.parse(saved) : {
-            totalGames: 0,
-            totalRounds: 0,
-            totalWords: 0,
-            rounds: []
-        };
-    }
-    
-    saveStats() {
-        localStorage.setItem('aliasStats', JSON.stringify(this.stats));
-    }
-    
-    resetStatistics() {
-        this.showCustomConfirm(
-            'Сбросить статистику?',
-            'Вся статистика будет удалена безвозвратно.',
-            () => {
-                this.stats = {
-                    totalGames: 0,
-                    totalRounds: 0,
-                    totalWords: 0,
-                    rounds: []
-                };
-                this.saveStats();
-                this.showStatistics();
-            },
-            () => {
-                // Ничего не делаем при отмене
-            }
-        );
-    }
-    
-    showStatistics() {
-        this.showScreen('statsScreen');
-        this.updateStatsDisplay();
-    }
-    
-    updateStatsDisplay() {
-        // Общая статистика
-        document.getElementById('totalGames').textContent = this.stats.totalGames;
-        document.getElementById('totalRounds').textContent = this.stats.totalRounds;
-        document.getElementById('totalWords').textContent = this.stats.totalWords;
-        document.getElementById('avgWords').textContent = 
-            this.stats.totalRounds > 0 
-                ? (this.stats.totalWords / this.stats.totalRounds).toFixed(1)
-                : '0';
         
-        // Статистика команд
-        const teamsStatsElement = document.getElementById('teamsStats');
-        teamsStatsElement.innerHTML = '';
+        // Показываем результаты
+        this.showResults();
+    },
+    
+    // Показать результаты
+    showResults() {
+        // Обновляем статистику раунда
+        document.getElementById('guessedWords').textContent = this.state.currentRound.guessed.length;
+        document.getElementById('skippedWords').textContent = this.state.currentRound.skipped.length;
+        document.getElementById('pointsEarned').textContent = 
+            this.state.currentRound.guessed.length - this.state.currentRound.wrong.length;
         
-        this.teams.forEach(team => {
-            const teamStats = document.createElement('div');
-            teamStats.className = 'team-stats-item';
-            teamStats.innerHTML = `
-                <div class="team-stats-header ${team.color}">
-                    <span class="team-stats-name">${team.name}</span>
-                    <span class="team-stats-score">${team.score} очков</span>
-                </div>
-                <div class="team-stats-details">
-                    <div class="stat-detail">
-                        <span class="detail-label">Всего слов:</span>
-                        <span class="detail-value">${team.totalWords}</span>
-                    </div>
-                    <div class="stat-detail">
-                        <span class="detail-label">Побед в раундах:</span>
-                        <span class="detail-value">${team.roundsWon}</span>
-                    </div>
-                </div>
+        // Обновляем общий счёт
+        const teamsResults = document.getElementById('teamsResults');
+        teamsResults.innerHTML = '';
+        
+        this.state.teams.forEach((team, index) => {
+            const result = document.createElement('div');
+            result.className = `team-result ${team.color}`;
+            result.innerHTML = `
+                <span class="team-result-name">${team.name}</span>
+                <span class="team-result-score">${team.score}</span>
             `;
-            teamsStatsElement.appendChild(teamStats);
-        });
-    }
-    
-    updateCounters() {
-        const totalWords = this.currentRound.words.length;
-        const currentWordNum = Math.max(1, totalWords);
-        
-        document.getElementById('wordCounter').textContent = `${currentWordNum}`;
-        document.getElementById('skipCounter').textContent = 
-            `${this.currentRound.skipsUsed}/${this.settings.skipLimit || '∞'}`;
-    }
-    
-    updateCurrentTeamDisplay() {
-        const team = this.teams[this.currentTeam];
-        document.getElementById('currentTeam').textContent = team.name;
-        document.getElementById('currentTeam').className = `info-value ${team.color}`;
-        
-        // Простая ротация объясняющего
-        const players = ['Игрок 1', 'Игрок 2', 'Игрок 3', 'Игрок 4'];
-        document.getElementById('currentExplainer').textContent = 
-            players[this.currentPlayer % players.length];
-    }
-    
-    showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
+            teamsResults.appendChild(result);
         });
         
-        const targetScreen = document.getElementById(screenId);
-        if (targetScreen) {
-            targetScreen.classList.add('active');
-        }
-    }
-    
-    showModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'block';
-        }
-    }
-    
-    closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    }
-    
-    showNotification(message, type = 'info') {
-        // Создаем элемент уведомления
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span class="notification-message">${message}</span>
-                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
-            </div>
-        `;
+        // Показываем слова раунда
+        const wordsGrid = document.getElementById('roundWords');
+        wordsGrid.innerHTML = '';
         
-        document.body.appendChild(notification);
+        this.state.currentRound.words.forEach(word => {
+            const wordItem = document.createElement('div');
+            wordItem.className = 'word-item';
+            wordItem.textContent = word;
+            
+            if (this.state.currentRound.guessed.includes(word)) {
+                wordItem.classList.add('guessed');
+            } else if (this.state.currentRound.skipped.includes(word)) {
+                wordItem.classList.add('skipped');
+            } else {
+                wordItem.classList.add('wrong');
+            }
+            
+            wordsGrid.appendChild(wordItem);
+        });
         
-        // Автоматическое удаление через 3 секунды
+        this.showScreen('resultsScreen');
+    },
+    
+    // Следующий раунд
+    nextRound() {
+        // Переходим к следующей команде
+        this.state.currentTeam = (this.state.currentTeam + 1) % this.state.teams.length;
+        this.state.currentPlayer++;
+        
+        // Сбрасываем состояние раунда
+        this.state.currentRound = {
+            words: [],
+            guessed: [],
+            skipped: [],
+            wrong: []
+        };
+        this.state.timeLeft = this.settings.timePerRound;
+        
+        // Обновляем интерфейс
+        this.updateCurrentTeam();
+        this.updateSkipCounter();
+        this.updateTimer();
+        this.showScreen('gameScreen');
+        
+        // Начинаем новый раунд
         setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 3000);
-    }
+            this.state.roundActive = true;
+            this.startTimer();
+            this.showNextWord();
+        }, 1000);
+    },
     
-    showCustomConfirm(title, message, onConfirm, onCancel) {
-        const modal = document.createElement('div');
-        modal.className = 'custom-confirm-modal';
-        modal.innerHTML = `
-            <div class="custom-confirm-content">
-                <h3>${title}</h3>
-                <p>${message}</p>
-                <div class="confirm-buttons">
-                    <button class="confirm-btn cancel">Отмена</button>
-                    <button class="confirm-btn confirm">Продолжить</button>
-                </div>
-            </div>
-        `;
+    // Пауза
+    pauseGame() {
+        if (!this.state.roundActive) return;
         
-        document.body.appendChild(modal);
-        
-        // Обработчики кнопок
-        modal.querySelector('.confirm-btn.confirm').addEventListener('click', () => {
-            modal.remove();
-            if (onConfirm) onConfirm();
-        });
-        
-        modal.querySelector('.confirm-btn.cancel').addEventListener('click', () => {
-            modal.remove();
-            if (onCancel) onCancel();
-        });
-        
-        // Закрытие по клику на фон
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-                if (onCancel) onCancel();
-            }
-        });
-    }
+        this.state.roundActive = false;
+        this.stopTimer();
+        this.showModal('pauseModal');
+    },
     
-    handleKeyPress(event) {
-        if (!this.roundActive) return;
+    // Продолжить игру
+    resumeGame() {
+        this.state.roundActive = true;
+        this.startTimer();
+        this.closeModal('pauseModal');
+    },
+    
+    // Показать статистику
+    showStats() {
+        document.getElementById('totalGames').textContent = this.state.stats.gamesPlayed;
+        document.getElementById('totalWords').textContent = this.state.stats.totalWords;
+        document.getElementById('avgScore').textContent = this.state.stats.avgScore;
+        document.getElementById('recordScore').textContent = this.state.stats.bestScore;
         
-        switch(event.key) {
-            case 'ArrowRight':
-            case ' ':
-                event.preventDefault();
-                this.correctWord();
-                break;
-                
-            case 'ArrowDown':
-            case 's':
-                event.preventDefault();
-                this.skipWord();
-                break;
-                
-            case 'ArrowLeft':
-            case 'x':
-                event.preventDefault();
-                this.wrongWord();
-                break;
-                
-            case 'Escape':
-                event.preventDefault();
-                this.pauseGame();
-                break;
+        this.showScreen('statsScreen');
+    },
+    
+    // Сбросить статистику
+    resetStats() {
+        if (confirm('Вы уверены, что хотите сбросить всю статистику?')) {
+            this.state.stats = {
+                gamesPlayed: 0,
+                totalWords: 0,
+                bestScore: 0,
+                avgScore: 0
+            };
+            this.saveStats();
+            this.showStats();
         }
-    }
+    },
     
-    updateDisplay() {
-        // Обновляем все элементы интерфейса
-        this.updateSettingsUI();
-        this.updateTimerDisplay();
-        this.updateCounters();
-        this.updateCurrentTeamDisplay();
+    // Показать правила
+    showHowToPlay() {
+        this.showModal('rulesModal');
+    },
+    
+    // Показать модальное окно
+    showModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
+    },
+    
+    // Закрыть модальное окно
+    closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    },
+    
+    // Показать уведомление
+    showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = `notification ${type} show`;
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 2000);
     }
-}
+};
 
-// Глобальные функции для вызова из HTML
-let game;
-
+// Глобальные функции для HTML
 function goToMainMenu() {
-    game.showCustomConfirm(
-        'Вернуться в главное меню?',
-        'Несохраненный прогресс будет потерян.',
-        () => {
-            window.location.href = 'https://lovecouple.ru/friends/';
-        },
-        () => {
-            // Ничего не делаем при отмене
-        }
-    );
-}
-
-function showRules() {
-    document.getElementById('rulesModal').style.display = 'block';
-}
-
-function closeRules() {
-    document.getElementById('rulesModal').style.display = 'none';
-}
-
-function toggleSound() {
-    const icon = document.getElementById('soundIcon');
-    if (icon.classList.contains('fa-volume-up')) {
-        icon.classList.remove('fa-volume-up');
-        icon.classList.add('fa-volume-mute');
-    } else {
-        icon.classList.remove('fa-volume-mute');
-        icon.classList.add('fa-volume-up');
+    if (confirm('Вернуться в главное меню? Прогресс текущей игры будет потерян.')) {
+        window.location.href = 'https://lovecouple.ru/friends/';
     }
+}
+
+function backToMenu() {
+    Game.showScreen('menuScreen');
+    Game.updateMenuStats();
+}
+
+function backToMenuFromPause() {
+    Game.closeModal('pauseModal');
+    backToMenu();
 }
 
 function showSettings() {
-    game.showScreen('setupScreen');
+    Game.showSetupScreen();
 }
 
 function startGame() {
-    if (!game) return;
-    game.startGame();
+    Game.startGame();
 }
 
 function pauseGame() {
-    if (game) game.pauseGame();
+    Game.pauseGame();
 }
 
 function resumeGame() {
-    if (game) game.resumeGame();
+    Game.resumeGame();
 }
 
 function endRound() {
-    if (game) game.endRound();
+    Game.endRound();
 }
 
 function endRoundFromPause() {
-    if (game) {
-        game.closeModal('pauseModal');
-        game.endRound();
-    }
-}
-
-function newGameFromPause() {
-    if (game) {
-        game.closeModal('pauseModal');
-        game.newGame();
-    }
+    Game.closeModal('pauseModal');
+    Game.endRound();
 }
 
 function correctWord() {
-    if (game) game.correctWord();
+    Game.correctWord();
 }
 
 function skipWord() {
-    if (game) game.skipWord();
+    Game.skipWord();
 }
 
 function wrongWord() {
-    if (game) game.wrongWord();
+    Game.wrongWord();
 }
 
 function nextRound() {
-    if (game) game.nextRound();
+    Game.nextRound();
 }
 
-function newGame() {
-    if (game) game.newGame();
+function showStats() {
+    Game.showStats();
 }
 
-function showStatistics() {
-    if (game) game.showStatistics();
+function resetStats() {
+    Game.resetStats();
 }
 
-function resetStatistics() {
-    if (game) game.resetStatistics();
+function showHowToPlay() {
+    Game.showHowToPlay();
 }
 
-function goBackFromStats() {
-    if (game) game.showScreen('resultsScreen');
+function showRules() {
+    Game.showHowToPlay();
 }
 
-function showWordsList() {
-    if (!game || !game.roundActive) return;
-    
-    game.showCustomConfirm(
-        'Показать список слов?',
-        'Это может помешать игре, если участники увидят будущие слова.',
-        () => {
-            const currentRound = game.currentRound;
-            let message = `Текущие слова (${currentRound.words.length}):\n\n`;
-            
-            currentRound.words.forEach((word, index) => {
-                let status = '○';
-                if (currentRound.guessed.includes(word)) status = '✓';
-                if (currentRound.skipped.includes(word)) status = '→';
-                if (currentRound.wrong.includes(word)) status = '✗';
-                
-                message += `${index + 1}. ${status} ${word}\n`;
-            });
-            
-            alert(message);
-        },
-        () => {
-            // Ничего не делаем при отмене
-        }
-    );
+function closeModal(modalId) {
+    Game.closeModal(modalId);
 }
 
-function showStatsTab(tabName) {
-    // Переключение вкладок статистики
-    document.querySelectorAll('.stats-section').forEach(section => {
-        section.style.display = 'none';
-    });
-    
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    document.getElementById(tabName + 'Stats').style.display = 'block';
-    event.target.classList.add('active');
-}
-
-// Инициализация при загрузке страницы
+// Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
-    game = new AliasGame();
+    Game.init();
     
-    // Инициализация модальных окон
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
+    // Закрытие модальных окон по клику на фон
+    document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
         });
     });
-    
-    // Закрытие модальных окон по ESC
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            modals.forEach(modal => {
-                modal.style.display = 'none';
-            });
-        }
-    });
-    
-    // Добавляем инструкцию по PWA для мобильных
-    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
-        navigator.serviceWorker.register('../sw.js')
-            .then(() => {
-                console.log('Service Worker зарегистрирован');
-            })
-            .catch(err => {
-                console.log('Ошибка регистрации Service Worker:', err);
-            });
-    }
-    
-    // Добавляем кнопку "Установить приложение" для мобильных
-    let deferredPrompt;
-    const installBtn = document.createElement('button');
-    installBtn.className = 'install-app-btn';
-    installBtn.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
-    installBtn.style.display = 'none';
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        
-        // Показываем кнопку через 5 секунд после загрузки
-        setTimeout(() => {
-            installBtn.style.display = 'block';
-            document.body.appendChild(installBtn);
-        }, 5000);
-        
-        installBtn.addEventListener('click', () => {
-            installBtn.style.display = 'none';
-            deferredPrompt.prompt();
-            
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('Пользователь установил приложение');
-                }
-                deferredPrompt = null;
-            });
-        });
-    });
-    
-    // Проверка ориентации устройства
-    function checkOrientation() {
-        if (window.matchMedia("(orientation: portrait)").matches && 
-            document.body.classList.contains('mobile-device')) {
-            document.body.classList.add('portrait');
-            document.body.classList.remove('landscape');
-        } else if (document.body.classList.contains('mobile-device')) {
-            document.body.classList.add('landscape');
-            document.body.classList.remove('portrait');
-        }
-    }
-    
-    checkOrientation();
-    window.addEventListener('resize', checkOrientation);
-    window.addEventListener('orientationchange', checkOrientation);
 });
