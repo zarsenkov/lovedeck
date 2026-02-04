@@ -1,681 +1,559 @@
-// Основной объект игры
-const Game = {
-    // Настройки по умолчанию
-    settings: {
-        teamCount: 3,
-        timePerRound: 60,
-        difficulty: 'medium',
-        themes: ['all'],
-        skipLimit: 3,
-        oneWordRule: false
-    },
-    
-    // Состояние игры
-    state: {
-        teams: [],
-        currentTeam: 0,
-        currentPlayer: 0,
-        words: [],
-        usedWords: new Set(),
-        currentWordIndex: 0,
-        timer: null,
-        timeLeft: 60,
-        roundActive: false,
-        currentRound: {
-            words: [],
-            guessed: [],
-            skipped: [],
-            wrong: []
-        },
-        stats: {
-            gamesPlayed: 0,
-            totalWords: 0,
-            bestScore: 0,
-            avgScore: 0
-        }
-    },
-    
-    // Инициализация
-    init() {
-        this.loadStats();
+class AliasGame {
+    constructor() {
+        this.initializeElements();
+        this.initializeGame();
         this.bindEvents();
-        this.updateMenuStats();
-        this.showScreen('menuScreen');
-    },
+        this.updateUI();
+    }
     
-    // Загрузка статистики
-    loadStats() {
-        const saved = localStorage.getItem('aliasStats');
-        if (saved) {
-            this.state.stats = JSON.parse(saved);
-        }
-    },
+    initializeElements() {
+        // Настройки
+        this.teamCountSelect = document.getElementById('teamCount');
+        this.roundTimeSelect = document.getElementById('roundTime');
+        this.wordsPerRoundSelect = document.getElementById('wordsPerRound');
+        this.categorySelect = document.getElementById('category');
+        this.prohibitWordsToggle = document.getElementById('prohibitWords');
+        
+        // Команды
+        this.teamsContainer = document.getElementById('teamsContainer');
+        
+        // Игровая область
+        this.setupSection = document.getElementById('setupSection');
+        this.gameSection = document.getElementById('gameSection');
+        this.resultsSection = document.getElementById('resultsSection');
+        
+        // Текущее слово
+        this.currentWordElement = document.getElementById('currentWord');
+        this.wordHintElement = document.getElementById('wordHint');
+        
+        // Таймер
+        this.timerDisplay = document.getElementById('timerDisplay');
+        this.timerProgress = document.getElementById('timerProgress');
+        
+        // Кнопки
+        this.startGameBtn = document.getElementById('startGame');
+        this.correctBtn = document.getElementById('correct');
+        this.skipBtn = document.getElementById('skip');
+        this.prohibitBtn = document.getElementById('prohibit');
+        this.pauseBtn = document.getElementById('pause');
+        this.finishRoundBtn = document.getElementById('finishRound');
+        this.newGameBtn = document.getElementById('newGame');
+        this.backToMenuBtn = document.getElementById('backToMenu');
+        
+        // Модальные окна
+        this.roundResultsModal = document.getElementById('roundResultsModal');
+        this.gameResultsModal = document.getElementById('gameResultsModal');
+        this.pauseModal = document.getElementById('pauseModal');
+        
+        // Результаты
+        this.roundResultsList = document.getElementById('roundResultsList');
+        this.finalResultsList = document.getElementById('finalResultsList');
+        this.winnerTeamElement = document.getElementById('winnerTeam');
+        
+        // Переменные игры
+        this.teams = [];
+        this.currentTeamIndex = 0;
+        this.currentRound = 1;
+        this.totalRounds = 3;
+        this.currentWords = [];
+        this.currentWordIndex = 0;
+        this.usedWords = new Set();
+        this.timer = null;
+        this.timeLeft = 0;
+        this.totalTime = 60;
+        this.isPaused = false;
+        this.currentResults = [];
+        this.gameStarted = false;
+    }
     
-    // Сохранение статистики
-    saveStats() {
-        localStorage.setItem('aliasStats', JSON.stringify(this.state.stats));
-    },
+    initializeGame() {
+        // Инициализируем команды
+        this.updateTeams();
+        
+        // Заполняем категории
+        this.fillCategories();
+    }
     
-    // Обновление статистики в меню
-    updateMenuStats() {
-        document.getElementById('gamesPlayed').textContent = this.state.stats.gamesPlayed;
-        document.getElementById('bestScore').textContent = this.state.stats.bestScore;
-    },
+    fillCategories() {
+        const categories = [
+            { value: 'mixed', text: '🎲 Смешанная' },
+            { value: 'animals', text: '🦁 Животные' },
+            { value: 'objects', text: '📱 Предметы' },
+            { value: 'professions', text: '👨‍⚕️ Профессии' },
+            { value: 'movies', text: '🎬 Фильмы' },
+            { value: 'food', text: '🍕 Еда' },
+            { value: 'travel', text: '✈️ Путешествия' },
+            { value: 'sports', text: '⚽ Спорт' },
+            { value: 'nature', text: '🌳 Природа' }
+        ];
+        
+        this.categorySelect.innerHTML = categories
+            .map(cat => `<option value="${cat.value}">${cat.text}</option>`)
+            .join('');
+    }
     
-    // Привязка событий
     bindEvents() {
-        // Кнопки настроек
-        document.querySelectorAll('.option-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const group = e.target.closest('.option-group');
-                group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                
-                const setting = e.target.closest('.setting-group').querySelector('h3').textContent;
-                const value = e.target.dataset.value;
-                
-                switch(true) {
-                    case setting.includes('команд'):
-                        this.settings.teamCount = parseInt(value);
-                        break;
-                    case setting.includes('Время'):
-                        this.settings.timePerRound = parseInt(value);
-                        break;
-                    case setting.includes('Сложность'):
-                        this.settings.difficulty = value;
-                        break;
+        this.teamCountSelect.addEventListener('change', () => this.updateTeams());
+        this.startGameBtn.addEventListener('click', () => this.startGame());
+        this.correctBtn.addEventListener('click', () => this.handleCorrect());
+        this.skipBtn.addEventListener('click', () => this.handleSkip());
+        this.prohibitBtn.addEventListener('click', () => this.handleProhibit());
+        this.pauseBtn.addEventListener('click', () => this.pauseGame());
+        this.finishRoundBtn.addEventListener('click', () => this.finishRound());
+        this.newGameBtn.addEventListener('click', () => this.resetGame());
+        this.backToMenuBtn.addEventListener('click', () => window.location.href = 'https://lovecouple.ru/friends/');
+        
+        // Кнопки в модальных окнах
+        document.querySelectorAll('[data-action="continue"]').forEach(btn => {
+            btn.addEventListener('click', () => this.continueGame());
+        });
+        
+        document.querySelectorAll('[data-action="nextRound"]').forEach(btn => {
+            btn.addEventListener('click', () => this.startNextRound());
+        });
+        
+        document.querySelectorAll('[data-action="closeModal"]').forEach(btn => {
+            btn.addEventListener('click', () => this.closeModal(btn.closest('.modal')));
+        });
+        
+        // Закрытие модальных окон по клику вне контента
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeModal(modal);
                 }
             });
         });
-        
-        // Чекбоксы тем
-        document.querySelectorAll('.theme-checkbox input').forEach(cb => {
-            cb.addEventListener('change', () => {
-                const themes = [];
-                document.querySelectorAll('.theme-checkbox input:checked').forEach(checked => {
-                    const theme = checked.nextElementSibling.textContent.toLowerCase();
-                    if (theme === 'все слова') {
-                        themes.push('all');
-                    } else {
-                        themes.push(checked.nextElementSibling.textContent);
-                    }
-                });
-                this.settings.themes = themes;
-            });
-        });
-        
-        // Чекбоксы правил
-        document.getElementById('skipLimit').addEventListener('change', (e) => {
-            this.settings.skipLimit = e.target.checked ? 3 : 999;
-        });
-        
-        document.getElementById('oneWordRule').addEventListener('change', (e) => {
-            this.settings.oneWordRule = e.target.checked;
-        });
-        
-        // Горячие клавиши
-        document.addEventListener('keydown', (e) => {
-            if (!this.state.roundActive) return;
-            
-            switch(e.key) {
-                case ' ':
-                case 'Enter':
-                    e.preventDefault();
-                    this.correctWord();
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    this.correctWord();
-                    break;
-                case 'ArrowDown':
-                case 's':
-                    e.preventDefault();
-                    this.skipWord();
-                    break;
-                case 'ArrowLeft':
-                case 'x':
-                    e.preventDefault();
-                    this.wrongWord();
-                    break;
-                case 'Escape':
-                    e.preventDefault();
-                    this.pauseGame();
-                    break;
-            }
-        });
-    },
+    }
     
-    // Показать экран
-    showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        document.getElementById(screenId).classList.add('active');
-    },
-    
-    // Показать меню настроек
-    showSetupScreen() {
-        this.showScreen('setupScreen');
-    },
-    
-    // Начать игру
-    startGame() {
+    updateTeams() {
+        const teamCount = parseInt(this.teamCountSelect.value);
+        this.teams = [];
+        
         // Создаем команды
-        this.state.teams = [];
-        for (let i = 0; i < this.settings.teamCount; i++) {
-            this.state.teams.push({
+        for (let i = 0; i < teamCount; i++) {
+            this.teams.push({
                 name: `Команда ${i + 1}`,
                 score: 0,
-                color: `team-${i + 1}`
+                color: this.getTeamColor(i),
+                roundScore: 0,
+                history: []
             });
         }
         
-        // Генерируем слова
-        this.generateWords();
-        
-        // Сбрасываем состояние раунда
-        this.state.currentTeam = 0;
-        this.state.currentPlayer = 0;
-        this.state.currentRound = {
-            words: [],
-            guessed: [],
-            skipped: [],
-            wrong: []
-        };
-        this.state.timeLeft = this.settings.timePerRound;
-        this.state.roundActive = false;
-        
-        // Обновляем интерфейс
-        this.updateScores();
-        this.updateCurrentTeam();
-        this.showScreen('gameScreen');
-        
-        // Показываем первое слово через секунду
-        setTimeout(() => {
-            this.state.roundActive = true;
-            this.startTimer();
-            this.showNextWord();
-        }, 1000);
-    },
-    
-    // Генерация слов
-    generateWords() {
-        let words = [];
-        
-        // Добавляем слова по сложности
-        if (this.settings.difficulty === 'mix') {
-            words = [
-                ...ALIAS_WORDS.easy,
-                ...ALIAS_WORDS.medium,
-                ...ALIAS_WORDS.hard
-            ];
-        } else {
-            words = [...ALIAS_WORDS[this.settings.difficulty]];
-        }
-        
-        // Добавляем тематические слова
-        if (!this.settings.themes.includes('all')) {
-            const themeWords = [];
-            this.settings.themes.forEach(theme => {
-                if (ALIAS_WORDS.themes[theme]) {
-                    themeWords.push(...ALIAS_WORDS.themes[theme]);
-                }
-            });
-            
-            if (themeWords.length > 0) {
-                // Смешиваем 50% тематических и 50% обычных
-                const mixCount = Math.min(words.length, themeWords.length);
-                words = [...words.slice(0, mixCount), ...themeWords.slice(0, mixCount)];
+        // Обновляем UI команд
+        this.teamsContainer.innerHTML = '';
+        this.teams.forEach((team, index) => {
+            const teamCard = document.createElement('div');
+            teamCard.className = 'team-card';
+            if (index === this.currentTeamIndex && this.gameStarted) {
+                teamCard.classList.add('active');
             }
+            
+            teamCard.innerHTML = `
+                <div class="team-header">
+                    <div class="team-name">${team.name}</div>
+                    <div class="team-score">${team.score}</div>
+                </div>
+                <div class="team-stats">
+                    <span>Раунд: ${team.roundScore || 0}</span>
+                    <span>Угадано: ${team.history.filter(r => r.success).length}</span>
+                </div>
+            `;
+            
+            this.teamsContainer.appendChild(teamCard);
+        });
+    }
+    
+    getTeamColor(index) {
+        const colors = [
+            'linear-gradient(135deg, #8b5cf6, #06b6d4)',
+            'linear-gradient(135deg, #ef4444, #f59e0b)',
+            'linear-gradient(135deg, #10b981, #8b5cf6)',
+            'linear-gradient(135deg, #f59e0b, #ef4444)',
+            'linear-gradient(135deg, #06b6d4, #10b981)',
+            'linear-gradient(135deg, #8b5cf6, #ef4444)'
+        ];
+        return colors[index % colors.length];
+    }
+    
+    startGame() {
+        const selectedCategory = this.categorySelect.value;
+        const wordsPerRound = parseInt(this.wordsPerRoundSelect.value);
+        
+        // Генерируем слова для раунда
+        this.generateWords(selectedCategory, wordsPerRound);
+        
+        // Настройки таймера
+        this.totalTime = parseInt(this.roundTimeSelect.value);
+        this.timeLeft = this.totalTime;
+        
+        // Сбрасываем результаты раунда
+        this.currentResults = [];
+        this.teams.forEach(team => team.roundScore = 0);
+        
+        // Показываем игровую область
+        this.setupSection.style.display = 'none';
+        this.gameSection.style.display = 'block';
+        this.resultsSection.style.display = 'none';
+        
+        this.gameStarted = true;
+        this.updateTeams();
+        this.showNextWord();
+        this.startTimer();
+    }
+    
+    generateWords(category, count) {
+        let words = [...aliasWords[category]];
+        
+        // Удаляем использованные слова
+        words = words.filter(word => !this.usedWords.has(word));
+        
+        // Если слов не хватает, очищаем использованные
+        if (words.length < count) {
+            this.usedWords.clear();
+            words = [...aliasWords[category]];
         }
         
         // Перемешиваем
-        this.state.words = this.shuffleArray(words);
-        this.state.usedWords.clear();
-        this.state.currentWordIndex = 0;
-    },
+        words = this.shuffleArray(words);
+        
+        // Берем нужное количество
+        this.currentWords = words.slice(0, count);
+    }
     
-    // Перемешивание массива
-    shuffleArray(array) {
-        const newArray = [...array];
-        for (let i = newArray.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-        }
-        return newArray;
-    },
-    
-    // Показать следующее слово
     showNextWord() {
-        if (this.state.currentWordIndex >= this.state.words.length) {
-            this.generateWords();
-        }
-        
-        let word;
-        do {
-            word = this.state.words[this.state.currentWordIndex];
-            this.state.currentWordIndex = (this.state.currentWordIndex + 1) % this.state.words.length;
-        } while (this.state.usedWords.has(word) && this.state.usedWords.size < this.state.words.length * 0.7);
-        
-        this.state.usedWords.add(word);
-        this.state.currentRound.words.push(word);
-        
-        const wordElement = document.getElementById('currentWord');
-        wordElement.style.opacity = '0';
-        wordElement.style.transform = 'translateY(10px)';
-        
-        setTimeout(() => {
-            wordElement.textContent = word;
-            wordElement.style.opacity = '1';
-            wordElement.style.transform = 'translateY(0)';
-            this.updateWordCounter();
-        }, 200);
-    },
-    
-    // Обновить счетчик слов
-    updateWordCounter() {
-        const total = this.state.currentRound.words.length;
-        document.getElementById('wordCounter').textContent = total;
-    },
-    
-    // Обновить счетчик пропусков
-    updateSkipCounter() {
-        const used = this.state.currentRound.skipped.length;
-        document.getElementById('skipCounter').textContent = `${used}/${this.settings.skipLimit}`;
-    },
-    
-    // Обновить таймер
-    updateTimer() {
-        const timerElement = document.getElementById('timer');
-        const progressFill = document.getElementById('progressFill');
-        
-        timerElement.textContent = this.state.timeLeft;
-        
-        // Меняем цвет при низком времени
-        if (this.state.timeLeft <= 10) {
-            timerElement.classList.add('warning');
-        } else {
-            timerElement.classList.remove('warning');
-        }
-        
-        // Обновляем прогресс-бар
-        if (progressFill) {
-            const percent = (this.state.timeLeft / this.settings.timePerRound) * 100;
-            progressFill.style.width = `${percent}%`;
-        }
-    },
-    
-    // Запустить таймер
-    startTimer() {
-        if (this.state.timer) {
-            clearInterval(this.state.timer);
-        }
-        
-        this.state.timer = setInterval(() => {
-            this.state.timeLeft--;
-            this.updateTimer();
-            
-            if (this.state.timeLeft <= 0) {
-                this.endRound();
-            }
-        }, 1000);
-    },
-    
-    // Остановить таймер
-    stopTimer() {
-        if (this.state.timer) {
-            clearInterval(this.state.timer);
-            this.state.timer = null;
-        }
-    },
-    
-    // Слово угадано
-    correctWord() {
-        if (!this.state.roundActive) return;
-        
-        const currentWord = document.getElementById('currentWord').textContent;
-        this.state.currentRound.guessed.push(currentWord);
-        this.state.teams[this.state.currentTeam].score++;
-        
-        this.updateScores();
-        this.showNextWord();
-        this.showNotification('+1 очко!', 'success');
-        
-        // Анимация
-        const wordElement = document.getElementById('currentWord');
-        wordElement.classList.add('correct-animation');
-        setTimeout(() => wordElement.classList.remove('correct-animation'), 300);
-    },
-    
-    // Пропустить слово
-    skipWord() {
-        if (!this.state.roundActive) return;
-        
-        // Проверяем лимит пропусков
-        if (this.state.currentRound.skipped.length >= this.settings.skipLimit) {
-            this.showNotification('Лимит пропусков исчерпан!', 'warning');
+        if (this.currentWordIndex >= this.currentWords.length) {
+            this.finishRound();
             return;
         }
         
-        const currentWord = document.getElementById('currentWord').textContent;
-        this.state.currentRound.skipped.push(currentWord);
+        const word = this.currentWords[this.currentWordIndex];
+        this.currentWordElement.textContent = word;
         
-        this.updateSkipCounter();
-        this.showNextWord();
-        this.showNotification('Слово пропущено', 'warning');
+        // Подсказка: первая буква слова
+        this.wordHintElement.textContent = `Начинается на "${word[0].toUpperCase()}"`;
         
-        // Анимация
-        const wordElement = document.getElementById('currentWord');
-        wordElement.classList.add('skip-animation');
-        setTimeout(() => wordElement.classList.remove('skip-animation'), 300);
-    },
+        this.currentWordIndex++;
+    }
     
-    // Ошибка в слове
-    wrongWord() {
-        if (!this.state.roundActive) return;
+    startTimer() {
+        if (this.timer) clearInterval(this.timer);
         
-        const currentWord = document.getElementById('currentWord').textContent;
-        this.state.currentRound.wrong.push(currentWord);
+        this.updateTimerDisplay();
         
-        // Штраф за ошибку
-        if (this.state.teams[this.state.currentTeam].score > 0) {
-            this.state.teams[this.state.currentTeam].score--;
-        }
-        
-        this.updateScores();
-        this.showNextWord();
-        this.showNotification('Ошибка! -1 очко', 'error');
-        
-        // Анимация
-        const wordElement = document.getElementById('currentWord');
-        wordElement.classList.add('wrong-animation');
-        setTimeout(() => wordElement.classList.remove('wrong-animation'), 300);
-    },
-    
-    // Обновить счёт команд
-    updateScores() {
-        const scoresGrid = document.getElementById('scoresGrid');
-        scoresGrid.innerHTML = '';
-        
-        this.state.teams.forEach((team, index) => {
-            const card = document.createElement('div');
-            card.className = `team-score-card ${team.color}`;
-            card.innerHTML = `
-                <div class="team-name">${team.name}</div>
-                <div class="team-points">${team.score}</div>
-            `;
-            scoresGrid.appendChild(card);
-        });
-    },
-    
-    // Обновить текущую команду
-    updateCurrentTeam() {
-        const team = this.state.teams[this.state.currentTeam];
-        const teamElement = document.getElementById('currentTeam');
-        const playerElement = document.getElementById('currentPlayer');
-        
-        teamElement.textContent = team.name;
-        teamElement.className = team.color;
-        
-        // Простая ротация игроков
-        const playerNumber = (this.state.currentPlayer % 4) + 1;
-        playerElement.textContent = `Игрок ${playerNumber}`;
-    },
-    
-    // Завершить раунд
-    endRound() {
-        this.state.roundActive = false;
-        this.stopTimer();
-        
-        // Обновляем статистику
-        const guessedCount = this.state.currentRound.guessed.length;
-        this.state.stats.totalWords += this.state.currentRound.words.length;
-        this.state.stats.gamesPlayed++;
-        
-        if (guessedCount > this.state.stats.bestScore) {
-            this.state.stats.bestScore = guessedCount;
-        }
-        
-        this.state.stats.avgScore = Math.round(
-            (this.state.stats.avgScore * (this.state.stats.gamesPlayed - 1) + guessedCount) / 
-            this.state.stats.gamesPlayed
-        );
-        
-        this.saveStats();
-        
-        // Показываем результаты
-        this.showResults();
-    },
-    
-    // Показать результаты
-    showResults() {
-        // Обновляем статистику раунда
-        document.getElementById('guessedWords').textContent = this.state.currentRound.guessed.length;
-        document.getElementById('skippedWords').textContent = this.state.currentRound.skipped.length;
-        document.getElementById('pointsEarned').textContent = 
-            this.state.currentRound.guessed.length - this.state.currentRound.wrong.length;
-        
-        // Обновляем общий счёт
-        const teamsResults = document.getElementById('teamsResults');
-        teamsResults.innerHTML = '';
-        
-        this.state.teams.forEach((team, index) => {
-            const result = document.createElement('div');
-            result.className = `team-result ${team.color}`;
-            result.innerHTML = `
-                <span class="team-result-name">${team.name}</span>
-                <span class="team-result-score">${team.score}</span>
-            `;
-            teamsResults.appendChild(result);
-        });
-        
-        // Показываем слова раунда
-        const wordsGrid = document.getElementById('roundWords');
-        wordsGrid.innerHTML = '';
-        
-        this.state.currentRound.words.forEach(word => {
-            const wordItem = document.createElement('div');
-            wordItem.className = 'word-item';
-            wordItem.textContent = word;
-            
-            if (this.state.currentRound.guessed.includes(word)) {
-                wordItem.classList.add('guessed');
-            } else if (this.state.currentRound.skipped.includes(word)) {
-                wordItem.classList.add('skipped');
-            } else {
-                wordItem.classList.add('wrong');
+        this.timer = setInterval(() => {
+            if (!this.isPaused) {
+                this.timeLeft--;
+                this.updateTimerDisplay();
+                
+                if (this.timeLeft <= 0) {
+                    clearInterval(this.timer);
+                    this.timeOut();
+                }
             }
-            
-            wordsGrid.appendChild(wordItem);
-        });
-        
-        this.showScreen('resultsScreen');
-    },
-    
-    // Следующий раунд
-    nextRound() {
-        // Переходим к следующей команде
-        this.state.currentTeam = (this.state.currentTeam + 1) % this.state.teams.length;
-        this.state.currentPlayer++;
-        
-        // Сбрасываем состояние раунда
-        this.state.currentRound = {
-            words: [],
-            guessed: [],
-            skipped: [],
-            wrong: []
-        };
-        this.state.timeLeft = this.settings.timePerRound;
-        
-        // Обновляем интерфейс
-        this.updateCurrentTeam();
-        this.updateSkipCounter();
-        this.updateTimer();
-        this.showScreen('gameScreen');
-        
-        // Начинаем новый раунд
-        setTimeout(() => {
-            this.state.roundActive = true;
-            this.startTimer();
-            this.showNextWord();
         }, 1000);
-    },
+    }
     
-    // Пауза
-    pauseGame() {
-        if (!this.state.roundActive) return;
+    updateTimerDisplay() {
+        const minutes = Math.floor(this.timeLeft / 60);
+        const seconds = this.timeLeft % 60;
+        this.timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         
-        this.state.roundActive = false;
-        this.stopTimer();
-        this.showModal('pauseModal');
-    },
-    
-    // Продолжить игру
-    resumeGame() {
-        this.state.roundActive = true;
-        this.startTimer();
-        this.closeModal('pauseModal');
-    },
-    
-    // Показать статистику
-    showStats() {
-        document.getElementById('totalGames').textContent = this.state.stats.gamesPlayed;
-        document.getElementById('totalWords').textContent = this.state.stats.totalWords;
-        document.getElementById('avgScore').textContent = this.state.stats.avgScore;
-        document.getElementById('recordScore').textContent = this.state.stats.bestScore;
+        // Прогресс бар
+        const progress = (this.timeLeft / this.totalTime) * 100;
+        this.timerProgress.style.width = `${progress}%`;
         
-        this.showScreen('statsScreen');
-    },
-    
-    // Сбросить статистику
-    resetStats() {
-        if (confirm('Вы уверены, что хотите сбросить всю статистику?')) {
-            this.state.stats = {
-                gamesPlayed: 0,
-                totalWords: 0,
-                bestScore: 0,
-                avgScore: 0
-            };
-            this.saveStats();
-            this.showStats();
+        // Меняем цвет при малом времени
+        if (this.timeLeft <= 10) {
+            this.timerDisplay.style.color = '#ef4444';
+            this.timerProgress.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+        } else if (this.timeLeft <= 30) {
+            this.timerDisplay.style.color = '#f59e0b';
+            this.timerProgress.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+        } else {
+            this.timerDisplay.style.color = '';
+            this.timerProgress.style.background = 'linear-gradient(90deg, var(--primary), var(--secondary))';
         }
-    },
+    }
     
-    // Показать правила
-    showHowToPlay() {
-        this.showModal('rulesModal');
-    },
-    
-    // Показать модальное окно
-    showModal(modalId) {
-        document.getElementById(modalId).style.display = 'flex';
-    },
-    
-    // Закрыть модальное окно
-    closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-    },
-    
-    // Показать уведомление
-    showNotification(message, type = 'info') {
-        const notification = document.getElementById('notification');
-        notification.textContent = message;
-        notification.className = `notification ${type} show`;
+    handleCorrect() {
+        const currentTeam = this.teams[this.currentTeamIndex];
+        const currentWord = this.currentWords[this.currentWordIndex - 1];
         
-        setTimeout(() => {
-            notification.classList.remove('show');
-        }, 2000);
+        // Добавляем результат
+        this.currentResults.push({
+            word: currentWord,
+            success: true,
+            team: currentTeam.name
+        });
+        
+        // Обновляем счет команды
+        currentTeam.score++;
+        currentTeam.roundScore++;
+        currentTeam.history.push({
+            word: currentWord,
+            success: true,
+            round: this.currentRound
+        });
+        
+        // Добавляем слово в использованные
+        this.usedWords.add(currentWord);
+        
+        // Показываем следующее слово
+        this.showNextWord();
     }
-};
-
-// Глобальные функции для HTML
-function goToMainMenu() {
-    if (confirm('Вернуться в главное меню? Прогресс текущей игры будет потерян.')) {
-        window.location.href = 'https://lovecouple.ru/friends/';
-    }
-}
-
-function backToMenu() {
-    Game.showScreen('menuScreen');
-    Game.updateMenuStats();
-}
-
-function backToMenuFromPause() {
-    Game.closeModal('pauseModal');
-    backToMenu();
-}
-
-function showSettings() {
-    Game.showSetupScreen();
-}
-
-function startGame() {
-    Game.startGame();
-}
-
-function pauseGame() {
-    Game.pauseGame();
-}
-
-function resumeGame() {
-    Game.resumeGame();
-}
-
-function endRound() {
-    Game.endRound();
-}
-
-function endRoundFromPause() {
-    Game.closeModal('pauseModal');
-    Game.endRound();
-}
-
-function correctWord() {
-    Game.correctWord();
-}
-
-function skipWord() {
-    Game.skipWord();
-}
-
-function wrongWord() {
-    Game.wrongWord();
-}
-
-function nextRound() {
-    Game.nextRound();
-}
-
-function showStats() {
-    Game.showStats();
-}
-
-function resetStats() {
-    Game.resetStats();
-}
-
-function showHowToPlay() {
-    Game.showHowToPlay();
-}
-
-function showRules() {
-    Game.showHowToPlay();
-}
-
-function closeModal(modalId) {
-    Game.closeModal(modalId);
-}
-
-// Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-    Game.init();
     
-    // Закрытие модальных окон по клику на фон
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
+    handleSkip() {
+        const currentTeam = this.teams[this.currentTeamIndex];
+        const currentWord = this.currentWords[this.currentWordIndex - 1];
+        
+        // Добавляем результат
+        this.currentResults.push({
+            word: currentWord,
+            success: false,
+            reason: 'Пропущено',
+            team: currentTeam.name
+        });
+        
+        // Добавляем в историю команды
+        currentTeam.history.push({
+            word: currentWord,
+            success: false,
+            round: this.currentRound,
+            reason: 'skip'
+        });
+        
+        // Добавляем слово в использованные
+        this.usedWords.add(currentWord);
+        
+        // Показываем следующее слово
+        this.showNextWord();
+    }
+    
+    handleProhibit() {
+        if (this.prohibitWordsToggle.checked) {
+            this.handleSkip(); // Пропускаем слово как запрещенное
+        }
+    }
+    
+    pauseGame() {
+        this.isPaused = true;
+        this.showModal(this.pauseModal);
+    }
+    
+    continueGame() {
+        this.isPaused = false;
+        this.closeModal(this.pauseModal);
+    }
+    
+    timeOut() {
+        this.finishRound();
+    }
+    
+    finishRound() {
+        clearInterval(this.timer);
+        
+        // Показываем результаты раунда
+        this.showRoundResults();
+        
+        // Переходим к следующей команде
+        this.currentTeamIndex = (this.currentTeamIndex + 1) % this.teams.length;
+        
+        // Проверяем, закончился ли раунд для всех команд
+        if (this.currentTeamIndex === 0) {
+            this.currentRound++;
+            
+            // Проверяем, закончилась ли игра
+            if (this.currentRound > this.totalRounds) {
+                this.finishGame();
+            } else {
+                // Начинаем следующий раунд
+                setTimeout(() => {
+                    this.showModal(this.roundResultsModal);
+                }, 500);
+            }
+        } else {
+            // Продолжаем раунд с другой командой
+            setTimeout(() => {
+                this.showModal(this.roundResultsModal);
+            }, 500);
+        }
+    }
+    
+    showRoundResults() {
+        this.roundResultsList.innerHTML = '';
+        
+        this.currentResults.forEach((result, index) => {
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item ${result.success ? 'success' : 'fail'}`;
+            
+            resultItem.innerHTML = `
+                <div>
+                    <strong>${result.word}</strong>
+                    ${!result.success ? `<br><small>${result.reason || 'Не угадано'}</small>` : ''}
+                </div>
+                <div>
+                    ${result.success ? 
+                        '<span style="color: #10b981;">✓ +1</span>' : 
+                        '<span style="color: #ef4444;">✗ 0</span>'
+                    }
+                </div>
+            `;
+            
+            this.roundResultsList.appendChild(resultItem);
+        });
+    }
+    
+    startNextRound() {
+        this.closeModal(this.roundResultsModal);
+        
+        // Сбрасываем для новой команды
+        this.currentWordIndex = 0;
+        this.currentResults = [];
+        this.timeLeft = this.totalTime;
+        
+        // Генерируем новые слова
+        const selectedCategory = this.categorySelect.value;
+        const wordsPerRound = parseInt(this.wordsPerRoundSelect.value);
+        this.generateWords(selectedCategory, wordsPerRound);
+        
+        // Обновляем UI
+        this.updateTeams();
+        this.showNextWord();
+        this.startTimer();
+    }
+    
+    finishGame() {
+        // Определяем победителя
+        let winner = null;
+        let maxScore = -1;
+        
+        this.teams.forEach(team => {
+            if (team.score > maxScore) {
+                maxScore = team.score;
+                winner = team;
             }
         });
-    });
+        
+        // Проверяем ничью
+        const drawTeams = this.teams.filter(team => team.score === maxScore);
+        const isDraw = drawTeams.length > 1;
+        
+        // Показываем финальные результаты
+        this.showFinalResults(winner, isDraw, drawTeams);
+    }
+    
+    showFinalResults(winner, isDraw, drawTeams) {
+        this.finalResultsList.innerHTML = '';
+        
+        // Сортируем команды по очкам
+        const sortedTeams = [...this.teams].sort((a, b) => b.score - a.score);
+        
+        sortedTeams.forEach((team, index) => {
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>
+                    <strong>${index + 1}</strong>
+                    ${index === 0 ? ' 👑' : ''}
+                </td>
+                <td>${team.name}</td>
+                <td><strong>${team.score}</strong></td>
+                <td>
+                    ${team.history.filter(h => h.success).length}/
+                    ${team.history.length}
+                </td>
+            `;
+            
+            this.finalResultsList.appendChild(row);
+        });
+        
+        // Текст победителя
+        if (isDraw) {
+            const teamNames = drawTeams.map(t => t.name).join(', ');
+            this.winnerTeamElement.textContent = `Ничья между ${teamNames}!`;
+            this.winnerTeamElement.style.color = '#f59e0b';
+        } else {
+            this.winnerTeamElement.textContent = `${winner.name} побеждает!`;
+            this.winnerTeamElement.style.color = '#10b981';
+        }
+        
+        // Показываем модальное окно
+        this.showModal(this.gameResultsModal);
+    }
+    
+    resetGame() {
+        // Сбрасываем все состояния
+        this.currentTeamIndex = 0;
+        this.currentRound = 1;
+        this.currentWordIndex = 0;
+        this.currentWords = [];
+        this.currentResults = [];
+        this.usedWords.clear();
+        this.gameStarted = false;
+        
+        // Сбрасываем команды
+        this.teams.forEach(team => {
+            team.score = 0;
+            team.roundScore = 0;
+            team.history = [];
+        });
+        
+        // Закрываем модальные окна
+        this.closeModal(this.roundResultsModal);
+        this.closeModal(this.gameResultsModal);
+        this.closeModal(this.pauseModal);
+        
+        // Возвращаем к настройкам
+        this.gameSection.style.display = 'none';
+        this.resultsSection.style.display = 'none';
+        this.setupSection.style.display = 'block';
+        
+        // Обновляем UI
+        this.updateTeams();
+        this.updateUI();
+    }
+    
+    showModal(modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+    }
+    
+    closeModal(modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+    
+    updateUI() {
+        // Обновляем заголовок раунда
+        const roundTitle = document.getElementById('roundTitle');
+        if (roundTitle) {
+            roundTitle.textContent = `Раунд ${this.currentRound}`;
+        }
+        
+        // Обновляем текущую команду
+        const currentTeamElement = document.getElementById('currentTeam');
+        if (currentTeamElement && this.gameStarted) {
+            const team = this.teams[this.currentTeamIndex];
+            currentTeamElement.textContent = `Сейчас объясняет: ${team.name}`;
+            currentTeamElement.style.color = this.getTeamColor(this.currentTeamIndex);
+        }
+    }
+    
+    shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+}
+
+// Инициализация игры при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    window.aliasGame = new AliasGame();
 });
