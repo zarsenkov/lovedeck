@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шпион | LoveCouple Friends</title>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <header class="game-header">
+            <a href="../../index.html" class="back-button">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+            <h1 class="game-title">🕵️ Шпион</h1>
+            <div class="game-subtitle">Найди шпиона среди друзей! Одно устройство для всех</div>
+        </header>
+
+        <!-- Основной контейнер -->
+        <main class="game-container">
+            <!-- ЭКРАН 1: Настройка игры -->
+            <div id="setup-screen" class="screen active">
+                <div class="setup-card">
+                    <div class="setup-header">
+                        <h2><i class="fas fa-cog"></i> Настройка игры</h2>
+                        <p>Передавайте телефон по кругу. Играйте вместе!</p>
+                    </div>
+                    
+                    <div class="setup-content">
+                        <!-- Количество игроков -->
+                        <div class="setup-section">
+                            <h3><i class="fas fa-user-friends"></i> Количество игроков</h3>
+                            <div class="counter-container">
+                                <div class="counter-display">
+                                    <button id="decreasePlayers" class="counter-btn">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <div class="counter-value">
+                                        <span id="playerCount">6</span>
+                                        <small>игроков</small>
+                                    </div>
+                                    <button id="increasePlayers" class="counter-btn">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="counter-range">
+                                    <input type="range" id="playerSlider" min="3" max="10" value="6">
+                                    <div class="range-labels">
+                                        <span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Количество шпионов -->
+                        <div class="setup-section">
+                            <h3><i class="fas fa-user-secret"></i> Количество шпионов</h3>
+                            <div class="counter-container">
+                                <div class="counter-display">
+                                    <button id="decreaseSpies" class="counter-btn">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <div class="counter-value">
+                                        <span id="spyCount">1</span>
+                                        <small>шпион(ов)</small>
+                                    </div>
+                                    <button id="increaseSpies" class="counter-btn">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="spy-info">
+                                    <p id="spyHint" class="hint-text">Рекомендуется: 1 шпион на 4-6 игроков</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Режим игры -->
+                        <div class="setup-section">
+                            <h3><i class="fas fa-gamepad"></i> Режим игры</h3>
+                            <div class="mode-buttons">
+                                <button class="mode-btn active" data-mode="classic">
+                                    <i class="fas fa-star"></i>
+                                    <span>Классический</span>
+                                    <small>Один раунд</small>
+                                </button>
+                                <button class="mode-btn" data-mode="elimination">
+                                    <i class="fas fa-skull-crossbones"></i>
+                                    <span>На выбывание</span>
+                                    <small>Несколько раундов</small>
+                                </button>
+                                <button class="mode-btn" data-mode="team">
+                                    <i class="fas fa-users"></i>
+                                    <span>Командный</span>
+                                    <small>2 команды</small>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Таймер обсуждения -->
+                        <div class="setup-section">
+                            <h3><i class="fas fa-clock"></i> Таймер обсуждения</h3>
+                            <div class="timer-options">
+                                <div class="timer-toggle">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="timerEnabled" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span>Включить таймер</span>
+                                </div>
+                                
+                                <div class="timer-settings" id="timerSettings">
+                                    <div class="time-presets">
+                                        <button class="time-preset" data-time="60">1 мин</button>
+                                        <button class="time-preset active" data-time="90">1.5 мин</button>
+                                        <button class="time-preset" data-time="120">2 мин</button>
+                                        <button class="time-preset" data-time="180">3 мин</button>
+                                    </div>
+                                    <div class="custom-time">
+                                        <label>Своё время (секунды):</label>
+                                        <input type="number" id="customTime" value="90" min="30" max="300">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Категории локаций -->
+                        <div class="setup-section">
+                            <h3><i class="fas fa-map-marker-alt"></i> Категории локаций</h3>
+                            <div class="categories-grid">
+                                <label class="category-checkbox">
+                                    <input type="checkbox" class="category-select" data-category="public" checked>
+                                    <span class="category-icon">
+                                        <i class="fas fa-city"></i>
+                                    </span>
+                                    <span class="category-name">Общественные места</span>
+                                </label>
+                                <label class="category-checkbox">
+                                    <input type="checkbox" class="category-select" data-category="nature" checked>
+                                    <span class="category-icon">
+                                        <i class="fas fa-tree"></i>
+                                    </span>
+                                    <span class="category-name">Природа</span>
+                                </label>
+                                <label class="category-checkbox">
+                                    <input type="checkbox" class="category-select" data-category="entertainment" checked>
+                                    <span class="category-icon">
+                                        <i class="fas fa-film"></i>
+                                    </span>
+                                    <span class="category-name">Развлечения</span>
+                                </label>
+                                <label class="category-checkbox">
+                                    <input type="checkbox" class="category-select" data-category="professions" checked>
+                                    <span class="category-icon">
+                                        <i class="fas fa-briefcase"></i>
+                                    </span>
+                                    <span class="category-name">Профессии</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопка старта -->
+                    <div class="setup-footer">
+                        <button id="startGameBtn" class="start-btn">
+                            <i class="fas fa-play-circle"></i> Начать игру
+                        </button>
+                        <p class="game-instruction">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Важно:</strong> Телефон будет передаваться по кругу между игроками
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 2: Передача телефона -->
+            <div id="handoff-screen" class="screen">
+                <div class="handoff-card">
+                    <div class="handoff-header">
+                        <div class="handoff-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h2>Передайте телефон</h2>
+                    </div>
+                    
+                    <div class="handoff-content">
+                        <div class="player-info">
+                            <div class="player-avatar">
+                                <div class="avatar-circle">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="player-number">
+                                    Игрок <span id="currentPlayerNum">1</span>
+                                </div>
+                            </div>
+                            
+                            <div class="handoff-instruction">
+                                <p>Телефон передаётся игроку <strong id="currentPlayerName">№1</strong></p>
+                                <p class="hint">Смотрите в одиночестве, не показывайте другим!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="security-note">
+                            <div class="security-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <p>Экран будет затемнён после просмотра роли</p>
+                        </div>
+                    </div>
+                    
+                    <div class="handoff-footer">
+                        <button id="showRoleBtn" class="primary-btn">
+                            <i class="fas fa-eye"></i> Показать мою роль
+                        </button>
+                        <button id="skipPlayer" class="secondary-btn">
+                            <i class="fas fa-forward"></i> Пропустить игрока
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 3: Показ роли -->
+            <div id="role-screen" class="screen">
+                <div class="role-card">
+                    <!-- Для мирного игрока -->
+                    <div class="civilian-view" id="civilianView">
+                        <div class="role-header">
+                            <div class="role-icon civilian">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <h2>Вы — Мирный игрок</h2>
+                        </div>
+                        
+                        <div class="location-section">
+                            <h3><i class="fas fa-map-marker-alt"></i> Локация:</h3>
+                            <div class="location-display">
+                                <div class="location-name" id="locationName">Аэропорт</div>
+                                <div class="location-description" id="locationDescription">
+                                    Место взлёта и посадки самолётов
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="role-instruction">
+                            <div class="instruction-card">
+                                <h4><i class="fas fa-lightbulb"></i> Ваша задача:</h4>
+                                <p>Обсуждайте локацию, но не называйте её прямо!</p>
+                                <p>Попробуйте вычислить шпиона.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Для шпиона -->
+                    <div class="spy-view" id="spyView" style="display: none;">
+                        <div class="role-header">
+                            <div class="role-icon spy">
+                                <i class="fas fa-user-secret"></i>
+                            </div>
+                            <h2 class="spy-title">🕵️ Вы — Шпион</h2>
+                        </div>
+                        
+                        <div class="spy-mission">
+                            <div class="mission-card">
+                                <h3><i class="fas fa-bullseye"></i> Ваша миссия:</h3>
+                                <p>Вы <strong>не знаете</strong> локацию.</p>
+                                <p>Ваша задача — понять, о какой локации говорят другие игроки, 
+                                   или остаться незамеченным.</p>
+                            </div>
+                            
+                            <div class="spy-tips">
+                                <h4><i class="fas fa-tips"></i> Советы шпиону:</h4>
+                                <ul>
+                                    <li>Задавайте общие вопросы</li>
+                                    <li>Слушайте внимательно других</li>
+                                    <li>Не выдавайте себя незнанием</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ключевые слова -->
+                    <div class="keywords-section" id="keywordsSection">
+                        <h4><i class="fas fa-key"></i> Ключевые слова:</h4>
+                        <div class="keywords-grid" id="keywordsGrid">
+                            <!-- Динамически заполнится -->
+                        </div>
+                    </div>
+                    
+                    <!-- Таймер показа -->
+                    <div class="role-timer">
+                        <div class="timer-display">
+                            <div class="timer-circle">
+                                <span id="roleTimer">10</span>
+                            </div>
+                            <p>Экран скроется через <span id="timerSeconds">10</span> секунд</p>
+                        </div>
+                    </div>
+                    
+                    <div class="role-footer">
+                        <button id="hideRoleBtn" class="hide-btn">
+                            <i class="fas fa-eye-slash"></i> Скрыть роль
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 4: Обсуждение -->
+            <div id="discussion-screen" class="screen">
+                <div class="discussion-card">
+                    <div class="discussion-header">
+                        <div class="phase-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h2>Обсуждение началось</h2>
+                        <p>Задавайте вопросы друг другу</p>
+                    </div>
+                    
+                    <div class="discussion-content">
+                        <!-- Таймер -->
+                        <div class="discussion-timer" id="discussionTimerSection">
+                            <div class="timer-container">
+                                <div class="timer-progress">
+                                    <div class="progress-circle">
+                                        <svg width="120" height="120">
+                                            <circle class="progress-bg" cx="60" cy="60" r="54"></circle>
+                                            <circle class="progress-bar" cx="60" cy="60" r="54"></circle>
+                                        </svg>
+                                        <div class="timer-text">
+                                            <span id="discussionTimeLeft">90</span>
+                                            <small>секунд</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Инструкция -->
+                        <div class="discussion-instruction">
+                            <div class="instruction-card">
+                                <h3><i class="fas fa-bullhorn"></i> Правила обсуждения:</h3>
+                                <ol>
+                                    <li>Обсуждайте локацию, задавайте вопросы</li>
+                                    <li>Шпион пытается угадать или скрыться</li>
+                                    <li>Не называйте локацию прямо!</li>
+                                    <li>Обращайте внимание на подозрительное поведение</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <!-- Подсказки -->
+                        <div class="discussion-hints">
+                            <div class="hint-card">
+                                <h4><i class="fas fa-lightbulb"></i> Вопросы для обсуждения:</h4>
+                                <div class="hint-questions" id="hintQuestions">
+                                    <!-- Динамически заполнится -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="discussion-footer">
+                        <button id="startVotingBtn" class="primary-btn">
+                            <i class="fas fa-vote-yea"></i> Начать голосование
+                        </button>
+                        <button id="skipDiscussionBtn" class="secondary-btn">
+                            <i class="fas fa-forward"></i> Пропустить обсуждение
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 5: Голосование -->
+            <div id="voting-screen" class="screen">
+                <div class="voting-card">
+                    <div class="voting-header">
+                        <div class="phase-icon">
+                            <i class="fas fa-vote-yea"></i>
+                        </div>
+                        <h2>Голосование</h2>
+                        <p>Кто по-вашему шпион?</p>
+                    </div>
+                    
+                    <div class="voting-content">
+                        <!-- Текущий голосующий -->
+                        <div class="voter-info" id="voterInfo">
+                            <div class="voter-avatar">
+                                <div class="avatar-circle">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="voter-name">
+                                    Голосует: <span id="currentVoter">Игрок 1</span>
+                                </div>
+                            </div>
+                            <p class="voter-instruction">Выберите, кто по-вашему шпион</p>
+                        </div>
+                        
+                        <!-- Список игроков -->
+                        <div class="players-list" id="votingPlayersList">
+                            <!-- Динамически заполнится -->
+                        </div>
+                        
+                        <!-- Подсказка -->
+                        <div class="voting-hint">
+                            <p><i class="fas fa-info-circle"></i> 
+                               Нельзя голосовать за себя. Ваш голос останется в тайне.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="voting-footer">
+                        <button id="submitVoteBtn" class="primary-btn" disabled>
+                            <i class="fas fa-check"></i> Подтвердить выбор
+                        </button>
+                        <button id="skipVoterBtn" class="secondary-btn">
+                            <i class="fas fa-forward"></i> Пропустить игрока
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 6: Результаты голосования -->
+            <div id="results-screen" class="screen">
+                <div class="results-card">
+                    <div class="results-header">
+                        <div class="results-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h2>Результаты голосования</h2>
+                    </div>
+                    
+                    <div class="results-content">
+                        <!-- Исключённый игрок -->
+                        <div class="eliminated-player" id="eliminatedSection">
+                            <div class="eliminated-badge">
+                                <i class="fas fa-user-slash"></i>
+                            </div>
+                            <h3>Исключён:</h3>
+                            <div class="player-result" id="eliminatedPlayer">
+                                <!-- Динамически заполнится -->
+                            </div>
+                        </div>
+                        
+                        <!-- Результаты по игрокам -->
+                        <div class="votes-breakdown">
+                            <h3><i class="fas fa-poll"></i> Результаты голосования:</h3>
+                            <div class="votes-list" id="votesList">
+                                <!-- Динамически заполнится -->
+                            </div>
+                        </div>
+                        
+                        <!-- Была ли ошибка -->
+                        <div class="verdict-section" id="verdictSection">
+                            <div class="verdict-card" id="verdictCard">
+                                <!-- Динамически заполнится -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="results-footer">
+                        <button id="nextRoundBtn" class="primary-btn">
+                            <i class="fas fa-redo"></i> Следующий раунд
+                        </button>
+                        <button id="showRolesBtn" class="secondary-btn">
+                            <i class="fas fa-user-secret"></i> Раскрыть шпионов
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 7: Итоги игры -->
+            <div id="final-screen" class="screen">
+                <div class="final-card">
+                    <div class="final-header">
+                        <div class="final-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h2 id="finalTitle">Результаты игры</h2>
+                    </div>
+                    
+                    <div class="final-content">
+                        <!-- Победители -->
+                        <div class="winner-section" id="winnerSection">
+                            <!-- Динамически заполнится -->
+                        </div>
+                        
+                        <!-- Статистика -->
+                        <div class="stats-section">
+                            <h3><i class="fas fa-chart-pie"></i> Статистика игры:</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Локация:</span>
+                                    <span class="stat-value" id="finalLocation">Ресторан</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Шпионы:</span>
+                                    <span class="stat-value" id="finalSpies">1</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Раундов:</span>
+                                    <span class="stat-value" id="totalRounds">1</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Выбыло:</span>
+                                    <span class="stat-value" id="totalEliminated">1</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Шпионы -->
+                        <div class="spies-reveal" id="spiesReveal">
+                            <h3><i class="fas fa-user-secret"></i> Шпионы:</h3>
+                            <div class="spies-list" id="spiesList">
+                                <!-- Динамически заполнится -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="final-footer">
+                        <button id="playAgainBtn" class="primary-btn">
+                            <i class="fas fa-redo"></i> Играть снова
+                        </button>
+                        <button id="backToMenuBtn" class="secondary-btn">
+                            <i class="fas fa-home"></i> В главное меню
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Боковая панель -->
+        <aside class="info-panel">
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> Правила игры</h3>
+                <div class="rules-list">
+                    <div class="rule-item">
+                        <div class="rule-number">1</div>
+                        <div class="rule-text">Телефон передаётся по кругу между игроками</div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-number">2</div>
+                        <div class="rule-text">Мирные видят одну локацию, шпионы - нет</div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-number">3</div>
+                        <div class="rule-text">Обсуждайте локацию, но не называйте её прямо</div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-number">4</div>
+                        <div class="rule-text">Голосуйте, кто по-вашему шпион</div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-number">5</div>
+                        <div class="rule-text">Шпион побеждает, если остаётся незамеченным</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-users"></i> Игроки</h3>
+                <div class="players-overview" id="playersOverview">
+                    <!-- Динамически заполнится -->
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-history"></i> Лог игры</h3>
+                <div class="game-log" id="gameLog">
+                    <!-- Динамически заполнится -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
