@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Кто я? | LoveCouple Friends</title>
-    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -321,7 +320,7 @@
                     </div>
                     
                     <div class="modal-footer">
-                        <button class="btn btn-primary" onclick="saveCustomWords()">Сохранить</button>
+                        <button class="btn btn-primary" onclick="saveCustomWordsAndClose()">Сохранить</button>
                         <button class="btn btn-secondary" onclick="closeCustomWords()">Закрыть</button>
                     </div>
                 </div>
@@ -336,21 +335,102 @@
                 <span><i class="fas fa-trophy"></i> <span id="winsCount">0</span> побед</span>
             </div>
             <div class="footer-links">
-                <a href="https://lovecouple.ru" target="_blank">LoveCouple</a>
+                <a href="#" onclick="window.location.href='../index.html'">Главная</a>
                 <a href="#" onclick="showRules()">Правила</a>
                 <a href="#" onclick="showSettings()">Настройки</a>
             </div>
         </footer>
     </div>
 
-    <!-- Аудио элементы -->
-    <audio id="correctSound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" preload="auto"></audio>
-    <audio id="wrongSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" preload="auto"></audio>
-    <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
-    <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
-    <audio id="timerSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" preload="auto"></audio>
-
     <script src="script.js"></script>
-    <script src="categories.js"></script>
+    <script>
+        // Простые звуки через Web Audio API
+        function playSound(type) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                switch(type) {
+                    case 'correct':
+                        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // До
+                        oscillator.type = 'sine';
+                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                        break;
+                    case 'wrong':
+                        oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // Ля
+                        oscillator.type = 'sawtooth';
+                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        break;
+                    case 'click':
+                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                        oscillator.type = 'sine';
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                        break;
+                    case 'win':
+                        // Победный аккорд
+                        [659.25, 830.61, 987.77].forEach((freq, i) => {
+                            setTimeout(() => {
+                                const osc = audioContext.createOscillator();
+                                const gain = audioContext.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                                osc.type = 'sine';
+                                gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                                osc.start();
+                                osc.stop(audioContext.currentTime + 0.5);
+                            }, i * 100);
+                        });
+                        return;
+                    case 'timer':
+                        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                        oscillator.type = 'triangle';
+                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                        break;
+                }
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + (type === 'correct' ? 0.5 : 0.3));
+                
+            } catch (error) {
+                console.log('Web Audio API не поддерживается или звуки отключены');
+            }
+        }
+        
+        // Функция для закрытия экрана кастомных слов (добавляем её в глобальную область видимости)
+        window.closeCustomWords = function() {
+            playSound('click');
+            showScreen('welcome');
+        };
+        
+        // Функция сохранения кастомных слов и закрытия
+        window.saveCustomWordsAndClose = function() {
+            if (typeof saveCustomWords === 'function') {
+                const customWords = loadCustomWords();
+                if (saveCustomWords(customWords)) {
+                    showNotification('Слова сохранены!', 'success');
+                    closeCustomWords();
+                }
+            } else {
+                closeCustomWords();
+            }
+        };
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initGame === 'function') {
+                initGame();
+            }
+        });
+    </script>
 </body>
 </html>
