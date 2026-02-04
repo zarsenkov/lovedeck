@@ -2,455 +2,257 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
-    <title>LoveCouple: Игры для друзей</title>
-    <meta name="description" content="Современные игры для компании: Кто я?, Шпион, Крокодил, Алиас, Данетки и Викторина">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Алиас | LoveCouple Friends</title>
+    <meta name="description" content="Объясняй слова другими словами! Веселая игра для компании">
     
-    <!-- PWA метаданные -->
-    <meta name="theme-color" content="#8b5cf6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="LoveCouple Games">
-    <meta name="mobile-web-app-capable" content="yes">
-    
-    <!-- Иконки -->
-    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
-    <link rel="apple-touch-icon" href="assets/apple-icon.png">
-    
-    <!-- Манифест PWA -->
-    <link rel="manifest" href="manifest.webmanifest">
-    
-    <!-- Стили -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Service Worker -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('sw.js').then(
-                    function(registration) {
-                        console.log('ServiceWorker registration successful');
-                    },
-                    function(err) {
-                        console.log('ServiceWorker registration failed: ', err);
-                    }
-                );
-            });
-        }
-    </script>
-    
     <style>
-        /* Стили для установки PWA */
-        .pwa-install-banner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 1rem;
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .pwa-install-banner.show {
-            display: flex;
-            animation: slideUp 0.3s ease;
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
         }
         
-        .pwa-install-banner.hide {
-            animation: slideDown 0.3s ease forwards;
+        @keyframes fadeIn {
+            to { opacity: 1; }
         }
         
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-        
-        @keyframes slideDown {
-            from { transform: translateY(0); }
-            to { transform: translateY(100%); }
-        }
-        
-        .pwa-install-btn {
-            background: white;
-            color: var(--primary);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .pwa-close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0 0.5rem;
-        }
-        
-        /* Мобильная навигация */
-        .mobile-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 0.5rem;
-            border-top: 1px solid var(--border);
-            z-index: 999;
-        }
-        
-        .mobile-nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0.5rem;
-            text-decoration: none;
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-        }
-        
-        .mobile-nav-item.active {
-            color: var(--primary);
-        }
-        
-        .mobile-nav-item i {
-            font-size: 1.25rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        /* Адаптивность контейнера */
-        @media (max-width: 480px) {
-            .container {
-                padding-bottom: 70px; /* Для мобильной навигации */
-            }
-            
-            .mobile-nav {
-                display: flex;
-                justify-content: space-around;
-            }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
     </style>
 </head>
 <body>
-    <!-- Баннер установки PWA -->
-    <div id="pwaInstallBanner" class="pwa-install-banner">
-        <div>
-            <strong>Установите приложение</strong>
-            <p style="margin-top: 0.25rem; font-size: 0.875rem; opacity: 0.9;">Играйте офлайн и быстро запускайте игры</p>
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-            <button id="pwaInstallBtn" class="pwa-install-btn">Установить</button>
-            <button id="pwaCloseBtn" class="pwa-close-btn">×</button>
-        </div>
-    </div>
-
     <div class="container">
         <!-- Шапка -->
-        <header class="main-header">
-            <div class="header-content">
-                <h1 class="header-title">
-                    <i class="fas fa-sparkles"></i> LoveCouple Friends
-                </h1>
-                <p class="header-subtitle">
-                    Современные игры для вашей компании. Красиво, удобно, без рекламы.
-                </p>
-            </div>
+        <header class="header">
+            <h1><i class="fas fa-comments"></i> АЛИАС</h1>
+            <p>Объясняй слова другими словами. Таймер тикает!</p>
         </header>
 
-        <!-- Сетка игр -->
-        <main class="games-grid">
-            <!-- Кто я? -->
-            <div class="game-card" onclick="loadGame('whoami')">
-                <div class="game-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
-                    <i class="fas fa-shield-alt"></i>
+        <!-- Экран настроек -->
+        <div class="screen" id="setupScreen">
+            <div class="card">
+                <h2><i class="fas fa-cog"></i> Настройки игры</h2>
+                
+                <div class="settings">
+                    <div class="setting">
+                        <label>Количество команд:</label>
+                        <select id="teamCount">
+                            <option value="2">2 команды</option>
+                            <option value="3" selected>3 команды</option>
+                            <option value="4">4 команды</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting">
+                        <label>Время на раунд:</label>
+                        <select id="roundTime">
+                            <option value="30">30 секунд</option>
+                            <option value="60" selected>60 секунд</option>
+                            <option value="90">90 секунд</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting">
+                        <label>Слов за раунд:</label>
+                        <select id="wordsPerRound">
+                            <option value="5">5 слов</option>
+                            <option value="10" selected>10 слов</option>
+                            <option value="15">15 слов</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting">
+                        <label>Категория слов:</label>
+                        <select id="category">
+                            <option value="all">🎲 Все слова</option>
+                            <option value="animals">🦁 Животные</option>
+                            <option value="objects">📱 Предметы</option>
+                            <option value="professions">👨‍⚕️ Профессии</option>
+                            <option value="movies">🎬 Фильмы</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting">
+                        <label>
+                            <input type="checkbox" id="prohibitWords">
+                            Режим "Запрещенные слова"
+                        </label>
+                    </div>
                 </div>
-                <h3>Кто я?</h3>
-                <p>Узнай свою тайную личность! Задавай наводящие вопросы и первым угадай, кто ты — известный актер, исторический персонаж или даже предмет из быта.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 4-10 игроков</span>
-                    <span><i class="fas fa-clock"></i> 15-30 мин</span>
+                
+                <!-- Команды -->
+                <h3><i class="fas fa-users"></i> Команды</h3>
+                <div class="teams" id="teamsContainer">
+                    <!-- Команды будут здесь -->
                 </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                
+                <button class="btn btn-primary" id="startGame">
+                    <i class="fas fa-play"></i> НАЧАТЬ ИГРУ
                 </button>
             </div>
+        </div>
 
-            <!-- Шпион -->
-            <div class="game-card" onclick="loadGame('spy')">
-                <div class="game-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-                    <i class="fas fa-user-secret"></i>
+        <!-- Экран игры -->
+        <div class="screen" id="gameScreen" style="display: none;">
+            <div class="card">
+                <div class="game-header">
+                    <div class="round-info">
+                        <span id="roundTitle">РАУНД 1</span>
+                        <span id="currentTeamInfo">Команда 1</span>
+                    </div>
+                    <div class="score-info">
+                        <div class="score">
+                            <span>Очки:</span>
+                            <strong id="currentScore">0</strong>
+                        </div>
+                        <div class="words-count">
+                            <span>Слово:</span>
+                            <strong id="wordCount">1/10</strong>
+                        </div>
+                    </div>
                 </div>
-                <h3>Шпион</h3>
-                <p>Среди вас затаился чужак! Разоблачите шпиона по его неуверенным ответам или блестяще маскируйтесь, если шпион — это вы.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 4-10 игроков</span>
-                    <span><i class="fas fa-clock"></i> 5-15 мин</span>
+                
+                <!-- Таймер -->
+                <div class="timer">
+                    <div class="timer-display" id="timerDisplay">01:00</div>
+                    <div class="progress-bar">
+                        <div class="progress" id="timerProgress"></div>
+                    </div>
                 </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
-                </button>
+                
+                <!-- Слово -->
+                <div class="word-card" id="wordCard">
+                    <div class="word" id="currentWord">Загрузка...</div>
+                    <div class="hint" id="wordHint"></div>
+                </div>
+                
+                <!-- Кнопки управления -->
+                <div class="controls">
+                    <button class="btn btn-success" id="correctBtn">
+                        <i class="fas fa-check"></i> УГАДАНО
+                    </button>
+                    <button class="btn btn-warning" id="skipBtn">
+                        <i class="fas fa-forward"></i> ПРОПУСТИТЬ
+                    </button>
+                    <button class="btn btn-danger" id="prohibitBtn" style="display: none;">
+                        <i class="fas fa-ban"></i> ЗАПРЕЩЕНО
+                    </button>
+                    <button class="btn btn-secondary" id="pauseBtn">
+                        <i class="fas fa-pause"></i> ПАУЗА
+                    </button>
+                </div>
             </div>
+        </div>
 
-            <!-- Крокодил -->
-            <div class="game-card" onclick="loadGame('crocodile')">
-                <div class="game-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                    <i class="fas fa-hand-sparkles"></i>
+        <!-- Экран паузы -->
+        <div class="screen" id="pauseScreen" style="display: none;">
+            <div class="card">
+                <h2><i class="fas fa-pause"></i> ПАУЗА</h2>
+                <p>Игра приостановлена</p>
+                
+                <div class="pause-stats">
+                    <div>
+                        <span>Команда:</span>
+                        <strong id="pauseTeam">-</strong>
+                    </div>
+                    <div>
+                        <span>Очков в раунде:</span>
+                        <strong id="pauseScore">0</strong>
+                    </div>
+                    <div>
+                        <span>Осталось времени:</span>
+                        <strong id="pauseTime">00:00</strong>
+                    </div>
                 </div>
-                <h3>Крокодил</h3>
-                <p>Покажи слово так, чтобы все взорвались от смеха! Используй только жесты и эмоции, чтобы команда отгадала загаданное слово или фразу.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 4-12 игроков</span>
-                    <span><i class="fas fa-clock"></i> 10-30 мин</span>
-                </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                
+                <button class="btn btn-primary" id="continueBtn">
+                    <i class="fas fa-play"></i> ПРОДОЛЖИТЬ
+                </button>
+                
+                <button class="btn btn-secondary" id="restartBtn">
+                    <i class="fas fa-redo"></i> НАЧАТЬ ЗАНОВО
                 </button>
             </div>
+        </div>
 
-            <!-- Алиас -->
-            <div class="game-card" onclick="loadGame('alias')">
-                <div class="game-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                    <i class="fas fa-comments"></i>
+        <!-- Экран результатов раунда -->
+        <div class="screen" id="resultsScreen" style="display: none;">
+            <div class="card">
+                <h2><i class="fas fa-chart-bar"></i> РЕЗУЛЬТАТЫ РАУНДА</h2>
+                
+                <div class="results-info">
+                    <div>
+                        <span>Команда:</span>
+                        <strong id="resultsTeam">-</strong>
+                    </div>
+                    <div>
+                        <span>Очков заработано:</span>
+                        <strong id="resultsScore">0</strong>
+                    </div>
+                    <div>
+                        <span>Угадано слов:</span>
+                        <strong id="resultsGuessed">0/10</strong>
+                    </div>
                 </div>
-                <h3>Алиас</h3>
-                <p>Объясни слово, не называя его! Подбирай синонимы, ассоциации и креативные описания, пока тикает таймер. Главное — скорость и находчивость.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 4-8 игроков</span>
-                    <span><i class="fas fa-clock"></i> 20-40 мин</span>
+                
+                <div class="words-list" id="wordsList">
+                    <!-- Список слов будет здесь -->
                 </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                
+                <button class="btn btn-primary" id="nextRoundBtn">
+                    <i class="fas fa-arrow-right"></i> СЛЕДУЮЩАЯ КОМАНДА
                 </button>
             </div>
+        </div>
 
-            <!-- ДАНЕТКИ -->
-            <div class="game-card" onclick="loadGame('danetki')">
-                <div class="game-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                    <i class="fas fa-mask"></i>
+        <!-- Экран окончания игры -->
+        <div class="screen" id="finalScreen" style="display: none;">
+            <div class="card">
+                <h2><i class="fas fa-trophy"></i> ИГРА ЗАВЕРШЕНА!</h2>
+                
+                <div class="winner" id="winnerInfo">
+                    <!-- Победитель будет здесь -->
                 </div>
-                <h3>ДАНЕТКИ</h3>
-                <p>Раскрой запутанную историю! Задавай вопросы, на которые можно ответить только «да» или «нет», чтобы восстановить цепочку загадочных событий.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 3-8 игроков</span>
-                    <span><i class="fas fa-clock"></i> 10-25 мин</span>
+                
+                <div class="leaderboard" id="leaderboard">
+                    <!-- Таблица лидеров будет здесь -->
                 </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                
+                <button class="btn btn-primary" id="newGameBtn">
+                    <i class="fas fa-redo"></i> НОВАЯ ИГРА
                 </button>
+                
+                <a href="https://lovecouple.ru/friends/" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> НА ГЛАВНУЮ
+                </a>
             </div>
-
-           <!-- Викторина -->
-            <div class="game-card" onclick="loadGame('quiz')">
-                <div class="game-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                    <i class="fas fa-mask"></i>
-                </div>
-                <h3>Викторина</h3>
-                <p>Испытай свою эрудицию! Сотни вопросов из разных сфер знаний ждут тебя. Выбирай категорию, уровень сложности и борись за звание чемпиона.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 1-8 игроков</span>
-                    <span><i class="fas fa-clock"></i> 15-45 мин</span>
-                </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
-                </button>
-            </div>
-        </main>
+        </div>
 
         <!-- Футер -->
-        <footer class="main-footer">
-            <p>© 2024 LoveCouple Game Studio. Все игры созданы с ❤️ для вашей компании.</p>
-            <div class="footer-links">
-                <a href="https://lovecouple.ru">Основная игра</a>
-                <a href="#">Правила игр</a>
-                <a href="#">Контакты</a>
-                <a href="#">Поддержка</a>
-            </div>
-            <div class="social-links">
-                <a href="#" title="Telegram"><i class="fab fa-telegram"></i></a>
-                <a href="#" title="VK"><i class="fab fa-vk"></i></a>
-                <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-            </div>
+        <footer class="footer">
+            <p>© 2024 LoveCouple Game Studio. Игра создана с ❤️ для вашей компании</p>
+            <p>Все данные хранятся локально, интернет не требуется</p>
         </footer>
     </div>
 
-    <!-- Мобильная навигация -->
-    <nav class="mobile-nav">
-        <a href="#" class="mobile-nav-item active">
-            <i class="fas fa-gamepad"></i>
-            <span>Игры</span>
-        </a>
-        <a href="https://lovecouple.ru" class="mobile-nav-item">
-            <i class="fas fa-heart"></i>
-            <span>LoveCouple</span>
-        </a>
-        <a href="#" class="mobile-nav-item" id="mobileInstallBtn">
-            <i class="fas fa-download"></i>
-            <span>Установить</span>
-        </a>
-        <a href="#" class="mobile-nav-item">
-            <i class="fas fa-info-circle"></i>
-            <span>О нас</span>
-        </a>
-    </nav>
-
+    <!-- Подключение скриптов -->
+    <script src="words.js"></script>
     <script src="script.js"></script>
-    <script>
-        // PWA установка
-        let deferredPrompt;
-        const pwaInstallBanner = document.getElementById('pwaInstallBanner');
-        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
-        const pwaCloseBtn = document.getElementById('pwaCloseBtn');
-        const mobileInstallBtn = document.getElementById('mobileInstallBtn');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // Показываем баннер через 5 секунд
-            setTimeout(() => {
-                if (!isAppInstalled()) {
-                    pwaInstallBanner.classList.add('show');
-                }
-            }, 5000);
-        });
-
-        pwaInstallBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('PWA установлен');
-                }
-                deferredPrompt = null;
-                pwaInstallBanner.classList.remove('show');
-            }
-        });
-
-        pwaCloseBtn.addEventListener('click', () => {
-            pwaInstallBanner.classList.remove('show');
-            localStorage.setItem('pwaBannerClosed', 'true');
-        });
-
-        mobileInstallBtn.addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-            } else {
-                alert('Откройте меню браузера и выберите "Установить приложение"');
-            }
-        });
-
-        function isAppInstalled() {
-            return window.matchMedia('(display-mode: standalone)').matches || 
-                   window.navigator.standalone ||
-                   document.referrer.includes('android-app://');
-        }
-
-        // Проверяем, был ли баннер закрыт ранее
-        if (localStorage.getItem('pwaBannerClosed') === 'true') {
-            pwaInstallBanner.style.display = 'none';
-        }
-
-        // Улучшенная загрузка игры для мобильных устройств
-        function loadGame(gameName) {
-            // Показываем состояние загрузки
-            const eventTarget = event.target;
-            let playBtn;
-            
-            if (eventTarget.classList.contains('play-btn')) {
-                playBtn = eventTarget;
-            } else if (eventTarget.closest('.play-btn')) {
-                playBtn = eventTarget.closest('.play-btn');
-            } else {
-                playBtn = eventTarget.querySelector('.play-btn') || 
-                         eventTarget.closest('.game-card').querySelector('.play-btn');
-            }
-            
-            if (playBtn) {
-                const originalText = playBtn.innerHTML;
-                playBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
-                playBtn.disabled = true;
-                
-                // Сохраняем выбранную игру
-                localStorage.setItem('selectedGame', gameName);
-                
-                // Для мобильных устройств добавляем вибрацию
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(50);
-                }
-                
-                // Задержка для плавности анимации
-                setTimeout(() => {
-                    window.location.href = `games/${gameName}/index.html`;
-                }, 300);
-            }
-        }
-
-        // Оптимизация для мобильных устройств
-        document.addEventListener('DOMContentLoaded', function() {
-            // Адаптивная сетка игр
-            function adjustGrid() {
-                const grid = document.querySelector('.games-grid');
-                if (window.innerWidth < 768) {
-                    grid.style.gridTemplateColumns = '1fr';
-                } else if (window.innerWidth < 1024) {
-                    grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
-                } else {
-                    grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
-                }
-            }
-            
-            adjustGrid();
-            window.addEventListener('resize', adjustGrid);
-            
-            // Анимация карточек
-            const cards = document.querySelectorAll('.game-card');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-                
-                // Добавляем тач-эффекты для мобильных
-                card.addEventListener('touchstart', function() {
-                    this.style.transform = 'translateY(-2px)';
-                });
-                
-                card.addEventListener('touchend', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
-            
-            // Сохраняем размер вьюпорта для мобильных
-            let vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-            
-            window.addEventListener('resize', () => {
-                let vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-            });
-            
-            // Проверка поддержки PWA
-            if ('serviceWorker' in navigator) {
-                console.log('Service Worker поддерживается');
-            }
-            
-            if (window.matchMedia('(display-mode: standalone)').matches) {
-                console.log('Запущено как PWA');
-                document.body.classList.add('pwa-mode');
-            }
-        });
-    </script>
 </body>
 </html>
