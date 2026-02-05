@@ -14,8 +14,47 @@ let gameState = {
     categoriesData: {}
 };
 
+// ===== ФИКС ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ =====
+function fixMobileViewport() {
+    // Фикс для 100vh на iOS
+    const setVH = () => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+        
+        // Также устанавливаем высоту для body
+        document.body.style.height = `${window.innerHeight}px`;
+    };
+    
+    // Устанавливаем при загрузке
+    setVH();
+    
+    // И при изменении размера/ориентации
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+    
+    // Фикс для Safari - предотвращаем скролл страницы
+    document.body.addEventListener('touchmove', function(e) {
+        if (e.target.closest('.screen')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    // Фикс для input фокуса на iOS
+    document.addEventListener('focusin', function(e) {
+        if (e.target.matches('input, select, textarea')) {
+            // Прокручиваем к элементу при фокусе
+            setTimeout(() => {
+                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+    });
+}
+
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', async function() {
+    // Фикс для мобильных устройств
+    fixMobileViewport();
+    
     // Загрузка категорий
     await loadCategories();
     
@@ -27,21 +66,30 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Показ главного экрана
     showScreen('homeScreen');
-    
-    // Фикс высоты для мобильных
-    fixViewportHeight();
-    window.addEventListener('resize', fixViewportHeight);
 });
 
-function fixViewportHeight() {
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
+function initPlayers() {
+    // Инициализация игроков (если нужно)
+    console.log('Игроки инициализированы');
+}
+
+function initCategories() {
+    // Инициализация категорий (вызывается позже из initCategoriesList)
+    console.log('Категории инициализированы');
 }
 
 async function loadCategories() {
     try {
-        // Правильный путь к файлу categories.json
-        const response = await fetch('/friends/games/whoami/categories.json'); // добавили ./
+        // Попробуем разные пути
+        let response;
+        try {
+            // Путь от корня сайта
+            response = await fetch('/friends/games/whoami/categories.json');
+        } catch (e) {
+            // Относительный путь
+            response = await fetch('./categories.json');
+        }
+        
         const data = await response.json();
         gameState.categoriesData = data.categories;
         console.log('Категории загружены:', Object.keys(data.categories).length, 'категорий');
@@ -85,6 +133,11 @@ function showScreen(screenId) {
                 startGameRound();
                 break;
         }
+        
+        // Прокрутка наверх для мобильных
+        setTimeout(() => {
+            screen.scrollTop = 0;
+        }, 100);
     }
 }
 
@@ -164,13 +217,13 @@ function initCategoriesList() {
         
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.id = `cat_${category}`;
+        checkbox.id = `cat_${category.replace(/\s+/g, '_')}`;
         checkbox.value = category;
         checkbox.checked = true;
         
         const label = document.createElement('label');
         label.className = 'category-label';
-        label.htmlFor = `cat_${category}`;
+        label.htmlFor = checkbox.id;
         label.textContent = `${category} (${wordsCount})`;
         
         div.appendChild(checkbox);
@@ -199,7 +252,7 @@ function startGame() {
     ).map(cb => cb.value);
     
     if (selectedCategories.length === 0) {
-        alert('Выберите хотя бы одну категорию!');
+        showNotification('Выберите хотя бы одну категорию!', 'error');
         return;
     }
     
@@ -244,6 +297,7 @@ function prepareReadyScreen() {
     const btn = document.getElementById('showWordBtn');
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-eye"></i> Показать слово';
+    btn.onclick = showWord; // Восстанавливаем обработчик
 }
 
 function showWord() {
@@ -253,11 +307,13 @@ function showWord() {
     const wordElement = document.getElementById('wordPlaceholder');
     const categoryElement = document.getElementById('categoryPlaceholder');
     
-    // Показываем счетчик
+    // Отключаем кнопку на время анимации
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 3';
     
+    // Показываем счетчик 3-2-1
     let count = 3;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${count}`;
+    
     const countdown = setInterval(() => {
         count--;
         if (count > 0) {
@@ -328,8 +384,11 @@ function startTimer() {
 function updateTimerDisplay() {
     const minutes = Math.floor(gameState.timeLeft / 60);
     const seconds = gameState.timeLeft % 60;
-    document.getElementById('timerDisplay').textContent = 
-        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const timerElement = document.getElementById('timerDisplay');
+    if (timerElement) {
+        timerElement.textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
 }
 
 function getRandomWord() {
@@ -536,11 +595,15 @@ function resetGameState() {
 
 // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
 function showNotification(text, type = 'success') {
+    // Удаляем старые уведомления
+    document.querySelectorAll('.notification').forEach(el => el.remove());
+    
     // Создаем уведомление
     const notification = document.createElement('div');
     notification.className = 'notification';
     notification.textContent = text;
     
+    // Стили в зависимости от типа
     if (type === 'success') {
         notification.style.background = 'var(--success)';
     } else if (type === 'warning') {
@@ -549,11 +612,12 @@ function showNotification(text, type = 'success') {
         notification.style.background = 'var(--danger)';
     }
     
+    // Базовые стили
     notification.style.cssText = `
         position: fixed;
-        top: 20px;
+        top: 80px;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translateX(-50%) translateY(-20px);
         background: var(--success);
         color: white;
         padding: 12px 24px;
@@ -561,25 +625,49 @@ function showNotification(text, type = 'success') {
         font-weight: 600;
         z-index: 1001;
         box-shadow: var(--shadow-lg);
-        animation: slideDown 0.3s ease;
+        opacity: 0;
+        transition: all 0.3s ease;
+        max-width: 90%;
+        text-align: center;
+        font-size: 14px;
     `;
     
     document.body.appendChild(notification);
     
+    // Анимация появления
     setTimeout(() => {
-        notification.style.animation = 'slideUp 0.3s ease';
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
+    
+    // Автоматическое скрытие
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(-50%) translateY(-20px)';
         setTimeout(() => {
-            document.body.removeChild(notification);
+            if (notification.parentNode) {
+                document.body.removeChild(notification);
+            }
         }, 300);
     }, 2000);
 }
 
 function showModal(modalId) {
-    document.getElementById(modalId).classList.add('show');
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('show');
+        // Блокируем скролл фона
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('show');
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+        // Разблокируем скролл
+        document.body.style.overflow = '';
+    }
 }
 
 function goBack() {
