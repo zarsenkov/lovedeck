@@ -47,9 +47,11 @@
     /* Анимации */
     --transition: 0.2s ease;
     
-    /* Безопасные отступы */
+    /* Безопасные отступы для iPhone X+ и Safari */
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
 }
 
 /* ===== ОСНОВНЫЕ СТИЛИ ===== */
@@ -59,7 +61,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.5;
@@ -67,11 +69,19 @@ body {
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Для iOS Safari */
+    -webkit-overflow-scrolling: touch;
+    /* Предотвращаем увеличение текста при повороте */
+    -webkit-text-size-adjust: 100%;
 }
 
+/* Фикс для 100vh на iOS */
 .app-container {
     height: 100vh;
-    height: calc(var(--vh, 1vh) * 100);
+    /* Для iOS */
+    height: -webkit-fill-available;
+    height: fill-available;
+    height: calc(100 * var(--vh, 1vh));
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -90,6 +100,10 @@ body {
     box-shadow: var(--shadow-sm);
     min-height: 64px;
     flex-shrink: 0;
+    /* Для iOS */
+    padding-top: calc(16px + var(--safe-top, 0px));
+    padding-left: calc(16px + var(--safe-left, 0px));
+    padding-right: calc(16px + var(--safe-right, 0px));
 }
 
 .btn-back {
@@ -106,9 +120,12 @@ body {
     cursor: pointer;
     transition: var(--transition);
     margin-right: 12px;
+    /* Минимальный размер для touch */
+    min-width: 44px;
+    min-height: 44px;
 }
 
-.btn-back:hover {
+.btn-back:hover, .btn-back:active {
     background: var(--surface-2);
     border-color: var(--primary);
 }
@@ -123,12 +140,16 @@ body {
     color: var(--primary);
     margin: 0;
     line-height: 1.2;
+    /* Для iOS */
+    font-size: max(20px, 5vw);
 }
 
 .subtitle {
     font-size: 12px;
     color: var(--text-light);
     margin-top: 2px;
+    /* Для iOS */
+    font-size: max(12px, 3vw);
 }
 
 /* ===== КНОПКИ ===== */
@@ -146,15 +167,23 @@ body {
     transition: var(--transition);
     text-decoration: none;
     font-family: inherit;
+    /* Минимальный размер для touch на iOS */
     min-height: 44px;
+    min-width: 44px;
+    /* Для Safari */
+    -webkit-appearance: none;
+    appearance: none;
+    /* Убираем выделение при тапе на iOS */
+    -webkit-tap-highlight-color: transparent;
 }
 
-.btn:hover {
+.btn:hover, .btn:active {
     transform: translateY(-1px);
 }
 
-.btn:active {
-    transform: translateY(0);
+.btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary {
@@ -162,7 +191,7 @@ body {
     color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover, .btn-primary:active {
     background: var(--primary-dark);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
@@ -173,7 +202,7 @@ body {
     border: 2px solid var(--border);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover, .btn-secondary:active {
     background: var(--surface-2);
     border-color: var(--primary-light);
 }
@@ -183,7 +212,7 @@ body {
     color: white;
 }
 
-.btn-success:hover {
+.btn-success:hover, .btn-success:active {
     background: #059669;
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
@@ -193,7 +222,7 @@ body {
     color: white;
 }
 
-.btn-warning:hover {
+.btn-warning:hover, .btn-warning:active {
     background: #d97706;
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
@@ -203,7 +232,7 @@ body {
     color: white;
 }
 
-.btn-danger:hover {
+.btn-danger:hover, .btn-danger:active {
     background: #dc2626;
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
@@ -212,6 +241,8 @@ body {
     padding: 16px 24px;
     font-size: 16px;
     min-height: 52px;
+    /* Для iOS */
+    font-size: max(16px, 4vw);
 }
 
 .btn-counter {
@@ -227,9 +258,11 @@ body {
     font-size: 18px;
     cursor: pointer;
     transition: var(--transition);
+    min-width: 44px;
+    min-height: 44px;
 }
 
-.btn-counter:hover {
+.btn-counter:hover, .btn-counter:active {
     background: var(--surface-2);
     border-color: var(--primary);
 }
@@ -239,6 +272,8 @@ body {
     flex: 1;
     overflow: hidden;
     position: relative;
+    /* Для iOS Safari */
+    -webkit-overflow-scrolling: touch;
 }
 
 .screen {
@@ -252,8 +287,13 @@ body {
     transform: translateY(10px);
     transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
     overflow-y: auto;
+    /* Для плавного скролла на iOS */
     -webkit-overflow-scrolling: touch;
     padding: 20px 16px;
+    /* Безопасные отступы для iOS */
+    padding-left: calc(16px + var(--safe-left, 0px));
+    padding-right: calc(16px + var(--safe-right, 0px));
+    padding-bottom: calc(20px + var(--safe-bottom, 0px));
     background: var(--bg);
 }
 
@@ -271,12 +311,15 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
+    /* Для iOS - предотвращаем сжатие */
+    min-height: 0;
 }
 
 /* ===== ЭКРАН 1: ГЛАВНЫЙ МЕНЮ ===== */
 .welcome-section {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
+    padding: 0 8px;
 }
 
 .welcome-icon {
@@ -290,12 +333,19 @@ body {
     margin: 0 auto 20px;
     color: white;
     font-size: 32px;
+    /* Для маленьких экранов */
+    width: min(80px, 20vw);
+    height: min(80px, 20vw);
+    font-size: min(32px, 8vw);
 }
 
 .welcome-section h2 {
     font-size: 24px;
     margin-bottom: 16px;
     color: var(--text);
+    /* Для маленьких экранов */
+    font-size: max(24px, 6vw);
+    line-height: 1.3;
 }
 
 .instructions {
@@ -307,29 +357,39 @@ body {
     border-radius: var(--radius);
     border: 1px solid var(--border);
     text-align: left;
+    margin: 0 auto;
+    max-width: 100%;
+    /* Для маленьких экранов */
+    font-size: max(15px, 3.8vw);
+    padding: max(16px, 4vw);
 }
 
 .players-setup {
     background: var(--surface);
     border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 24px;
+    padding: 20px;
+    margin-bottom: 20px;
     border: 1px solid var(--border);
     text-align: center;
+    /* Для маленьких экранов */
+    padding: max(16px, 4vw);
 }
 
 .players-setup h3 {
     font-size: 18px;
     margin-bottom: 16px;
     color: var(--text);
+    /* Для маленьких экранов */
+    font-size: max(18px, 4.5vw);
 }
 
 .players-counter {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 16px;
     margin-bottom: 12px;
+    flex-wrap: wrap;
 }
 
 .count {
@@ -338,38 +398,57 @@ body {
     color: var(--primary);
     min-width: 60px;
     text-align: center;
+    /* Для маленьких экранов */
+    font-size: max(32px, 8vw);
 }
 
 .hint {
     font-size: 13px;
     color: var(--text-light);
     margin-top: 8px;
+    /* Для маленьких экранов */
+    font-size: max(13px, 3.2vw);
+    line-height: 1.4;
+}
+
+/* Кнопка Начать игру - ФИКС ДЛЯ SAFARI */
+.screen-content > .btn-primary:last-child {
+    margin-top: auto;
+    margin-bottom: var(--safe-bottom, 0px);
+    padding-bottom: calc(16px + var(--safe-bottom, 0px));
 }
 
 /* ===== ЭКРАН 2: НАСТРОЙКА ===== */
 .setup-header {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    padding: 0 8px;
 }
 
 .setup-header h2 {
     font-size: 24px;
     margin-bottom: 8px;
     color: var(--text);
+    /* Для маленьких экранов */
+    font-size: max(24px, 6vw);
 }
 
 .setup-sections {
     flex: 1;
     overflow-y: auto;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    /* Для плавного скролла на iOS */
+    -webkit-overflow-scrolling: touch;
 }
 
 .setup-section {
     background: var(--surface);
     border-radius: var(--radius);
-    padding: 20px;
+    padding: 16px;
     margin-bottom: 16px;
     border: 1px solid var(--border);
+    /* Для маленьких экранов */
+    padding: max(16px, 4vw);
 }
 
 .setup-section h3 {
@@ -379,12 +458,8 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-.players-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    /* Для маленьких экранов */
+    font-size: max(18px, 4.5vw);
 }
 
 .player-input {
@@ -396,12 +471,31 @@ body {
     background: var(--surface);
     color: var(--text);
     transition: var(--transition);
+    /* Минимальный размер для touch */
+    min-height: 44px;
+    /* Для iOS */
+    -webkit-appearance: none;
+    appearance: none;
+    /* Для маленьких экранов */
+    font-size: max(16px, 4vw);
+    padding: max(12px, 3vw);
 }
 
 .player-input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Убираем стрелки у number input на iOS */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
 }
 
 .categories-list {
@@ -429,6 +523,14 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: var(--transition);
+    /* Минимальный размер для touch */
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Для маленьких экранов */
+    font-size: max(14px, 3.5vw);
+    padding: max(10px, 2.5vw) max(8px, 2vw);
 }
 
 .category-item input:checked + .category-label {
@@ -440,7 +542,7 @@ body {
 .game-settings {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
 }
 
 .setting-item {
@@ -453,12 +555,15 @@ body {
     font-size: 15px;
     font-weight: 600;
     color: var(--text);
+    /* Для маленьких экранов */
+    font-size: max(15px, 3.8vw);
 }
 
 .timer-settings {
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-wrap: wrap;
 }
 
 .btn-timer {
@@ -471,9 +576,13 @@ body {
     cursor: pointer;
     transition: var(--transition);
     min-width: 60px;
+    min-height: 44px;
+    /* Для маленьких экранов */
+    padding: max(8px, 2vw) max(12px, 3vw);
+    font-size: max(14px, 3.5vw);
 }
 
-.btn-timer:hover {
+.btn-timer:hover, .btn-timer:active {
     background: var(--surface-2);
     border-color: var(--primary);
 }
@@ -488,17 +597,22 @@ input[type="number"] {
     color: var(--text);
     flex: 1;
     max-width: 120px;
-}
-
-input[type="number"]:focus {
-    outline: none;
-    border-color: var(--primary);
+    min-height: 44px;
+    /* Для iOS */
+    -webkit-appearance: none;
+    appearance: none;
+    /* Для маленьких экранов */
+    font-size: max(16px, 4vw);
+    padding: max(10px, 2.5vw);
 }
 
 .action-buttons {
     display: flex;
     gap: 12px;
     margin-top: auto;
+    padding-top: 16px;
+    /* Для Safari - фикс нижнего отступа */
+    padding-bottom: var(--safe-bottom, 0px);
 }
 
 /* ===== ЭКРАН 3: ПОДГОТОВКА ===== */
@@ -506,7 +620,7 @@ input[type="number"]:focus {
     background: var(--surface);
     border-radius: var(--radius);
     padding: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     border: 1px solid var(--border);
     text-align: center;
 }
@@ -515,6 +629,8 @@ input[type="number"]:focus {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 8px;
+    /* Для маленьких экранов */
+    font-size: max(16px, 4vw);
 }
 
 .round-info span {
@@ -524,20 +640,23 @@ input[type="number"]:focus {
 .player-info {
     font-size: 15px;
     color: var(--text-light);
+    /* Для маленьких экранов */
+    font-size: max(15px, 3.8vw);
 }
 
 .phone-container {
-    margin: 24px 0;
+    margin: 20px 0;
     display: flex;
     justify-content: center;
+    padding: 0 8px;
 }
 
 .phone {
-    width: 280px;
-    height: 500px;
+    width: min(280px, 80vw);
+    height: min(500px, 140vw);
     background: var(--surface);
     border-radius: 40px;
-    padding: 24px;
+    padding: 20px;
     box-shadow: 
         0 20px 40px rgba(0, 0, 0, 0.1),
         inset 0 0 0 3px var(--border);
@@ -553,38 +672,42 @@ input[type="number"]:focus {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 16px;
     border: 2px solid var(--border);
 }
 
 .word-placeholder {
-    font-size: 48px;
+    font-size: min(48px, 12vw);
     font-weight: 900;
     color: var(--primary);
     margin-bottom: 12px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     text-align: center;
     min-height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
+    word-break: break-word;
+    padding: 0 8px;
 }
 
 .category-placeholder {
-    font-size: 16px;
+    font-size: min(16px, 4vw);
     color: var(--text-light);
     background: var(--surface);
     padding: 8px 16px;
     border-radius: var(--radius-full);
     font-weight: 500;
+    text-align: center;
+    max-width: 90%;
 }
 
 .instructions-box {
     background: var(--surface);
     border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 24px;
+    padding: 16px;
+    margin-bottom: 20px;
     border: 1px solid var(--border);
 }
 
@@ -595,6 +718,8 @@ input[type="number"]:focus {
     display: flex;
     align-items: center;
     gap: 10px;
+    /* Для маленьких экранов */
+    font-size: max(18px, 4.5vw);
 }
 
 .instruction-steps {
@@ -611,8 +736,8 @@ input[type="number"]:focus {
 }
 
 .step-number {
-    width: 32px;
-    height: 32px;
+    width: min(32px, 8vw);
+    height: min(32px, 8vw);
     background: var(--primary);
     color: white;
     border-radius: 50%;
@@ -621,13 +746,16 @@ input[type="number"]:focus {
     justify-content: center;
     font-weight: 700;
     flex-shrink: 0;
-    font-size: 14px;
+    font-size: min(14px, 3.5vw);
 }
 
 .step p {
     flex: 1;
     font-size: 15px;
     color: var(--text);
+    /* Для маленьких экранов */
+    font-size: max(15px, 3.8vw);
+    line-height: 1.4;
 }
 
 .warning {
@@ -642,6 +770,9 @@ input[type="number"]:focus {
     gap: 10px;
     font-weight: 600;
     font-size: 15px;
+    /* Для маленьких экранов */
+    font-size: max(15px, 3.8vw);
+    padding: max(12px, 3vw);
 }
 
 .ready-actions {
@@ -649,350 +780,30 @@ input[type="number"]:focus {
     flex-direction: column;
     gap: 12px;
     margin-top: auto;
-}
-
-/* ===== ЭКРАН 4: ИГРА ===== */
-.game-header {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 20px;
-    border: 1px solid var(--border);
-}
-
-.game-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.info-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 15px;
-    font-weight: 500;
-}
-
-.info-item i {
-    color: var(--primary);
-}
-
-.game-card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    margin-bottom: 20px;
-    border: 2px solid var(--border);
-    box-shadow: var(--shadow-md);
-}
-
-.word-display {
-    text-align: center;
-    margin-bottom: 32px;
-    padding: 32px 20px;
-    background: var(--surface-2);
-    border-radius: var(--radius);
-    border: 2px dashed var(--border);
-}
-
-.word {
-    font-size: 36px;
-    font-weight: 900;
-    color: var(--primary);
-    margin-bottom: 12px;
-    line-height: 1.2;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.category {
-    font-size: 16px;
-    color: var(--text-light);
-    background: var(--surface);
-    padding: 8px 16px;
-    border-radius: var(--radius-full);
-    display: inline-block;
-    font-weight: 500;
-}
-
-.game-actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.score-section {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 20px;
-    border: 1px solid var(--border);
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.score-section h3 {
-    font-size: 18px;
-    margin-bottom: 16px;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.scoreboard {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-    overflow-y: auto;
-}
-
-.score-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px;
-    background: var(--surface-2);
-    border-radius: var(--radius);
-    transition: var(--transition);
-}
-
-.score-row.current {
-    border: 2px solid var(--primary);
-    background: rgba(99, 102, 241, 0.05);
-}
-
-.score-name {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 500;
-}
-
-.score-name i {
-    color: var(--primary);
-}
-
-.score-value {
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--primary);
-}
-
-.game-controls {
-    display: flex;
-    gap: 12px;
-}
-
-/* ===== ЭКРАН 5: РЕЗУЛЬТАТЫ ===== */
-.results-header {
-    text-align: center;
-    margin-bottom: 32px;
-}
-
-.trophy {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, var(--warning), #d97706);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-    color: white;
-    font-size: 36px;
-}
-
-.results-header h2 {
-    font-size: 24px;
-    margin-bottom: 8px;
-    color: var(--text);
-}
-
-.winner {
-    font-size: 18px;
-    color: var(--text);
-}
-
-.winner span {
-    color: var(--warning);
-    font-weight: 700;
-}
-
-.results-board {
-    flex: 1;
-    overflow-y: auto;
-    margin-bottom: 32px;
-}
-
-.results-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.result-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background: var(--surface);
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-}
-
-.result-item:first-child {
-    border: 2px solid var(--warning);
-    background: rgba(245, 158, 11, 0.05);
-}
-
-.result-rank {
-    width: 36px;
-    height: 36px;
-    background: var(--primary);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    flex-shrink: 0;
-    margin-right: 16px;
-}
-
-.result-item:first-child .result-rank {
-    background: var(--warning);
-}
-
-.result-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.result-name {
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.result-stats {
-    display: flex;
-    gap: 12px;
-    font-size: 14px;
-    color: var(--text-light);
-}
-
-.result-score {
-    font-weight: 700;
-    font-size: 20px;
-    color: var(--primary);
-    min-width: 60px;
-    text-align: right;
-}
-
-.results-actions {
-    display: flex;
-    gap: 12px;
-}
-
-/* ===== МОДАЛЬНЫЕ ОКНА ===== */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    animation: fadeIn 0.3s ease;
-}
-
-.modal.show {
-    display: flex;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.modal-content {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    max-width: 400px;
-    width: 100%;
-    animation: modalSlide 0.3s ease;
-}
-
-@keyframes modalSlide {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.modal-content h3 {
-    font-size: 20px;
-    margin-bottom: 12px;
-    color: var(--text);
-    text-align: center;
-}
-
-.modal-content p {
-    color: var(--text-light);
-    text-align: center;
-    margin-bottom: 24px;
-    font-size: 15px;
-}
-
-.modal-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    /* Для Safari - фикс нижнего отступа */
+    padding-bottom: var(--safe-bottom, 0px);
 }
 
 /* ===== АДАПТИВНОСТЬ ===== */
+
+/* Мобильные устройства */
 @media (max-width: 480px) {
     .screen {
         padding: 16px 12px;
+        padding-left: calc(12px + var(--safe-left, 0px));
+        padding-right: calc(12px + var(--safe-right, 0px));
+        padding-bottom: calc(16px + var(--safe-bottom, 0px));
     }
     
     .header {
         padding: 12px;
+        padding-left: calc(12px + var(--safe-left, 0px));
+        padding-right: calc(12px + var(--safe-right, 0px));
+        padding-top: calc(12px + var(--safe-top, 0px));
     }
     
-    .phone {
-        width: 240px;
-        height: 420px;
-        padding: 16px;
-        border-radius: 32px;
-    }
-    
-    .word-placeholder {
-        font-size: 40px;
-    }
-    
-    .word {
-        font-size: 32px;
+    .categories-list {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .game-actions {
@@ -1002,40 +813,35 @@ input[type="number"]:focus {
     .results-actions {
         flex-direction: column;
     }
-    
-    .categories-list {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
+/* Очень маленькие экраны */
 @media (max-width: 360px) {
-    .phone {
-        width: 200px;
-        height: 360px;
-    }
-    
-    .word-placeholder {
-        font-size: 32px;
-    }
-    
-    .word {
-        font-size: 28px;
-    }
-    
     .categories-list {
         grid-template-columns: 1fr;
     }
+    
+    .phone {
+        border-radius: 30px;
+        padding: 16px;
+    }
+    
+    .phone-screen {
+        border-radius: 20px;
+    }
 }
 
-/* Ландшафтная ориентация */
+/* Ландшафтная ориентация на мобильных */
 @media (orientation: landscape) and (max-height: 600px) {
     .header {
-        padding: 12px;
+        padding: 8px 12px;
+        padding-top: calc(8px + var(--safe-top, 0px));
         min-height: 56px;
     }
     
     .screen {
         padding: 12px;
+        padding-bottom: calc(12px + var(--safe-bottom, 0px));
     }
     
     .phone {
@@ -1044,25 +850,102 @@ input[type="number"]:focus {
         margin: 0 auto;
     }
     
-    .word {
-        font-size: 24px;
+    .welcome-icon {
+        margin-bottom: 12px;
     }
     
-    .game-actions {
+    .welcome-section h2 {
+        margin-bottom: 12px;
+    }
+    
+    .players-setup {
+        margin-bottom: 16px;
+        padding: 16px;
+    }
+    
+    .categories-list {
         grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* Уменьшаем отступы в ландшафте */
+    .setup-section,
+    .instructions-box,
+    .ready-header,
+    .game-header,
+    .score-section {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .instruction-steps {
+        gap: 12px;
+        margin-bottom: 16px;
     }
 }
 
-/* Высокие экраны */
+/* Высокие экраны (iPhone X и новее) */
 @media (min-height: 800px) {
     .screen {
-        padding: 32px 20px;
+        padding: 24px 20px;
+        padding-bottom: calc(24px + var(--safe-bottom, 0px));
     }
     
     .phone {
         width: 300px;
         height: 520px;
     }
+}
+
+/* Планшеты */
+@media (min-width: 768px) {
+    .screen-content {
+        max-width: 600px;
+    }
+    
+    .categories-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Фикс для Safari - предотвращаем масштабирование при фокусе */
+@media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* Улучшаем читаемость на очень маленьких экранах */
+@media (max-width: 320px) {
+    .btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    .btn-large {
+        padding: 14px 20px;
+        font-size: 15px;
+    }
+    
+    .instruction-steps {
+        gap: 12px;
+    }
+    
+    .step {
+        gap: 12px;
+    }
+}
+
+/* Фикс для кнопок внизу экрана в Safari */
+.screen-content {
+    padding-bottom: calc(20px + var(--safe-bottom, 20px));
+}
+
+.action-buttons,
+.ready-actions,
+.results-actions {
+    margin-bottom: var(--safe-bottom, 20px);
 }
 
 /* Темная тема */
@@ -1076,9 +959,15 @@ input[type="number"]:focus {
         --border: #475569;
     }
     
-    .instructions, .players-setup, .setup-section,
-    .ready-header, .game-header, .game-card,
-    .score-section, .instructions-box, .result-item {
+    .instructions,
+    .players-setup,
+    .setup-section,
+    .ready-header,
+    .instructions-box,
+    .game-header,
+    .game-card,
+    .score-section,
+    .result-item {
         background: var(--surface);
         border-color: var(--border);
     }
@@ -1091,5 +980,9 @@ input[type="number"]:focus {
         background: #453411;
         border-color: #684c1c;
         color: #ffd54f;
+    }
+    
+    .category-label {
+        background: var(--surface-2);
     }
 }
