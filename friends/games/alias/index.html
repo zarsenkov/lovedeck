@@ -3,72 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Party Games</title>
+    <title>Party Games by [Your Name]</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="app">
-        <a href="https://lovecouple.ru/" class="external-back">← На главную</a>
+        <a href="https://lovecouple.ru/" class="brand-link">LoverParty</a>
 
         <section id="screen-modes" class="screen active">
-            <div class="header-box">
-                <h1>Party<span>Games</span></h1>
-                <p>Выбери режим игры</p>
-            </div>
-            <div class="menu-stack">
-                <button class="menu-card" onclick="selectMode('alias')">
-                    <span class="emoji">🗣️</span>
-                    <div><strong>Алиас</strong><small>Объясняй словами</small></div>
+            <h1 class="heading-xl">GAME.<br>MODE.</h1>
+            <div class="mode-selection">
+                <button class="mode-tile" data-mode="alias">
+                    <span class="mode-label">ALIAS</span>
+                    <span class="mode-desc">Объясни без слов</span>
                 </button>
-                <button class="menu-card" onclick="selectMode('crocodile')">
-                    <span class="emoji">🎭</span>
-                    <div><strong>Крокодил</strong><small>Показывай жестами</small></div>
+                <button class="mode-tile" data-mode="crocodile">
+                    <span class="mode-label">CROCODILE</span>
+                    <span class="mode-desc">Покажи жестами</span>
                 </button>
             </div>
         </section>
 
         <section id="screen-categories" class="screen">
-            <button class="back-btn" onclick="showScreen('screen-modes')">← Назад</button>
-            <h2>Категории</h2>
-            <div id="category-list" class="menu-stack"></div>
+            <button class="nav-back" data-target="screen-modes">← MODE</button>
+            <h1 class="heading-lg">CATEGORIES.</h1>
+            <div id="category-grid" class="bento-grid">
+                </div>
         </section>
 
         <section id="screen-setup" class="screen">
-            <button class="back-btn" onclick="showScreen('screen-categories')">← К категориям</button>
-            <h2>Настройка</h2>
-            <div class="setup-form">
-                <div class="input-group">
-                    <label>Команды</label>
-                    <input type="text" id="t1-name" value="Команда 1">
-                    <input type="text" id="t2-name" value="Команда 2">
-                </div>
-                <div class="input-group">
-                    <label>Время: <span id="time-val">60</span>с</label>
-                    <input type="range" id="time-range" min="30" max="90" step="30" value="60">
-                </div>
+            <button class="nav-back" data-target="screen-categories">← CATEGORIES</button>
+            <h1 class="heading-lg">SETUP.</h1>
+            <div class="form-section">
+                <label for="team1-name">TEAM 1</label>
+                <input type="text" id="team1-name" value="ALPHA">
+                <label for="team2-name">TEAM 2</label>
+                <input type="text" id="team2-name" value="BETA">
             </div>
-            <button class="btn-primary" onclick="startApp()">Начать раунд</button>
+            <div class="form-section">
+                <label>ROUND TIME <span id="time-display" class="mono-text">60</span>s</label>
+                <input type="range" id="time-range" min="30" max="90" step="30" value="60">
+            </div>
+            <button class="action-btn" id="start-game-btn">START GAME</button>
         </section>
 
         <section id="screen-game" class="screen">
-            <div id="round-overlay" class="overlay active">
-                <h3 id="current-team-name">Команда 1</h3>
-                <p>Приготовьте устройство</p>
-                <button class="btn-primary" onclick="startTimer()">ПОЕХАЛИ</button>
-            </div>
-            
-            <div class="game-header">
-                <div id="timer-box">60</div>
-                <div id="score-box">0</div>
-            </div>
-            
-            <div class="card-area">
-                <div id="word-card" class="word-card">Слово</div>
+            <div id="game-overlay" class="overlay active">
+                <h2 id="overlay-team-name" class="heading-md">ALPHA</h2>
+                <p class="overlay-subtext">GET READY. PRESS START.</p>
+                <button class="action-btn" id="overlay-start-btn">START</button>
             </div>
 
-            <div class="game-footer">
-                <button class="btn-game skip" onclick="answer(false)">Пропустить -1</button>
-                <button class="btn-game done" onclick="answer(true)">Угадано +1</button>
+            <div class="game-display">
+                <div class="game-header">
+                    <span id="game-timer" class="mono-text">60</span>
+                    <span id="game-score" class="mono-text">0</span>
+                </div>
+                <div class="word-stage">
+                    <div id="word-display" class="word-card">WORD.</div>
+                </div>
+                <div class="game-controls">
+                    <button class="control-btn skip-btn" data-action="skip">SKIP</button>
+                    <button class="control-btn correct-btn" data-action="correct">CORRECT</button>
+                </div>
             </div>
         </section>
     </div>
