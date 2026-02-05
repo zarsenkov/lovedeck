@@ -2,192 +2,185 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoveCouple: Игры для друзей</title>
-    <meta name="description" content="Современные игры для компании: Бункер, Шпион, Крокодил, Алиас, Мафия и другие">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <title>GAMEPARTY</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Шапка -->
-        <header class="main-header">
-            <div class="header-content">
-                <h1 class="header-title">
-                    <i class="fas fa-sparkles"></i> LoveCouple Friends
-                </h1>
-                <p class="header-subtitle">
-                    Современные игры для вашей компании. Красиво, удобно, без рекламы.
-                </p>
-            </div>
-        </header>
+    <!-- Film Grain Overlay -->
+    <div class="grain"></div>
+    
+    <!-- Persistent Header -->
+    <header class="app-header">
+        <a href="https://lovecouple.ru/" class="header-link">← LOVERCO.</a>
+    </header>
 
-        <!-- Сетка игр -->
-        <main class="games-grid">
-            <!-- Кто я? -->
-            <div class="game-card" data-game="whoami">
-                <div class="game-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
-                    <i class="fas fa-shield-alt"></i>
+    <!-- Flash Overlay for Haptic Feedback -->
+    <div class="flash-overlay" id="flash"></div>
+
+    <main class="app-main">
+        
+        <!-- HOME SCREEN -->
+        <section class="screen active" id="screen-home">
+            <div class="screen-inner">
+                <h1 class="title-main">GAMEPARTY</h1>
+                <div class="mode-selector">
+                    <button class="mode-card" data-mode="alias">
+                        <span class="mode-label">АЛИАС</span>
+                        <span class="mode-desc">Объясняй словами</span>
+                    </button>
+                    <button class="mode-card" data-mode="crocodile">
+                        <span class="mode-label">КРОКОДИЛ</span>
+                        <span class="mode-desc">Показывай жестами</span>
+                    </button>
                 </div>
-                <h3>Кто я?</h3>
-                <p>Веселая игра для компании, попытайтесь угадать, что вы за персонаж, предмет или явление</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 4-8 игроков</span>
-                    <span><i class="fas fa-clock"></i> 20-40 мин</span>
+            </div>
+        </section>
+
+        <!-- CATEGORY SCREEN -->
+        <section class="screen" id="screen-categories">
+            <div class="screen-inner">
+                <h2 class="title-screen">ВЫБЕРИ КАТЕГОРИИ</h2>
+                <div class="category-grid">
+                    <label class="category-card">
+                        <input type="checkbox" value="base" checked>
+                        <span class="category-name">БАЗОВАЯ</span>
+                    </label>
+                    <label class="category-card">
+                        <input type="checkbox" value="movies">
+                        <span class="category-name">КИНО</span>
+                    </label>
+                    <label class="category-card">
+                        <input type="checkbox" value="food">
+                        <span class="category-name">ЕДА</span>
+                    </label>
+                    <label class="category-card">
+                        <input type="checkbox" value="adult">
+                        <span class="category-name">18+</span>
+                    </label>
                 </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                <button class="btn-primary" data-action="confirm-categories">ДАЛЕЕ</button>
+            </div>
+        </section>
+
+        <!-- SETTINGS SCREEN -->
+        <section class="screen" id="screen-settings">
+            <div class="screen-inner">
+                <h2 class="title-screen">НАСТРОЙКИ ИГРЫ</h2>
+                <div class="settings-form">
+                    <div class="input-group">
+                        <label class="input-label">КОМАНДА 1</label>
+                        <input type="text" class="input-field" id="team1" value="КРАСНЫЕ" maxlength="20">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">КОМАНДА 2</label>
+                        <input type="text" class="input-field" id="team2" value="СИНИЕ" maxlength="20">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">ВРЕМЯ РАУНДА (СЕК)</label>
+                        <input type="number" class="input-field" id="round-time" value="60" min="30" max="120" step="10">
+                    </div>
+                </div>
+                <button class="btn-primary" data-action="start-game">НАЧАТЬ ИГРУ</button>
+            </div>
+        </section>
+
+        <!-- TEAM TURN SCREEN -->
+        <section class="screen" id="screen-turn">
+            <div class="screen-inner centered">
+                <h2 class="turn-label">ГОТОВЫ?</h2>
+                <h1 class="turn-team" id="turn-team-name"></h1>
+                <p class="turn-mode" id="turn-mode-text"></p>
+                <button class="btn-primary btn-huge" data-action="begin-round">ПОЕХАЛИ</button>
+            </div>
+        </section>
+
+        <!-- GAME SCREEN -->
+        <section class="screen" id="screen-game">
+            <div class="game-ui">
+                <div class="game-header">
+                    <button class="btn-home" data-action="go-home" title="В меню">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                    </button>
+                    <div class="timer-display">
+                        <div class="timer-bar">
+                            <div class="timer-fill" id="timer-fill"></div>
+                        </div>
+                        <span class="timer-text" id="timer-text">60</span>
+                    </div>
+                    <div class="score-display">
+                        <span class="score-value" id="score-value">0</span>
+                    </div>
+                </div>
+
+                <div class="card-area">
+                    <div class="swipe-card" id="swipe-card">
+                        <span class="card-word" id="card-word"></span>
+                        <div class="swipe-indicator swipe-left">
+                            <span>ПРОПУСТИТЬ</span>
+                        </div>
+                        <div class="swipe-indicator swipe-right">
+                            <span>ВЕРНО</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-undo" id="btn-undo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M3 7v6h6M21 17v-6h-6"/>
+                        <path d="M3 13a9 9 0 0 1 9-9 9 9 0 0 1 9 9"/>
+                    </svg>
+                    ОТМЕНА
                 </button>
+
+                <div class="swipe-hints">
+                    <div class="hint hint-left">
+                        <span>← ПРОПУСТИТЬ (-1)</span>
+                    </div>
+                    <div class="hint hint-right">
+                        <span>ВЕРНО (+1) →</span>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <!-- Шпион -->
-            <div class="game-card" data-game="spy">
-                <div class="game-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-                    <i class="fas fa-user-secret"></i>
+        <!-- ROUND SUMMARY SCREEN -->
+        <section class="screen" id="screen-summary">
+            <div class="screen-inner">
+                <h2 class="summary-result" id="summary-result">РАУНД ЗАВЕРШЁН</h2>
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">КОМАНДА</span>
+                        <span class="stat-value" id="summary-team"></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">СЧЁТ</span>
+                        <span class="stat-value" id="summary-score"></span>
+                    </div>
                 </div>
-                <h3>Шпион</h3>
-                <p>Найди шпиона среди друзей! Блеф, дедукция и напряженные обсуждения.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 3-8 игроков</span>
-                    <span><i class="fas fa-clock"></i> 10-25 мин</span>
+                <div class="words-list">
+                    <h3 class="words-title">СЫГРАНО СЛОВ</h3>
+                    <div class="words-container" id="words-container"></div>
                 </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
-                </button>
+                <div class="summary-actions">
+                    <button class="btn-secondary" data-action="go-home">В МЕНЮ</button>
+                    <button class="btn-primary" data-action="next-team">СЛЕДУЮЩАЯ КОМАНДА</button>
+                </div>
             </div>
+        </section>
 
-            <!-- Крокодил -->
-            <div class="game-card" data-game="crocodile">
-                <div class="game-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                    <i class="fas fa-hand-sparkles"></i>
-                </div>
-                <h3>Крокодил</h3>
-                <p>Объясняй слова без слов! Жесты, мимика и безудержный смех гарантированы.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 2-∞ игроков</span>
-                    <span><i class="fas fa-clock"></i> 5-30 мин</span>
-                </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
-                </button>
-            </div>
+    </main>
 
-            <!-- Алиас -->
-            <div class="game-card" data-game="alias">
-                <div class="game-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                    <i class="fas fa-comments"></i>
-                </div>
-                <h3>Алиас</h3>
-                <p>Объясняй слова другими словами. Скорость, сообразительность и веселье.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 4+ игроков</span>
-                    <span><i class="fas fa-clock"></i> 15-45 мин</span>
-                </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
-                </button>
-            </div>
-
-            <!-- ДАНЕТКИ -->
-            <div class="game-card" data-game="danetki">
-                <div class="game-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                    <i class="fas fa-mask"></i>
-                </div>
-                <h3>ДАНЕТКИ</h3>
-                <p>Угадай, что произошло дальше?</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 6-15 игроков</span>
-                    <span><i class="fas fa-clock"></i> 20-60 мин</span>
-                </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
-                </button>
-            </div>
-
-            <!-- Викторина -->
-            <div class="game-card" data-game="quiz">
-                <div class="game-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                    <i class="fas fa-mask"></i>
-                </div>
-                <h3>Викторина</h3>
-                <p>Проверьте свои знания в 7 категориях. 3 уровня сложности, достижения!</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 1-6 игроков</span>
-                    <span><i class="fas fa-clock"></i> 20-60 мин</span>
-                </div>
-                <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
-                </button>
-            </div>
-
-            <!-- Бункер Онлайн (ЗАБЛОКИРОВАН) -->
-            <div class="game-card coming-soon" data-game="bunker">
-                <div class="game-status-badge">СКОРО</div>
-                <div class="game-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
-                    <i class="fas fa-bunker"></i>
-                </div>
-                <h3>Бункер Онлайн</h3>
-                <p>Выживание после апокалипсиса. Выбирайте, кто достоин спастись в бункере.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 5-8 игроков</span>
-                    <span><i class="fas fa-clock"></i> 30-60 мин</span>
-                </div>
-                <button class="play-btn disabled">
-                    <i class="fas fa-hourglass-half"></i> В разработке
-                </button>
-            </div>
-
-            <!-- Мафия Онлайн (ЗАБЛОКИРОВАН) -->
-            <div class="game-card coming-soon" data-game="mafia">
-                <div class="game-status-badge">СКОРО</div>
-                <div class="game-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                    <i class="fas fa-user-ninja"></i>
-                </div>
-                <h3>Мафия Онлайн</h3>
-                <p>Классическая психологическая игра. Мафия против мирных жителей.</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 6-12 игроков</span>
-                    <span><i class="fas fa-clock"></i> 20-40 мин</span>
-                </div>
-                <button class="play-btn disabled">
-                    <i class="fas fa-hourglass-half"></i> В разработке
-                </button>
-            </div>
-
-            <!-- Новая игра (ЗАБЛОКИРОВАН) -->
-            <div class="game-card coming-soon" data-game="newgame">
-                <div class="game-status-badge">СКОРО</div>
-                <div class="game-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
-                    <i class="fas fa-question-circle"></i>
-                </div>
-                <h3>Новая игра</h3>
-                <p>Секретная новая игра уже в разработке. Следите за обновлениями!</p>
-                <div class="game-meta">
-                    <span><i class="fas fa-users"></i> ? игроков</span>
-                    <span><i class="fas fa-clock"></i> ? мин</span>
-                </div>
-                <button class="play-btn disabled">
-                    <i class="fas fa-hourglass-half"></i> В разработке
-                </button>
-            </div>
-        </main>
-
-<!-- Футер -->
-<footer class="main-footer">
-    <p>© 2026 LoveCouple Game Studio. Все игры созданы с ❤️ для вашей компании.</p>
-    <div class="footer-links">
-        <a href="https://lovecouple.ru" target="_blank" rel="noopener noreferrer">LoveCouple - Для пар</a>
-    </div>
-    <div class="social-links">
-        <a href="https://t.me/LoveCouple_news" target="_blank" rel="noopener noreferrer" title="Наш Telegram канал">
-            <i class="fab fa-telegram"></i>
-        </a>
-    </div>
-</footer>
-
+    <script src="cards.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
