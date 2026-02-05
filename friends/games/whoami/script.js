@@ -17,37 +17,69 @@ let gameState = {
 
 // ===== ФИКС ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ =====
 function fixMobileViewport() {
-    // Фикс высоты для iOS
+    // Устанавливаем правильную высоту
     const setAppHeight = () => {
-        const doc = document.documentElement;
-        doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
         
+        // Устанавливаем высоту для приложения
         const appContainer = document.querySelector('.app-container');
         if (appContainer) {
-            appContainer.style.height = 'var(--app-height)';
+            appContainer.style.height = `${window.innerHeight}px`;
         }
     };
     
+    // Вызываем при загрузке и изменении
+    setAppHeight();
     window.addEventListener('resize', setAppHeight);
-    window.addEventListener('orientationchange', setAppHeight);
-    
-    // Предотвращаем масштабирование при фокусе на input
-    document.addEventListener('focusin', (e) => {
-        if (e.target.matches('input, textarea')) {
-            setTimeout(() => {
-                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 300);
-        }
+    window.addEventListener('orientationchange', () => {
+        setTimeout(setAppHeight, 300);
     });
     
-    // Предотвращаем стандартное поведение касания
-    document.addEventListener('touchstart', (e) => {
-        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+    // Фикс для iOS - предотвращаем скролл страницы
+    document.body.addEventListener('touchmove', function(e) {
+        if (e.target.closest('.screen')) {
             e.preventDefault();
         }
     }, { passive: false });
     
-    setAppHeight();
+    // Фикс для фокуса на input
+    document.addEventListener('focusin', function(e) {
+        if (e.target.matches('input, textarea')) {
+            // Прокручиваем к элементу с задержкой
+            setTimeout(() => {
+                const rect = e.target.getBoundingClientRect();
+                if (rect.bottom > window.innerHeight - 100) {
+                    e.target.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }
+            }, 300);
+        }
+    });
+}
+
+// ===== ФИКС ДЛЯ КНОПОК НА ВСЕХ ЭКРАНАХ =====
+function ensureButtonsVisible() {
+    // Находим все контейнеры с кнопками внизу
+    const buttonContainers = document.querySelectorAll(
+        '.bottom-buttons, .action-buttons, .ready-actions, .results-actions, .game-controls'
+    );
+    
+    buttonContainers.forEach(container => {
+        const rect = container.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        
+        // Если контейнер с кнопками не виден внизу экрана
+        if (rect.bottom > viewportHeight || rect.top < viewportHeight - 100) {
+            // Прокручиваем к контейнеру
+            container.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'end' 
+            });
+        }
+    });
 }
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
@@ -64,12 +96,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Показ главного экрана
     showScreen('homeScreen');
     
-    // Предотвращаем скролл страницы
-    document.body.addEventListener('touchmove', function(e) {
-        if (e.target.closest('.screen')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
+    // Убеждаемся, что кнопки видны
+    setTimeout(ensureButtonsVisible, 300);
+    
+    // Добавляем обработчик для изменения ориентации
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            ensureButtonsVisible();
+            fixMobileViewport();
+        }, 500);
+    });
 });
 
 function initDefaultState() {
@@ -82,7 +118,7 @@ function initDefaultState() {
 
 async function loadCategories() {
     try {
-        // Пробуем загрузить категории
+        // Пробуем загрузить категории с разных путей
         let response;
         const paths = [
             '/friends/games/whoami/categories.json',
@@ -137,7 +173,7 @@ function showScreen(screenId) {
             gameState.timerInterval = null;
         }
         
-        // Дополнительные действия
+        // Дополнительные действия для каждого экрана
         switch(screenId) {
             case 'homeScreen':
                 resetGameState();
@@ -156,10 +192,11 @@ function showScreen(screenId) {
                 break;
         }
         
-        // Прокрутка наверх
+        // Прокрутка наверх и проверка видимости кнопок
         setTimeout(() => {
             screen.scrollTop = 0;
-        }, 50);
+            ensureButtonsVisible();
+        }, 100);
     }
 }
 
@@ -287,7 +324,7 @@ function changeTimer(change) {
     let value = parseInt(input.value) + change;
     value = Math.max(30, Math.min(300, value));
     input.value = value;
-    input.dispatchEvent(new Event('change'));
+    gameState.timeLeft = value;
 }
 
 // ===== НАЧАЛО ИГРЫ =====
@@ -347,8 +384,6 @@ function prepareReadyScreen() {
     
     wordElement.textContent = '???';
     categoryElement.textContent = 'Категория';
-    wordElement.style.opacity = '1';
-    categoryElement.style.opacity = '1';
     
     // Активируем кнопку
     btn.disabled = false;
@@ -377,16 +412,9 @@ function showWord() {
         } else {
             clearInterval(countdown);
             
-            // Показываем слово с анимацией
+            // Показываем слово
             wordElement.textContent = gameState.currentWord.word;
             categoryElement.textContent = gameState.currentWord.category;
-            
-            wordElement.style.animation = 'none';
-            categoryElement.style.animation = 'none';
-            setTimeout(() => {
-                wordElement.style.animation = 'fadeIn 0.5s ease';
-                categoryElement.style.animation = 'fadeIn 0.5s ease';
-            }, 10);
             
             // Меняем кнопку
             btn.disabled = false;
@@ -432,12 +460,13 @@ function startGameRound() {
     // Обновляем счет
     updateScoreboard();
     
-    // Запускаем таймер
-    if (gameState.timeLeft > 0 && !gameState.isPaused) {
+    // Обновляем таймер
+    updateTimerDisplay();
+    
+    // Запускаем таймер если игра активна
+    if (gameState.timeLeft > 0 && !gameState.isPaused && gameState.gameActive) {
         startTimer();
     }
-    
-    updateTimerDisplay();
 }
 
 function startTimer() {
@@ -446,7 +475,7 @@ function startTimer() {
     }
     
     gameState.timerInterval = setInterval(() => {
-        if (!gameState.isPaused) {
+        if (!gameState.isPaused && gameState.gameActive) {
             gameState.timeLeft--;
             updateTimerDisplay();
             
@@ -701,7 +730,7 @@ function resumeGame() {
     gameState.isPaused = false;
     closeModal('pauseModal');
     
-    if (gameState.timeLeft > 0) {
+    if (gameState.timeLeft > 0 && gameState.gameActive) {
         startTimer();
     }
 }
@@ -818,6 +847,10 @@ style.textContent = `
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .notification {
+        animation: fadeIn 0.3s ease;
     }
 `;
 document.head.appendChild(style);
