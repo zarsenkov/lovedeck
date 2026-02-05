@@ -1,13 +1,12 @@
-let game = {
+let state = {
     mode: '',
     category: '',
-    teams: [],
-    activeTeamIdx: 0,
-    timePerRound: 60,
+    teams: [{name: '', score: 0}, {name: '', score: 0}],
+    currentTeam: 0,
+    time: 60,
+    timeLeft: 60,
     timer: null,
-    timeLeft: 0,
-    currentRoundWords: [], // Храним историю раунда {word: '...', points: 1/-1}
-    usedWords: new Set()
+    usedWords: []
 };
 
 function showScreen(id) {
@@ -15,107 +14,79 @@ function showScreen(id) {
     document.getElementById(id).classList.add('active');
 }
 
-function initGame(mode) {
-    game.mode = mode;
-    const select = document.getElementById('category-select');
-    select.innerHTML = '';
-    Object.keys(CARD_DATA[mode]).forEach(cat => {
-        let opt = new Option(CATEGORY_NAMES[cat], cat);
-        select.add(opt);
-    });
-    showScreen('screen-setup');
-}
-
-document.getElementById('time-range').oninput = function() {
-    game.timePerRound = this.value;
-    document.getElementById('time-display').innerText = this.value;
-}
-
-function startFullGame() {
-    const t1 = document.getElementById('t1-in').value || 'Команда 1';
-    const t2 = document.getElementById('t2-in').value || 'Команда 2';
-    game.teams = [
-        { name: t1, score: 0 },
-        { name: t2, score: 0 }
-    ];
-    game.activeTeamIdx = 0;
-    showScreen('screen-game');
-    prepareNewRound();
-}
-
-function prepareNewRound() {
-    game.timeLeft = game.timePerRound;
-    game.currentRoundWords = [];
-    document.getElementById('ready-overlay').classList.add('active');
-    document.getElementById('next-team-name').innerText = game.teams[game.activeTeamIdx].name;
-}
-
-function startRound() {
-    document.getElementById('ready-overlay').classList.remove('active');
-    document.getElementById('game-score').innerText = '0';
-    renderWord();
+function selectMode(m) {
+    state.mode = m;
+    const list = document.getElementById('category-list');
+    list.innerHTML = '';
     
-    game.timer = setInterval(() => {
-        game.timeLeft--;
-        document.getElementById('game-timer').innerText = game.timeLeft;
-        if (game.timeLeft <= 0) endRound();
+    Object.keys(CARDS_DB[m]).forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'menu-card';
+        btn.innerHTML = `<strong>${CATEGORY_LABELS[cat]}</strong>`;
+        btn.onclick = () => {
+            state.category = cat;
+            showScreen('screen-setup');
+        };
+        list.appendChild(btn);
+    });
+    showScreen('screen-categories');
+}
+
+function startApp() {
+    state.teams[0].name = document.getElementById('t1-name').value;
+    state.teams[1].name = document.getElementById('t2-name').value;
+    state.time = parseInt(document.getElementById('time-range').value);
+    
+    prepareRound();
+    showScreen('screen-game');
+}
+
+function prepareRound() {
+    clearInterval(state.timer);
+    state.timeLeft = state.time;
+    document.getElementById('timer-box').innerText = state.timeLeft;
+    document.getElementById('score-box').innerText = state.teams[state.currentTeam].score;
+    document.getElementById('current-team-name').innerText = state.teams[state.currentTeam].name;
+    document.getElementById('round-overlay').classList.add('active');
+}
+
+function startTimer() {
+    document.getElementById('round-overlay').classList.remove('active');
+    nextWord();
+    state.timer = setInterval(() => {
+        state.timeLeft--;
+        document.getElementById('timer-box').innerText = state.timeLeft;
+        if (state.timeLeft <= 0) {
+            clearInterval(state.timer);
+            alert(`Раунд окончен! Очки команды: ${state.teams[state.currentTeam].score}`);
+            state.currentTeam = state.currentTeam === 0 ? 1 : 0;
+            prepareRound();
+        }
     }, 1000);
 }
 
-function renderWord() {
-    const pool = CARD_DATA[game.mode][document.getElementById('category-select').value];
-    const available = pool.filter(w => !game.usedWords.has(w));
+function nextWord() {
+    const words = CARDS_DB[state.mode][state.category];
+    const available = words.filter(w => !state.usedWords.includes(w));
+    const finalPool = available.length > 0 ? available : words;
     
-    // Если слова кончились - чистим кэш
-    if (available.length === 0) { game.usedWords.clear(); return renderWord(); }
-    
-    const word = available[Math.floor(Math.random() * available.length)];
-    const card = document.getElementById('word-card');
-    card.innerText = word;
-    game.currentWord = word;
+    const word = finalPool[Math.floor(Math.random() * finalPool.length)];
+    document.getElementById('word-card').innerText = word;
+    state.currentWord = word;
+    state.usedWords.push(word);
 }
 
-function handleAnswer(isCorrect) {
-    if (!game.timer) return; // Чтобы нельзя было кликать до начала
-
-    const points = isCorrect ? 1 : -1;
-    game.currentRoundWords.push({ word: game.currentWord, points: points });
-    game.usedWords.add(game.currentWord);
-    
-    // Анимация
-    const card = document.getElementById('word-card');
-    card.style.transform = isCorrect ? 'translateY(-20px)' : 'translateX(20px)';
-    setTimeout(() => card.style.transform = 'translateY(0)', 100);
-
-    // Обновляем текущий счет раунда (визуально)
-    const currentScore = game.currentRoundWords.reduce((acc, curr) => acc + curr.points, 0);
-    document.getElementById('game-score').innerText = currentScore;
-
-    renderWord();
+function answer(isCorrect) {
+    if (isCorrect) {
+        state.teams[state.currentTeam].score++;
+    } else {
+        state.teams[state.currentTeam].score--;
+    }
+    document.getElementById('score-box').innerText = state.teams[state.currentTeam].score;
+    nextWord();
 }
 
-function endRound() {
-    clearInterval(game.timer);
-    game.timer = null;
-    
-    const roundTotal = game.currentRoundWords.reduce((acc, curr) => acc + curr.points, 0);
-    game.teams[game.activeTeamIdx].score += roundTotal;
-    
-    // Рендерим лог слов
-    const log = document.getElementById('round-words-list');
-    log.innerHTML = game.currentRoundWords.map(item => `
-        <div class="log-item ${item.points > 0 ? 'plus' : 'minus'}">
-            <span>${item.word}</span>
-            <span>${item.points > 0 ? '+1' : '-1'}</span>
-        </div>
-    `).join('');
-    
-    document.getElementById('round-total-points').innerText = roundTotal;
-    showScreen('screen-summary');
-}
-
-function nextRoundPre() {
-    game.activeTeamIdx = game.activeTeamIdx === 0 ? 1 : 0;
-    showScreen('screen-game');
-    prepareNewRound();
-}
+// Слушатель для ползунка времени
+document.getElementById('time-range').oninput = function() {
+    document.getElementById('time-val').innerText = this.value;
+};
