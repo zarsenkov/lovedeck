@@ -99,36 +99,6 @@
     font-size: 18px;
 }
 
-/* ===== СТАТИСТИКА ===== */
-.game-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 25px;
-}
-
-.stat-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 15px 10px;
-    text-align: center;
-}
-
-.stat-value {
-    font-size: 24px;
-    font-weight: 800;
-    color: #f59e0b;
-    margin-bottom: 5px;
-}
-
-.stat-label {
-    font-size: 12px;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
 /* ===== НАСТРОЙКИ ИГРЫ ===== */
 .game-options {
     background: #ffffff;
@@ -209,6 +179,66 @@
 
 .category-btn.active i {
     color: white;
+}
+
+/* Количество слов */
+.words-count {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.count-display {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 15px;
+}
+
+#wordsCountSlider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    background: #e2e8f0;
+    border-radius: 3px;
+    margin-bottom: 15px;
+}
+
+#wordsCountSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: #3b82f6;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.count-presets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.count-preset {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    min-height: 36px;
+}
+
+.count-preset.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #1d4ed8;
 }
 
 /* Кнопки сложности и режимов */
@@ -346,15 +376,30 @@
     color: white;
 }
 
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+}
+
 .btn-secondary {
     background: #ffffff;
     border: 2px solid #e2e8f0;
     color: #0f172a;
 }
 
+.btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+}
+
 .btn-danger {
     background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
 }
 
 .btn-sm {
@@ -565,14 +610,26 @@
     color: #64748b;
 }
 
+.control-btn.skip:hover {
+    background: #e2e8f0;
+}
+
 .control-btn.correct {
     background: #10b981;
     color: white;
 }
 
+.control-btn.correct:hover {
+    background: #059669;
+}
+
 .control-btn.wrong {
     background: #ef4444;
     color: white;
+}
+
+.control-btn.wrong:hover {
+    background: #dc2626;
 }
 
 .team-scores {
@@ -608,15 +665,7 @@
 }
 
 .game-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-}
-
-@media (min-width: 480px) {
-    .game-actions {
-        grid-template-columns: repeat(2, 1fr);
-    }
+    text-align: center;
 }
 
 /* ===== ЭКРАН РЕЗУЛЬТАТОВ ===== */
@@ -628,16 +677,26 @@
 .results-header h2 {
     font-size: 24px;
     color: #0f172a;
-    margin-bottom: 8px;
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
 }
 
-.results-subtitle {
-    font-size: 16px;
-    color: #64748b;
+.winner-info {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 0 auto 20px;
+    max-width: 400px;
+}
+
+.winner-info h3 {
+    color: white;
+    font-size: 18px;
+    margin: 0;
+    text-align: center;
 }
 
 .results-stats {
@@ -669,7 +728,7 @@
     letter-spacing: 0.5px;
 }
 
-.results-details {
+.team-results {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
@@ -677,39 +736,42 @@
     margin-bottom: 25px;
 }
 
-.results-details h3 {
+.team-results h3 {
     font-size: 18px;
     color: #0f172a;
     margin-bottom: 15px;
+    text-align: center;
 }
 
-.details-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.team-results-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
 }
 
-.detail-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #f1f5f9;
+.team-result {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
 }
 
-.detail-item:last-child {
-    border-bottom: none;
+.team-result.winner {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
 }
 
-.detail-label {
-    color: #64748b;
-    font-size: 14px;
-}
-
-.detail-value {
+.team-result h4 {
+    font-size: 16px;
     color: #0f172a;
-    font-weight: 600;
-    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.team-result .score {
+    font-size: 24px;
+    font-weight: 800;
+    color: #f59e0b;
 }
 
 /* ===== ЭКРАН СВОИХ СЛОВ ===== */
@@ -836,7 +898,7 @@
     text-align: center;
 }
 
-/* ===== МОДАЛЬНОЕ ОКНО ===== */
+/* ===== МОДАЛЬНЫЕ ОКНА ===== */
 .modal {
     display: none;
     position: fixed;
@@ -853,15 +915,17 @@
 
 .modal.active {
     display: flex;
+    animation: fadeIn 0.3s ease;
 }
 
 .modal-content {
     background: #ffffff;
     border-radius: 20px;
-    max-width: 500px;
+    max-width: 400px;
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
+    animation: slideUp 0.3s ease;
 }
 
 .modal-header {
@@ -873,11 +937,12 @@
 }
 
 .modal-header h2 {
-    font-size: 20px;
+    font-size: 18px;
     color: #0f172a;
     display: flex;
     align-items: center;
     gap: 10px;
+    margin: 0;
 }
 
 .close-modal {
@@ -887,6 +952,10 @@
     color: #64748b;
     cursor: pointer;
     padding: 5px;
+}
+
+.close-modal:hover {
+    color: #0f172a;
 }
 
 .modal-body {
@@ -917,7 +986,24 @@
 .modal-footer {
     padding: 20px;
     border-top: 1px solid #e2e8f0;
-    text-align: center;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* ===== АНИМАЦИИ ===== */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.screen.active {
+    animation: fadeIn 0.3s ease;
 }
 
 /* ===== АДАПТИВНОСТЬ ===== */
@@ -930,14 +1016,6 @@
         font-size: 22px;
     }
     
-    .game-stats {
-        gap: 8px;
-    }
-    
-    .stat-value {
-        font-size: 20px;
-    }
-    
     .word-display h2 {
         font-size: 24px;
     }
@@ -948,14 +1026,15 @@
         font-size: 15px;
         padding: 14px;
     }
+    
+    .results-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
 }
 
 /* Горизонтальная ориентация */
 @media (max-width: 768px) and (orientation: landscape) {
-    .game-stats {
-        grid-template-columns: repeat(6, 1fr);
-    }
-    
     .word-display {
         min-height: 120px;
         padding: 15px;
@@ -971,16 +1050,6 @@
     .game-container {
         min-height: -webkit-fill-available;
     }
-}
-
-/* Анимации */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.screen.active {
-    animation: fadeIn 0.3s ease;
 }
 
 /* Улучшения для тач-устройств */
