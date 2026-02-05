@@ -1,81 +1,79 @@
 :root {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --accent: #6366f1;
-    --success: #10b981;
-    --error: #ef4444;
-    --text: #f8fafc;
-    --safe-top: env(safe-area-inset-top);
+    --bg: #000000;
+    --card: #1c1c1e;
+    --accent: #0a84ff;
+    --success: #30d158;
+    --error: #ff453a;
+    --text: #ffffff;
+    --text-secondary: #8e8e93;
 }
+
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
 
 body {
-    background: var(--bg); color: var(--text);
-    font-family: 'Inter', -apple-system, sans-serif;
-    margin: 0; padding: 0; height: 100vh; overflow: hidden;
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, system-ui, sans-serif;
+    height: 100vh; overflow: hidden;
 }
 
-#app { height: 100%; display: flex; flex-direction: column; }
-
-.screen { 
-    display: none; height: 100%; width: 100%; 
-    padding: 20px; padding-top: calc(40px + var(--safe-top));
-    flex-direction: column;
+#app { 
+    height: 100%; display: flex; flex-direction: column; 
+    padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
 }
+
+.screen { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.3s ease; }
 .screen.active { display: flex; }
 
-/* Menu Card Options */
-.menu-grid { display: grid; gap: 15px; margin-top: 30px; }
-.card-option {
-    background: var(--surface); border-radius: 20px; padding: 20px;
-    display: flex; align-items: center; gap: 15px; border: 1px solid rgba(255,255,255,0.05);
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+/* Навигация */
+.external-back { display: block; padding: 10px 0; color: var(--accent); text-decoration: none; font-size: 14px; }
+.back-btn { background: none; border: none; color: var(--accent); text-align: left; padding: 10px 0; font-size: 16px; cursor: pointer; }
+
+/* Карточки меню */
+.menu-stack { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.menu-card {
+    background: var(--card); border: none; border-radius: 16px; padding: 20px;
+    display: flex; align-items: center; gap: 16px; text-align: left; color: white;
 }
-.card-option .icon { font-size: 2.5rem; }
-.card-option h3 { margin: 0; font-size: 1.2rem; }
-.card-option p { margin: 5px 0 0; color: #94a3b8; font-size: 0.9rem; }
+.menu-card .emoji { font-size: 32px; }
+.menu-card strong { display: block; font-size: 18px; }
+.menu-card small { color: var(--text-secondary); }
 
-/* Game UI */
-.top-bar { display: flex; justify-content: space-between; font-size: 1.5rem; font-weight: 800; }
-#game-timer { color: var(--accent); background: rgba(99,102,241,0.1); padding: 5px 20px; border-radius: 20px; }
+/* Формы */
+.setup-form { flex: 1; margin-top: 20px; }
+.input-group { margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px; }
+input[type="text"] {
+    background: var(--card); border: 1px solid #38383a; border-radius: 12px;
+    padding: 14px; color: white; font-size: 16px;
+}
+input[type="range"] { width: 100%; accent-color: var(--accent); }
 
-.word-stage { flex: 1; display: flex; align-items: center; justify-content: center; }
-.main-card {
-    width: 100%; min-height: 250px; background: var(--surface);
-    border-radius: 30px; display: flex; align-items: center; justify-content: center;
-    font-size: 2.2rem; font-weight: 700; text-align: center; padding: 30px;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* Игровой экран */
+.game-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+#timer-box { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
+#score-box { background: var(--card); padding: 5px 15px; border-radius: 20px; font-weight: 600; }
+
+.card-area { flex: 1; display: flex; align-items: center; justify-content: center; }
+.word-card {
+    width: 100%; height: 60%; background: var(--card); border-radius: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 42px; font-weight: 800; text-align: center; padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-.game-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-bottom: 20px; }
-.btn-action {
-    padding: 20px; border: none; border-radius: 18px; font-weight: 700; font-size: 1rem;
-    color: white; cursor: pointer;
-}
-.btn-action.skip { background: rgba(255,255,255,0.05); color: var(--error); }
-.btn-action.correct { background: var(--success); }
+.game-footer { display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; padding-bottom: 30px; }
+.btn-game { border: none; border-radius: 18px; padding: 20px; font-size: 16px; font-weight: 700; color: white; }
+.skip { background: #2c2c2e; color: var(--error); }
+.done { background: var(--success); }
 
-/* Overlays & Logs */
+.btn-primary { 
+    background: var(--accent); border: none; border-radius: 16px; 
+    padding: 20px; color: white; font-size: 18px; font-weight: 700; width: 100%;
+}
+
 .overlay {
-    position: absolute; inset: 0; background: var(--bg); z-index: 100;
-    display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px;
+    position: absolute; inset: 0; background: var(--bg); z-index: 10;
+    display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;
 }
 .overlay.active { display: flex; }
-
-.words-log { flex: 1; overflow-y: auto; margin: 20px 0; }
-.log-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #334155; }
-.log-item.minus { color: var(--error); }
-.log-item.plus { color: var(--success); }
-
-.btn-main {
-    background: var(--accent); color: white; border: none; padding: 18px;
-    border-radius: 18px; font-weight: 700; font-size: 1.1rem; width: 100%;
-}
-
-/* Animations */
-.pop { transform: scale(1.05); }
-.shake { animation: shake 0.4s; }
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
-}
