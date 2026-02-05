@@ -2,93 +2,177 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>GAMEPARTY — BOLD ENGINE</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <title>GAMEPARTY</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 </head>
 <body>
+    <!-- Film Grain Overlay -->
     <div class="grain"></div>
-    <div id="app">
-        <a href="https://lovecouple.ru/" class="external-link">← LOVERCO.</a>
+    
+    <!-- Persistent Header -->
+    <header class="app-header">
+        <a href="https://lovecouple.ru/" class="header-link">← LOVERCO.</a>
+    </header>
 
-        <section id="screen-modes" class="screen active">
-            <div class="mode-container">
-                <button class="mode-btn alias" onclick="selectMode('alias')">
-                    <span class="mode-title">ALIAS</span>
-                    <span class="mode-sub">SPEAK IT</span>
-                </button>
-                <button class="mode-btn croc" onclick="selectMode('crocodile')">
-                    <span class="mode-title">CROC</span>
-                    <span class="mode-sub">SHOW IT</span>
-                </button>
+    <!-- Flash Overlay for Haptic Feedback -->
+    <div class="flash-overlay" id="flash"></div>
+
+    <main class="app-main">
+        
+        <!-- HOME SCREEN -->
+        <section class="screen active" id="screen-home">
+            <div class="screen-inner">
+                <h1 class="title-main">GAMEPARTY</h1>
+                <div class="mode-selector">
+                    <button class="mode-card" data-mode="alias">
+                        <span class="mode-label">ALIAS</span>
+                        <span class="mode-desc">Explain with words</span>
+                    </button>
+                    <button class="mode-card" data-mode="crocodile">
+                        <span class="mode-label">CROCODILE</span>
+                        <span class="mode-desc">Show with gestures</span>
+                    </button>
+                </div>
             </div>
         </section>
 
-        <section id="screen-categories" class="screen">
-            <div class="screen-header">
-                <button class="btn-back" onclick="showScreen('screen-modes')">BACK</button>
-                <h2 class="title-bold">SELECT PACK</h2>
+        <!-- CATEGORY SCREEN -->
+        <section class="screen" id="screen-categories">
+            <div class="screen-inner">
+                <h2 class="title-screen">SELECT CATEGORIES</h2>
+                <div class="category-grid">
+                    <label class="category-card">
+                        <input type="checkbox" value="base" checked>
+                        <span class="category-name">BASIC</span>
+                    </label>
+                    <label class="category-card">
+                        <input type="checkbox" value="movies">
+                        <span class="category-name">MOVIES</span>
+                    </label>
+                    <label class="category-card">
+                        <input type="checkbox" value="food">
+                        <span class="category-name">FOOD</span>
+                    </label>
+                    <label class="category-card">
+                        <input type="checkbox" value="adult">
+                        <span class="category-name">18+</span>
+                    </label>
+                </div>
+                <button class="btn-primary" data-action="confirm-categories">CONTINUE</button>
             </div>
-            <div id="category-grid" class="bento-grid"></div>
         </section>
 
-        <section id="screen-setup" class="screen">
-            <div class="screen-header">
-                <button class="btn-back" onclick="showScreen('screen-categories')">BACK</button>
-                <h2 class="title-bold">SETTINGS</h2>
-            </div>
-            <div class="setup-form">
-                <div class="input-group">
-                    <label>TEAMS</label>
-                    <input type="text" id="team1-in" value="TEAM ONE" maxlength="12">
-                    <input type="text" id="team2-in" value="TEAM TWO" maxlength="12">
-                </div>
-                <div class="input-group">
-                    <label>TIMER: <span id="time-val">60</span>S</label>
-                    <input type="range" id="time-range" min="30" max="120" step="30" value="60">
-                </div>
-            </div>
-            <button class="btn-main neon" onclick="initGameSession()">START SESSION</button>
-        </section>
-
-        <section id="screen-game" class="screen no-padding">
-            <div id="round-overlay" class="overlay active">
-                <h1 id="current-team-name">TEAM ONE</h1>
-                <p>GET READY</p>
-                <button class="btn-main neon large" onclick="startRound()">GO</button>
-            </div>
-            
-            <div class="game-ui">
-                <div class="game-top">
-                    <div id="game-timer" class="mono">60</div>
-                    <div id="game-score" class="mono">00</div>
-                </div>
-                
-                <div class="card-zone" id="card-zone">
-                    <div id="swipe-card" class="swipe-card">
-                        <div class="card-content">START</div>
+        <!-- SETTINGS SCREEN -->
+        <section class="screen" id="screen-settings">
+            <div class="screen-inner">
+                <h2 class="title-screen">GAME SETTINGS</h2>
+                <div class="settings-form">
+                    <div class="input-group">
+                        <label class="input-label">TEAM 1</label>
+                        <input type="text" class="input-field" id="team1" value="RED SQUAD" maxlength="20">
                     </div>
-                    <div class="indicator left">SKIP</div>
-                    <div class="indicator right">OK</div>
+                    <div class="input-group">
+                        <label class="input-label">TEAM 2</label>
+                        <input type="text" class="input-field" id="team2" value="BLUE SQUAD" maxlength="20">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">ROUND TIME (SEC)</label>
+                        <input type="number" class="input-field" id="round-time" value="60" min="30" max="120" step="10">
+                    </div>
+                </div>
+                <button class="btn-primary" data-action="start-game">START GAME</button>
+            </div>
+        </section>
+
+        <!-- TEAM TURN SCREEN -->
+        <section class="screen" id="screen-turn">
+            <div class="screen-inner centered">
+                <h2 class="turn-label">READY?</h2>
+                <h1 class="turn-team" id="turn-team-name"></h1>
+                <p class="turn-mode" id="turn-mode-text"></p>
+                <button class="btn-primary btn-huge" data-action="begin-round">GO</button>
+            </div>
+        </section>
+
+        <!-- GAME SCREEN -->
+        <section class="screen" id="screen-game">
+            <div class="game-ui">
+                <div class="game-header">
+                    <div class="timer-display">
+                        <div class="timer-bar">
+                            <div class="timer-fill" id="timer-fill"></div>
+                        </div>
+                        <span class="timer-text" id="timer-text">60</span>
+                    </div>
+                    <div class="score-display">
+                        <span class="score-value" id="score-value">0</span>
+                    </div>
                 </div>
 
-                <div class="game-bottom">
-                    <button id="btn-undo" class="undo-btn hidden" onclick="undoLastAction()">UNDO</button>
+                <div class="card-area">
+                    <div class="swipe-card" id="swipe-card">
+                        <span class="card-word" id="card-word"></span>
+                        <div class="swipe-indicator swipe-left">
+                            <span>SKIP</span>
+                        </div>
+                        <div class="swipe-indicator swipe-right">
+                            <span>CORRECT</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-undo" id="btn-undo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M3 7v6h6M21 17v-6h-6"/>
+                        <path d="M3 13a9 9 0 0 1 9-9 9 9 0 0 1 9 9"/>
+                    </svg>
+                    UNDO
+                </button>
+
+                <div class="swipe-hints">
+                    <div class="hint hint-left">
+                        <span>← SKIP (-1)</span>
+                    </div>
+                    <div class="hint hint-right">
+                        <span>CORRECT (+1) →</span>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="screen-summary" class="screen">
-            <h2 class="title-bold">ROUND OVER</h2>
-            <div id="summary-list" class="summary-list"></div>
-            <div class="summary-footer">
-                <button class="btn-main blue" onclick="nextRoundPre()">NEXT TEAM</button>
-                <button class="btn-back center" onclick="showScreen('screen-categories')">CHANGE PACK</button>
+        <!-- ROUND SUMMARY SCREEN -->
+        <section class="screen" id="screen-summary">
+            <div class="screen-inner">
+                <h2 class="summary-result" id="summary-result">ROUND COMPLETE</h2>
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">TEAM</span>
+                        <span class="stat-value" id="summary-team"></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">SCORE</span>
+                        <span class="stat-value" id="summary-score"></span>
+                    </div>
+                </div>
+                <div class="words-list">
+                    <h3 class="words-title">WORDS PLAYED</h3>
+                    <div class="words-container" id="words-container"></div>
+                </div>
+                <div class="summary-actions">
+                    <button class="btn-secondary" data-action="change-category">CHANGE CATEGORY</button>
+                    <button class="btn-primary" data-action="next-team">NEXT TEAM</button>
+                </div>
             </div>
         </section>
-    </div>
+
+    </main>
 
     <script src="cards.js"></script>
     <script src="script.js"></script>
