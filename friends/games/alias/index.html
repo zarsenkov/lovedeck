@@ -3,70 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Party Games by [Your Name]</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>GAMEPARTY — BOLD ENGINE</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="grain"></div>
     <div id="app">
-        <a href="https://lovecouple.ru/" class="brand-link">LoverParty</a>
+        <a href="https://lovecouple.ru/" class="external-link">← LOVERCO.</a>
 
         <section id="screen-modes" class="screen active">
-            <h1 class="heading-xl">GAME.<br>MODE.</h1>
-            <div class="mode-selection">
-                <button class="mode-tile" data-mode="alias">
-                    <span class="mode-label">ALIAS</span>
-                    <span class="mode-desc">Объясни без слов</span>
+            <div class="mode-container">
+                <button class="mode-btn alias" onclick="selectMode('alias')">
+                    <span class="mode-title">ALIAS</span>
+                    <span class="mode-sub">SPEAK IT</span>
                 </button>
-                <button class="mode-tile" data-mode="crocodile">
-                    <span class="mode-label">CROCODILE</span>
-                    <span class="mode-desc">Покажи жестами</span>
+                <button class="mode-btn croc" onclick="selectMode('crocodile')">
+                    <span class="mode-title">CROC</span>
+                    <span class="mode-sub">SHOW IT</span>
                 </button>
             </div>
         </section>
 
         <section id="screen-categories" class="screen">
-            <button class="nav-back" data-target="screen-modes">← MODE</button>
-            <h1 class="heading-lg">CATEGORIES.</h1>
-            <div id="category-grid" class="bento-grid">
-                </div>
+            <div class="screen-header">
+                <button class="btn-back" onclick="showScreen('screen-modes')">BACK</button>
+                <h2 class="title-bold">SELECT PACK</h2>
+            </div>
+            <div id="category-grid" class="bento-grid"></div>
         </section>
 
         <section id="screen-setup" class="screen">
-            <button class="nav-back" data-target="screen-categories">← CATEGORIES</button>
-            <h1 class="heading-lg">SETUP.</h1>
-            <div class="form-section">
-                <label for="team1-name">TEAM 1</label>
-                <input type="text" id="team1-name" value="ALPHA">
-                <label for="team2-name">TEAM 2</label>
-                <input type="text" id="team2-name" value="BETA">
+            <div class="screen-header">
+                <button class="btn-back" onclick="showScreen('screen-categories')">BACK</button>
+                <h2 class="title-bold">SETTINGS</h2>
             </div>
-            <div class="form-section">
-                <label>ROUND TIME <span id="time-display" class="mono-text">60</span>s</label>
-                <input type="range" id="time-range" min="30" max="90" step="30" value="60">
+            <div class="setup-form">
+                <div class="input-group">
+                    <label>TEAMS</label>
+                    <input type="text" id="team1-in" value="TEAM ONE" maxlength="12">
+                    <input type="text" id="team2-in" value="TEAM TWO" maxlength="12">
+                </div>
+                <div class="input-group">
+                    <label>TIMER: <span id="time-val">60</span>S</label>
+                    <input type="range" id="time-range" min="30" max="120" step="30" value="60">
+                </div>
             </div>
-            <button class="action-btn" id="start-game-btn">START GAME</button>
+            <button class="btn-main neon" onclick="initGameSession()">START SESSION</button>
         </section>
 
-        <section id="screen-game" class="screen">
-            <div id="game-overlay" class="overlay active">
-                <h2 id="overlay-team-name" class="heading-md">ALPHA</h2>
-                <p class="overlay-subtext">GET READY. PRESS START.</p>
-                <button class="action-btn" id="overlay-start-btn">START</button>
+        <section id="screen-game" class="screen no-padding">
+            <div id="round-overlay" class="overlay active">
+                <h1 id="current-team-name">TEAM ONE</h1>
+                <p>GET READY</p>
+                <button class="btn-main neon large" onclick="startRound()">GO</button>
             </div>
+            
+            <div class="game-ui">
+                <div class="game-top">
+                    <div id="game-timer" class="mono">60</div>
+                    <div id="game-score" class="mono">00</div>
+                </div>
+                
+                <div class="card-zone" id="card-zone">
+                    <div id="swipe-card" class="swipe-card">
+                        <div class="card-content">START</div>
+                    </div>
+                    <div class="indicator left">SKIP</div>
+                    <div class="indicator right">OK</div>
+                </div>
 
-            <div class="game-display">
-                <div class="game-header">
-                    <span id="game-timer" class="mono-text">60</span>
-                    <span id="game-score" class="mono-text">0</span>
+                <div class="game-bottom">
+                    <button id="btn-undo" class="undo-btn hidden" onclick="undoLastAction()">UNDO</button>
                 </div>
-                <div class="word-stage">
-                    <div id="word-display" class="word-card">WORD.</div>
-                </div>
-                <div class="game-controls">
-                    <button class="control-btn skip-btn" data-action="skip">SKIP</button>
-                    <button class="control-btn correct-btn" data-action="correct">CORRECT</button>
-                </div>
+            </div>
+        </section>
+
+        <section id="screen-summary" class="screen">
+            <h2 class="title-bold">ROUND OVER</h2>
+            <div id="summary-list" class="summary-list"></div>
+            <div class="summary-footer">
+                <button class="btn-main blue" onclick="nextRoundPre()">NEXT TEAM</button>
+                <button class="btn-back center" onclick="showScreen('screen-categories')">CHANGE PACK</button>
             </div>
         </section>
     </div>
