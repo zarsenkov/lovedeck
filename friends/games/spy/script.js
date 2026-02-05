@@ -1,219 +1,177 @@
 // База данных локаций
-const LOCATIONS = {
-    city: [
-"Банк", "Полицейский участок", "Больница", "Школа", "Университет",
-        "Библиотека", "Музей", "Театр", "Кинотеатр", "Торговый центр",
-        "Супермаркет", "Рынок", "Вокзал", "Аэропорт", "Автобусная остановка",
-        "Парк", "Сквер", "Стадион", "Бассейн", "Спортзал",
-        "Кафе", "Ресторан", "Бар", "Кофейня", "Пиццерия",
-        "Гостиница", "Отель", "Хостел", "Квартира", "Дом",
-        "Аптека", "Почта", "Салон красоты", "Парикмахерская", "Нотариус",
-        "Зоомагазин", "Цветочный магазин", "Книжный магазин", "Автосервис",
-        "Автомойка", "Заправка", "Метро", "Трамвайная остановка",
-        "Поликлиника", "Детский сад", "Колледж", "Офис", "Бизнес-центр",
-        "Суд", "Мэрия", "Загс", "Кладбище", "Крематорий", "Пожарная часть"
-    ],
-    entertainment: [
-"Кинотеатр", "Театр", "Концертный зал", "Ночной клуб", "Караоке",
-        "Боулинг", "Бильярдная", "Казино", "Игровой зал", "Парк развлечений",
-        "Аквапарк", "Зоопарк", "Цирк", "Музей", "Выставка",
-        "Фестиваль", "Карнавал", "Ярмарка", "Квест-комната", "Пейнтбол",
-        "Лазертаг", "Веревочный парк", "Батутный центр", "VR-клуб",
-        "Роллердром", "Картинг", "Тир", "Комната страха", "Эскейп-рум",
-        "Дискотека", "Стриптиз-клуб", "Комедийный клуб", "Стендап-клуб",
-        "Открытый микрофон", "Кино под открытым небом", "Летний кинотеатр"
-    ],
-    food: [
-"Ресторан", "Кафе", "Бар", "Паб", "Кофейня",
-        "Пиццерия", "Бургерная", "Суши-бар", "Столовая", "Буфет",
-        "Кондитерская", "Мороженое", "Пекарня", "Фаст-фуд", "Фуд-корт",
-        "Винный бар", "Пивоварня", "Чайная", "Стейк-хаус", "Рыбный ресторан",
-        "Шаурмечная", "Кебабная", "Пельменная", "Блинная", "Донерная",
-        "Вегетарианское кафе", "Суши-ресторан", "Японский ресторан", "Итальянский ресторан",
-        "Грузинский ресторан", "Узбекская чайхана", "Корейский ресторан", "Макдоналдс", "KFC"
-    ],
-    professions: [
-"Врач", "Полицейский", "Учитель", "Программист", "Повар",
-        "Официант", "Таксист", "Пилот", "Строитель", "Парикмахер",
-        "Юрист", "Бухгалтер", "Журналист", "Актер", "Певец",
-        "Спортсмен", "Фермер", "Водитель", "Продавец", "Менеджер",
-        "Бариста", "Стоматолог", "Ветеринар", "Сантехник", "Электрик",
-        "Фотограф", "Визажист", "Массажист", "Тренер", "Инструктор йоги",
-        "Сварщик", "Механик", "Дизайнер", "Архитектор", "Режиссер",
-        "Сценарист", "Монтажер", "Оператор", "Секретарь", "HR-менеджер"
-    ],
-    sports: [
-"Футбольное поле", "Баскетбольная площадка", "Теннисный корт", "Бассейн",
-        "Спортзал", "Стадион", "Каток", "Лыжная база", "Скалодром",
-        "Боксерский ринг", "Гольф-клуб", "Боулинг", "Бильярдная", "Тир",
-        "Волейбольная площадка", "Бадминтонный корт", "Шахматный клуб",
-        "Кегельбан", "Стрельбище", "Конный клуб", "Велотрек", "Гребной канал",
-        "Фитнес-клуб", "Йога-студия", "Кроссфит-зал", "Тренажерный зал", "Батут-центр"
-    ],
-    travel: [
-"Пляж", "Горы", "Лес", "Пустыня", "Остров",
-        "Столица", "Деревня", "Курорт", "Отель", "Кемпинг",
-        "Круизный лайнер", "Поезд", "Самолет", "Автобус", "Такси",
-        "Вокзал", "Аэропорт", "Порт", "Яхт-клуб", "Горнолыжный курорт",
-        "Пещера", "Вулкан", "Водопад", "Каньон", "Озеро",
-        "Река", "Мост", "Замок", "Дворец", "Руины",
-        "Маяк", "Храм", "Монастырь", "Пирамида", "Сафари"
-    ]
-};
+const LOCATIONS = [
+    "Ресторан", "Кафе", "Бар", "Кофейня", "Пиццерия",
+    "Кинотеатр", "Театр", "Концертный зал", "Ночной клуб", "Караоке",
+    "Боулинг", "Бильярдная", "Казино", "Игровой зал", "Парк развлечений",
+    "Аквапарк", "Зоопарк", "Цирк", "Музей", "Выставка",
+    "Футбольный стадион", "Баскетбольная площадка", "Теннисный корт", "Бассейн", "Спортзал",
+    "Банк", "Полицейский участок", "Больница", "Школа", "Университет",
+    "Библиотека", "Торговый центр", "Супермаркет", "Рынок", "Аэропорт",
+    "Вокзал", "Автобусная остановка", "Такси", "Метро", "Поезд",
+    "Гостиница", "Отель", "Хостел", "Пляж", "Горнолыжный курорт",
+    "Кемпинг", "Ферма", "Замок", "Дворец", "Подземелье",
+    "Космическая станция", "Подводная лодка", "Дирижабль", "Воздушный шар", "Лунапарк",
+    "Спа-салон", "Парикмахерская", "Татту-салон", "Йога-студия", "Скалодром",
+    "Тир", "Картинг", "Конный клуб", "Яхт-клуб", "Дайвинг-центр",
+    "Пещера", "Водопад", "Вулкан", "Остров сокровищ", "Заброшенный город",
+    "Лаборатория", "Обсерватория", "Библиотека древних", "Храм", "Пиратский корабль"
+];
 
 // Состояние игры
 let gameState = {
     players: [],
     spies: [],
     location: "",
-    category: "",
-    currentPlayer: 0,
+    currentPlayerIndex: 0,
     totalPlayers: 5,
     spyCount: 1,
     discussionTime: 5,
     timerInterval: null,
     timeLeft: 0,
     votes: {},
+    isTimerPaused: false,
     gameStarted: false
-};
-
-// Статистика
-let stats = {
-    totalGames: 0,
-    playerWins: 0,
-    spyWins: 0,
-    recentGames: []
 };
 
 // Инициализация
 function init() {
-    loadStats();
-    updatePlayerCount();
+    updateSpyCountLimit();
+    showNotification("Добро пожаловать в игру Шпион! 👋", "info");
 }
 
-// Функции навигации
-function goBack() {
-    if (confirm('Вернуться на главную страницу?')) {
-        window.location.href = 'https://lovecouple.ru/friends/';
-    }
-}
-
-function showNotification(message, type = 'info') {
-    // Создаем простое уведомление
-    alert(message);
-}
-
-// Управление настройками
-function changeValue(inputId, change) {
-    const input = document.getElementById(inputId);
-    let value = parseInt(input.value) + change;
-    const min = parseInt(input.min);
-    const max = parseInt(input.max);
+// Уведомления
+function showNotification(message, type = "info") {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = `notification notification-${type}`;
+    notification.style.display = 'block';
     
-    if (value < min) value = min;
-    if (value > max) value = max;
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
+
+// Модальные окна
+let confirmCallback = null;
+
+function showConfirm(message, callback) {
+    document.getElementById('confirmMessage').textContent = message;
+    confirmCallback = callback;
+    document.getElementById('confirmModal').classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+document.getElementById('confirmAction').onclick = function() {
+    if (confirmCallback) {
+        confirmCallback();
+    }
+    closeModal('confirmModal');
+};
+
+function confirmGoBack() {
+    showConfirm("Вернуться на главную страницу? Текущая игра будет сброшена.", function() {
+        window.location.href = 'https://lovecouple.ru/friends/';
+    });
+}
+
+function showRules() {
+    document.getElementById('rulesModal').classList.add('active');
+}
+
+// Настройки игры
+function changePlayerCount(change) {
+    const input = document.getElementById('playerCount');
+    let value = parseInt(input.value) + change;
+    
+    if (value < 3) value = 3;
+    if (value > 8) value = 8;
     
     input.value = value;
-    
-    if (inputId === 'playerCount') {
-        gameState.totalPlayers = value;
-        updateSpyCount();
-    } else if (inputId === 'spyCount') {
-        gameState.spyCount = value;
-    }
+    gameState.totalPlayers = value;
+    updateSpyCountLimit();
 }
 
-function updatePlayerCount() {
-    document.getElementById('playerCount').value = gameState.totalPlayers;
-    updateSpyCount();
-}
-
-function updateSpyCount() {
-    const playerCount = gameState.totalPlayers;
-    let maxSpies = 1;
-    
-    if (playerCount >= 6) maxSpies = 2;
-    if (playerCount >= 9) maxSpies = 3;
-    
+function updateSpyCountLimit() {
     const spyInput = document.getElementById('spyCount');
-    spyInput.max = maxSpies;
+    const maxSpies = gameState.totalPlayers >= 6 ? 2 : 1;
     
+    spyInput.max = maxSpies;
     if (parseInt(spyInput.value) > maxSpies) {
         spyInput.value = maxSpies;
         gameState.spyCount = maxSpies;
     }
 }
 
+function changeSpyCount(change) {
+    const input = document.getElementById('spyCount');
+    let value = parseInt(input.value) + change;
+    const max = parseInt(input.max);
+    
+    if (value < 1) value = 1;
+    if (value > max) value = max;
+    
+    input.value = value;
+    gameState.spyCount = value;
+}
+
 function selectTime(minutes) {
-    // Убрать активный класс у всех кнопок
     document.querySelectorAll('.time-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    
-    // Добавить активный класс нажатой кнопке
     event.target.classList.add('active');
     gameState.discussionTime = minutes;
 }
 
-function showRandomLocation() {
-    const categories = getSelectedCategories();
-    if (categories.length === 0) {
-        alert('Выберите хотя бы одну категорию!');
-        return;
-    }
+// Подготовка игры
+function prepareGame() {
+    // Выбрать случайную локацию
+    gameState.location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
     
-    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-    const locations = LOCATIONS[randomCategory];
-    const randomLocation = locations[Math.floor(Math.random() * locations.length)];
-    
-    alert(`🎯 Случайная локация: ${randomLocation}\nКатегория: ${getCategoryName(randomCategory)}`);
+    // Показать экран ввода имен
+    showNamesScreen();
 }
 
-function getSelectedCategories() {
-    const checkboxes = document.querySelectorAll('.category-checkbox input:checked');
-    return Array.from(checkboxes).map(cb => cb.dataset.category);
-}
-
-function getCategoryName(key) {
-    const names = {
-        city: 'Город',
-        entertainment: 'Развлечения',
-        food: 'Еда и напитки',
-        professions: 'Профессии',
-        sports: 'Спорт',
-        travel: 'Путешествия'
-    };
-    return names[key] || key;
-}
-
-// Начало игры
-function startGame() {
-    const categories = getSelectedCategories();
-    if (categories.length === 0) {
-        alert('Выберите хотя бы одну категорию!');
-        return;
-    }
-    
-    // Выбрать случайную категорию и локацию
-    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-    const locations = LOCATIONS[randomCategory];
-    gameState.location = locations[Math.floor(Math.random() * locations.length)];
-    gameState.category = randomCategory;
-    
-    // Создать игроков
-    gameState.players = [];
-    gameState.spies = [];
+function showNamesScreen() {
+    // Создать поля для ввода имен
+    const namesInputs = document.getElementById('playerNamesInputs');
+    namesInputs.innerHTML = '';
     
     for (let i = 0; i < gameState.totalPlayers; i++) {
+        const div = document.createElement('div');
+        div.className = 'name-input-group';
+        div.innerHTML = `
+            <label for="playerName${i}">Игрок ${i + 1}:</label>
+            <input type="text" 
+                   id="playerName${i}" 
+                   placeholder="Имя игрока ${i + 1}"
+                   maxlength="20">
+        `;
+        namesInputs.appendChild(div);
+    }
+    
+    showScreen('namesScreen');
+}
+
+function startGame() {
+    // Собрать имена игроков
+    gameState.players = [];
+    for (let i = 0; i < gameState.totalPlayers; i++) {
+        const input = document.getElementById(`playerName${i}`);
+        const name = input.value.trim() || `Игрок ${i + 1}`;
+        
         gameState.players.push({
             id: i + 1,
-            name: `Игрок ${i + 1}`,
+            name: name,
             isSpy: false,
             hasSeenRole: false
         });
     }
     
     // Выбрать шпионов
+    gameState.spies = [];
     for (let i = 0; i < gameState.spyCount; i++) {
         let randomIndex;
         do {
@@ -224,10 +182,17 @@ function startGame() {
         gameState.spies.push(randomIndex + 1);
     }
     
-    gameState.currentPlayer = 0;
+    gameState.currentPlayerIndex = 0;
     gameState.votes = {};
     gameState.gameStarted = true;
     
+    // Показать экран распределения ролей
+    showRoleScreen();
+    showNotification("Игра началась! Передавайте устройство первому игроку 👤", "success");
+}
+
+// Экран ролей
+function showRoleScreen() {
     showScreen('roleScreen');
     updatePlayersList();
 }
@@ -238,101 +203,158 @@ function updatePlayersList() {
     
     gameState.players.forEach((player, index) => {
         const div = document.createElement('div');
-        div.className = `player-item ${player.hasSeenRole ? 'completed' : ''}`;
+        div.className = `player-item ${player.hasSeenRole ? 'completed' : ''} ${index === gameState.currentPlayerIndex ? 'current' : ''}`;
         div.onclick = () => showPlayerRole(index);
         
         div.innerHTML = `
-            <div class="player-number">${player.id}</div>
-            <div class="player-info">
-                <h3>${player.name}</h3>
-                <p>${player.hasSeenRole ? 'Уже посмотрел роль ✓' : 'Нажмите, чтобы посмотреть роль'}</p>
+            <div class="player-avatar">
+                <i class="fas ${player.hasSeenRole ? 'fa-check-circle' : 'fa-user'}"></i>
             </div>
+            <div class="player-details">
+                <h3>${player.name}</h3>
+                <p>${player.hasSeenRole ? 'Уже посмотрел роль' : 'Нажмите, чтобы посмотреть роль'}</p>
+            </div>
+            ${index === gameState.currentPlayerIndex ? '<div class="player-indicator"><i class="fas fa-chevron-right"></i></div>' : ''}
         `;
         
         playersList.appendChild(div);
     });
+    
+    // Обновить имя текущего игрока
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    document.getElementById('currentPlayerName').textContent = currentPlayer.name;
 }
 
 function showPlayerRole(playerIndex) {
     const player = gameState.players[playerIndex];
     
+    if (playerIndex !== gameState.currentPlayerIndex) {
+        showNotification(`Сейчас не очередь ${player.name}. Передайте устройство правильно!`, "error");
+        return;
+    }
+    
     if (player.isSpy) {
         showScreen('spyRoleScreen');
     } else {
-        document.getElementById('locationText').textContent = gameState.location;
+        document.getElementById('currentLocation').textContent = gameState.location;
+        document.getElementById('locationForPlayer').textContent = gameState.location;
         showScreen('playerRoleScreen');
     }
-    
-    player.hasSeenRole = true;
-    updatePlayersList();
 }
 
 function hideRole() {
-    // Проверить, все ли посмотрели роли
-    const allSeen = gameState.players.every(p => p.hasSeenRole);
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    currentPlayer.hasSeenRole = true;
     
-    if (allSeen) {
-        startDiscussion();
+    // Перейти к следующему игроку
+    gameState.currentPlayerIndex++;
+    
+    if (gameState.currentPlayerIndex < gameState.totalPlayers) {
+        // Есть еще игроки
+        showRoleScreen();
+        const nextPlayer = gameState.players[gameState.currentPlayerIndex];
+        showNotification(`Передайте устройство ${nextPlayer.name}`, "info");
     } else {
-        showScreen('roleScreen');
-        alert('Передайте устройство следующему игроку');
+        // Все посмотрели роли
+        startDiscussion();
     }
 }
 
-function hideSpyRole() {
-    hideRole();
+function skipRemaining() {
+    if (confirm("Пропустить оставшихся игроков и начать обсуждение?")) {
+        startDiscussion();
+    }
 }
 
+function backToNames() {
+    if (confirm("Вернуться к вводу имен? Текущие настройки игры будут сброшены.")) {
+        showNamesScreen();
+    }
+}
+
+function backToSetup() {
+    if (confirm("Вернуться к настройкам? Текущие данные будут сброшены.")) {
+        showScreen('setupScreen');
+    }
+}
+
+// Обсуждение
 function startDiscussion() {
     showScreen('discussionScreen');
     
     // Обновить информацию
-    document.getElementById('currentLocation').textContent = gameState.location;
-    document.getElementById('infoPlayers').textContent = gameState.totalPlayers;
-    document.getElementById('infoSpies').textContent = gameState.spyCount;
-    document.getElementById('infoTime').textContent = `${gameState.discussionTime} мин`;
+    document.getElementById('playersCount').textContent = gameState.totalPlayers;
+    document.getElementById('spiesCount').textContent = gameState.spyCount;
+    document.getElementById('discussionLocation').textContent = "???";
     
     // Запустить таймер
     startTimer();
+    showNotification("Обсуждение началось! Ищите шпиона! 🔍", "info");
 }
 
 function startTimer() {
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+    }
+    
     gameState.timeLeft = gameState.discussionTime * 60;
-    const timerText = document.getElementById('timerText');
+    gameState.isTimerPaused = false;
+    updateTimerDisplay();
+    
+    const timerProgress = document.querySelector('.timer-progress');
+    const circumference = 2 * Math.PI * 45;
+    timerProgress.style.strokeDasharray = circumference;
+    timerProgress.style.strokeDashoffset = circumference;
     
     gameState.timerInterval = setInterval(() => {
-        gameState.timeLeft--;
-        
-        const minutes = Math.floor(gameState.timeLeft / 60);
-        const seconds = gameState.timeLeft % 60;
-        timerText.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        
-        // Обновить прогресс
-        const progress = document.querySelector('.timer-progress');
-        const circumference = 2 * Math.PI * 36;
-        const offset = circumference - (gameState.timeLeft / (gameState.discussionTime * 60)) * circumference;
-        progress.style.strokeDashoffset = offset;
-        
-        if (gameState.timeLeft <= 0) {
-            clearInterval(gameState.timerInterval);
-            startVoting();
+        if (!gameState.isTimerPaused) {
+            gameState.timeLeft--;
+            updateTimerDisplay();
+            
+            // Обновить прогресс
+            const progress = (gameState.timeLeft / (gameState.discussionTime * 60)) * circumference;
+            timerProgress.style.strokeDashoffset = circumference - progress;
+            
+            // Изменить цвет при малом времени
+            if (gameState.timeLeft <= 30) {
+                timerProgress.style.stroke = '#ef4444';
+            }
+            
+            if (gameState.timeLeft <= 0) {
+                clearInterval(gameState.timerInterval);
+                showNotification("Время вышло! Начинаем голосование...", "warning");
+                setTimeout(startVoting, 1000);
+            }
         }
     }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(gameState.timeLeft / 60);
+    const seconds = gameState.timeLeft % 60;
+    
+    document.getElementById('timerMinutes').textContent = minutes.toString().padStart(2, '0');
+    document.getElementById('timerSeconds').textContent = seconds.toString().padStart(2, '0');
+    document.getElementById('timeLeftDisplay').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 function toggleTimer() {
     const btn = document.getElementById('pauseBtn');
     
-    if (gameState.timerInterval) {
-        clearInterval(gameState.timerInterval);
-        gameState.timerInterval = null;
-        btn.innerHTML = '<i class="fas fa-play"></i> Продолжить';
-    } else {
-        startTimer();
+    if (gameState.isTimerPaused) {
+        // Продолжить
+        gameState.isTimerPaused = false;
         btn.innerHTML = '<i class="fas fa-pause"></i> Пауза';
+        showNotification("Таймер продолжен", "info");
+    } else {
+        // Пауза
+        gameState.isTimerPaused = true;
+        btn.innerHTML = '<i class="fas fa-play"></i> Продолжить';
+        showNotification("Таймер на паузе", "warning");
     }
 }
 
+// Голосование
 function startVoting() {
     if (gameState.timerInterval) {
         clearInterval(gameState.timerInterval);
@@ -340,10 +362,12 @@ function startVoting() {
     
     showScreen('votingScreen');
     updateVotingList();
+    
+    showNotification("Голосование началось! Выберите подозреваемого 👤", "info");
 }
 
 function updateVotingList() {
-    const votingList = document.querySelector('.voting-list');
+    const votingList = document.getElementById('votingList');
     votingList.innerHTML = '';
     
     gameState.players.forEach(player => {
@@ -351,22 +375,30 @@ function updateVotingList() {
         div.className = 'vote-item';
         
         div.innerHTML = `
-            <div class="vote-info">
-                <div class="vote-number">${player.id}</div>
-                <div class="vote-name">${player.name}</div>
+            <div class="vote-player">
+                <div class="vote-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="vote-info">
+                    <h3>${player.name}</h3>
+                    <p>${player.isSpy ? 'Шпион 👁️' : 'Мирный игрок'}</p>
+                </div>
             </div>
             <div class="vote-controls">
                 <button class="vote-btn" onclick="addVote(${player.id})">
-                    <i class="fas fa-vote-yea"></i>
+                    <i class="fas fa-vote-yea"></i> Голосовать
                 </button>
-                <div class="vote-count">${gameState.votes[player.id] || 0}</div>
+                <div class="vote-count">
+                    <i class="fas fa-heart"></i>
+                    <span>${gameState.votes[player.id] || 0}</span>
+                </div>
             </div>
         `;
         
         votingList.appendChild(div);
     });
     
-    updateVotingSummary();
+    updateVotingProgress();
 }
 
 function addVote(playerId) {
@@ -376,45 +408,53 @@ function addVote(playerId) {
     gameState.votes[playerId]++;
     
     updateVotingList();
+    showNotification(`Голос за ${gameState.players[playerId-1].name} учтен!`, "success");
 }
 
-function updateVotingSummary() {
+function updateVotingProgress() {
     const totalVotes = Object.values(gameState.votes).reduce((a, b) => a + b, 0);
-    const remaining = gameState.totalPlayers - totalVotes;
     
-    document.getElementById('totalVotes').textContent = totalVotes;
-    document.getElementById('remainingVotes').textContent = remaining;
+    document.getElementById('votesCount').textContent = totalVotes;
+    document.getElementById('totalVoters').textContent = gameState.totalPlayers;
+    
+    const progress = (totalVotes / gameState.totalPlayers) * 100;
+    document.getElementById('progressFill').style.width = `${progress}%`;
 }
 
-function finishVoting() {
-    if (Object.keys(gameState.votes).length === 0) {
-        alert('Нужно хотя бы одно голосование!');
-        return;
+function backToDiscussion() {
+    if (confirm("Вернуться к обсуждению?")) {
+        showScreen('discussionScreen');
+        startTimer();
     }
-    
+}
+
+function showResults() {
     // Найти игрока с максимальным количеством голосов
     let maxVotes = 0;
-    let suspectedPlayer = null;
+    let suspectedPlayers = [];
     
     for (const [playerId, votes] of Object.entries(gameState.votes)) {
         if (votes > maxVotes) {
             maxVotes = votes;
-            suspectedPlayer = parseInt(playerId);
+            suspectedPlayers = [parseInt(playerId)];
+        } else if (votes === maxVotes && votes > 0) {
+            suspectedPlayers.push(parseInt(playerId));
         }
     }
     
     // Определить результат
-    const isSpyCaught = gameState.players[suspectedPlayer - 1]?.isSpy || false;
-    
-    // Обновить статистику
-    updateStats(isSpyCaught);
+    const isSpyCaught = suspectedPlayers.some(playerId => 
+        gameState.players[playerId - 1].isSpy
+    );
     
     // Показать результаты
-    showResults(isSpyCaught, suspectedPlayer);
+    showResultsScreen(isSpyCaught, suspectedPlayers);
 }
 
-function showResults(isSpyCaught, suspectedPlayer) {
+function showResultsScreen(isSpyCaught, suspectedPlayers) {
     const resultsContent = document.getElementById('resultsContent');
+    const suspectedNames = suspectedPlayers.map(id => gameState.players[id-1].name).join(', ');
+    const spyNames = gameState.spies.map(id => gameState.players[id-1].name).join(', ');
     
     if (isSpyCaught) {
         resultsContent.innerHTML = `
@@ -423,12 +463,25 @@ function showResults(isSpyCaught, suspectedPlayer) {
                     <i class="fas fa-trophy"></i>
                 </div>
                 <h2>🎉 Игроки победили!</h2>
-                <p>Шпион (Игрок ${suspectedPlayer}) был разоблачен!</p>
+                <p class="results-subtitle">Шпион был успешно раскрыт!</p>
                 
                 <div class="results-details">
-                    <p><strong>Локация:</strong> ${gameState.location}</p>
-                    <p><strong>Шпионы:</strong> ${gameState.spies.join(', ')}</p>
-                    <p><strong>Голосов за шпиона:</strong> ${gameState.votes[suspectedPlayer] || 0}</p>
+                    <div class="detail-card">
+                        <h4><i class="fas fa-map-marker-alt"></i> Локация:</h4>
+                        <p>${gameState.location}</p>
+                    </div>
+                    <div class="detail-card">
+                        <h4><i class="fas fa-user-secret"></i> Шпионы:</h4>
+                        <p class="spy-names">${spyNames}</p>
+                    </div>
+                    <div class="detail-card">
+                        <h4><i class="fas fa-user"></i> Подозреваемый:</h4>
+                        <p>${suspectedNames}</p>
+                    </div>
+                </div>
+                
+                <div class="results-message">
+                    <p>🎯 Шпион был вычислен! Мирные игроки справились с задачей.</p>
                 </div>
             </div>
         `;
@@ -439,12 +492,25 @@ function showResults(isSpyCaught, suspectedPlayer) {
                     <i class="fas fa-user-secret"></i>
                 </div>
                 <h2>🕵️ Шпионы победили!</h2>
-                <p>Игроки не смогли найти шпиона...</p>
+                <p class="results-subtitle">Игроки не смогли найти шпиона...</p>
                 
                 <div class="results-details">
-                    <p><strong>Локация:</strong> ${gameState.location}</p>
-                    <p><strong>Настоящие шпионы:</strong> ${gameState.spies.join(', ')}</p>
-                    <p><strong>Подозреваемый:</strong> Игрок ${suspectedPlayer || 'не определен'}</p>
+                    <div class="detail-card">
+                        <h4><i class="fas fa-map-marker-alt"></i> Локация:</h4>
+                        <p>${gameState.location}</p>
+                    </div>
+                    <div class="detail-card">
+                        <h4><i class="fas fa-user-secret"></i> Настоящие шпионы:</h4>
+                        <p class="spy-names">${spyNames}</p>
+                    </div>
+                    <div class="detail-card">
+                        <h4><i class="fas fa-user"></i> Подозреваемый:</h4>
+                        <p>${suspectedNames || 'Не определен'}</p>
+                    </div>
+                </div>
+                
+                <div class="results-message">
+                    <p>🎭 Шпионы хорошо замаскировались и остались незамеченными!</p>
                 </div>
             </div>
         `;
@@ -453,105 +519,30 @@ function showResults(isSpyCaught, suspectedPlayer) {
     showScreen('resultsScreen');
 }
 
-function backToSetup() {
-    if (confirm('Вернуться к настройкам? Текущая игра будет сброшена.')) {
-        gameState.gameStarted = false;
-        showScreen('setupScreen');
-    }
-}
-
-function backToDiscussion() {
-    showScreen('discussionScreen');
-    startTimer();
-}
-
+// Новая игра
 function newGame() {
-    gameState.gameStarted = false;
+    gameState = {
+        players: [],
+        spies: [],
+        location: "",
+        currentPlayerIndex: 0,
+        totalPlayers: 5,
+        spyCount: 1,
+        discussionTime: 5,
+        timerInterval: null,
+        timeLeft: 0,
+        votes: {},
+        isTimerPaused: false,
+        gameStarted: false
+    };
+    
+    document.getElementById('playerCount').value = 5;
+    document.getElementById('spyCount').value = 1;
+    document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.time-btn').classList.add('active');
+    
     showScreen('setupScreen');
-}
-
-// Статистика
-function loadStats() {
-    const saved = localStorage.getItem('spy_stats');
-    if (saved) {
-        stats = JSON.parse(saved);
-    }
-}
-
-function saveStats() {
-    localStorage.setItem('spy_stats', JSON.stringify(stats));
-}
-
-function updateStats(isSpyCaught) {
-    stats.totalGames++;
-    
-    if (isSpyCaught) {
-        stats.playerWins++;
-    } else {
-        stats.spyWins++;
-    }
-    
-    // Добавить в историю
-    stats.recentGames.unshift({
-        date: new Date().toLocaleDateString(),
-        players: gameState.totalPlayers,
-        spies: gameState.spyCount,
-        location: gameState.location,
-        result: isSpyCaught ? 'Игроки' : 'Шпионы'
-    });
-    
-    // Ограничить историю
-    if (stats.recentGames.length > 5) {
-        stats.recentGames = stats.recentGames.slice(0, 5);
-    }
-    
-    saveStats();
-}
-
-function showStats() {
-    document.getElementById('totalGames').textContent = stats.totalGames;
-    document.getElementById('playerWins').textContent = stats.playerWins;
-    document.getElementById('spyWins').textContent = stats.spyWins;
-    
-    // Обновить список игр
-    const gamesList = document.getElementById('recentGamesList');
-    gamesList.innerHTML = '';
-    
-    stats.recentGames.forEach(game => {
-        const div = document.createElement('div');
-        div.className = `game-record ${game.result === 'Игроки' ? 'win' : 'lose'}`;
-        
-        div.innerHTML = `
-            <div class="game-info">
-                <span>${game.date}</span>
-                <span>${game.players} игроков</span>
-            </div>
-            <div class="game-result">
-                <span>${game.result} победили</span>
-            </div>
-        `;
-        
-        gamesList.appendChild(div);
-    });
-    
-    showModal('statsModal');
-}
-
-function showGameStats() {
-    showStats();
-}
-
-function resetStats() {
-    if (confirm('Сбросить всю статистику?')) {
-        stats = {
-            totalGames: 0,
-            playerWins: 0,
-            spyWins: 0,
-            recentGames: []
-        };
-        saveStats();
-        showStats();
-    }
+    showNotification("Новая игра готова! Настройте параметры и начинайте! 🎮", "success");
 }
 
 // Утилиты
@@ -560,18 +551,6 @@ function showScreen(screenId) {
         screen.classList.remove('active');
     });
     document.getElementById(screenId).classList.add('active');
-}
-
-function showModal(modalId) {
-    document.getElementById(modalId).classList.add('active');
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
-}
-
-function showRules() {
-    showModal('rulesModal');
 }
 
 // Инициализация при загрузке
