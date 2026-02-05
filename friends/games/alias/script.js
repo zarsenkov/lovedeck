@@ -1,198 +1,194 @@
-/**
- * Глобальное состояние игры
- */
-let game = {
-    mode: '',           // 'alias' или 'crocodile'
-    category: '',       // ключ категории из cards.js
-    teams: [
-        { name: 'TEAM ONE', score: 0 },
-        { name: 'TEAM TWO', score: 0 }
-    ],
-    currentTeamIndex: 0,
+const state = {
+    mode: '',
+    category: '',
+    teams: [{ name: '', score: 0 }, { name: '', score: 0 }],
+    activeTeam: 0,
     roundTime: 60,
     timeLeft: 60,
-    timerInterval: null,
-    currentWord: '',
-    usedWordsInGame: new Set(), // Чтобы слова не повторялись за всю сессию
+    timer: null,
+    usedWords: new Set(),
+    history: [], // Для Undo
+    isDragging: false,
+    startX: 0,
+    currentX: 0
 };
 
-/**
- * Инициализация и навигация
- */
-document.addEventListener('DOMContentLoaded', () => {
-    // Вешаем события на плитки режимов (Главный экран)
-    document.querySelectorAll('.mode-tile').forEach(tile => {
-        tile.addEventListener('click', () => {
-            game.mode = tile.dataset.mode;
-            renderCategories();
-            showScreen('screen-categories');
-            vibrate(10); // Легкий тактильный отклик
-        });
-    });
-
-    // Обновление отображения времени в настройках
-    const timeRange = document.getElementById('time-range');
-    if (timeRange) {
-        timeRange.addEventListener('input', (e) => {
-            game.roundTime = parseInt(e.target.value);
-            document.getElementById('time-display').textContent = `${game.roundTime} SEC`;
-        });
-    }
-});
-
-function showScreen(screenId) {
+// --- Навигация ---
+function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const target = document.getElementById(screenId);
-    if (target) target.classList.add('active');
+    document.getElementById(id).classList.add('active');
 }
 
-/**
- * Рендер категорий на основе выбранного режима
- */
+function selectMode(m) {
+    state.mode = m;
+    renderCategories();
+    showScreen('screen-categories');
+    vibrate(20);
+}
+
 function renderCategories() {
     const grid = document.getElementById('category-grid');
-    grid.innerHTML = ''; 
-
-    // Берем данные из объекта GAME_CARDS (из файла cards.js)
-    const categories = GAME_CARDS[game.mode];
-    
-    Object.keys(categories).forEach(key => {
-        const btn = document.createElement('button');
-        btn.className = 'category-item'; // Стиль из нашего CSS
-        btn.innerHTML = `<span>${categories[key].label}</span>`;
-        btn.onclick = () => {
-            game.category = key;
+    grid.innerHTML = '';
+    const packs = CARDS_DB[state.mode];
+    Object.keys(packs).forEach(key => {
+        const div = document.createElement('div');
+        div.className = 'category-item';
+        div.innerText = key;
+        div.onclick = () => {
+            state.category = key;
+            document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+            div.classList.add('active');
             showScreen('screen-setup');
-            vibrate(10);
+            vibrate(15);
         };
-        grid.appendChild(btn);
+        grid.appendChild(div);
     });
 }
 
-/**
- * Запуск игровой сессии
- */
-function startGame() {
-    // Считываем имена команд
-    const t1 = document.getElementById('team1-input').value.trim();
-    const t2 = document.getElementById('team2-input').value.trim();
-    
-    game.teams[0].name = t1 || 'TEAM ONE';
-    game.teams[1].name = t2 || 'TEAM TWO';
-    game.teams[0].score = 0;
-    game.teams[1].score = 0;
-    game.currentTeamIndex = 0;
-    game.usedWordsInGame.clear();
-
+// --- Логика игры ---
+function initGameSession() {
+    state.teams[0].name = document.getElementById('team1-in').value || 'TEAM ONE';
+    state.teams[1].name = document.getElementById('team2-in').value || 'TEAM TWO';
+    state.roundTime = parseInt(document.getElementById('time-range').value);
+    state.activeTeam = 0;
+    state.teams[0].score = 0;
+    state.teams[1].score = 0;
+    state.usedWords.clear();
     prepareRound();
     showScreen('screen-game');
-    vibrate([20, 50, 20]);
 }
 
-/**
- * Подготовка к раунду (Оверлей ожидания)
- */
 function prepareRound() {
-    clearInterval(game.timerInterval);
-    game.timeLeft = game.roundTime;
-    
-    document.getElementById('game-timer').textContent = game.timeLeft;
-    document.getElementById('game-score').textContent = '0';
-    document.getElementById('intro-team-name').textContent = `${game.teams[game.currentTeamIndex].name}'S TURN`;
-    
-    // Показываем оверлей "Готовы?"
-    document.getElementById('round-intro-overlay').classList.add('active');
+    state.timeLeft = state.roundTime;
+    state.history = [];
+    document.getElementById('round-overlay').classList.add('active');
+    document.getElementById('current-team-name').innerText = state.teams[state.activeTeam].name;
+    document.getElementById('game-timer').innerText = state.timeLeft;
+    document.getElementById('game-score').innerText = '00';
+    document.getElementById('btn-undo').classList.add('hidden');
 }
 
-/**
- * Старт таймера и выдача первого слова
- */
 function startRound() {
-    document.getElementById('round-intro-overlay').classList.remove('active');
-    vibrate(30);
+    document.getElementById('round-overlay').classList.remove('active');
     setNextWord();
-    
-    game.timerInterval = setInterval(() => {
-        game.timeLeft--;
-        document.getElementById('game-timer').textContent = game.timeLeft;
-        
-        if (game.timeLeft <= 0) {
-            endRound();
-        }
+    state.timer = setInterval(() => {
+        state.timeLeft--;
+        document.getElementById('game-timer').innerText = state.timeLeft;
+        if (state.timeLeft <= 0) endRound();
     }, 1000);
 }
 
-/**
- * Логика выбора слова
- */
 function setNextWord() {
-    const categoryData = GAME_CARDS[game.mode][game.category];
-    const allWords = categoryData.words;
+    const pool = CARDS_DB[state.mode][state.category];
+    const available = pool.filter(w => !state.usedWords.has(w));
     
-    // Фильтруем те, что еще не были в этой игре
-    let available = allWords.filter(w => !game.usedWordsInGame.has(w));
-    
-    // Если слова кончились — сбрасываем историю для этой категории
-    if (available.length === 0) {
-        allWords.forEach(w => game.usedWordsInGame.delete(w));
-        available = allWords;
-    }
+    if (available.length === 0) state.usedWords.clear();
     
     const word = available[Math.floor(Math.random() * available.length)];
-    game.currentWord = word;
-    game.usedWordsInGame.add(word);
-    
-    const card = document.getElementById('word-card');
-    card.textContent = word.toUpperCase();
-    
-    // Анимация "всплытия" слова
-    card.style.animation = 'none';
-    card.offsetHeight; 
-    card.style.animation = 'wordPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    document.getElementById('swipe-card').querySelector('.card-content').innerText = word;
+    state.currentWord = word;
 }
 
-/**
- * Обработка ответа
- */
-function handleAnswer(isCorrect) {
-    if (!game.timerInterval) return;
+// --- Swipe Engine ---
+const card = document.getElementById('swipe-card');
+const indicatorLeft = document.querySelector('.indicator.left');
+const indicatorRight = document.querySelector('.indicator.right');
 
-    if (isCorrect) {
-        game.teams[game.currentTeamIndex].score++;
-        vibrate(20);
+card.addEventListener('touchstart', (e) => {
+    state.isDragging = true;
+    state.startX = e.touches[0].clientX;
+    card.style.transition = 'none';
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+    if (!state.isDragging) return;
+    state.currentX = e.touches[0].clientX;
+    const diff = state.currentX - state.startX;
+    const rotation = diff / 10;
+    
+    card.style.transform = `translateX(${diff}px) rotate(${rotation}deg)`;
+    
+    // Индикаторы
+    indicatorRight.style.opacity = Math.min(diff / 100, 1);
+    indicatorLeft.style.opacity = Math.min(-diff / 100, 1);
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+    if (!state.isDragging) return;
+    state.isDragging = false;
+    card.style.transition = '0.3s cubic-bezier(0.23, 1, 0.32, 1)';
+    
+    const diff = state.currentX - state.startX;
+    if (Math.abs(diff) > 120) {
+        handleAction(diff > 0);
     } else {
-        game.teams[game.currentTeamIndex].score--; // Штраф
-        vibrate([40, 30, 40]);
+        resetCard();
     }
+});
 
-    // Обновляем счет на экране
-    document.getElementById('game-score').textContent = game.teams[game.currentTeamIndex].score;
-    
-    setNextWord();
+function resetCard() {
+    card.style.transform = 'translateX(0) rotate(0)';
+    indicatorLeft.style.opacity = 0;
+    indicatorRight.style.opacity = 0;
 }
 
-/**
- * Завершение раунда
- */
-function endRound() {
-    clearInterval(game.timerInterval);
-    game.timerInterval = null;
-    vibrate([200, 100, 200]); // Длинная вибрация в конце
+function handleAction(isCorrect) {
+    const points = isCorrect ? 1 : -1;
+    state.teams[state.activeTeam].score += points;
+    state.usedWords.add(state.currentWord);
+    state.history.push({ word: state.currentWord, ok: isCorrect });
+    
+    // Анимация вылета
+    card.style.transform = `translateX(${isCorrect ? 500 : -500}px) rotate(${isCorrect ? 45 : -45}deg)`;
+    vibrate(isCorrect ? 20 : [30, 30]);
+
+    document.getElementById('game-score').innerText = String(Math.max(0, state.teams[state.activeTeam].score)).padStart(2, '0');
+    document.getElementById('btn-undo').classList.remove('hidden');
 
     setTimeout(() => {
-        alert(`TIME'S UP!\n${game.teams[game.currentTeamIndex].name} SCORE: ${game.teams[game.currentTeamIndex].score}`);
-        
-        // Переход хода
-        game.currentTeamIndex = (game.currentTeamIndex === 0) ? 1 : 0;
-        prepareRound();
-    }, 100);
+        resetCard();
+        setNextWord();
+    }, 200);
 }
 
-/**
- * Утилита вибрации (работает на Android)
- */
-function vibrate(pattern) {
-    if ("vibrate" in navigator) {
-        navigator.vibrate(pattern);
-    }
+function undoLastAction() {
+    if (state.history.length === 0) return;
+    const last = state.history.pop();
+    state.teams[state.activeTeam].score -= (last.ok ? 1 : -1);
+    state.usedWords.delete(last.word);
+    
+    document.getElementById('swipe-card').querySelector('.card-content').innerText = last.word;
+    state.currentWord = last.word;
+    document.getElementById('game-score').innerText = String(Math.max(0, state.teams[state.activeTeam].score)).padStart(2, '0');
+    
+    if (state.history.length === 0) document.getElementById('btn-undo').classList.add('hidden');
+    vibrate(10);
 }
+
+function endRound() {
+    clearInterval(state.timer);
+    vibrate([100, 50, 100]);
+    
+    const list = document.getElementById('summary-list');
+    list.innerHTML = state.history.map(h => `
+        <div class="sum-item ${h.ok ? 'ok' : 'skip'}">
+            <span>${h.word}</span>
+            <span>${h.ok ? '+1' : '-1'}</span>
+        </div>
+    `).join('');
+    
+    showScreen('screen-summary');
+}
+
+function nextRoundPre() {
+    state.activeTeam = state.activeTeam === 0 ? 1 : 0;
+    prepareRound();
+    showScreen('screen-game');
+}
+
+function vibrate(pattern) {
+    if ("vibrate" in navigator) navigator.vibrate(pattern);
+}
+
+// Запрет скролла и зума
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
