@@ -11,43 +11,43 @@ let gameState = {
     timeLeft: 120,
     timerInterval: null,
     gameActive: false,
-    categoriesData: {}
+    categoriesData: {},
+    isPaused: false
 };
 
 // ===== ФИКС ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ =====
 function fixMobileViewport() {
-    // Фикс для 100vh на iOS
-    const setVH = () => {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    // Фикс высоты для iOS
+    const setAppHeight = () => {
+        const doc = document.documentElement;
+        doc.style.setProperty('--app-height', `${window.innerHeight}px`);
         
-        // Также устанавливаем высоту для body
-        document.body.style.height = `${window.innerHeight}px`;
+        const appContainer = document.querySelector('.app-container');
+        if (appContainer) {
+            appContainer.style.height = 'var(--app-height)';
+        }
     };
     
-    // Устанавливаем при загрузке
-    setVH();
+    window.addEventListener('resize', setAppHeight);
+    window.addEventListener('orientationchange', setAppHeight);
     
-    // И при изменении размера/ориентации
-    window.addEventListener('resize', setVH);
-    window.addEventListener('orientationchange', setVH);
-    
-    // Фикс для Safari - предотвращаем скролл страницы
-    document.body.addEventListener('touchmove', function(e) {
-        if (e.target.closest('.screen')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-    
-    // Фикс для input фокуса на iOS
-    document.addEventListener('focusin', function(e) {
-        if (e.target.matches('input, select, textarea')) {
-            // Прокручиваем к элементу при фокусе
+    // Предотвращаем масштабирование при фокусе на input
+    document.addEventListener('focusin', (e) => {
+        if (e.target.matches('input, textarea')) {
             setTimeout(() => {
                 e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 300);
         }
     });
+    
+    // Предотвращаем стандартное поведение касания
+    document.addEventListener('touchstart', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    setAppHeight();
 }
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
@@ -58,41 +58,54 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Загрузка категорий
     await loadCategories();
     
-    // Инициализация игроков
-    initPlayers();
-    
-    // Инициализация категорий
-    initCategories();
+    // Инициализация
+    initDefaultState();
     
     // Показ главного экрана
     showScreen('homeScreen');
+    
+    // Предотвращаем скролл страницы
+    document.body.addEventListener('touchmove', function(e) {
+        if (e.target.closest('.screen')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 });
 
-function initPlayers() {
-    // Инициализация игроков (если нужно)
-    console.log('Игроки инициализированы');
-}
-
-function initCategories() {
-    // Инициализация категорий (вызывается позже из initCategoriesList)
-    console.log('Категории инициализированы');
+function initDefaultState() {
+    // Настройки по умолчанию
+    gameState.players = [];
+    gameState.categories = Object.keys(gameState.categoriesData || {}).slice(0, 4);
+    gameState.timeLeft = 120;
+    gameState.totalRounds = 5;
 }
 
 async function loadCategories() {
     try {
-        // Попробуем разные пути
+        // Пробуем загрузить категории
         let response;
-        try {
-            // Путь от корня сайта
-            response = await fetch('/friends/games/whoami/categories.json');
-        } catch (e) {
-            // Относительный путь
-            response = await fetch('./categories.json');
+        const paths = [
+            '/friends/games/whoami/categories.json',
+            './categories.json',
+            'categories.json'
+        ];
+        
+        for (const path of paths) {
+            try {
+                response = await fetch(path);
+                if (response.ok) break;
+            } catch (e) {
+                continue;
+            }
         }
         
-        const data = await response.json();
-        gameState.categoriesData = data.categories;
-        console.log('Категории загружены:', Object.keys(data.categories).length, 'категорий');
+        if (response && response.ok) {
+            const data = await response.json();
+            gameState.categoriesData = data.categories || {};
+            console.log('Категории загружены:', Object.keys(gameState.categoriesData).length, 'категорий');
+        } else {
+            throw new Error('Не удалось загрузить категории');
+        }
     } catch (error) {
         console.error('Ошибка загрузки категорий:', error);
         // Стандартные категории на случай ошибки
@@ -118,6 +131,12 @@ function showScreen(screenId) {
     if (screen) {
         screen.classList.add('active');
         
+        // Остановить таймер при переходе с игрового экрана
+        if (screenId !== 'gameScreen' && gameState.timerInterval) {
+            clearInterval(gameState.timerInterval);
+            gameState.timerInterval = null;
+        }
+        
         // Дополнительные действия
         switch(screenId) {
             case 'homeScreen':
@@ -132,12 +151,15 @@ function showScreen(screenId) {
             case 'gameScreen':
                 startGameRound();
                 break;
+            case 'resultsScreen':
+                showResults();
+                break;
         }
         
-        // Прокрутка наверх для мобильных
+        // Прокрутка наверх
         setTimeout(() => {
             screen.scrollTop = 0;
-        }, 100);
+        }, 50);
     }
 }
 
@@ -161,7 +183,8 @@ function goToSetup() {
             id: i + 1,
             name: `Игрок ${i + 1}`,
             score: 0,
-            guessed: 0
+            guessed: 0,
+            skipped: 0
         });
     }
     
@@ -190,17 +213,24 @@ function initPlayersList() {
         input.className = 'player-input';
         input.value = player.name;
         input.placeholder = `Имя игрока ${index + 1}`;
-        input.onchange = function() {
-            updatePlayerName(index, this.value);
-        };
+        input.maxLength = 20;
+        
+        // Сохраняем имя при изменении
+        input.addEventListener('input', function() {
+            const newName = this.value.trim();
+            gameState.players[index].name = newName || `Игрок ${index + 1}`;
+        });
+        
+        // Сохраняем при потере фокуса
+        input.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.value = `Игрок ${index + 1}`;
+                gameState.players[index].name = `Игрок ${index + 1}`;
+            }
+        });
+        
         container.appendChild(input);
     });
-}
-
-function updatePlayerName(index, newName) {
-    if (newName.trim()) {
-        gameState.players[index].name = newName.trim();
-    }
 }
 
 function initCategoriesList() {
@@ -209,22 +239,42 @@ function initCategoriesList() {
     
     container.innerHTML = '';
     
-    Object.keys(gameState.categoriesData).forEach(category => {
-        const wordsCount = gameState.categoriesData[category].length;
+    const categories = Object.keys(gameState.categoriesData);
+    
+    categories.forEach(category => {
+        const words = gameState.categoriesData[category];
+        const wordsCount = words ? words.length : 0;
+        
+        if (wordsCount === 0) return;
         
         const div = document.createElement('div');
         div.className = 'category-item';
         
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.id = `cat_${category.replace(/\s+/g, '_')}`;
+        checkbox.id = `cat_${category.replace(/[^\w\u0400-\u04FF]/g, '_')}`;
         checkbox.value = category;
-        checkbox.checked = true;
+        checkbox.checked = gameState.categories.includes(category);
         
         const label = document.createElement('label');
         label.className = 'category-label';
         label.htmlFor = checkbox.id;
         label.textContent = `${category} (${wordsCount})`;
+        label.title = category;
+        
+        // Обработка выбора категории
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                if (!gameState.categories.includes(this.value)) {
+                    gameState.categories.push(this.value);
+                }
+            } else {
+                const index = gameState.categories.indexOf(this.value);
+                if (index > -1) {
+                    gameState.categories.splice(index, 1);
+                }
+            }
+        });
         
         div.appendChild(checkbox);
         div.appendChild(label);
@@ -237,26 +287,25 @@ function changeTimer(change) {
     let value = parseInt(input.value) + change;
     value = Math.max(30, Math.min(300, value));
     input.value = value;
+    input.dispatchEvent(new Event('change'));
 }
 
 // ===== НАЧАЛО ИГРЫ =====
 function startGame() {
-    // Получаем настройки
-    gameState.totalRounds = parseInt(document.getElementById('roundsCount').value);
-    const timerSeconds = parseInt(document.getElementById('timerSeconds').value);
-    gameState.timeLeft = timerSeconds;
-    
-    // Получаем выбранные категории
-    const selectedCategories = Array.from(
-        document.querySelectorAll('.category-item input:checked')
-    ).map(cb => cb.value);
+    // Проверяем выбранные категории
+    const selectedCategories = gameState.categories.filter(cat => 
+        gameState.categoriesData[cat] && gameState.categoriesData[cat].length > 0
+    );
     
     if (selectedCategories.length === 0) {
         showNotification('Выберите хотя бы одну категорию!', 'error');
         return;
     }
     
-    gameState.categories = selectedCategories;
+    // Обновляем настройки
+    gameState.totalRounds = parseInt(document.getElementById('roundsCount').value) || 5;
+    const timerSeconds = parseInt(document.getElementById('timerSeconds').value) || 120;
+    gameState.timeLeft = timerSeconds;
     
     // Сброс состояния игры
     gameState.currentRound = 1;
@@ -264,11 +313,13 @@ function startGame() {
     gameState.usedWords.clear();
     gameState.scores = {};
     gameState.gameActive = true;
+    gameState.isPaused = false;
     
     // Инициализация счета
     gameState.players.forEach(player => {
         player.score = 0;
         player.guessed = 0;
+        player.skipped = 0;
         gameState.scores[player.id] = 0;
     });
     
@@ -279,9 +330,9 @@ function startGame() {
 // ===== ЭКРАН ПОДГОТОВКИ =====
 function prepareReadyScreen() {
     const player = gameState.players[gameState.currentPlayerIndex];
-    const word = getRandomWord();
     
-    // Сохраняем текущее слово
+    // Генерируем новое слово
+    const word = getRandomWord();
     gameState.currentWord = word;
     
     // Обновляем отображение
@@ -289,19 +340,26 @@ function prepareReadyScreen() {
     document.getElementById('currentRound').textContent = gameState.currentRound;
     document.getElementById('totalRounds').textContent = gameState.totalRounds;
     
-    // Показываем плейсхолдеры
-    document.getElementById('wordPlaceholder').textContent = '???';
-    document.getElementById('categoryPlaceholder').textContent = 'Категория';
+    // Сбрасываем плейсхолдеры
+    const wordElement = document.getElementById('wordPlaceholder');
+    const categoryElement = document.getElementById('categoryPlaceholder');
+    const btn = document.getElementById('showWordBtn');
+    
+    wordElement.textContent = '???';
+    categoryElement.textContent = 'Категория';
+    wordElement.style.opacity = '1';
+    categoryElement.style.opacity = '1';
     
     // Активируем кнопку
-    const btn = document.getElementById('showWordBtn');
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-eye"></i> Показать слово';
-    btn.onclick = showWord; // Восстанавливаем обработчик
+    btn.onclick = showWord;
 }
 
 function showWord() {
-    if (!gameState.currentWord) return;
+    if (!gameState.currentWord) {
+        gameState.currentWord = getRandomWord();
+    }
     
     const btn = document.getElementById('showWordBtn');
     const wordElement = document.getElementById('wordPlaceholder');
@@ -309,11 +367,9 @@ function showWord() {
     
     // Отключаем кнопку на время анимации
     btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 3';
     
-    // Показываем счетчик 3-2-1
     let count = 3;
-    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${count}`;
-    
     const countdown = setInterval(() => {
         count--;
         if (count > 0) {
@@ -321,22 +377,41 @@ function showWord() {
         } else {
             clearInterval(countdown);
             
-            // Показываем слово
+            // Показываем слово с анимацией
             wordElement.textContent = gameState.currentWord.word;
             categoryElement.textContent = gameState.currentWord.category;
             
+            wordElement.style.animation = 'none';
+            categoryElement.style.animation = 'none';
+            setTimeout(() => {
+                wordElement.style.animation = 'fadeIn 0.5s ease';
+                categoryElement.style.animation = 'fadeIn 0.5s ease';
+            }, 10);
+            
             // Меняем кнопку
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> Перейти к игре';
-            btn.onclick = function() {
-                showScreen('gameScreen');
-            };
+            btn.innerHTML = '<i class="fas fa-arrow-right"></i> Перейти к игре';
+            btn.onclick = () => showScreen('gameScreen');
         }
     }, 1000);
 }
 
 function skipPlayer() {
+    const player = gameState.players[gameState.currentPlayerIndex];
+    player.skipped++;
+    showNotification(`${player.name} пропущен`, 'warning');
+    
     gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+    
+    // Проверяем, не завершился ли раунд
+    if (gameState.currentPlayerIndex === 0) {
+        gameState.currentRound++;
+        if (gameState.currentRound > gameState.totalRounds) {
+            endGame();
+            return;
+        }
+    }
+    
     prepareReadyScreen();
 }
 
@@ -358,9 +433,11 @@ function startGameRound() {
     updateScoreboard();
     
     // Запускаем таймер
-    if (gameState.timeLeft > 0) {
+    if (gameState.timeLeft > 0 && !gameState.isPaused) {
         startTimer();
     }
+    
+    updateTimerDisplay();
 }
 
 function startTimer() {
@@ -368,15 +445,15 @@ function startTimer() {
         clearInterval(gameState.timerInterval);
     }
     
-    updateTimerDisplay();
-    
     gameState.timerInterval = setInterval(() => {
-        gameState.timeLeft--;
-        updateTimerDisplay();
-        
-        if (gameState.timeLeft <= 0) {
-            clearInterval(gameState.timerInterval);
-            skipWord();
+        if (!gameState.isPaused) {
+            gameState.timeLeft--;
+            updateTimerDisplay();
+            
+            if (gameState.timeLeft <= 0) {
+                clearInterval(gameState.timerInterval);
+                skipWord();
+            }
         }
     }, 1000);
 }
@@ -388,31 +465,57 @@ function updateTimerDisplay() {
     if (timerElement) {
         timerElement.textContent = 
             `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+        // Меняем цвет при малом времени
+        if (gameState.timeLeft <= 30) {
+            timerElement.style.color = '#ef4444';
+            timerElement.style.fontWeight = 'bold';
+        } else {
+            timerElement.style.color = '';
+            timerElement.style.fontWeight = '';
+        }
     }
 }
 
 function getRandomWord() {
-    const availableCategories = gameState.categories.filter(cat => 
-        gameState.categoriesData[cat] && gameState.categoriesData[cat].length > 0
-    );
-    
-    if (availableCategories.length === 0) {
+    if (gameState.categories.length === 0) {
         return { word: "Нет слов", category: "Ошибка" };
     }
     
-    const category = availableCategories[Math.floor(Math.random() * availableCategories.length)];
-    const words = gameState.categoriesData[category];
+    // Выбираем случайную категорию
+    const availableCategories = gameState.categories.filter(cat => {
+        const words = gameState.categoriesData[cat];
+        return words && words.length > 0;
+    });
+    
+    if (availableCategories.length === 0) {
+        return { word: "Нет доступных слов", category: "Ошибка" };
+    }
+    
+    const randomCategory = availableCategories[Math.floor(Math.random() * availableCategories.length)];
+    const words = gameState.categoriesData[randomCategory];
+    
+    if (!words || words.length === 0) {
+        return getRandomWord(); // Рекурсивно пробуем другую категорию
+    }
     
     let word;
     let attempts = 0;
+    const maxAttempts = Math.min(50, words.length * 2);
     
     do {
         word = words[Math.floor(Math.random() * words.length)];
         attempts++;
-    } while (gameState.usedWords.has(word) && attempts < 50);
+    } while (gameState.usedWords.has(word) && attempts < maxAttempts);
+    
+    // Если все слова использованы, очищаем историю
+    if (attempts >= maxAttempts) {
+        gameState.usedWords.clear();
+        word = words[Math.floor(Math.random() * words.length)];
+    }
     
     gameState.usedWords.add(word);
-    return { word, category };
+    return { word, category: randomCategory };
 }
 
 // ===== ИГРОВЫЕ ДЕЙСТВИЯ =====
@@ -421,14 +524,17 @@ function correctGuess() {
     
     player.score += 10;
     player.guessed++;
-    gameState.scores[player.id] += 10;
+    gameState.scores[player.id] = player.score;
     
-    showNotification('Правильно! +10 очков');
+    showNotification(`Правильно! +10 очков. Угадано: ${player.guessed}`);
     nextTurn();
 }
 
 function skipWord() {
-    // Просто меняем слово без штрафа
+    const player = gameState.players[gameState.currentPlayerIndex];
+    player.skipped++;
+    
+    // Меняем слово
     gameState.currentWord = getRandomWord();
     document.getElementById('currentWord').textContent = gameState.currentWord.word;
     document.getElementById('wordCategory').textContent = gameState.currentWord.category;
@@ -436,10 +542,16 @@ function skipWord() {
     // Сбрасываем таймер
     if (gameState.timerInterval) {
         clearInterval(gameState.timerInterval);
-        gameState.timeLeft = parseInt(document.getElementById('timerSeconds').value);
+    }
+    
+    const timerSeconds = parseInt(document.getElementById('timerSeconds').value) || 120;
+    gameState.timeLeft = timerSeconds;
+    
+    if (gameState.gameActive && !gameState.isPaused) {
         startTimer();
     }
     
+    updateTimerDisplay();
     showNotification('Слово изменено');
 }
 
@@ -450,8 +562,8 @@ function giveUp() {
 function confirmGiveUp() {
     const player = gameState.players[gameState.currentPlayerIndex];
     
-    player.score -= 10;
-    gameState.scores[player.id] -= 10;
+    player.score = Math.max(0, player.score - 10);
+    gameState.scores[player.id] = player.score;
     
     closeModal('giveUpModal');
     showNotification('Сдался! -10 очков', 'warning');
@@ -459,6 +571,12 @@ function confirmGiveUp() {
 }
 
 function nextTurn() {
+    // Останавливаем таймер
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+    }
+    
     // Следующий игрок
     gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
     
@@ -471,6 +589,10 @@ function nextTurn() {
             return;
         }
     }
+    
+    // Сбрасываем таймер
+    const timerSeconds = parseInt(document.getElementById('timerSeconds').value) || 120;
+    gameState.timeLeft = timerSeconds;
     
     // Подготовка следующего хода
     gameState.currentWord = getRandomWord();
@@ -485,7 +607,10 @@ function updateScoreboard() {
     
     const currentPlayerId = gameState.players[gameState.currentPlayerIndex].id;
     
-    gameState.players.forEach((player, index) => {
+    // Сортируем по очкам (по убыванию)
+    const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+    
+    sortedPlayers.forEach((player, index) => {
         const div = document.createElement('div');
         div.className = `score-row ${player.id === currentPlayerId ? 'current' : ''}`;
         
@@ -510,26 +635,37 @@ function endGame() {
     }
     
     gameState.gameActive = false;
-    
-    // Определение победителя
-    const winner = gameState.players.reduce((prev, current) => 
-        prev.score > current.score ? prev : current
-    );
-    
-    document.getElementById('winnerName').textContent = winner.name;
-    showResults();
+    gameState.isPaused = false;
     
     showScreen('resultsScreen');
 }
 
 function showResults() {
+    // Определение победителя
+    let maxScore = -1;
+    let winner = null;
+    
+    gameState.players.forEach(player => {
+        if (player.score > maxScore) {
+            maxScore = player.score;
+            winner = player;
+        }
+    });
+    
+    if (winner) {
+        document.getElementById('winnerName').textContent = winner.name;
+    }
+    
     const container = document.getElementById('resultsList');
     if (!container) return;
     
     container.innerHTML = '';
     
     // Сортируем по очкам
-    const sorted = [...gameState.players].sort((a, b) => b.score - a.score);
+    const sorted = [...gameState.players].sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return b.guessed - a.guessed;
+    });
     
     sorted.forEach((player, index) => {
         const div = document.createElement('div');
@@ -541,7 +677,7 @@ function showResults() {
                 <div class="result-name">${player.name}</div>
                 <div class="result-stats">
                     <span>Угадано: ${player.guessed}</span>
-                    <span>Слов сдано: ${gameState.totalRounds - player.guessed}</span>
+                    <span>Пропущено: ${player.skipped}</span>
                 </div>
             </div>
             <div class="result-score">${player.score}</div>
@@ -553,14 +689,18 @@ function showResults() {
 
 // ===== УПРАВЛЕНИЕ ИГРОЙ =====
 function pauseGame() {
+    gameState.isPaused = true;
     if (gameState.timerInterval) {
         clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
     }
     showModal('pauseModal');
 }
 
 function resumeGame() {
+    gameState.isPaused = false;
     closeModal('pauseModal');
+    
     if (gameState.timeLeft > 0) {
         startTimer();
     }
@@ -582,13 +722,17 @@ function resetGameState() {
     gameState.usedWords.clear();
     gameState.scores = {};
     gameState.gameActive = false;
-    gameState.timeLeft = 120;
+    gameState.isPaused = false;
+    
+    const timerSeconds = parseInt(document.getElementById('timerSeconds')?.value) || 120;
+    gameState.timeLeft = timerSeconds;
     
     // Сброс счета игроков
     if (gameState.players) {
         gameState.players.forEach(player => {
             player.score = 0;
             player.guessed = 0;
+            player.skipped = 0;
         });
     }
 }
@@ -603,34 +747,14 @@ function showNotification(text, type = 'success') {
     notification.className = 'notification';
     notification.textContent = text;
     
-    // Стили в зависимости от типа
-    if (type === 'success') {
-        notification.style.background = 'var(--success)';
-    } else if (type === 'warning') {
-        notification.style.background = 'var(--warning)';
+    // Цвет в зависимости от типа
+    if (type === 'warning') {
+        notification.style.background = '#f59e0b';
     } else if (type === 'error') {
-        notification.style.background = 'var(--danger)';
+        notification.style.background = '#ef4444';
+    } else {
+        notification.style.background = '#10b981';
     }
-    
-    // Базовые стили
-    notification.style.cssText = `
-        position: fixed;
-        top: 80px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-20px);
-        background: var(--success);
-        color: white;
-        padding: 12px 24px;
-        border-radius: var(--radius);
-        font-weight: 600;
-        z-index: 1001;
-        box-shadow: var(--shadow-lg);
-        opacity: 0;
-        transition: all 0.3s ease;
-        max-width: 90%;
-        text-align: center;
-        font-size: 14px;
-    `;
     
     document.body.appendChild(notification);
     
@@ -646,7 +770,7 @@ function showNotification(text, type = 'success') {
         notification.style.transform = 'translateX(-50%) translateY(-20px)';
         setTimeout(() => {
             if (notification.parentNode) {
-                document.body.removeChild(notification);
+                notification.parentNode.removeChild(notification);
             }
         }, 300);
     }, 2000);
@@ -656,7 +780,6 @@ function showModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.add('show');
-        // Блокируем скролл фона
         document.body.style.overflow = 'hidden';
     }
 }
@@ -665,22 +788,39 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('show');
-        // Разблокируем скролл
         document.body.style.overflow = '';
     }
 }
 
 function goBack() {
-    if (gameState.gameActive) {
+    if (gameState.gameActive && !gameState.isPaused) {
         pauseGame();
+    } else if (document.querySelector('#setupScreen.active')) {
+        showScreen('homeScreen');
+    } else if (document.querySelector('#readyScreen.active')) {
+        showScreen('setupScreen');
+    } else if (document.querySelector('#gameScreen.active')) {
+        showScreen('readyScreen');
+    } else if (document.querySelector('#resultsScreen.active')) {
+        showScreen('homeScreen');
     } else {
-        window.history.back();
+        goHome();
     }
 }
 
 function goHome() {
     window.location.href = '../../index.html';
 }
+
+// Добавляем CSS анимацию
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(style);
 
 // Экспорт функций в глобальную область видимости
 window.changePlayerCount = changePlayerCount;
