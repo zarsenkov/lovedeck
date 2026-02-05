@@ -1,768 +1,127 @@
-// Основные переменные игры
-const gameState = {
-    mode: 'alias',
-    timerDuration: 60,
-    roundLimit: 10,
-    currentRound: 1,
-    currentTeam: 1,
-    scores: { team1: 0, team2: 0 },
-    roundScores: { team1: 0, team2: 0 },
-    usedWords: new Set(),
-    guessedCount: 0,
-    skippedCount: 0,
-    timerInterval: null,
-    timeLeft: 60,
-    isPlaying: false,
-    words: [],
-    roundHistory: []
+let gameState = {
+    mode: '',
+    category: '',
+    teams: [{name: '', score: 0}, {name: '', score: 0}],
+    activeTeam: 0,
+    roundTime: 60,
+    currentTime: 60,
+    wordsToWin: 20,
+    currentWord: '',
+    usedWords: [],
+    timerId: null
 };
 
-// Элементы DOM
-const elements = {
-    // Экраны
-    mainScreen: document.getElementById('mainScreen'),
-    gameScreen: document.getElementById('gameScreen'),
-    resultsScreen: document.getElementById('resultsScreen'),
-    endScreen: document.getElementById('endScreen'),
-    
-    // Главный экран
-    gameModeInputs: document.querySelectorAll('input[name="gameMode"]'),
-    team1Name: document.getElementById('team1Name'),
-    team2Name: document.getElementById('team2Name'),
-    timerDuration: document.getElementById('timerDuration'),
-    roundLimit: document.getElementById('roundLimit'),
-    startGameBtn: document.getElementById('startGame'),
-    showRulesBtn: document.getElementById('showRules'),
-    
-    // Экран игры
-    currentTeamName: document.getElementById('currentTeamName'),
-    currentRoundScore: document.getElementById('currentRoundScore'),
-    totalRoundScore: document.getElementById('totalRoundScore'),
-    currentWord: document.getElementById('currentWord'),
-    wordCategory: document.getElementById('wordCategory'),
-    timerDisplay: document.getElementById('timerDisplay'),
-    timerCircle: document.getElementById('timerCircle'),
-    currentMode: document.getElementById('currentMode'),
-    guessedCount: document.getElementById('guessedCount'),
-    skippedCount: document.getElementById('skippedCount'),
-    currentRound: document.getElementById('currentRound'),
-    totalRounds: document.getElementById('totalRounds'),
-    gameHint: document.getElementById('gameHint'),
-    correctBtn: document.getElementById('correctBtn'),
-    skipBtn: document.getElementById('skipBtn'),
-    stopBtn: document.getElementById('stopBtn'),
-    backToMain: document.getElementById('backToMain'),
-    
-    // Экран результатов
-    resultsMode: document.getElementById('resultsMode'),
-    resultsTime: document.getElementById('resultsTime'),
-    resultsGuessed: document.getElementById('resultsGuessed'),
-    resultsTeam1Name: document.getElementById('resultsTeam1Name'),
-    resultsTeam2Name: document.getElementById('resultsTeam2Name'),
-    resultsTeam1Score: document.getElementById('resultsTeam1Score'),
-    resultsTeam2Score: document.getElementById('resultsTeam2Score'),
-    nextWordHint: document.getElementById('nextWordHint'),
-    nextRoundBtn: document.getElementById('nextRoundBtn'),
-    finishGameBtn: document.getElementById('finishGameBtn'),
-    
-    // Экран окончания
-    winnerName: document.getElementById('winnerName'),
-    finalTeam1Name: document.getElementById('finalTeam1Name'),
-    finalTeam2Name: document.getElementById('finalTeam2Name'),
-    finalTeam1Score: document.getElementById('finalTeam1Score'),
-    finalTeam2Score: document.getElementById('finalTeam2Score'),
-    finalTeam1Rounds: document.getElementById('finalTeam1Rounds'),
-    finalTeam2Rounds: document.getElementById('finalTeam2Rounds'),
-    totalGuessed: document.getElementById('totalGuessed'),
-    totalSkipped: document.getElementById('totalSkipped'),
-    totalRoundsPlayed: document.getElementById('totalRoundsPlayed'),
-    newGameBtn: document.getElementById('newGameBtn'),
-    backToMainFromEnd: document.getElementById('backToMainFromEnd'),
-    
-    // Модальное окно
-    rulesModal: document.getElementById('rulesModal'),
-    closeRulesBtn: document.getElementById('closeRules'),
-    closeModalBtn: document.querySelector('.close-modal'),
-    
-    // Аудио
-    timerBeep: document.getElementById('timerBeep'),
-    endBeep: document.getElementById('endBeep')
-};
-
-// TODO: Добавить возможность настройки звуков
-// TODO: Добавить больше анимаций
-// TODO: Добавить статистику по категориям
-
-// Инициализация игры
-async function initGame() {
-    try {
-        await loadWords();
-        setupEventListeners();
-        loadGameState();
-        generateAudioBeeps();
-        updateLastGameStats();
-    } catch (error) {
-        console.error('Ошибка инициализации:', error);
-        showError('Не удалось загрузить слова. Проверьте файл words.json');
-    }
+// Переключение экранов
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
 }
 
-// Загрузка слов из JSON файла
-async function loadWords() {
-    try {
-        const response = await fetch('words.json');
-        if (!response.ok) throw new Error('Ошибка загрузки файла');
-        
-        gameState.words = await response.json();
-        
-        // Проверяем, что слова загружены
-        if (!gameState.words || gameState.words.length === 0) {
-            throw new Error('Файл words.json пустой или некорректный');
-        }
-        
-        console.log(`Загружено ${gameState.words.length} слов`);
-    } catch (error) {
-        console.error('Ошибка загрузки слов:', error);
-        // Создаём резервный набор слов на случай ошибки
-        gameState.words = getBackupWords();
-    }
-}
-
-// Резервный набор слов (на случай проблем с файлом)
-function getBackupWords() {
-    const categories = {
-        'животные': ['слон', 'кот', 'собака', 'лев', 'тигр', 'медведь', 'заяц', 'волк', 'лиса', 'ёж'],
-        'предметы': ['стол', 'стул', 'лампа', 'книга', 'телефон', 'окно', 'дверь', 'чашка', 'ложка', 'вилка'],
-        'профессии': ['врач', 'учитель', 'пожарный', 'полицейский', 'повар', 'строитель', 'водитель', 'программист', 'художник', 'музыкант'],
-        'действия': ['бежать', 'прыгать', 'смеяться', 'плакать', 'читать', 'писать', 'рисовать', 'петь', 'танцевать', 'спать'],
-        'эмоции': ['радость', 'грусть', 'злость', 'удивление', 'страх', 'любовь', 'ревность', 'гордость', 'стыд', 'счастье'],
-        'фильмы': ['Титаник', 'Матрица', 'Гарри Поттер', 'Властелин колец', 'Звёздные войны', 'Пираты Карибского моря', 'Форрест Гамп', 'Король Лев', 'Назад в будущее', 'Интерстеллар']
-    };
+// Инициализация настроек
+function setupGame(mode) {
+    gameState.mode = mode;
+    const catSelect = document.getElementById('select-category');
+    catSelect.innerHTML = '';
     
-    const words = [];
-    for (const [category, wordList] of Object.entries(categories)) {
-        for (const word of wordList) {
-            words.push({ word, category });
-        }
-    }
-    return words;
-}
-
-// Настройка обработчиков событий
-function setupEventListeners() {
-    // Главный экран
-    elements.startGameBtn.addEventListener('click', startGame);
-    elements.showRulesBtn.addEventListener('click', () => showModal(true));
-    
-    // Модальное окно
-    elements.closeRulesBtn.addEventListener('click', () => showModal(false));
-    elements.closeModalBtn.addEventListener('click', () => showModal(false));
-    elements.rulesModal.addEventListener('click', (e) => {
-        if (e.target === elements.rulesModal) showModal(false);
+    Object.keys(CARD_DATA[mode]).forEach(cat => {
+        let opt = document.createElement('option');
+        opt.value = cat;
+        opt.innerText = CATEGORY_NAMES[cat];
+        catSelect.appendChild(opt);
     });
-    
-    // Экран игры
-    elements.correctBtn.addEventListener('click', handleCorrect);
-    elements.skipBtn.addEventListener('click', handleSkip);
-    elements.stopBtn.addEventListener('click', stopRound);
-    elements.backToMain.addEventListener('click', backToMain);
-    
-    // Экран результатов
-    elements.nextRoundBtn.addEventListener('click', nextRound);
-    elements.finishGameBtn.addEventListener('click', finishGame);
-    
-    // Экран окончания
-    elements.newGameBtn.addEventListener('click', resetGame);
-    elements.backToMainFromEnd.addEventListener('click', backToMain);
-    
-    // Обновление настроек в реальном времени
-    elements.gameModeInputs.forEach(input => {
-        input.addEventListener('change', updateGameSettings);
+
+    document.getElementById('round-time').addEventListener('input', (e) => {
+        document.getElementById('time-val').innerText = e.target.value;
     });
-    
-    elements.timerDuration.addEventListener('change', updateGameSettings);
-    elements.roundLimit.addEventListener('change', updateGameSettings);
-    elements.team1Name.addEventListener('input', updateTeamNames);
-    elements.team2Name.addEventListener('input', updateTeamNames);
-    
-    // Обработка клавиш (для удобства)
-    document.addEventListener('keydown', handleKeyPress);
-    
-    // Предотвращение выключения экрана
-    setupWakeLock();
+
+    showScreen('screen-setup');
 }
 
-// Обновление настроек игры
-function updateGameSettings() {
-    gameState.mode = document.querySelector('input[name="gameMode"]:checked').value;
-    gameState.timerDuration = parseInt(elements.timerDuration.value);
-    gameState.roundLimit = parseInt(elements.roundLimit.value);
-    
-    // Обновляем подсказку в зависимости от режима
-    updateHintText();
-}
-
-// Обновление имён команд
-function updateTeamNames() {
-    const team1Name = elements.team1Name.value || 'Команда 1';
-    const team2Name = elements.team2Name.value || 'Команда 2';
-    
-    // Сохраняем в localStorage для следующей игры
-    localStorage.setItem('team1Name', team1Name);
-    localStorage.setItem('team2Name', team2Name);
-}
-
-// Обновление текста подсказки
-function updateHintText() {
-    if (gameState.mode === 'alias') {
-        elements.gameHint.textContent = 'Объясняйте слово словами, не используя само слово или однокоренные';
-    } else {
-        elements.gameHint.textContent = 'Показывайте слово жестами и мимикой, нельзя издавать звуки';
-    }
-}
-
-// Загрузка состояния из localStorage
-function loadGameState() {
-    try {
-        const savedTeam1 = localStorage.getItem('team1Name');
-        const savedTeam2 = localStorage.getItem('team2Name');
-        
-        if (savedTeam1) elements.team1Name.value = savedTeam1;
-        if (savedTeam2) elements.team2Name.value = savedTeam2;
-    } catch (error) {
-        console.warn('Не удалось загрузить сохранённое состояние:', error);
-    }
-}
-
-// Обновление статистики последней игры
-function updateLastGameStats() {
-    try {
-        const stats = JSON.parse(localStorage.getItem('lastGameStats'));
-        if (stats) {
-            const statsElement = document.getElementById('lastGameStats');
-            statsElement.innerHTML = `
-                <p><strong>${stats.winner}</strong> победил!</p>
-                <p>Счёт: ${stats.team1Score} - ${stats.team2Score}</p>
-                <p>Раундов: ${stats.totalRounds}</p>
-                <p>Угадано слов: ${stats.totalGuessed}</p>
-            `;
-        }
-    } catch (error) {
-        console.warn('Не удалось загрузить статистику:', error);
-    }
-}
-
-// Начало игры
+// Старт игры
 function startGame() {
-    // Собираем настройки
-    updateGameSettings();
-    updateTeamNames();
+    gameState.category = document.getElementById('select-category').value;
+    gameState.teams[0].name = document.getElementById('team1-name').value || "Тигры";
+    gameState.teams[1].name = document.getElementById('team2-name').value || "Львы";
+    gameState.roundTime = parseInt(document.getElementById('round-time').value);
     
-    // Сброс состояния игры
-    resetGameState();
+    gameState.activeTeam = 0;
+    gameState.teams[0].score = 0;
+    gameState.teams[1].score = 0;
     
-    // Показываем экран игры
-    showScreen('gameScreen');
-    
-    // Начинаем раунд
-    startRound();
+    prepareRound();
 }
 
-// Сброс состояния игры
-function resetGameState() {
-    gameState.currentRound = 1;
-    gameState.currentTeam = 1;
-    gameState.scores = { team1: 0, team2: 0 };
-    gameState.roundScores = { team1: 0, team2: 0 };
-    gameState.usedWords.clear();
-    gameState.guessedCount = 0;
-    gameState.skippedCount = 0;
-    gameState.roundHistory = [];
-    gameState.timeLeft = gameState.timerDuration;
-}
-
-// Показать экран
-function showScreen(screenName) {
-    // Скрыть все экраны
-    elements.mainScreen.classList.remove('active');
-    elements.gameScreen.classList.remove('active');
-    elements.resultsScreen.classList.remove('active');
-    elements.endScreen.classList.remove('active');
+function prepareRound() {
+    gameState.currentTime = gameState.roundTime;
+    document.getElementById('current-team-display').innerText = gameState.teams[gameState.activeTeam].name;
+    document.getElementById('timer').innerText = gameState.currentTime;
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('word-card').innerText = 'Нажми "Готово" для начала';
     
-    // Показать нужный экран
-    elements[screenName].classList.add('active');
+    showScreen('screen-game');
 }
 
-// Показать/скрыть модальное окно
-function showModal(show) {
-    if (show) {
-        elements.rulesModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+function nextWord(isCorrect) {
+    // Если раунд еще не начат (первое нажатие)
+    if (!gameState.timerId) {
+        startTimer();
     } else {
-        elements.rulesModal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        // Подсчет очков
+        if (isCorrect) {
+            gameState.teams[gameState.activeTeam].score++;
+        } else {
+            gameState.teams[gameState.activeTeam].score--; // Штраф
+        }
     }
-}
 
-// Начало раунда
-function startRound() {
-    gameState.isPlaying = true;
-    gameState.timeLeft = gameState.timerDuration;
-    gameState.guessedCount = 0;
-    gameState.skippedCount = 0;
+    const words = CARD_DATA[gameState.mode][gameState.category];
+    const availableWords = words.filter(w => !gameState.usedWords.includes(w));
     
-    // Обновляем UI
-    updateGameUI();
-    
-    // Показываем первое слово
-    showRandomWord();
-    
-    // Запускаем таймер
-    startTimer();
-    
-    // Вибрация (если поддерживается)
-    if (navigator.vibrate) {
-        navigator.vibrate(100);
-    }
-}
-
-// Обновление UI игры
-function updateGameUI() {
-    const teamName = gameState.currentTeam === 1 ? 
-        elements.team1Name.value : elements.team2Name.value;
-    
-    elements.currentTeamName.textContent = teamName;
-    elements.currentMode.textContent = gameState.mode === 'alias' ? 'Алиас' : 'Крокодил';
-    elements.currentRound.textContent = gameState.currentRound;
-    elements.totalRounds.textContent = gameState.roundLimit || '∞';
-    elements.currentRoundScore.textContent = gameState.guessedCount;
-    elements.totalRoundScore.textContent = gameState.guessedCount + gameState.skippedCount;
-    elements.guessedCount.textContent = gameState.guessedCount;
-    elements.skippedCount.textContent = gameState.skippedCount;
-    elements.timerDisplay.textContent = gameState.timeLeft;
-    
-    updateHintText();
-}
-
-// Показать случайное слово
-function showRandomWord() {
-    if (gameState.words.length === 0) {
-        elements.currentWord.textContent = 'Нет слов';
-        elements.wordCategory.textContent = 'Ошибка';
-        return;
-    }
-    
-    // Фильтруем слова, которые ещё не использовались в этом раунде
-    const availableWords = gameState.words.filter(word => 
-        !gameState.usedWords.has(word.word)
-    );
-    
-    // Если все слова использованы, очищаем список использованных
     if (availableWords.length === 0) {
-        gameState.usedWords.clear();
-        return showRandomWord();
+        gameState.usedWords = []; // Сброс, если слова кончились
+        return nextWord(isCorrect);
     }
-    
-    // Выбираем случайное слово
-    const randomIndex = Math.floor(Math.random() * availableWords.length);
-    const randomWord = availableWords[randomIndex];
-    
-    // Добавляем в использованные
-    gameState.usedWords.add(randomWord.word);
-    
-    // Обновляем UI
-    elements.currentWord.textContent = randomWord.word;
-    elements.wordCategory.textContent = randomWord.category;
-    
-    // Добавляем анимацию
-    elements.currentWord.classList.add('word-change');
-    setTimeout(() => {
-        elements.currentWord.classList.remove('word-change');
-    }, 300);
+
+    const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+    gameState.currentWord = randomWord;
+    gameState.usedWords.push(randomWord);
+    document.getElementById('word-card').innerText = randomWord;
 }
 
-// Запуск таймера
 function startTimer() {
-    // Очищаем предыдущий таймер
-    if (gameState.timerInterval) {
-        clearInterval(gameState.timerInterval);
-    }
-    
-    gameState.timeLeft = gameState.timerDuration;
-    updateTimerDisplay();
-    
-    // Запускаем новый таймер
-    gameState.timerInterval = setInterval(() => {
-        gameState.timeLeft--;
-        updateTimerDisplay();
-        
-        // Сигналы при малом времени
-        if (gameState.timeLeft === 10) {
-            playBeep('timer');
-            if (navigator.vibrate) navigator.vibrate(200);
-        }
-        
-        if (gameState.timeLeft === 5) {
-            playBeep('timer');
-            if (navigator.vibrate) navigator.vibrate(200);
-        }
-        
-        if (gameState.timeLeft === 0) {
+    gameState.timerId = setInterval(() => {
+        gameState.currentTime--;
+        document.getElementById('timer').innerText = gameState.currentTime;
+        const percent = (gameState.currentTime / gameState.roundTime) * 100;
+        document.getElementById('progress-fill').style.width = percent + '%';
+
+        if (gameState.currentTime <= 0) {
             endRound();
         }
     }, 1000);
 }
 
-// Обновление отображения таймера
-function updateTimerDisplay() {
-    elements.timerDisplay.textContent = gameState.timeLeft;
-    
-    // Обновляем стиль таймера
-    elements.timerCircle.classList.remove('warning', 'danger');
-    
-    if (gameState.timeLeft <= 10) {
-        elements.timerCircle.classList.add('danger');
-    } else if (gameState.timeLeft <= 30) {
-        elements.timerCircle.classList.add('warning');
-    }
-}
-
-// Обработка правильного ответа
-function handleCorrect() {
-    if (!gameState.isPlaying) return;
-    
-    gameState.guessedCount++;
-    updateGameUI();
-    
-    // Вибрация
-    if (navigator.vibrate) {
-        navigator.vibrate(50);
-    }
-    
-    showRandomWord();
-}
-
-// Обработка пропуска слова
-function handleSkip() {
-    if (!gameState.isPlaying) return;
-    
-    gameState.skippedCount++;
-    updateGameUI();
-    
-    // Короткая вибрация
-    if (navigator.vibrate) {
-        navigator.vibrate(100);
-    }
-    
-    showRandomWord();
-}
-
-// Остановка раунда (досрочно)
-function stopRound() {
-    if (!gameState.isPlaying) return;
-    
-    // Подтверждение
-    if (gameState.guessedCount + gameState.skippedCount > 0) {
-        if (!confirm('Завершить раунд досрочно?')) {
-            return;
-        }
-    }
-    
-    endRound();
-}
-
-// Завершение раунда
 function endRound() {
-    if (!gameState.isPlaying) return;
+    clearInterval(gameState.timerId);
+    gameState.timerId = null;
     
-    gameState.isPlaying = false;
-    
-    // Останавливаем таймер
-    if (gameState.timerInterval) {
-        clearInterval(gameState.timerInterval);
-        gameState.timerInterval = null;
-    }
-    
-    // Звуковой сигнал
-    playBeep('end');
-    
-    // Вибрация
-    if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]);
-    }
-    
-    // Добавляем очки текущей команде
-    if (gameState.currentTeam === 1) {
-        gameState.scores.team1 += gameState.guessedCount;
-        gameState.roundScores.team1 = gameState.guessedCount;
-    } else {
-        gameState.scores.team2 += gameState.guessedCount;
-        gameState.roundScores.team2 = gameState.guessedCount;
-    }
-    
-    // Сохраняем историю раунда
-    gameState.roundHistory.push({
-        round: gameState.currentRound,
-        team: gameState.currentTeam,
-        score: gameState.guessedCount,
-        skipped: gameState.skippedCount,
-        mode: gameState.mode
-    });
-    
-    // Показываем экран результатов
-    showResultsScreen();
+    document.getElementById('res-team1-name').innerText = gameState.teams[0].name;
+    document.getElementById('res-team1-score').innerText = gameState.teams[0].score;
+    document.getElementById('res-team2-name').innerText = gameState.teams[1].name;
+    document.getElementById('res-team2-score').innerText = gameState.teams[1].score;
+
+    showScreen('screen-results');
 }
 
-// Показать экран результатов
-function showResultsScreen() {
-    // Обновляем данные
-    elements.resultsMode.textContent = gameState.mode === 'alias' ? 'Алиас' : 'Крокодил';
-    elements.resultsTime.textContent = `${gameState.timerDuration} сек`;
-    elements.resultsGuessed.textContent = gameState.guessedCount;
-    elements.resultsTeam1Name.textContent = elements.team1Name.value || 'Команда 1';
-    elements.resultsTeam2Name.textContent = elements.team2Name.value || 'Команда 2';
-    elements.resultsTeam1Score.textContent = gameState.scores.team1;
-    elements.resultsTeam2Score.textContent = gameState.scores.team2;
-    
-    // Показываем следующее слово для интриги
-    const nextWord = getNextWordHint();
-    elements.nextWordHint.textContent = nextWord;
-    
-    showScreen('resultsScreen');
-}
-
-// Получить подсказку для следующего слова
-function getNextWordHint() {
-    const availableWords = gameState.words.filter(word => 
-        !gameState.usedWords.has(word.word)
-    );
-    
-    if (availableWords.length === 0) {
-        return 'Все слова использованы!';
-    }
-    
-    const randomIndex = Math.floor(Math.random() * availableWords.length);
-    const nextWord = availableWords[randomIndex];
-    return `${nextWord.word} (${nextWord.category})`;
-}
-
-// Следующий раунд
-function nextRound() {
-    // Очищаем использованные слова для нового раунда
-    gameState.usedWords.clear();
-    
-    // Меняем команду
-    gameState.currentTeam = gameState.currentTeam === 1 ? 2 : 1;
-    
-    // Увеличиваем номер раунда
-    gameState.currentRound++;
-    
-    // Проверяем лимит раундов
-    if (gameState.roundLimit > 0 && gameState.currentRound > gameState.roundLimit) {
-        finishGame();
+function nextStep() {
+    // Проверка на победу (например, до 20 очков)
+    if (gameState.teams[gameState.activeTeam].score >= 20) {
+        alert("Победа команды " + gameState.teams[gameState.activeTeam].name + "!");
+        location.reload();
         return;
     }
-    
-    // Начинаем новый раунд
-    showScreen('gameScreen');
-    startRound();
+
+    // Смена команды
+    gameState.activeTeam = gameState.activeTeam === 0 ? 1 : 0;
+    prepareRound();
 }
-
-// Завершение игры
-function finishGame() {
-    // Определяем победителя
-    let winner;
-    if (gameState.scores.team1 > gameState.scores.team2) {
-        winner = elements.team1Name.value || 'Команда 1';
-    } else if (gameState.scores.team2 > gameState.scores.team1) {
-        winner = elements.team2Name.value || 'Команда 2';
-    } else {
-        winner = 'Ничья!';
-    }
-    
-    // Обновляем экран окончания
-    elements.winnerName.textContent = winner;
-    elements.finalTeam1Name.textContent = elements.team1Name.value || 'Команда 1';
-    elements.finalTeam2Name.textContent = elements.team2Name.value || 'Команда 2';
-    elements.finalTeam1Score.textContent = gameState.scores.team1;
-    elements.finalTeam2Score.textContent = gameState.scores.team2;
-    
-    // Считаем раунды команд
-    const team1Rounds = gameState.roundHistory.filter(r => r.team === 1).length;
-    const team2Rounds = gameState.roundHistory.filter(r => r.team === 2).length;
-    elements.finalTeam1Rounds.textContent = team1Rounds;
-    elements.finalTeam2Rounds.textContent = team2Rounds;
-    
-    // Общая статистика
-    const totalGuessed = gameState.roundHistory.reduce((sum, round) => sum + round.score, 0);
-    const totalSkipped = gameState.roundHistory.reduce((sum, round) => sum + round.skipped, 0);
-    elements.totalGuessed.textContent = totalGuessed;
-    elements.totalSkipped.textContent = totalSkipped;
-    elements.totalRoundsPlayed.textContent = gameState.roundHistory.length;
-    
-    // Сохраняем статистику
-    saveGameStats(winner, totalGuessed);
-    
-    showScreen('endScreen');
-}
-
-// Сохранение статистики игры
-function saveGameStats(winner, totalGuessed) {
-    try {
-        const stats = {
-            winner,
-            team1Score: gameState.scores.team1,
-            team2Score: gameState.scores.team2,
-            totalRounds: gameState.roundHistory.length,
-            totalGuessed,
-            date: new Date().toISOString()
-        };
-        
-        localStorage.setItem('lastGameStats', JSON.stringify(stats));
-    } catch (error) {
-        console.warn('Не удалось сохранить статистику:', error);
-    }
-}
-
-// Назад на главную
-function backToMain() {
-    if (gameState.isPlaying) {
-        if (!confirm('Выйти из текущей игры? Прогресс будет потерян.')) {
-            return;
-        }
-        
-        if (gameState.timerInterval) {
-            clearInterval(gameState.timerInterval);
-            gameState.timerInterval = null;
-        }
-    }
-    
-    showScreen('mainScreen');
-    updateLastGameStats();
-}
-
-// Сброс и начало новой игры
-function resetGame() {
-    showScreen('mainScreen');
-    updateLastGameStats();
-}
-
-// Обработка нажатий клавиш
-function handleKeyPress(event) {
-    if (!gameState.isPlaying) return;
-    
-    switch (event.code) {
-        case 'Space':
-        case 'Enter':
-            event.preventDefault();
-            handleCorrect();
-            break;
-        case 'ArrowRight':
-        case 'KeyS':
-            event.preventDefault();
-            handleSkip();
-            break;
-        case 'Escape':
-            event.preventDefault();
-            stopRound();
-            break;
-    }
-}
-
-// Генерация звуковых сигналов
-function generateAudioBeeps() {
-    // Генерируем простой бип для таймера
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    
-    try {
-        // Таймер бип (короткий)
-        const timerOscillator = audioContext.createOscillator();
-        const timerGain = audioContext.createGain();
-        timerOscillator.connect(timerGain);
-        timerGain.connect(audioContext.destination);
-        
-        timerOscillator.frequency.value = 800;
-        timerOscillator.type = 'sine';
-        timerGain.gain.setValueAtTime(0.3, audioContext.currentTime);
-        
-        // Записываем в аудио элемент
-        const timerDestination = audioContext.createMediaStreamDestination();
-        timerOscillator.connect(timerDestination);
-        
-        // Конец раунда (длинный)
-        const endOscillator = audioContext.createOscillator();
-        const endGain = audioContext.createGain();
-        endOscillator.connect(endGain);
-        endGain.connect(audioContext.destination);
-        
-        endOscillator.frequency.value = 600;
-        endOscillator.type = 'sine';
-        endGain.gain.setValueAtTime(0.4, audioContext.currentTime);
-        
-        const endDestination = audioContext.createMediaStreamDestination();
-        endOscillator.connect(endDestination);
-        
-        // TODO: Реализовать Web Audio API для лучшего звука
-        
-    } catch (error) {
-        console.warn('Web Audio API не поддерживается:', error);
-    }
-}
-
-// Воспроизведение звука
-function playBeep(type) {
-    try {
-        if (type === 'timer') {
-            elements.timerBeep.currentTime = 0;
-            elements.timerBeep.play().catch(e => console.debug('Не удалось воспроизвести звук:', e));
-        } else if (type === 'end') {
-            elements.endBeep.currentTime = 0;
-            elements.endBeep.play().catch(e => console.debug('Не удалось воспроизвести звук:', e));
-        }
-    } catch (error) {
-        console.debug('Ошибка воспроизведения звука:', error);
-    }
-}
-
-// Предотвращение выключения экрана (если поддерживается)
-function setupWakeLock() {
-    if ('wakeLock' in navigator) {
-        let wakeLock = null;
-        
-        const requestWakeLock = async () => {
-            try {
-                wakeLock = await navigator.wakeLock.request('screen');
-                console.debug('Wake Lock активирован');
-            } catch (err) {
-                console.debug(`Wake Lock не активирован: ${err.name}, ${err.message}`);
-            }
-        };
-        
-        // Запрашиваем Wake Lock при начале игры
-        document.addEventListener('visibilitychange', async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-                await requestWakeLock();
-            }
-        });
-        
-        // Начинаем с активированным Wake Lock
-        requestWakeLock();
-    }
-}
-
-// Показать ошибку
-function showError(message) {
-    alert(`Ошибка: ${message}\n\nИгра будет использовать резервный набор слов.`);
-}
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', initGame);
-
-// Обработка события перед закрытием страницы
-window.addEventListener('beforeunload', (e) => {
-    if (gameState.isPlaying) {
-        e.preventDefault();
-        e.returnValue = 'Игра ещё продолжается. Вы уверены, что хотите уйти?';
-        return e.returnValue;
-    }
-});
