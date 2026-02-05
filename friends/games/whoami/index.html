@@ -2,19 +2,28 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>Кто я? | Игры для друзей</title>
     
     <!-- Стили -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Иконка -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎭</text></svg>">
+    
+    <!-- Мета-теги для мобильных -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
     <div class="app-container">
         <!-- Шапка -->
         <header class="header">
-            <button class="btn btn-back" onclick="goBack()">
+            <button class="btn btn-back" onclick="goBack()" aria-label="Назад">
                 <i class="fas fa-arrow-left"></i>
             </button>
             <div class="header-title">
@@ -33,32 +42,34 @@
                             <i class="fas fa-mask"></i>
                         </div>
                         <h2>Как играть?</h2>
-                        <p class="instructions">
-                            1. Прислоните телефон ко лбу экраном к друзьям<br>
-                            2. Друзья видят слово, а угадывающий — нет<br>
-                            3. Задавайте вопросы «Да» / «Нет» / «Не важно»<br>
-                            4. Угадайте своего персонажа!
-                        </p>
+                        <div class="instructions">
+                            <p><strong>1.</strong> Прислоните телефон ко лбу экраном к друзьям</p>
+                            <p><strong>2.</strong> Друзья видят слово, а угадывающий — нет</p>
+                            <p><strong>3.</strong> Задавайте вопросы «Да» / «Нет» / «Не важно»</p>
+                            <p><strong>4.</strong> Угадайте своего персонажа!</p>
+                        </div>
                     </div>
                     
                     <div class="players-setup">
                         <h3>Количество игроков</h3>
                         <div class="players-counter">
-                            <button class="btn-counter" onclick="changePlayerCount(-1)">
+                            <button class="btn-counter" onclick="changePlayerCount(-1)" aria-label="Уменьшить количество игроков">
                                 <i class="fas fa-minus"></i>
                             </button>
                             <span class="count" id="playerCount">4</span>
-                            <button class="btn-counter" onclick="changePlayerCount(1)">
+                            <button class="btn-counter" onclick="changePlayerCount(1)" aria-label="Увеличить количество игроков">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
                         <p class="hint">Минимум 2 игрока, максимум 8</p>
                     </div>
                     
-                    <button class="btn btn-primary btn-large" onclick="goToSetup()">
-                        <i class="fas fa-play-circle"></i>
-                        Начать игру
-                    </button>
+                    <div class="bottom-action">
+                        <button class="btn btn-primary btn-large" onclick="goToSetup()">
+                            <i class="fas fa-play-circle"></i>
+                            Начать игру
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -85,6 +96,7 @@
                             <div class="categories-list" id="categoriesList">
                                 <!-- Категории будут здесь -->
                             </div>
+                            <p class="hint" style="margin-top: 12px;">Выберите минимум 1 категорию</p>
                         </div>
                         
                         <!-- Настройки -->
@@ -95,7 +107,7 @@
                                     <label class="setting-label">Таймер на ход (секунды)</label>
                                     <div class="timer-settings">
                                         <button class="btn-timer" onclick="changeTimer(-15)">-15с</button>
-                                        <input type="number" id="timerSeconds" min="30" max="300" value="120">
+                                        <input type="number" id="timerSeconds" min="30" max="300" value="120" inputmode="numeric">
                                         <button class="btn-timer" onclick="changeTimer(15)">+15с</button>
                                     </div>
                                     <p class="hint">От 30 секунд до 5 минут</p>
@@ -103,7 +115,7 @@
                                 
                                 <div class="setting-item">
                                     <label class="setting-label">Количество раундов</label>
-                                    <input type="number" id="roundsCount" min="1" max="20" value="5">
+                                    <input type="number" id="roundsCount" min="1" max="20" value="5" inputmode="numeric">
                                     <p class="hint">Сколько слов получит каждый игрок</p>
                                 </div>
                             </div>
@@ -170,7 +182,7 @@
                             <i class="fas fa-eye"></i> Показать слово
                         </button>
                         <button class="btn btn-secondary" onclick="skipPlayer()">
-                            Пропустить игрока
+                            <i class="fas fa-forward"></i> Пропустить игрока
                         </button>
                     </div>
                 </div>
@@ -266,15 +278,16 @@
         <div class="modal" id="pauseModal">
             <div class="modal-content">
                 <h3>Игра на паузе</h3>
+                <p>Что вы хотите сделать?</p>
                 <div class="modal-actions">
                     <button class="btn btn-primary" onclick="resumeGame()">
                         <i class="fas fa-play"></i> Продолжить
                     </button>
-                    <button class="btn btn-secondary" onclick="showScreen('homeScreen')">
-                        <i class="fas fa-home"></i> Главное меню
+                    <button class="btn btn-secondary" onclick="newGame()">
+                        <i class="fas fa-redo"></i> Новая игра
                     </button>
-                    <button class="btn btn-danger" onclick="endGame()">
-                        <i class="fas fa-stop"></i> Завершить игру
+                    <button class="btn btn-danger" onclick="goHome()">
+                        <i class="fas fa-home"></i> Главное меню
                     </button>
                 </div>
             </div>
