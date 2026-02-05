@@ -3,82 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Party Games Pro</title>
+    <title>Party Games</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <a href="https://lovecouple.ru/" class="back-link">← На главную</a>
+        <a href="https://lovecouple.ru/" class="external-back">← На главную</a>
 
-        <section id="screen-main" class="screen active">
-            <div class="hero">
+        <section id="screen-modes" class="screen active">
+            <div class="header-box">
                 <h1>Party<span>Games</span></h1>
-                <p>Игры для компании на одном телефоне</p>
+                <p>Выбери режим игры</p>
             </div>
-            <div class="menu-grid">
-                <div class="card-option" onclick="initGame('alias')">
-                    <div class="icon">🗣️</div>
-                    <div class="info"><h3>Алиас</h3><p>Объясни без однокоренных</p></div>
-                </div>
-                <div class="card-option" onclick="initGame('crocodile')">
-                    <div class="icon">🎭</div>
-                    <div class="info"><h3>Крокодил</h3><p>Покажи пантомимой</p></div>
-                </div>
+            <div class="menu-stack">
+                <button class="menu-card" onclick="selectMode('alias')">
+                    <span class="emoji">🗣️</span>
+                    <div><strong>Алиас</strong><small>Объясняй словами</small></div>
+                </button>
+                <button class="menu-card" onclick="selectMode('crocodile')">
+                    <span class="emoji">🎭</span>
+                    <div><strong>Крокодил</strong><small>Показывай жестами</small></div>
+                </button>
             </div>
+        </section>
+
+        <section id="screen-categories" class="screen">
+            <button class="back-btn" onclick="showScreen('screen-modes')">← Назад</button>
+            <h2>Категории</h2>
+            <div id="category-list" class="menu-stack"></div>
         </section>
 
         <section id="screen-setup" class="screen">
-            <header class="setup-header">
-                <button class="icon-btn" onclick="showScreen('screen-main')">✕</button>
-                <h2>Настройка игры</h2>
-            </header>
-            <div class="settings-list">
-                <div class="setting-item">
-                    <label>Категория слов</label>
-                    <select id="category-select"></select>
+            <button class="back-btn" onclick="showScreen('screen-categories')">← К категориям</button>
+            <h2>Настройка</h2>
+            <div class="setup-form">
+                <div class="input-group">
+                    <label>Команды</label>
+                    <input type="text" id="t1-name" value="Команда 1">
+                    <input type="text" id="t2-name" value="Команда 2">
                 </div>
-                <div class="setting-item">
-                    <label>Названия команд</label>
-                    <input type="text" id="t1-in" value="Команда 1" maxlength="15">
-                    <input type="text" id="t2-in" value="Команда 2" maxlength="15">
-                </div>
-                <div class="setting-item">
-                    <label>Время раунда: <span id="time-display">60</span> сек</label>
-                    <input type="range" id="time-range" min="30" max="120" step="15" value="60">
+                <div class="input-group">
+                    <label>Время: <span id="time-val">60</span>с</label>
+                    <input type="range" id="time-range" min="30" max="90" step="30" value="60">
                 </div>
             </div>
-            <button class="btn-main" onclick="startFullGame()">Начать игру</button>
+            <button class="btn-primary" onclick="startApp()">Начать раунд</button>
         </section>
 
         <section id="screen-game" class="screen">
-            <div id="ready-overlay" class="overlay active">
-                <h2 id="next-team-name">Команда 1</h2>
-                <p>Ваш ход! Приготовьтесь...</p>
-                <button class="btn-main" onclick="startRound()">Я готов!</button>
+            <div id="round-overlay" class="overlay active">
+                <h3 id="current-team-name">Команда 1</h3>
+                <p>Приготовьте устройство</p>
+                <button class="btn-primary" onclick="startTimer()">ПОЕХАЛИ</button>
             </div>
             
-            <div class="game-ui">
-                <div class="top-bar">
-                    <div id="game-timer">60</div>
-                    <div id="game-score">0</div>
-                </div>
-                <div class="word-stage">
-                    <div id="word-card" class="main-card">---</div>
-                </div>
-                <div class="game-actions">
-                    <button class="btn-action skip" onclick="handleAnswer(false)">Пропустить</button>
-                    <button class="btn-action correct" onclick="handleAnswer(true)">Угадано</button>
-                </div>
+            <div class="game-header">
+                <div id="timer-box">60</div>
+                <div id="score-box">0</div>
             </div>
-        </section>
+            
+            <div class="card-area">
+                <div id="word-card" class="word-card">Слово</div>
+            </div>
 
-        <section id="screen-summary" class="screen">
-            <h2>Результаты раунда</h2>
-            <div id="round-words-list" class="words-log"></div>
-            <div class="total-bar">
-                Итого за раунд: <span id="round-total-points">0</span>
+            <div class="game-footer">
+                <button class="btn-game skip" onclick="answer(false)">Пропустить -1</button>
+                <button class="btn-game done" onclick="answer(true)">Угадано +1</button>
             </div>
-            <button class="btn-main" onclick="nextRoundPre()">Передать ход</button>
         </section>
     </div>
 
