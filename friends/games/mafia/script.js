@@ -1,15 +1,19 @@
 class MafiaGame {
     constructor() {
-        this.mode = null; // 'offline' или 'online'
+        this.mode = 'offline'; // 'offline' или 'online'
         this.players = [];
         this.roles = [];
-        this.currentPlayerIndex = 0;
-        this.gameState = 'waiting';
-        this.day = 1;
+        this.currentDay = 1;
         this.phase = 'day'; // 'day', 'night'
-        this.roundHistory = [];
-        this.selectedPlayers = new Set();
-        this.gameModeConfig = {
+        this.gameState = 'waiting'; // 'waiting', 'role_distribution', 'playing', 'ended'
+        this.timer = null;
+        this.timeLeft = 120;
+        this.timerRunning = false;
+        this.nightActions = {};
+        this.votes = {};
+        this.nightHistory = [];
+        this.gameHistory = [];
+        this.config = {
             playerCount: 10,
             mafiaCount: 2,
             roles: {
@@ -20,78 +24,123 @@ class MafiaGame {
             }
         };
         
-        this.initializeEventListeners();
+        this.roleInfo = {
+            mafia: {
+                name: 'Мафия',
+                icon: 'fa-user-ninja',
+                color: '#dc2626',
+                description: 'Ночью вы убиваете одного игрока. Днём старайтесь оставаться незамеченными.',
+                team: 'mafia'
+            },
+            civilian: {
+                name: 'Мирный житель',
+                icon: 'fa-user',
+                color: '#4ade80',
+                description: 'Ваша задача - вычислить мафию и проголосовать против них днём.',
+                team: 'civilian'
+            },
+            commissioner: {
+                name: 'Комиссар',
+                icon: 'fa-user-shield',
+                color: '#2563eb',
+                description: 'Ночью вы можете проверить одного игрока и узнать, является ли он мафией.',
+                team: 'civilian'
+            },
+            doctor: {
+                name: 'Доктор',
+                icon: 'fa-user-md',
+                color: '#9333ea',
+                description: 'Ночью вы можете вылечить одного игрока, защитив его от убийства.',
+                team: 'civilian'
+            },
+            maniac: {
+                name: 'Маньяк',
+                icon: 'fa-skull',
+                color: '#475569',
+                description: 'Вы играете за себя. Каждую ночь можете убить одного игрока.',
+                team: 'neutral'
+            },
+            informant: {
+                name: 'Информатор',
+                icon: 'fa-user-secret',
+                color: '#ca8a04',
+                description: 'Вы знаете одного мирного жителя в начале игры.',
+                team: 'civilian'
+            }
+        };
+        
+        this.init();
+    }
+    
+    init() {
+        this.bindEvents();
         this.loadSettings();
     }
     
-    initializeEventListeners() {
+    bindEvents() {
         // Выбор режима
-        document.querySelectorAll('.mode-card').forEach(card => {
-            card.addEventListener('click', () => this.selectMode(card));
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const mode = e.currentTarget.dataset.mode;
+                this.selectMode(mode);
+            });
         });
         
-        // Настройки игры
+        // Настройки
         document.getElementById('playerCount').addEventListener('input', (e) => {
-            const value = e.target.value;
+            const value = parseInt(e.target.value);
+            this.config.playerCount = value;
             document.getElementById('playerCountValue').textContent = value;
-            this.gameModeConfig.playerCount = parseInt(value);
-            document.getElementById('requiredPlayers').textContent = value;
+            document.getElementById('maxPlayerCount').textContent = value;
+            this.updateMafiaMax();
         });
         
         document.getElementById('mafiaCount').addEventListener('input', (e) => {
-            const value = e.target.value;
+            const value = parseInt(e.target.value);
+            this.config.mafiaCount = value;
             document.getElementById('mafiaCountValue').textContent = value;
-            this.gameModeConfig.mafiaCount = parseInt(value);
         });
         
         // Роли
-        document.getElementById('roleCommissioner').addEventListener('change', (e) => {
-            this.gameModeConfig.roles.commissioner = e.target.checked;
-        });
-        
-        document.getElementById('roleDoctor').addEventListener('change', (e) => {
-            this.gameModeConfig.roles.doctor = e.target.checked;
-        });
-        
-        document.getElementById('roleManiac').addEventListener('change', (e) => {
-            this.gameModeConfig.roles.maniac = e.target.checked;
-        });
-        
-        document.getElementById('roleInformant').addEventListener('change', (e) => {
-            this.gameModeConfig.roles.informant = e.target.checked;
+        ['commissioner', 'doctor', 'maniac', 'informant'].forEach(role => {
+            document.getElementById(`role${role.charAt(0).toUpperCase() + role.slice(1)}`)
+                .addEventListener('change', (e) => {
+                    this.config.roles[role] = e.target.checked;
+                });
         });
         
         // Кнопки
-        document.getElementById('startGameBtn').addEventListener('click', () => this.startGame());
-        document.getElementById('addPlayerBtn').addEventListener('click', () => this.addPlayer());
-        document.getElementById('playerName').addEventListener('keypress', (e) => {
+        document.getElementById('startGameBtn').addEventListener('click', () => this.startGameFlow());
+        
+        // Регистрация игроков
+        document.getElementById('playerNameInput')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.addPlayer();
         });
-        document.getElementById('randomNamesBtn').addEventListener('click', () => this.generateRandomNames());
-        document.getElementById('startWithPlayersBtn').addEventListener('click', () => this.startRoleDistribution());
-        document.getElementById('showRoleBtn').addEventListener('click', () => this.showCurrentPlayerRole());
-        document.getElementById('startGameFromRolesBtn').addEventListener('click', () => this.startActualGame());
-        document.getElementById('nextPhaseBtn').addEventListener('click', () => this.nextPhase());
-        document.getElementById('endGameBtn').addEventListener('click', () => this.endGame());
-        document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
-        document.getElementById('samePlayersBtn').addEventListener('click', () => this.newGameWithSamePlayers());
         
-        // Навигация назад
-        document.getElementById('backToModeBtn').addEventListener('click', () => this.showScreen('startScreen'));
-        document.getElementById('backToRegistrationBtn').addEventListener('click', () => this.showScreen('registrationScreen'));
-        
-        // Онлайн режим
-        document.getElementById('backToOfflineBtn').addEventListener('click', () => this.backToOfflineMode());
-        document.getElementById('createRoomBtn').addEventListener('click', () => this.createOnlineRoom());
-        document.getElementById('joinRoomBtn').addEventListener('click', () => this.joinOnlineRoom());
+        // Динамические кнопки будут привязаны позже
     }
     
-    selectMode(card) {
-        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
-        this.mode = card.dataset.mode;
+    updateMafiaMax() {
+        const maxMafia = Math.floor(this.config.playerCount / 3);
+        const mafiaSlider = document.getElementById('mafiaCount');
+        mafiaSlider.max = maxMafia;
+        if (this.config.mafiaCount > maxMafia) {
+            this.config.mafiaCount = maxMafia;
+            mafiaSlider.value = maxMafia;
+            document.getElementById('mafiaCountValue').textContent = maxMafia;
+        }
+    }
+    
+    selectMode(mode) {
+        this.mode = mode;
         
-        if (this.mode === 'online') {
+        // Обновляем UI выбора режима
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        document.querySelector(`.${mode}-mode`).classList.add('selected');
+        
+        if (mode === 'online') {
             this.showOnlineModal();
         }
     }
@@ -100,25 +149,12 @@ class MafiaGame {
         document.getElementById('onlineModal').classList.add('active');
     }
     
-    backToOfflineMode() {
+    closeOnlineModal() {
         document.getElementById('onlineModal').classList.remove('active');
-        document.querySelector('.mode-card[data-mode="offline"]').click();
+        this.selectMode('offline');
     }
     
-    createOnlineRoom() {
-        alert('Онлайн режим требует серверной части. Для демонстрации переключитесь в оффлайн режим.');
-    }
-    
-    joinOnlineRoom() {
-        alert('Онлайн режим требует серверной части. Для демонстрации переключитесь в оффлайн режим.');
-    }
-    
-    startGame() {
-        if (!this.mode) {
-            alert('Пожалуйста, выберите режим игры');
-            return;
-        }
-        
+    startGameFlow() {
         if (this.mode === 'offline') {
             this.showScreen('registrationScreen');
             this.renderPlayersList();
@@ -134,67 +170,73 @@ class MafiaGame {
         document.getElementById(screenId).classList.add('active');
     }
     
+    // Регистрация игроков
     addPlayer() {
-        const nameInput = document.getElementById('playerName');
-        const name = nameInput.value.trim();
+        const input = document.getElementById('playerNameInput');
+        const name = input.value.trim();
         
         if (!name) {
             alert('Введите имя игрока');
             return;
         }
         
-        if (this.players.length >= this.gameModeConfig.playerCount) {
-            alert(`Максимальное количество игроков: ${this.gameModeConfig.playerCount}`);
+        if (this.players.length >= this.config.playerCount) {
+            alert(`Максимум ${this.config.playerCount} игроков`);
             return;
         }
         
-        if (this.players.some(player => player.name.toLowerCase() === name.toLowerCase())) {
-            alert('Игрок с таким именем уже существует');
+        if (this.players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+            alert('Игрок с таким именем уже есть');
             return;
         }
         
         this.players.push({
-            id: Date.now(),
+            id: Date.now() + Math.random(),
             name: name,
             role: null,
             alive: true,
-            checked: false,
-            healed: false,
-            voted: false
+            checkedTonight: false,
+            healedTonight: false,
+            votes: 0,
+            killedBy: null
         });
         
-        nameInput.value = '';
+        input.value = '';
         this.renderPlayersList();
     }
     
     renderPlayersList() {
         const container = document.getElementById('playersList');
-        const startBtn = document.getElementById('startWithPlayersBtn');
+        const countElement = document.getElementById('currentPlayerCount');
+        const startBtn = document.getElementById('startRolesBtn');
         
         container.innerHTML = '';
         this.players.forEach((player, index) => {
-            const playerCard = document.createElement('div');
-            playerCard.className = 'player-card';
-            playerCard.innerHTML = `
-                <span>${player.name}</span>
-                <button class="remove-player" data-index="${index}">
-                    <i class="fas fa-times"></i>
-                </button>
+            const playerElement = document.createElement('div');
+            playerElement.className = 'player-item';
+            playerElement.innerHTML = `
+                <div class="player-item-content">
+                    <div class="player-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="player-info">
+                        <span class="player-name">${player.name}</span>
+                    </div>
+                    <button class="btn btn-icon btn-danger" onclick="game.removePlayer(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             `;
-            container.appendChild(playerCard);
+            container.appendChild(playerElement);
         });
         
-        // Удаление игроков
-        container.querySelectorAll('.remove-player').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                this.players.splice(index, 1);
-                this.renderPlayersList();
-            });
-        });
-        
-        // Активация кнопки старта
-        startBtn.disabled = this.players.length < this.gameModeConfig.playerCount;
+        countElement.textContent = this.players.length;
+        startBtn.disabled = this.players.length < 6 || this.players.length > this.config.playerCount;
+    }
+    
+    removePlayer(index) {
+        this.players.splice(index, 1);
+        this.renderPlayersList();
     }
     
     generateRandomNames() {
@@ -207,18 +249,19 @@ class MafiaGame {
         const usedNames = new Set(this.players.map(p => p.name));
         const availableNames = names.filter(name => !usedNames.has(name));
         
-        while (this.players.length < this.gameModeConfig.playerCount && availableNames.length > 0) {
+        while (this.players.length < this.config.playerCount && availableNames.length > 0) {
             const randomIndex = Math.floor(Math.random() * availableNames.length);
             const name = availableNames[randomIndex];
             
             this.players.push({
-                id: Date.now(),
+                id: Date.now() + Math.random(),
                 name: name,
                 role: null,
                 alive: true,
-                checked: false,
-                healed: false,
-                voted: false
+                checkedTonight: false,
+                healedTonight: false,
+                votes: 0,
+                killedBy: null
             });
             
             availableNames.splice(randomIndex, 1);
@@ -227,201 +270,154 @@ class MafiaGame {
         this.renderPlayersList();
     }
     
-    startRoleDistribution() {
-        if (this.players.length < this.gameModeConfig.playerCount) {
-            alert(`Нужно добавить ${this.gameModeConfig.playerCount - this.players.length} игроков`);
+    backToRegistration() {
+        this.showScreen('registrationScreen');
+    }
+    
+    // Раздача ролей
+    distributeRoles() {
+        if (this.players.length < 6) {
+            alert('Нужно минимум 6 игроков');
             return;
         }
         
-        this.assignRoles();
-        this.showScreen('rolesScreen');
-        this.currentPlayerIndex = 0;
-        this.updateRoleDistributionDisplay();
-    }
-    
-    assignRoles() {
-        this.roles = [];
+        // Генерируем роли
+        const roles = [];
         
         // Мафия
-        for (let i = 0; i < this.gameModeConfig.mafiaCount; i++) {
-            this.roles.push('mafia');
+        for (let i = 0; i < this.config.mafiaCount; i++) {
+            roles.push('mafia');
         }
         
-        // Комиссар
-        if (this.gameModeConfig.roles.commissioner) {
-            this.roles.push('commissioner');
+        // Специальные роли
+        if (this.config.roles.commissioner) roles.push('commissioner');
+        if (this.config.roles.doctor) roles.push('doctor');
+        if (this.config.roles.maniac) roles.push('maniac');
+        if (this.config.roles.informant) roles.push('informant');
+        
+        // Гражданские
+        const civilianCount = this.players.length - roles.length;
+        for (let i = 0; i < civilianCount; i++) {
+            roles.push('civilian');
         }
         
-        // Доктор
-        if (this.gameModeConfig.roles.doctor) {
-            this.roles.push('doctor');
-        }
+        // Перемешиваем
+        this.shuffleArray(roles);
         
-        // Маньяк
-        if (this.gameModeConfig.roles.maniac) {
-            this.roles.push('maniac');
-        }
-        
-        // Информатор
-        if (this.gameModeConfig.roles.informant) {
-            this.roles.push('informant');
-        }
-        
-        // Гражданские (остальные)
-        const remainingPlayers = this.gameModeConfig.playerCount - this.roles.length;
-        for (let i = 0; i < remainingPlayers; i++) {
-            this.roles.push('civilian');
-        }
-        
-        // Перемешиваем роли
-        this.roles = this.shuffleArray(this.roles);
-        
-        // Раздаём игрокам
+        // Раздаём
         this.players.forEach((player, index) => {
-            player.role = this.roles[index];
-            player.originalRole = this.roles[index];
+            player.role = roles[index];
+            player.originalRole = roles[index];
         });
+        
+        // Начинаем раздачу
+        this.currentPlayerIndex = 0;
+        this.showScreen('rolesScreen');
+        this.updateRoleDistribution();
     }
     
     shuffleArray(array) {
-        const newArray = [...array];
-        for (let i = newArray.length - 1; i > 0; i--) {
+        for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            [array[i], array[j]] = [array[j], array[i]];
         }
-        return newArray;
+        return array;
     }
     
-    updateRoleDistributionDisplay() {
-        const viewedList = document.getElementById('viewedPlayersList');
-        const startBtn = document.getElementById('startGameFromRolesBtn');
+    updateRoleDistribution() {
+        const progressElement = document.getElementById('rolesProgress');
+        const playerNameElement = document.getElementById('currentPlayerName');
+        const distributedList = document.getElementById('distributedList');
+        const startGameBtn = document.getElementById('startGameBtn2');
         
-        viewedList.innerHTML = '';
-        this.players.forEach((player, index) => {
-            if (player.checked) {
-                const item = document.createElement('div');
-                item.className = 'player-item';
-                item.textContent = `${player.name} - ${this.getRoleName(player.role)}`;
-                viewedList.appendChild(item);
-            }
-        });
-        
-        startBtn.disabled = !this.players.every(player => player.checked);
+        if (this.currentPlayerIndex < this.players.length) {
+            const player = this.players[this.currentPlayerIndex];
+            playerNameElement.textContent = player.name;
+            progressElement.textContent = `${this.currentPlayerIndex}/${this.players.length}`;
+            
+            // Обновляем список распределённых
+            distributedList.innerHTML = this.players
+                .slice(0, this.currentPlayerIndex)
+                .map(p => `
+                    <div class="distributed-item">
+                        <span class="player-name">${p.name}</span>
+                        <span class="player-role">${this.roleInfo[p.role].name}</span>
+                    </div>
+                `).join('');
+            
+            startGameBtn.style.display = 'none';
+        } else {
+            // Все роли распределены
+            playerNameElement.textContent = 'Все роли распределены!';
+            startGameBtn.style.display = 'block';
+            startGameBtn.onclick = () => this.startGame();
+        }
     }
     
-    showCurrentPlayerRole() {
+    revealRole() {
         if (this.currentPlayerIndex >= this.players.length) return;
         
         const player = this.players[this.currentPlayerIndex];
-        const roleCard = document.querySelector('.role-card');
-        const roleName = document.querySelector('.role-name');
-        const roleDescription = document.querySelector('.role-description');
-        const playerName = document.querySelector('.player-name');
-        const roleIcon = document.querySelector('.role-icon');
+        const role = this.roleInfo[player.role];
         
-        // Скрываем роль предыдущего игрока
-        roleCard.classList.remove('show');
+        // Показываем роль
+        document.getElementById('roleIcon').innerHTML = `<i class="fas ${role.icon}"></i>`;
+        document.getElementById('roleIcon').style.color = role.color;
+        document.getElementById('roleTitle').textContent = role.name;
+        document.getElementById('roleDescription').textContent = role.description;
         
-        setTimeout(() => {
-            // Устанавливаем новую роль
-            roleName.textContent = this.getRoleName(player.role);
-            roleDescription.textContent = this.getRoleDescription(player.role);
-            playerName.textContent = player.name;
-            roleIcon.innerHTML = this.getRoleIcon(player.role);
-            roleIcon.style.color = this.getRoleColor(player.role);
-            
-            // Показываем с анимацией
-            roleCard.classList.add('show');
-            
-            // Отмечаем, что игрок посмотрел роль
-            player.checked = true;
-            this.currentPlayerIndex++;
-            
-            // Обновляем отображение
-            this.updateRoleDistributionDisplay();
-            
-            // Если все посмотрели, показываем кнопку
-            if (this.currentPlayerIndex >= this.players.length) {
-                document.getElementById('showRoleBtn').style.display = 'none';
-            }
-        }, 300);
+        document.getElementById('revealRoleBtn').style.display = 'none';
+        document.getElementById('roleDisplay').style.display = 'block';
     }
     
-    getRoleName(role) {
-        const names = {
-            'mafia': 'Мафия',
-            'civilian': 'Мирный житель',
-            'commissioner': 'Комиссар',
-            'doctor': 'Доктор',
-            'maniac': 'Маньяк',
-            'informant': 'Информатор'
-        };
-        return names[role] || role;
+    hideRole() {
+        // Скрываем роль и переходим к следующему игроку
+        document.getElementById('revealRoleBtn').style.display = 'block';
+        document.getElementById('roleDisplay').style.display = 'none';
+        
+        this.currentPlayerIndex++;
+        this.updateRoleDistribution();
     }
     
-    getRoleDescription(role) {
-        const descriptions = {
-            'mafia': 'Ночью вы убиваете одного игрока. Днём старайтесь оставаться незамеченными.',
-            'civilian': 'Вы мирный житель. Ваша задача - вычислить мафию и проголосовать против них днём.',
-            'commissioner': 'Ночью вы можете проверить одного игрока и узнать, является ли он мафией.',
-            'doctor': 'Ночью вы можете вылечить одного игрока, защитив его от убийства мафии.',
-            'maniac': 'Вы играете за себя. Каждую ночь можете убить одного игрока.',
-            'informant': 'Вы знаете одного мирного жителя в начале игры.'
-        };
-        return descriptions[role] || 'Особая роль';
-    }
-    
-    getRoleIcon(role) {
-        const icons = {
-            'mafia': '<i class="fas fa-user-ninja"></i>',
-            'civilian': '<i class="fas fa-user"></i>',
-            'commissioner': '<i class="fas fa-user-shield"></i>',
-            'doctor': '<i class="fas fa-user-md"></i>',
-            'maniac': '<i class="fas fa-skull"></i>',
-            'informant': '<i class="fas fa-user-secret"></i>'
-        };
-        return icons[role] || '<i class="fas fa-user"></i>';
-    }
-    
-    getRoleColor(role) {
-        const colors = {
-            'mafia': '#dc2626',
-            'civilian': '#16a34a',
-            'commissioner': '#2563eb',
-            'doctor': '#9333ea',
-            'maniac': '#475569',
-            'informant': '#ca8a04'
-        };
-        return colors[role] || '#6b7280';
-    }
-    
-    startActualGame() {
-        this.day = 1;
+    // Игровой процесс
+    startGame() {
+        this.currentDay = 1;
         this.phase = 'day';
         this.gameState = 'playing';
-        this.roundHistory = [];
-        this.selectedPlayers.clear();
+        this.nightActions = {};
+        this.votes = {};
+        this.nightHistory = [];
+        this.gameHistory = [];
         
-        // Сбрасываем временные состояния
+        // Сбрасываем состояния
         this.players.forEach(player => {
-            player.voted = false;
-            player.healed = false;
             player.checkedTonight = false;
+            player.healedTonight = false;
+            player.votes = 0;
+            player.killedBy = null;
         });
         
         this.showScreen('gameScreen');
         this.updateGameDisplay();
-        this.startTimer(120); // 2 минуты на обсуждение
+        this.startTimer(120);
     }
     
     updateGameDisplay() {
         this.updatePlayersStatus();
         this.updatePhaseInfo();
         this.updateInstructions();
-        this.updateActions();
-        this.updateHistory();
+        this.updateHostInfo();
         this.updateStats();
-        this.updateMyRoleInfo();
+        
+        if (this.phase === 'night') {
+            this.updateNightActions();
+            document.getElementById('nightActionsPanel').style.display = 'block';
+            document.getElementById('dayActionsPanel').style.display = 'none';
+        } else {
+            document.getElementById('nightActionsPanel').style.display = 'none';
+            document.getElementById('dayActionsPanel').style.display = 'block';
+            this.updateVotingInfo();
+        }
     }
     
     updatePlayersStatus() {
@@ -429,441 +425,441 @@ class MafiaGame {
         container.innerHTML = '';
         
         this.players.forEach((player, index) => {
-            const playerDiv = document.createElement('div');
-            playerDiv.className = `player-status ${player.alive ? 'alive' : 'dead'} ${player.checkedTonight ? 'checked' : ''}`;
-            playerDiv.dataset.index = index;
+            const role = this.roleInfo[player.role];
+            const playerElement = document.createElement('div');
+            playerElement.className = `status-player ${player.alive ? 'alive' : 'dead'}`;
+            playerElement.dataset.index = index;
             
-            let statusIcon = player.alive ? '<i class="fas fa-heart"></i>' : '<i class="fas fa-skull-crossbones"></i>';
-            let roleIcon = player.alive ? this.getRoleIcon(player.role) : this.getRoleIcon(player.originalRole);
+            // Добавляем иконки состояний
+            const statusIcons = [];
+            if (player.checkedTonight) statusIcons.push('<i class="fas fa-search checked-icon" title="Проверен комиссаром"></i>');
+            if (player.healedTonight) statusIcons.push('<i class="fas fa-heart heart-icon" title="Вылечен доктором"></i>');
+            if (player.votes > 0) statusIcons.push(`<span class="vote-count" title="Голоса: ${player.votes}">${player.votes}</span>`);
             
-            playerDiv.innerHTML = `
-                <div class="player-info">
-                    <span class="player-icon">${roleIcon}</span>
-                    <span class="player-name">${player.name}</span>
-                </div>
-                <div class="player-actions">
-                    ${player.alive ? `
-                        <button class="vote-btn" data-index="${index}" title="Проголосовать">
-                            <i class="fas fa-vote-yea"></i>
-                        </button>
-                    ` : ''}
-                    <span class="status-icon">${statusIcon}</span>
+            playerElement.innerHTML = `
+                <div class="player-status-content">
+                    <div class="player-status-main">
+                        <div class="player-avatar-small" style="color: ${role.color}">
+                            <i class="fas ${role.icon}"></i>
+                        </div>
+                        <div class="player-status-info">
+                            <span class="player-status-name">${player.name}</span>
+                            <span class="player-status-role">${player.alive ? role.name : 'Выбыл'}</span>
+                        </div>
+                    </div>
+                    <div class="player-status-extra">
+                        ${statusIcons.join('')}
+                        ${player.alive ? `
+                            <button class="btn btn-icon btn-vote" onclick="game.addVote(${index})" title="Добавить голос">
+                                <i class="fas fa-vote-yea"></i>
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
             `;
             
-            container.appendChild(playerDiv);
+            container.appendChild(playerElement);
         });
-        
-        // Обработчики голосования
-        container.querySelectorAll('.vote-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                this.toggleVote(index);
-            });
-        });
-    }
-    
-    toggleVote(playerIndex) {
-        if (this.phase !== 'day' || !this.players[playerIndex].alive) return;
-        
-        const playerBtn = document.querySelector(`.vote-btn[data-index="${playerIndex}"]`);
-        
-        if (this.selectedPlayers.has(playerIndex)) {
-            this.selectedPlayers.delete(playerIndex);
-            playerBtn.classList.remove('selected');
-        } else {
-            // В день можно выбрать только одного игрока для голосования
-            this.selectedPlayers.clear();
-            this.selectedPlayers.add(playerIndex);
-            
-            // Снимаем выделение со всех кнопок
-            document.querySelectorAll('.vote-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            
-            playerBtn.classList.add('selected');
-        }
     }
     
     updatePhaseInfo() {
-        const phaseElement = document.getElementById('gamePhase');
-        const phaseDescElement = document.getElementById('gamePhaseDescription');
+        const phaseTitle = document.getElementById('phaseTitle');
+        const phaseSubtitle = document.getElementById('phaseSubtitle');
         const nextPhaseBtn = document.getElementById('nextPhaseBtn');
         
         if (this.phase === 'day') {
-            phaseElement.textContent = `День ${this.day}`;
-            phaseDescElement.textContent = 'Обсуждение и голосование';
-            nextPhaseBtn.innerHTML = '<i class="fas fa-moon"></i> Перейти к ночи';
+            phaseTitle.textContent = `День ${this.currentDay}`;
+            phaseSubtitle.textContent = 'Обсуждение и голосование';
+            nextPhaseBtn.innerHTML = '<i class="fas fa-moon"></i><span>Ночь наступила</span>';
         } else {
-            phaseElement.textContent = `Ночь ${this.day}`;
-            phaseDescElement.textContent = 'Мафия и спецроли действуют';
-            nextPhaseBtn.innerHTML = '<i class="fas fa-sun"></i> Перейти к дню';
+            phaseTitle.textContent = `Ночь ${this.currentDay}`;
+            phaseSubtitle.textContent = 'Мафия и спецроли действуют';
+            nextPhaseBtn.innerHTML = '<i class="fas fa-sun"></i><span>Наступило утро</span>';
         }
     }
     
     updateInstructions() {
-        const container = document.getElementById('instructionsContent');
+        const instructions = document.getElementById('gameInstructions');
         
         if (this.phase === 'day') {
-            container.innerHTML = `
+            instructions.innerHTML = `
                 <div class="instruction-step">
                     <h4><i class="fas fa-comments"></i> Обсуждение</h4>
-                    <p>Обсуждайте события ночи, выдвигайте подозрения, защищайтесь.</p>
+                    <p>Дайте игрокам время на обсуждение. Ведите дискуссию.</p>
                 </div>
                 <div class="instruction-step">
                     <h4><i class="fas fa-vote-yea"></i> Голосование</h4>
-                    <p>Выберите игрока, которого хотите исключить из игры.</p>
-                    <p>Для голосования нажмите на кнопку с иконкой голоса рядом с игроком.</p>
+                    <p>После обсуждения начните голосование. Каждый игрок голосует за одного игрока.</p>
+                    <p>Вы (ведущий) подсчитываете голоса и исключаете игрока с наибольшим количеством голосов.</p>
                 </div>
                 <div class="instruction-step">
-                    <h4><i class="fas fa-clock"></i> Время</h4>
-                    <p>У вас есть 2 минуты на обсуждение и голосование.</p>
+                    <h4><i class="fas fa-clock"></i> Таймер</h4>
+                    <p>Управляйте временем обсуждения с помощью таймера.</p>
                 </div>
             `;
         } else {
-            container.innerHTML = `
+            instructions.innerHTML = `
                 <div class="instruction-step">
-                    <h4><i class="fas fa-moon"></i> Ночь</h4>
-                    <p>Все игроки закрывают глаза. Ведущий управляет ночной фазой.</p>
+                    <h4><i class="fas fa-moon"></i> Ночная фаза</h4>
+                    <p>Все игроки закрывают глаза. Управляйте ночными действиями по порядку:</p>
                 </div>
                 <div class="instruction-step">
-                    <h4><i class="fas fa-user-ninja"></i> Мафия</h4>
-                    <p>Мафия просыпается и выбирает жертву.</p>
+                    <h4>1. Мафия просыпается</h4>
+                    <p>Мафия выбирает жертву. Нажмите "Мафия выбирает" и выберите игрока.</p>
                 </div>
-                ${this.gameModeConfig.roles.doctor ? `
+                ${this.config.roles.doctor ? `
                 <div class="instruction-step">
-                    <h4><i class="fas fa-user-md"></i> Доктор</h4>
-                    <p>Доктор выбирает игрока для лечения.</p>
-                </div>
-                ` : ''}
-                ${this.gameModeConfig.roles.commissioner ? `
-                <div class="instruction-step">
-                    <h4><i class="fas fa-user-shield"></i> Комиссар</h4>
-                    <p>Комиссар проверяет игрока на принадлежность к мафии.</p>
+                    <h4>2. Доктор просыпается</h4>
+                    <p>Доктор выбирает игрока для лечения. Нажмите "Доктор лечит".</p>
                 </div>
                 ` : ''}
+                ${this.config.roles.commissioner ? `
                 <div class="instruction-step">
-                    <h4><i class="fas fa-forward"></i> Следующий шаг</h4>
-                    <p>Нажмите "Следующая фаза" для продолжения.</p>
+                    <h4>3. Комиссар просыпается</h4>
+                    <p>Комиссар проверяет игрока. Нажмите "Комиссар проверяет".</p>
                 </div>
+                ` : ''}
             `;
         }
     }
     
-    updateActions() {
-        const container = document.getElementById('actionsContent');
-        container.innerHTML = '';
+    updateNightActions() {
+        const container = document.getElementById('nightActions');
+        const alivePlayers = this.players.filter(p => p.alive);
         
-        if (this.phase === 'night') {
-            // Создаём действие для каждой активной роли
-            const actions = [];
-            
-            // Мафия
-            const mafiaPlayers = this.players.filter(p => p.alive && p.role === 'mafia');
-            if (mafiaPlayers.length > 0) {
-                actions.push({
-                    title: 'Мафия выбирает жертву',
-                    description: 'Выберите игрока, которого хотите убить этой ночью',
-                    role: 'mafia'
-                });
+        let actionsHTML = '';
+        
+        // Мафия всегда есть
+        const mafiaPlayers = alivePlayers.filter(p => p.role === 'mafia');
+        if (mafiaPlayers.length > 0) {
+            actionsHTML += this.createNightActionButton('mafia', 'Мафия выбирает жертву');
+        }
+        
+        // Доктор
+        if (this.config.roles.doctor) {
+            const doctor = alivePlayers.find(p => p.role === 'doctor');
+            if (doctor) {
+                actionsHTML += this.createNightActionButton('doctor', 'Доктор лечит');
             }
-            
-            // Доктор
-            if (this.gameModeConfig.roles.doctor) {
-                const doctor = this.players.find(p => p.alive && p.role === 'doctor');
-                if (doctor) {
-                    actions.push({
-                        title: 'Доктор выбирает пациента',
-                        description: 'Выберите игрока, которого хотите вылечить этой ночью',
-                        role: 'doctor'
-                    });
-                }
+        }
+        
+        // Комиссар
+        if (this.config.roles.commissioner) {
+            const commissioner = alivePlayers.find(p => p.role === 'commissioner');
+            if (commissioner) {
+                actionsHTML += this.createNightActionButton('commissioner', 'Комиссар проверяет');
             }
-            
-            // Комиссар
-            if (this.gameModeConfig.roles.commissioner) {
-                const commissioner = this.players.find(p => p.alive && p.role === 'commissioner');
-                if (commissioner) {
-                    actions.push({
-                        title: 'Комиссар проверяет игрока',
-                        description: 'Выберите игрока для проверки на мафию',
-                        role: 'commissioner'
-                    });
-                }
+        }
+        
+        // Маньяк
+        if (this.config.roles.maniac) {
+            const maniac = alivePlayers.find(p => p.role === 'maniac');
+            if (maniac) {
+                actionsHTML += this.createNightActionButton('maniac', 'Маньяк убивает');
             }
-            
-            // Маньяк
-            if (this.gameModeConfig.roles.maniac) {
-                const maniac = this.players.find(p => p.alive && p.role === 'maniac');
-                if (maniac) {
-                    actions.push({
-                        title: 'Маньяк выбирает жертву',
-                        description: 'Выберите игрока, которого хотите убить этой ночью',
-                        role: 'maniac'
-                    });
-                }
-            }
-            
-            // Отображаем действия
-            actions.forEach((action, index) => {
-                const actionDiv = document.createElement('div');
-                actionDiv.className = 'action-item';
-                actionDiv.innerHTML = `
-                    <h4>${action.title}</h4>
-                    <p>${action.description}</p>
-                    <div class="action-targets">
-                        ${this.players.filter(p => p.alive).map(player => `
-                            <button class="target-btn" data-role="${action.role}" data-target="${player.id}">
-                                ${player.name}
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
-                container.appendChild(actionDiv);
-            });
-            
-            // Обработчики выбора целей
-            container.querySelectorAll('.target-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const role = e.currentTarget.dataset.role;
-                    const targetId = parseInt(e.currentTarget.dataset.target);
-                    
-                    // Снимаем выделение с других кнопок той же роли
-                    container.querySelectorAll(`.target-btn[data-role="${role}"]`).forEach(b => {
-                        b.classList.remove('selected');
-                    });
-                    
-                    // Выделяем выбранную кнопку
-                    e.currentTarget.classList.add('selected');
-                    
-                    // Сохраняем выбор
-                    this.handleNightAction(role, targetId);
-                });
-            });
-            
-        } else {
-            // Дневная фаза - голосование
-            if (this.selectedPlayers.size > 0) {
-                const selectedIndex = Array.from(this.selectedPlayers)[0];
-                const player = this.players[selectedIndex];
-                
-                container.innerHTML = `
-                    <div class="voting-info">
-                        <h4><i class="fas fa-vote-yea"></i> Вы выбрали для голосования:</h4>
-                        <div class="selected-player">
-                            ${this.getRoleIcon(player.role)}
+        }
+        
+        container.innerHTML = actionsHTML || '<p class="no-actions">Нет активных ролей для ночных действий</p>';
+        
+        // Привязываем обработчики
+        container.querySelectorAll('.night-action-btn').forEach(btn => {
+            const role = btn.dataset.role;
+            btn.addEventListener('click', () => this.showPlayerSelection(role));
+        });
+    }
+    
+    createNightActionButton(role, text) {
+        const completed = this.nightActions[role];
+        return `
+            <button class="night-action-btn ${completed ? 'completed' : ''}" 
+                    data-role="${role}"
+                    ${completed ? 'disabled' : ''}>
+                <i class="fas ${completed ? 'fa-check-circle' : 'fa-moon'}"></i>
+                <span>${text}</span>
+                ${completed ? '<span class="completed-check"><i class="fas fa-check"></i></span>' : ''}
+            </button>
+        `;
+    }
+    
+    showPlayerSelection(role) {
+        const alivePlayers = this.players.filter(p => p.alive);
+        
+        // Создаем модальное окно выбора игрока
+        const modal = document.createElement('div');
+        modal.className = 'selection-modal';
+        modal.innerHTML = `
+            <div class="selection-content">
+                <h3>${this.roleInfo[role].name} выбирает игрока</h3>
+                <p>Выберите игрока для действия:</p>
+                <div class="selection-grid">
+                    ${alivePlayers.map(player => `
+                        <button class="player-select-btn" data-player-id="${player.id}">
+                            <div class="player-avatar-small" style="color: ${this.roleInfo[player.role].color}">
+                                <i class="fas ${this.roleInfo[player.role].icon}"></i>
+                            </div>
                             <span>${player.name}</span>
-                        </div>
-                        <button id="confirmVoteBtn" class="btn-primary">
-                            <i class="fas fa-check"></i> Подтвердить голосование
                         </button>
-                    </div>
-                `;
-                
-                document.getElementById('confirmVoteBtn').addEventListener('click', () => {
-                    this.processVoting();
-                });
-            }
-        }
+                    `).join('')}
+                </div>
+                <button class="btn btn-secondary" onclick="this.closest('.selection-modal').remove()">
+                    Отмена
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Привязываем обработчики выбора
+        modal.querySelectorAll('.player-select-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const playerId = parseInt(e.currentTarget.dataset.playerId);
+                this.processNightAction(role, playerId);
+                modal.remove();
+            });
+        });
     }
     
-    handleNightAction(role, targetId) {
-        // В этой упрощённой версии просто сохраняем выбор
-        // В полной версии нужно было бы вести учёт всех ночных действий
-        const targetPlayer = this.players.find(p => p.id === targetId);
+    processNightAction(role, playerId) {
+        const player = this.players.find(p => p.id === playerId);
+        if (!player) return;
         
-        // Добавляем в историю
-        this.roundHistory.push({
-            phase: 'night',
-            role: role,
-            action: role === 'doctor' ? 'healed' : 'targeted',
-            target: targetPlayer.name,
-            targetRole: targetPlayer.role
+        // Сохраняем действие
+        this.nightActions[role] = playerId;
+        
+        // Записываем в историю
+        let actionText = '';
+        let icon = '';
+        
+        switch(role) {
+            case 'mafia':
+                actionText = `Мафия выбрала ${player.name}`;
+                icon = 'fa-user-ninja';
+                break;
+            case 'doctor':
+                actionText = `Доктор вылечил ${player.name}`;
+                icon = 'fa-heart';
+                player.healedTonight = true;
+                break;
+            case 'commissioner':
+                actionText = `Комиссар проверил ${player.name} (${player.role === 'mafia' ? 'Мафия' : 'Мирный'})`;
+                icon = 'fa-search';
+                player.checkedTonight = true;
+                break;
+            case 'maniac':
+                actionText = `Маньяк выбрал ${player.name}`;
+                icon = 'fa-skull';
+                break;
+        }
+        
+        this.addToNightHistory(actionText, icon);
+        
+        // Обновляем UI
+        this.updateNightActions();
+        this.updatePlayersStatus();
+    }
+    
+    addToNightHistory(text, icon) {
+        const history = document.getElementById('nightHistory');
+        const empty = history.querySelector('.empty-history');
+        if (empty) empty.style.display = 'none';
+        
+        const entry = document.createElement('div');
+        entry.className = 'history-entry';
+        entry.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <span>${text}</span>
+        `;
+        
+        history.insertBefore(entry, history.firstChild);
+        
+        // Сохраняем в массив
+        this.nightHistory.push({ text, icon, time: new Date() });
+    }
+    
+    updateVotingInfo() {
+        const voteCount = Object.values(this.votes).length;
+        document.getElementById('voteCount').textContent = voteCount;
+        
+        // Подсчитываем голоса для каждого игрока
+        this.players.forEach(player => {
+            player.votes = 0;
         });
         
-        // Обновляем историю
-        this.updateHistory();
+        Object.values(this.votes).forEach(playerId => {
+            const player = this.players.find(p => p.id === playerId);
+            if (player) player.votes++;
+        });
+        
+        // Проверяем, можно ли исключить игрока
+        const alivePlayers = this.players.filter(p => p.alive);
+        const processBtn = document.getElementById('processVoteBtn');
+        
+        if (voteCount >= alivePlayers.length) {
+            processBtn.disabled = false;
+        } else {
+            processBtn.disabled = true;
+        }
+        
+        this.updatePlayersStatus();
+    }
+    
+    addVote(playerIndex) {
+        if (this.phase !== 'day') return;
+        
+        const player = this.players[playerIndex];
+        if (!player.alive) return;
+        
+        // В реальной игре здесь был бы учёт голосов от разных игроков
+        // В этом упрощённом варианте ведущий сам добавляет голоса
+        const voterId = `host_${Date.now()}`;
+        this.votes[voterId] = player.id;
+        
+        this.updateVotingInfo();
     }
     
     processVoting() {
-        if (this.selectedPlayers.size === 0) {
-            alert('Выберите игрока для голосования');
-            return;
-        }
+        // Находим игрока с максимальным количеством голосов
+        let maxVotes = 0;
+        let votedOutPlayer = null;
         
-        const selectedIndex = Array.from(this.selectedPlayers)[0];
-        const player = this.players[selectedIndex];
-        
-        // Помечаем игрока как проголосовавшего (в реальной игре нужно учитывать всех)
-        player.voted = true;
-        
-        // Убиваем выбранного игрока
-        player.alive = false;
-        
-        // Добавляем в историю
-        this.roundHistory.push({
-            phase: 'day',
-            action: 'voted_out',
-            target: player.name,
-            targetRole: player.role
+        this.players.forEach(player => {
+            if (player.votes > maxVotes && player.alive) {
+                maxVotes = player.votes;
+                votedOutPlayer = player;
+            }
         });
         
-        // Проверяем условие победы
-        if (this.checkWinCondition()) {
-            this.endGameWithWin();
+        if (!votedOutPlayer || maxVotes === 0) {
+            alert('Нет игрока для исключения');
             return;
         }
         
-        // Переходим к следующей ночи
+        // Исключаем игрока
+        votedOutPlayer.alive = false;
+        votedOutPlayer.killedBy = 'vote';
+        
+        // Добавляем в историю игры
+        this.gameHistory.push({
+            day: this.currentDay,
+            action: 'vote',
+            player: votedOutPlayer.name,
+            role: votedOutPlayer.role,
+            votes: maxVotes
+        });
+        
+        // Проверяем победу
+        if (this.checkWinCondition()) {
+            this.endGame();
+            return;
+        }
+        
+        // Сбрасываем голоса и переходим к ночи
+        this.votes = {};
         this.phase = 'night';
-        this.day++;
-        this.selectedPlayers.clear();
+        this.currentDay++;
+        this.nightActions = {};
+        this.nightHistory = [];
+        
+        // Сбрасываем ночные состояния
+        this.players.forEach(player => {
+            player.checkedTonight = false;
+            player.healedTonight = false;
+        });
         
         this.updateGameDisplay();
-        this.startTimer(90); // 1.5 минуты на ночные действия
+        this.startTimer(90);
     }
     
     nextPhase() {
         if (this.phase === 'day') {
-            this.phase = 'night';
-            this.day++;
-            this.selectedPlayers.clear();
-            this.startTimer(90); // 1.5 минуты на ночные действия
-        } else {
+            // Проверяем ночные действия
+            if (Object.keys(this.nightActions).length === 0) {
+                alert('Сначала выполните ночные действия!');
+                return;
+            }
+            
+            // Обрабатываем ночные действия
+            this.processNightResults();
             this.phase = 'day';
-            this.selectedPlayers.clear();
-            this.startTimer(120); // 2 минуты на дневное обсуждение
+            this.currentDay++;
+            
+            this.startTimer(120);
+        } else {
+            // Переход от дня к ночи
+            this.phase = 'night';
+            this.nightActions = {};
+            this.nightHistory = [];
+            
+            // Сбрасываем ночные состояния
+            this.players.forEach(player => {
+                player.checkedTonight = false;
+                player.healedTonight = false;
+            });
+            
+            this.startTimer(90);
         }
         
         this.updateGameDisplay();
     }
     
-    startTimer(seconds) {
-        const timerElement = document.getElementById('gameTimer');
-        let remaining = seconds;
+    processNightResults() {
+        // Определяем, кого убили
+        const mafiaTargetId = this.nightActions['mafia'];
+        const maniacTargetId = this.nightActions['maniac'];
+        const doctorTargetId = this.nightActions['doctor'];
         
-        const updateTimer = () => {
-            const mins = Math.floor(remaining / 60);
-            const secs = remaining % 60;
-            timerElement.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            
-            if (remaining <= 10) {
-                timerElement.classList.add('pulse');
+        // Обрабатываем убийство мафии
+        if (mafiaTargetId) {
+            const target = this.players.find(p => p.id === mafiaTargetId);
+            if (target && target.alive) {
+                // Проверяем, вылечил ли доктор
+                if (doctorTargetId === mafiaTargetId) {
+                    this.addToNightHistory(`Доктор спас ${target.name} от мафии`, 'fa-heart');
+                } else {
+                    target.alive = false;
+                    target.killedBy = 'mafia';
+                    this.gameHistory.push({
+                        day: this.currentDay,
+                        action: 'mafia_kill',
+                        player: target.name,
+                        role: target.role
+                    });
+                    this.addToNightHistory(`Мафия убила ${target.name}`, 'fa-user-ninja');
+                }
             }
-            
-            if (remaining <= 0) {
-                clearInterval(timerInterval);
-                this.nextPhase();
-            }
-            
-            remaining--;
-        };
-        
-        // Очищаем предыдущий таймер
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
         }
         
-        updateTimer();
-        this.timerInterval = setInterval(updateTimer, 1000);
-    }
-    
-    updateHistory() {
-        const container = document.getElementById('historyContent');
-        
-        if (this.roundHistory.length === 0) {
-            container.innerHTML = '<p class="empty-history">История раунда пуста</p>';
-            return;
-        }
-        
-        container.innerHTML = this.roundHistory.map(event => {
-            let icon = 'fa-question';
-            let color = 'var(--gray)';
-            
-            switch (event.action) {
-                case 'healed':
-                    icon = 'fa-heart';
-                    color = 'var(--success)';
-                    break;
-                case 'targeted':
-                    icon = 'fa-crosshairs';
-                    color = event.role === 'mafia' ? 'var(--danger)' : 'var(--warning)';
-                    break;
-                case 'checked':
-                    icon = 'fa-search';
-                    color = 'var(--secondary)';
-                    break;
-                case 'voted_out':
-                    icon = 'fa-user-slash';
-                    color = 'var(--danger)';
-                    break;
+        // Обрабатываем убийство маньяка
+        if (maniacTargetId && maniacTargetId !== mafiaTargetId) {
+            const target = this.players.find(p => p.id === maniacTargetId);
+            if (target && target.alive) {
+                // Маньяка не лечит доктор (по правилам)
+                target.alive = false;
+                target.killedBy = 'maniac';
+                this.gameHistory.push({
+                    day: this.currentDay,
+                    action: 'maniac_kill',
+                    player: target.name,
+                    role: target.role
+                });
+                this.addToNightHistory(`Маньяк убил ${target.name}`, 'fa-skull');
             }
-            
-            return `
-                <div class="history-event">
-                    <div class="history-icon" style="color: ${color}">
-                        <i class="fas ${icon}"></i>
-                    </div>
-                    <div class="history-details">
-                        <div class="history-action">${this.getHistoryDescription(event)}</div>
-                        <div class="history-time">${event.phase === 'night' ? 'Ночь' : 'День'} ${this.day}</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    getHistoryDescription(event) {
-        switch (event.action) {
-            case 'healed':
-                return `Доктор вылечил ${event.target}`;
-            case 'targeted':
-                return `${this.getRoleName(event.role)} выбрал ${event.target}`;
-            case 'checked':
-                return `Комиссар проверил ${event.target}`;
-            case 'voted_out':
-                return `${event.target} (${this.getRoleName(event.targetRole)}) исключён`;
-            default:
-                return event.action;
         }
-    }
-    
-    updateStats() {
-        const aliveCount = this.players.filter(p => p.alive).length;
-        const mafiaAlive = this.players.filter(p => p.alive && p.role === 'mafia').length;
-        const civiliansAlive = aliveCount - mafiaAlive;
         
-        document.getElementById('aliveCount').textContent = aliveCount;
-        document.getElementById('mafiaAlive').textContent = mafiaAlive;
-        document.getElementById('civiliansAlive').textContent = civiliansAlive;
-        document.getElementById('currentRound').textContent = this.day;
-    }
-    
-    updateMyRoleInfo() {
-        const container = document.getElementById('myRoleInfo');
-        
-        // В оффлайн режиме показываем все роли (для ведущего)
-        if (this.mode === 'offline') {
-            container.innerHTML = `
-                <div class="all-roles">
-                    <h4>Все роли (ведущий)</h4>
-                    ${this.players.map(player => `
-                        <div class="player-role ${player.alive ? 'alive' : 'dead'}">
-                            <span class="role-icon-small">${this.getRoleIcon(player.originalRole)}</span>
-                            <span>${player.name}: ${this.getRoleName(player.originalRole)}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+        // Проверяем победу
+        if (this.checkWinCondition()) {
+            this.endGame();
         }
     }
     
     checkWinCondition() {
         const alivePlayers = this.players.filter(p => p.alive);
         const mafiaCount = alivePlayers.filter(p => p.role === 'mafia').length;
-        const civiliansCount = alivePlayers.length - mafiaCount;
+        const civiliansCount = alivePlayers.filter(p => 
+            p.role !== 'mafia' && p.role !== 'maniac'
+        ).length;
         
-        // Мафия побеждает, если их количество равно или больше мирных
+        // Мафия побеждает, если их больше или равно мирным
         if (mafiaCount >= civiliansCount && mafiaCount > 0) {
             return 'mafia';
         }
@@ -876,62 +872,157 @@ class MafiaGame {
         return false;
     }
     
-    endGameWithWin() {
+    updateHostInfo() {
+        const container = document.getElementById('hostRolesList');
+        container.innerHTML = this.players.map(player => {
+            const role = this.roleInfo[player.role];
+            return `
+                <div class="host-role-item ${player.alive ? '' : 'dead'}">
+                    <div class="role-icon-small" style="color: ${role.color}">
+                        <i class="fas ${role.icon}"></i>
+                    </div>
+                    <div class="host-role-info">
+                        <span class="host-player-name">${player.name}</span>
+                        <span class="host-player-role">${role.name}</span>
+                    </div>
+                    <div class="host-player-status">
+                        ${player.alive ? 
+                            '<span class="status-alive"><i class="fas fa-heart"></i></span>' : 
+                            '<span class="status-dead"><i class="fas fa-skull"></i></span>'
+                        }
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    updateStats() {
+        const alivePlayers = this.players.filter(p => p.alive);
+        const mafiaCount = alivePlayers.filter(p => p.role === 'mafia').length;
+        const civiliansCount = alivePlayers.filter(p => 
+            p.role !== 'mafia' && p.role !== 'maniac'
+        ).length;
+        
+        document.getElementById('aliveCount').textContent = alivePlayers.length;
+        document.getElementById('mafiaCountLive').textContent = mafiaCount;
+        document.getElementById('currentDay').textContent = this.currentDay;
+        document.getElementById('alivePlayers').textContent = alivePlayers.length;
+        document.getElementById('mafiaAlive').textContent = mafiaCount;
+        document.getElementById('civiliansAlive').textContent = civiliansCount;
+    }
+    
+    // Таймер
+    startTimer(seconds) {
+        this.stopTimer();
+        this.timeLeft = seconds;
+        this.timerRunning = true;
+        
+        this.updateTimerDisplay();
+        
+        this.timer = setInterval(() => {
+            if (!this.timerRunning) return;
+            
+            this.timeLeft--;
+            this.updateTimerDisplay();
+            
+            if (this.timeLeft <= 0) {
+                this.stopTimer();
+                this.nextPhase();
+            }
+        }, 1000);
+    }
+    
+    stopTimer() {
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+    }
+    
+    toggleTimer() {
+        this.timerRunning = !this.timerRunning;
+        const icon = document.getElementById('timerIcon');
+        icon.className = this.timerRunning ? 'fas fa-pause' : 'fas fa-play';
+    }
+    
+    updateTimerDisplay() {
+        const minutes = Math.floor(this.timeLeft / 60);
+        const seconds = this.timeLeft % 60;
+        document.getElementById('gameTimer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Меняем цвет при малом времени
+        const timerElement = document.getElementById('gameTimer');
+        timerElement.classList.toggle('warning', this.timeLeft <= 30);
+        timerElement.classList.toggle('danger', this.timeLeft <= 10);
+    }
+    
+    // Завершение игры
+    endGame() {
+        this.stopTimer();
+        this.gameState = 'ended';
+        
         const winner = this.checkWinCondition();
-        const winScreen = document.getElementById('winScreen');
-        const winIcon = document.getElementById('winIcon');
-        const winTitle = document.getElementById('winTitle');
-        const winDescription = document.getElementById('winDescription');
-        const winnersContainer = document.getElementById('winners');
-        const summaryStats = document.getElementById('summaryStats');
+        this.showResults(winner);
+    }
+    
+    showResults(winner) {
+        this.showScreen('resultsScreen');
+        
+        const resultIcon = document.getElementById('resultIcon');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultDescription = document.getElementById('resultDescription');
+        const winnersList = document.getElementById('winnersList');
         
         if (winner === 'mafia') {
-            winIcon.innerHTML = '<i class="fas fa-user-ninja"></i>';
-            winIcon.style.color = 'var(--danger)';
-            winTitle.textContent = 'Победа мафии!';
-            winDescription.textContent = 'Мафия захватила город. Мирные жители проиграли.';
+            resultIcon.innerHTML = '<i class="fas fa-user-ninja"></i>';
+            resultIcon.style.color = '#dc2626';
+            resultTitle.textContent = 'Победа мафии!';
+            resultDescription.textContent = 'Мафия захватила город';
             
-            // Победители - мафия
-            const mafiaWinners = this.players.filter(p => p.originalRole === 'mafia');
-            winnersContainer.innerHTML = mafiaWinners.map(player => `
+            const mafiaWinners = this.players.filter(p => p.role === 'mafia');
+            winnersList.innerHTML = mafiaWinners.map(player => `
                 <div class="winner-item">
-                    ${this.getRoleIcon('mafia')} ${player.name}
+                    <div class="winner-avatar" style="color: #dc2626">
+                        <i class="fas fa-user-ninja"></i>
+                    </div>
+                    <div class="winner-info">
+                        <span class="winner-name">${player.name}</span>
+                        <span class="winner-role">Мафия</span>
+                    </div>
                 </div>
             `).join('');
         } else {
-            winIcon.innerHTML = '<i class="fas fa-user-friends"></i>';
-            winIcon.style.color = 'var(--success)';
-            winTitle.textContent = 'Победа мирных жителей!';
-            winDescription.textContent = 'Мафия обезврежена. Город спасён!';
+            resultIcon.innerHTML = '<i class="fas fa-user-friends"></i>';
+            resultIcon.style.color = '#4ade80';
+            resultTitle.textContent = 'Победа мирных!';
+            resultDescription.textContent = 'Мафия обезврежена';
             
-            // Победители - все, кроме мафии
-            const civilianWinners = this.players.filter(p => p.originalRole !== 'mafia' && p.alive);
-            winnersContainer.innerHTML = civilianWinners.map(player => `
-                <div class="winner-item">
-                    ${this.getRoleIcon(player.originalRole)} ${player.name}
-                </div>
-            `).join('');
+            const civilianWinners = this.players.filter(p => 
+                p.role !== 'mafia' && p.alive
+            );
+            winnersList.innerHTML = civilianWinners.map(player => {
+                const role = this.roleInfo[player.role];
+                return `
+                    <div class="winner-item">
+                        <div class="winner-avatar" style="color: ${role.color}">
+                            <i class="fas ${role.icon}"></i>
+                        </div>
+                        <div class="winner-info">
+                            <span class="winner-name">${player.name}</span>
+                            <span class="winner-role">${role.name}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
         
-        // Статистика игры
+        // Статистика
         const aliveCount = this.players.filter(p => p.alive).length;
-        const totalPlayers = this.players.length;
-        const rounds = this.day;
-        
-        summaryStats.innerHTML = `
-            <p>Всего игроков: ${totalPlayers}</p>
-            <p>Выжило: ${aliveCount}</p>
-            <p>Раундов сыграно: ${rounds}</p>
-            <p>Длительность игры: ${Math.floor(rounds * 2.5)} минут</p>
-        `;
-        
-        this.showScreen('winScreen');
-    }
-    
-    endGame() {
-        if (confirm('Завершить игру? Текущий прогресс будет потерян.')) {
-            this.newGame();
-        }
+        document.getElementById('survivedCount').textContent = aliveCount;
+        document.getElementById('totalRounds').textContent = this.currentDay;
+        document.getElementById('gameDuration').textContent = 
+            `${Math.floor(this.currentDay * 3)} минут`;
     }
     
     newGame() {
@@ -940,57 +1031,46 @@ class MafiaGame {
         this.showScreen('startScreen');
     }
     
-    newGameWithSamePlayers() {
-        // Сохраняем имена игроков, но сбрасываем всё остальное
+    restartWithSamePlayers() {
         const playerNames = this.players.map(p => p.name);
         this.newGame();
         
         // Заполняем имена
         playerNames.forEach(name => {
-            if (this.players.length < this.gameModeConfig.playerCount) {
+            if (this.players.length < this.config.playerCount) {
                 this.players.push({
-                    id: Date.now(),
+                    id: Date.now() + Math.random(),
                     name: name,
                     role: null,
                     alive: true,
-                    checked: false,
-                    healed: false,
-                    voted: false
+                    checkedTonight: false,
+                    healedTonight: false,
+                    votes: 0,
+                    killedBy: null
                 });
             }
         });
         
-        this.renderPlayersList();
         this.showScreen('registrationScreen');
+        this.renderPlayersList();
     }
     
     loadSettings() {
-        // Загружаем сохранённые настройки из localStorage
-        const savedSettings = localStorage.getItem('mafiaSettings');
-        if (savedSettings) {
-            const settings = JSON.parse(savedSettings);
-            this.gameModeConfig = { ...this.gameModeConfig, ...settings };
-            
-            // Обновляем UI
-            document.getElementById('playerCount').value = this.gameModeConfig.playerCount;
-            document.getElementById('playerCountValue').textContent = this.gameModeConfig.playerCount;
-            document.getElementById('mafiaCount').value = this.gameModeConfig.mafiaCount;
-            document.getElementById('mafiaCountValue').textContent = this.gameModeConfig.mafiaCount;
-            document.getElementById('requiredPlayers').textContent = this.gameModeConfig.playerCount;
-            
-            document.getElementById('roleCommissioner').checked = this.gameModeConfig.roles.commissioner;
-            document.getElementById('roleDoctor').checked = this.gameModeConfig.roles.doctor;
-            document.getElementById('roleManiac').checked = this.gameModeConfig.roles.maniac;
-            document.getElementById('roleInformant').checked = this.gameModeConfig.roles.informant;
-        }
+        // Можно добавить сохранение настроек в localStorage
     }
     
-    saveSettings() {
-        localStorage.setItem('mafiaSettings', JSON.stringify(this.gameModeConfig));
+    // Для онлайн режима
+    startLocalServer() {
+        alert('Для запуска локального сервера:\n1. Установите Node.js\n2. В папке проекта запустите: node server.js\n3. Откройте http://localhost:3000');
+    }
+    
+    deployToRailway() {
+        alert('Инструкция по деплою на Railway:\n1. Создайте аккаунт на railway.app\n2. Установите Railway CLI\n3. В папке проекта выполните: railway up\n4. Сервер автоматически развернётся');
     }
 }
 
-// Инициализация игры при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    window.mafiaGame = new MafiaGame();
-});
+// Создаем глобальный экземпляр игры
+const game = new MafiaGame();
+
+// Делаем доступным глобально для обработчиков onclick
+window.game = game;
