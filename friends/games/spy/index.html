@@ -2,21 +2,120 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Шпион • Игра для компании</title>
     <meta name="description" content="Найди шпиона среди друзей! Блеф, дедукция и напряженные обсуждения.">
     <link rel="stylesheet" href="../common.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="manifest" href="manifest.json">
 </head>
 <body>
+    <!-- Уведомления -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Модальные окна -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-question-circle"></i> Подтверждение</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Вы уверены?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('confirmModal')">Отмена</button>
+                <button class="btn-primary" id="confirmAction">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="namesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-edit"></i> Введите имена игроков</h3>
+                <button class="btn-close" onclick="closeModal('namesModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="namesList">
+                    <!-- Имена будут сгенерированы динамически -->
+                </div>
+                <p class="modal-hint"><i class="fas fa-info-circle"></i> Оставьте поле пустым для имени по умолчанию (Игрок 1, Игрок 2...)</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="savePlayerNames()">Сохранить и начать</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rulesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-book"></i> Правила игры "Шпион"</h3>
+                <button class="btn-close" onclick="closeModal('rulesModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="rules-section">
+                    <h4>🎯 Цель игры</h4>
+                    <p><strong>Игроки:</strong> Вычислить шпиона среди участников.</p>
+                    <p><strong>Шпион:</strong> Остаться незамеченным и не быть раскрытым.</p>
+                </div>
+                
+                <div class="rules-section">
+                    <h4>📝 Подготовка</h4>
+                    <ol>
+                        <li>Выберите количество игроков (3-8)</li>
+                        <li>Введите имена игроков или оставьте по умолчанию</li>
+                        <li>Каждому игроку показывается его роль и локация (кроме шпиона)</li>
+                        <li>Шпион не знает локацию!</li>
+                    </ol>
+                </div>
+                
+                <div class="rules-section">
+                    <h4>👁️‍🗨️ Просмотр ролей</h4>
+                    <p>Устройство передается по кругу. Каждый игрок:</p>
+                    <ol>
+                        <li>Нажимает на свою карточку</li>
+                        <li>Смотрит свою роль (и локацию, если не шпион)</li>
+                        <li>Нажимает "Я понял, передать дальше"</li>
+                        <li>Передает устройство следующему игроку</li>
+                    </ol>
+                </div>
+                
+                <div class="rules-section">
+                    <h4>🗣️ Обсуждение</h4>
+                    <p>Игроки задают друг другу вопросы о локации. Отвечать можно только "Да" или "Нет".</p>
+                    <p><strong>Примеры вопросов:</strong></p>
+                    <ul>
+                        <li>Это место находится в помещении?</li>
+                        <li>Там обычно платят деньги?</li>
+                        <li>Это место связано с едой?</li>
+                        <li>Там много людей?</li>
+                    </ul>
+                </div>
+                
+                <div class="rules-section">
+                    <h4>🤔 Голосование</h4>
+                    <p>После обсуждения голосуйте, кто по вашему мнению шпион.</p>
+                    <p><strong>Победа игроков:</strong> если большинство проголосует за шпиона</p>
+                    <p><strong>Победа шпиона:</strong> если шпиона не раскроют</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="closeModal('rulesModal')">Понятно</button>
+            </div>
+        </div>
+    </div>
+
     <div class="game-container">
         <!-- Шапка -->
         <header class="game-header">
             <div class="header-left">
-                <button class="btn-icon" onclick="goBack()" aria-label="Назад">
+                <button class="btn-icon" onclick="confirmGoBack()" aria-label="Назад">
                     <i class="fas fa-arrow-left"></i>
                 </button>
                 <h1 class="game-title">
@@ -26,9 +125,6 @@
             <div class="header-right">
                 <button class="btn-icon" onclick="showRules()" aria-label="Правила">
                     <i class="fas fa-question-circle"></i>
-                </button>
-                <button class="btn-icon" onclick="showStats()" aria-label="Статистика">
-                    <i class="fas fa-chart-bar"></i>
                 </button>
             </div>
         </header>
@@ -47,30 +143,15 @@
                         <!-- Количество игроков -->
                         <div class="option-group">
                             <label for="playerCount">
-                                <i class="fas fa-users"></i> Количество игроков (3-12)
+                                <i class="fas fa-users"></i> Количество игроков
+                                <span class="option-hint">(3-8 человек)</span>
                             </label>
                             <div class="number-selector">
-                                <button class="number-btn" onclick="changeValue('playerCount', -1)">
+                                <button class="number-btn" onclick="changePlayerCount(-1)">
                                     <i class="fas fa-minus"></i>
                                 </button>
-                                <input type="number" id="playerCount" min="3" max="12" value="5" readonly>
-                                <button class="number-btn" onclick="changeValue('playerCount', 1)">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Количество шпионов -->
-                        <div class="option-group">
-                            <label for="spyCount">
-                                <i class="fas fa-user-secret"></i> Количество шпионов
-                            </label>
-                            <div class="number-selector">
-                                <button class="number-btn" onclick="changeValue('spyCount', -1)">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <input type="number" id="spyCount" min="1" max="3" value="1" readonly>
-                                <button class="number-btn" onclick="changeValue('spyCount', 1)">
+                                <input type="number" id="playerCount" min="3" max="8" value="5" readonly>
+                                <button class="number-btn" onclick="changePlayerCount(1)">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
@@ -85,53 +166,53 @@
                                 <button class="time-btn active" onclick="selectTime(3)">3 мин</button>
                                 <button class="time-btn" onclick="selectTime(5)">5 мин</button>
                                 <button class="time-btn" onclick="selectTime(7)">7 мин</button>
-                                <button class="time-btn" onclick="selectTime(10)">10 мин</button>
                             </div>
                         </div>
 
-                        <!-- Категории локаций -->
+                        <!-- Количество шпионов -->
                         <div class="option-group">
-                            <label>
-                                <i class="fas fa-map-marker-alt"></i> Категории локаций
+                            <label for="spyCount">
+                                <i class="fas fa-user-secret"></i> Количество шпионов
                             </label>
-                            <div class="categories-grid">
-                                <label class="category-checkbox">
-                                    <input type="checkbox" checked data-category="city">
-                                    <span class="checkbox-custom"></span>
-                                    <span>Город</span>
-                                </label>
-                                <label class="category-checkbox">
-                                    <input type="checkbox" checked data-category="entertainment">
-                                    <span class="checkbox-custom"></span>
-                                    <span>Развлечения</span>
-                                </label>
-                                <label class="category-checkbox">
-                                    <input type="checkbox" checked data-category="food">
-                                    <span class="checkbox-custom"></span>
-                                    <span>Еда и напитки</span>
-                                </label>
-                                <label class="category-checkbox">
-                                    <input type="checkbox" checked data-category="professions">
-                                    <span class="checkbox-custom"></span>
-                                    <span>Профессии</span>
-                                </label>
-                                <label class="category-checkbox">
-                                    <input type="checkbox" checked data-category="sports">
-                                    <span class="checkbox-custom"></span>
-                                    <span>Спорт</span>
-                                </label>
-                                <label class="category-checkbox">
-                                    <input type="checkbox" checked data-category="travel">
-                                    <span class="checkbox-custom"></span>
-                                    <span>Путешествия</span>
-                                </label>
+                            <div class="number-selector">
+                                <button class="number-btn" onclick="changeSpyCount(-1)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" id="spyCount" min="1" max="2" value="1" readonly>
+                                <button class="number-btn" onclick="changeSpyCount(1)">
+                                    <i class="fas fa-plus"></i>
+                                </button>
                             </div>
+                            <p class="option-hint">Для 3-5 игроков: 1 шпион<br>Для 6-8 игроков: 1-2 шпиона</p>
                         </div>
                     </div>
 
                     <div class="setup-actions">
-                        <button class="btn-secondary" onclick="showRandomLocation()">
-                            <i class="fas fa-random"></i> Случайная локация
+                        <button class="btn-primary" onclick="prepareGame()">
+                            <i class="fas fa-play"></i> Начать игру
+                        </button>
+                    </div>
+
+                    <div class="mobile-tip">
+                        <i class="fas fa-mobile-alt"></i>
+                        <p>Играйте на одном устройстве, передавая его по кругу</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Экран ввода имен -->
+            <section id="namesScreen" class="screen">
+                <div class="names-card">
+                    <h2><i class="fas fa-user-edit"></i> Имена игроков</h2>
+                    <p class="names-subtitle">Введите имена игроков или оставьте по умолчанию</p>
+                    
+                    <div id="playerNamesInputs" class="names-inputs">
+                        <!-- Сгенерируется динамически -->
+                    </div>
+                    
+                    <div class="names-actions">
+                        <button class="btn-secondary" onclick="backToSetup()">
+                            <i class="fas fa-arrow-left"></i> Назад
                         </button>
                         <button class="btn-primary" onclick="startGame()">
                             <i class="fas fa-play"></i> Начать игру
@@ -143,91 +224,104 @@
             <!-- Экран распределения ролей -->
             <section id="roleScreen" class="screen">
                 <div class="role-card">
-                    <h2>Передавайте устройство игрокам</h2>
-                    <p class="role-subtitle">Каждый игрок нажимает на свою карточку, смотрит роль и передает дальше</p>
+                    <div class="role-header">
+                        <h2><i class="fas fa-users"></i> Распределение ролей</h2>
+                        <p class="role-subtitle">Передавайте устройство по кругу. Каждый игрок нажимает на свою карточку</p>
+                    </div>
                     
                     <div class="players-list">
                         <!-- Сгенерируется динамически -->
                     </div>
                     
+                    <div class="current-player-hint">
+                        <i class="fas fa-arrow-circle-right"></i>
+                        <p><strong>Текущий игрок:</strong> <span id="currentPlayerName">Игрок 1</span></p>
+                    </div>
+                    
                     <div class="role-actions">
-                        <button class="btn-secondary" onclick="backToSetup()">
-                            <i class="fas fa-arrow-left"></i> Назад к настройкам
+                        <button class="btn-secondary" onclick="backToNames()">
+                            <i class="fas fa-arrow-left"></i> Назад к именам
                         </button>
-                        <button class="btn-primary" onclick="startDiscussion()">
-                            <i class="fas fa-comments"></i> Все готовы → Обсуждение
+                        <button class="btn-primary" onclick="skipRemaining()">
+                            <i class="fas fa-forward"></i> Все посмотрели → Начать обсуждение
                         </button>
                     </div>
                 </div>
             </section>
 
-            <!-- Экран роли игрока -->
+            <!-- Экран роли мирного игрока -->
             <section id="playerRoleScreen" class="screen">
                 <div class="role-display-card">
-                    <div class="role-display">
-                        <div id="roleIcon" class="role-icon">
+                    <div class="role-header">
+                        <div class="player-badge">
                             <i class="fas fa-user"></i>
                         </div>
-                        <h2 id="roleTitle">Твоя роль</h2>
-                        <div id="roleDescription" class="role-desc">
-                            <!-- Заполнится динамически -->
-                        </div>
-                        
-                        <div class="location-info" id="locationInfo">
+                        <h2>Ты Мирный Игрок</h2>
+                    </div>
+                    
+                    <div class="role-content">
+                        <div class="location-display">
                             <div class="location-icon">
                                 <i class="fas fa-map-marker-alt"></i>
                             </div>
-                            <div>
+                            <div class="location-text">
                                 <h3>Локация:</h3>
-                                <p id="locationText"></p>
+                                <p id="currentLocation" class="location-name">???</p>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="instructions">
-                        <h3><i class="fas fa-lightbulb"></i> Важно:</h3>
-                        <ul>
-                            <li>Не показывайте экран другим игрокам!</li>
-                            <li>Запомните свою роль и локацию</li>
-                            <li>Когда будете готовы, нажмите кнопку ниже</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="role-actions">
-                        <button class="btn-primary" onclick="hideRole()">
-                            <i class="fas fa-eye-slash"></i> Я понял, передать дальше
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Экран шпиона -->
-            <section id="spyRoleScreen" class="screen">
-                <div class="spy-role-card">
-                    <div class="role-display">
-                        <div class="role-icon spy">
-                            <i class="fas fa-user-secret"></i>
-                        </div>
-                        <h2>Ты Шпион!</h2>
                         
-                        <div class="spy-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <p><strong>Ты НЕ ЗНАЕШЬ локацию!</strong></p>
-                        </div>
-                        
-                        <div class="spy-tips">
-                            <h3><i class="fas fa-brain"></i> Тактика шпиона:</h3>
+                        <div class="instructions">
+                            <h4><i class="fas fa-lightbulb"></i> Твоя задача:</h4>
                             <ul>
-                                <li>Задавайте общие вопросы</li>
-                                <li>Не выделяйтесь</li>
-                                <li>Слушайте внимательно других</li>
-                                <li>Предлагайте разумные версии</li>
+                                <li>Запомни локацию — <strong id="locationForPlayer"></strong></li>
+                                <li>Вычисли шпиона в обсуждении</li>
+                                <li>Задавай хитрые вопросы</li>
+                                <li>Не раскрывай локацию напрямую</li>
                             </ul>
                         </div>
                     </div>
                     
                     <div class="role-actions">
-                        <button class="btn-primary" onclick="hideSpyRole()">
+                        <button class="btn-primary" onclick="hideRole()">
+                            <i class="fas fa-eye-slash"></i> Я запомнил, передать дальше
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Экран роли шпиона -->
+            <section id="spyRoleScreen" class="screen">
+                <div class="role-display-card spy">
+                    <div class="role-header">
+                        <div class="player-badge spy">
+                            <i class="fas fa-user-secret"></i>
+                        </div>
+                        <h2>Ты Шпион!</h2>
+                    </div>
+                    
+                    <div class="role-content">
+                        <div class="spy-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div class="warning-text">
+                                <h3>Внимание!</h3>
+                                <p><strong>Ты НЕ ЗНАЕШЬ локацию!</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="instructions">
+                            <h4><i class="fas fa-brain"></i> Твоя задача:</h4>
+                            <ul>
+                                <li><strong>Остаться незамеченным</strong></li>
+                                <li>Задавай общие вопросы</li>
+                                <li>Слушай внимательно других</li>
+                                <li>Не выделяйся из толпы</li>
+                                <li>Предлагай разумные версии</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="role-actions">
+                        <button class="btn-primary spy-btn" onclick="hideRole()">
                             <i class="fas fa-eye-slash"></i> Я понял, передать дальше
                         </button>
                     </div>
@@ -238,51 +332,79 @@
             <section id="discussionScreen" class="screen">
                 <div class="discussion-card">
                     <div class="discussion-header">
-                        <h2>Обсуждение</h2>
+                        <div class="discussion-title">
+                            <h2><i class="fas fa-comments"></i> Обсуждение</h2>
+                            <p class="time-left">Время: <span id="timeLeftDisplay">5:00</span></p>
+                        </div>
                         <div class="timer-wrapper">
                             <div class="timer-circle">
-                                <svg width="80" height="80">
-                                    <circle class="timer-bg" cx="40" cy="40" r="36"></circle>
-                                    <circle class="timer-progress" cx="40" cy="40" r="36"></circle>
+                                <svg width="100" height="100">
+                                    <circle class="timer-bg" cx="50" cy="50" r="45"></circle>
+                                    <circle class="timer-progress" cx="50" cy="50" r="45"></circle>
                                 </svg>
-                                <div class="timer-text" id="timerText">05:00</div>
+                                <div class="timer-text">
+                                    <span id="timerMinutes">05</span>:<span id="timerSeconds">00</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="discussion-content">
-                        <div class="location-display">
-                            <div class="location-icon">
+                        <div class="game-info-card">
+                            <div class="info-item">
+                                <i class="fas fa-users"></i>
+                                <div>
+                                    <span class="info-label">Игроков</span>
+                                    <span class="info-value" id="playersCount">5</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-user-secret"></i>
+                                <div>
+                                    <span class="info-label">Шпионов</span>
+                                    <span class="info-value" id="spiesCount">1</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div>
-                                <h3>Локация для всех игроков:</h3>
-                                <p id="currentLocation">Ресторан</p>
-                            </div>
-                        </div>
-                        
-                        <div class="game-info">
-                            <div class="info-card">
-                                <h4><i class="fas fa-users"></i> Игроков:</h4>
-                                <p id="infoPlayers">5</p>
-                            </div>
-                            <div class="info-card">
-                                <h4><i class="fas fa-user-secret"></i> Шпионов:</h4>
-                                <p id="infoSpies">1</p>
-                            </div>
-                            <div class="info-card">
-                                <h4><i class="fas fa-clock"></i> Время:</h4>
-                                <p id="infoTime">5 мин</p>
+                                <div>
+                                    <span class="info-label">Локация</span>
+                                    <span class="info-value location-name" id="discussionLocation">???</span>
+                                </div>
                             </div>
                         </div>
                         
                         <div class="discussion-tips">
-                            <h4><i class="fas fa-lightbulb"></i> Как играть:</h4>
-                            <ul>
-                                <li>Задавайте вопросы, на которые можно ответить "Да" или "Нет"</li>
-                                <li>Шпион не знает локацию — поймайте его на ошибках!</li>
-                                <li>В конце игры проголосуйте за подозреваемого</li>
-                            </ul>
+                            <div class="tips-header">
+                                <i class="fas fa-lightbulb"></i>
+                                <h4>Как играть:</h4>
+                            </div>
+                            <div class="tips-content">
+                                <div class="tip">
+                                    <span class="tip-number">1</span>
+                                    <p>Задавайте вопросы, на которые можно ответить "Да" или "Нет"</p>
+                                </div>
+<div class="tip">
+    <span class="tip-number">2</span>
+    <p><strong>Шпион не знает локацию</strong> — ловите его на ошибках! <strong>Локация: ???</strong></p>
+</div>
+                                <div class="tip">
+                                    <span class="tip-number">3</span>
+                                    <p>В конце игры голосуйте, кто по вашему мнению шпион</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="quick-questions">
+                            <h4><i class="fas fa-question-circle"></i> Примеры вопросов:</h4>
+                            <div class="questions-grid">
+                                <div class="question">Это место в помещении?</div>
+                                <div class="question">Там платят деньги?</div>
+                                <div class="question">Это связано с едой?</div>
+                                <div class="question">Там много людей?</div>
+                                <div class="question">Это развлекательное место?</div>
+                                <div class="question">Нужно покупать билет?</div>
+                            </div>
                         </div>
                     </div>
                     
@@ -300,21 +422,22 @@
             <!-- Экран голосования -->
             <section id="votingScreen" class="screen">
                 <div class="voting-card">
-                    <h2>Кто по-вашему Шпион?</h2>
-                    <p class="voting-subtitle">Выберите подозреваемого. У каждого игрока по одному голосу.</p>
+                    <div class="voting-header">
+                        <h2><i class="fas fa-vote-yea"></i> Голосование</h2>
+                        <p class="voting-subtitle">Кто по-вашему Шпион? У каждого один голос</p>
+                    </div>
                     
-                    <div class="voting-list">
+                    <div class="voting-list" id="votingList">
                         <!-- Сгенерируется динамически -->
                     </div>
                     
-                    <div class="voting-summary">
-                        <div class="summary-item">
-                            <span class="summary-number" id="totalVotes">0</span>
-                            <span class="summary-label">Всего голосов</span>
+                    <div class="voting-progress">
+                        <div class="progress-info">
+                            <span class="progress-label">Проголосовало:</span>
+                            <span class="progress-value"><span id="votesCount">0</span>/<span id="totalVoters">5</span></span>
                         </div>
-                        <div class="summary-item">
-                            <span class="summary-number" id="remainingVotes">5</span>
-                            <span class="summary-label">Осталось проголосовать</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
                         </div>
                     </div>
                     
@@ -322,7 +445,7 @@
                         <button class="btn-secondary" onclick="backToDiscussion()">
                             <i class="fas fa-arrow-left"></i> Назад к обсуждению
                         </button>
-                        <button class="btn-primary" onclick="finishVoting()">
+                        <button class="btn-primary" onclick="showResults()">
                             <i class="fas fa-flag-checkered"></i> Завершить голосование
                         </button>
                     </div>
@@ -337,9 +460,6 @@
                     </div>
                     
                     <div class="results-actions">
-                        <button class="btn-secondary" onclick="showGameStats()">
-                            <i class="fas fa-chart-bar"></i> Статистика
-                        </button>
                         <button class="btn-primary" onclick="newGame()">
                             <i class="fas fa-redo"></i> Новая игра
                         </button>
@@ -348,103 +468,10 @@
             </section>
         </main>
 
-        <!-- Модальные окна -->
-        <div id="rulesModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-book"></i> Правила игры "Шпион"</h3>
-                    <button class="btn-close" onclick="closeModal('rulesModal')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="rules-section">
-                        <h4>🎯 Цель игры</h4>
-                        <p><strong>Игроки:</strong> Вычислить шпиона среди участников.</p>
-                        <p><strong>Шпион:</strong> Остаться незамеченным и не быть раскрытым.</p>
-                    </div>
-                    
-                    <div class="rules-section">
-                        <h4>📝 Подготовка</h4>
-                        <ol>
-                            <li>Выберите количество игроков и шпионов</li>
-                            <li>Выберите категории локаций</li>
-                            <li>Каждому игроку показывается его роль и локация (кроме шпиона)</li>
-                            <li>Шпион не знает локацию!</li>
-                        </ol>
-                    </div>
-                    
-                    <div class="rules-section">
-                        <h4>🗣️ Обсуждение</h4>
-                        <p>Игроки задают друг другу вопросы о локации. Отвечать можно только "Да" или "Нет".</p>
-                        <p><strong>Примеры вопросов:</strong></p>
-                        <ul>
-                            <li>Это место находится в помещении?</li>
-                            <li>Там обычно платят деньги?</li>
-                            <li>Это место связано с едой?</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="rules-section">
-                        <h4>🤔 Голосование</h4>
-                        <p>После обсуждения игроки голосуют, кто по их мнению шпион. Если большинство голосует за шпиона — побеждают игроки. Если шпиона не нашли — побеждает шпион.</p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-primary" onclick="closeModal('rulesModal')">
-                        Понятно
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div id="statsModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-chart-bar"></i> Статистика</h3>
-                    <button class="btn-close" onclick="closeModal('statsModal')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-                                <i class="fas fa-gamepad"></i>
-                            </div>
-                            <h4>Всего игр</h4>
-                            <p class="stat-number" id="totalGames">0</p>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <h4>Победы игроков</h4>
-                            <p class="stat-number" id="playerWins">0</p>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                                <i class="fas fa-user-secret"></i>
-                            </div>
-                            <h4>Победы шпионов</h4>
-                            <p class="stat-number" id="spyWins">0</p>
-                        </div>
-                    </div>
-                    
-                    <div class="recent-games">
-                        <h4>Последние игры:</h4>
-                        <div id="recentGamesList" class="games-list">
-                            <!-- Сгенерируется динамически -->
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-secondary" onclick="resetStats()">
-                        <i class="fas fa-trash"></i> Сбросить статистику
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- Мобильный футер -->
+        <footer class="mobile-footer">
+            <p><i class="fas fa-mobile-alt"></i> Играйте на одном устройстве, передавая его по кругу</p>
+        </footer>
     </div>
 
     <script src="script.js"></script>
