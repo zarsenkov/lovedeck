@@ -3,7 +3,7 @@ const gameStatus = {
     'whoami': 'available',     // Доступна
     'spy': 'available',        // Доступна
     'crocodile': 'available',  // Доступна
-    'alias': 'maintenance',      // Технические работы
+    'alias': 'available',      // Технические работы
     'danetki': 'available',    // Доступна
     'quiz': 'available',       // Доступна
     'bunker': 'coming-soon',   // Скоро
@@ -162,6 +162,7 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
 
 
 
