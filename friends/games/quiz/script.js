@@ -1,11 +1,12 @@
 class QuizGame {
     constructor() {
-        // Состояние игры
+        console.log('Игра создана');
+        
         this.state = {
             // Настройки
             players: 1,
             difficulty: 'easy',
-            categories: ['general'], // ТОЛЬКО ОДНА КАТЕГОРИЯ ПО УМОЛЧАНИЮ
+            categories: ['general'],
             questionCount: 10,
             
             // Игровой процесс
@@ -16,7 +17,6 @@ class QuizGame {
             timerInterval: null,
             gameStarted: false,
             gameTime: 0,
-            gamePaused: false,
             
             // Очки
             score: 0,
@@ -29,50 +29,34 @@ class QuizGame {
             currentPlayer: 0,
             
             // Подсказки
-            hintsUsed: 0,
-            fiftyFiftyUsed: false,
-            
-            // Статистика
-            stats: {
-                totalGames: 0,
-                totalQuestions: 0,
-                totalCorrect: 0,
-                bestScore: 0,
-                achievements: [],
-                categoriesPlayed: new Set(),
-                totalTime: 0
-            }
+            fiftyFiftyUsed: false
         };
         
         this.init();
     }
     
     init() {
-        this.loadStats();
+        console.log('Инициализация игры');
         this.bindEvents();
         this.updateQuestionCount();
         this.initPlayers();
-        this.updateStatsUI();
     }
     
     bindEvents() {
+        console.log('Настройка обработчиков');
+        
         // Кнопка назад
         document.getElementById('backBtn').addEventListener('click', () => {
-            if (this.state.gameStarted && !this.state.gamePaused) {
+            if (this.state.gameStarted) {
                 this.showModal('exitModal');
             } else {
                 window.location.href = '../../index.html';
             }
         });
         
-        // Меню
-        document.getElementById('menuBtn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleDropdown();
-        });
-        
-        document.addEventListener('click', () => {
-            document.getElementById('dropdownMenu').classList.remove('active');
+        // Меню (пока не используется)
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            console.log('Меню нажато');
         });
         
         // Игроки
@@ -91,11 +75,12 @@ class QuizGame {
             });
         });
         
-        // Категории
+        // Категории - САМОЕ ВАЖНОЕ!
         document.querySelectorAll('.category-tag').forEach(tag => {
             tag.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const cat = e.target.closest('.category-tag').dataset.cat;
+                console.log('Клик по категории!');
+                const cat = tag.dataset.cat;
+                console.log('Категория:', cat);
                 this.toggleCategory(cat);
             });
         });
@@ -105,56 +90,11 @@ class QuizGame {
         slider.addEventListener('input', (e) => {
             this.setQuestionCount(e.target.value);
         });
-        slider.addEventListener('change', () => {
-            this.saveSettings();
-        });
         
-        // Быстрый старт
-        document.querySelector('.quick-start-btn').addEventListener('click', () => {
-            this.showModal('quickStartModal');
-        });
-        
-        document.querySelectorAll('.quick-option').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const preset = e.target.closest('.quick-option').dataset.preset;
-                this.applyPreset(preset);
-                this.hideModal('quickStartModal');
-                this.startGame();
-            });
-        });
-        
-        // Кнопка старта
+        // Старт игры
         document.querySelector('.start-game').addEventListener('click', () => {
+            console.log('Старт игры');
             this.startGame();
-        });
-        
-        // Правила
-        document.getElementById('rulesBtn').addEventListener('click', () => {
-            this.showModal('rulesModal');
-        });
-        
-        document.getElementById('closeRules').addEventListener('click', () => {
-            this.hideModal('rulesModal');
-        });
-        
-        document.getElementById('closeQuickStart').addEventListener('click', () => {
-            this.hideModal('quickStartModal');
-        });
-        
-        // Достижения
-        document.getElementById('achievementsBtn').addEventListener('click', () => {
-            this.showAchievements();
-        });
-        
-        document.getElementById('closeAchievements').addEventListener('click', () => {
-            this.hideModal('achievementsModal');
-        });
-        
-        // Сброс статистики
-        document.getElementById('resetStatsBtn').addEventListener('click', () => {
-            if (confirm('Вы уверены, что хотите сбросить всю статистику?')) {
-                this.resetStats();
-            }
         });
         
         // Выход из игры
@@ -197,28 +137,12 @@ class QuizGame {
             this.showMainScreen();
         });
         
-        // Поделиться
-        document.querySelector('.share-results').addEventListener('click', () => {
-            this.shareResults();
-        });
-        
-        // Обработка нажатий вне модалок
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                this.hideAllModals();
-            }
-        });
-        
-        // Закрытие по ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.hideAllModals();
-            }
-        });
+        console.log('Обработчики настроены');
     }
     
     // === НАСТРОЙКИ ===
     setPlayers(count) {
+        console.log('Установка игроков:', count);
         this.state.players = count;
         
         document.querySelectorAll('.player-btn').forEach(btn => {
@@ -229,6 +153,7 @@ class QuizGame {
     }
     
     setDifficulty(diff) {
+        console.log('Установка сложности:', diff);
         this.state.difficulty = diff;
         
         document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -237,21 +162,40 @@ class QuizGame {
     }
     
     toggleCategory(cat) {
+        console.log('Переключение категории:', cat);
+        console.log('Текущие категории:', this.state.categories);
+        
         const tag = document.querySelector(`[data-cat="${cat}"]`);
+        if (!tag) {
+            console.error('Тег не найден');
+            return;
+        }
+        
+        // Переключаем класс
         const isActive = tag.classList.contains('active');
         
         if (isActive) {
-            // Если пытаемся отключить последнюю категорию - не позволяем
+            // Нельзя отключить последнюю категорию
             if (this.state.categories.length === 1) {
-                this.showToast('Должна быть выбрана хотя бы одна категория!', 'warning');
+                console.log('Нельзя отключить последнюю категорию');
+                alert('Должна быть выбрана хотя бы одна категория!');
                 return;
             }
+            
             tag.classList.remove('active');
             this.state.categories = this.state.categories.filter(c => c !== cat);
         } else {
             tag.classList.add('active');
             this.state.categories.push(cat);
         }
+        
+        console.log('Новые категории:', this.state.categories);
+        
+        // Визуальная обратная связь
+        tag.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            tag.style.transform = '';
+        }, 200);
     }
     
     setQuestionCount(count) {
@@ -266,27 +210,8 @@ class QuizGame {
         this.state.questionCount = parseInt(slider.value);
     }
     
-    applyPreset(preset) {
-        switch(preset) {
-            case 'solo':
-                this.setPlayers(1);
-                this.setDifficulty('easy');
-                this.setQuestionCount(10);
-                break;
-            case 'duel':
-                this.setPlayers(2);
-                this.setDifficulty('medium');
-                this.setQuestionCount(15);
-                break;
-            case 'party':
-                this.setPlayers(4);
-                this.setDifficulty('easy');
-                this.setQuestionCount(20);
-                break;
-        }
-    }
-    
     initPlayers() {
+        console.log('Инициализация игроков:', this.state.players);
         this.state.playerScores = [];
         
         for (let i = 0; i < this.state.players; i++) {
@@ -294,9 +219,7 @@ class QuizGame {
                 id: i,
                 name: `Игрок ${i + 1}`,
                 score: 0,
-                correct: 0,
-                streak: 0,
-                bestStreak: 0
+                correct: 0
             });
         }
         
@@ -314,26 +237,17 @@ class QuizGame {
                 <div class="player-name">${player.name}</div>
                 <div class="player-points">${player.score}</div>
             `;
-            
-            playerEl.addEventListener('click', () => {
-                if (!this.state.gameStarted) {
-                    const newName = prompt('Имя игрока:', player.name);
-                    if (newName && newName.trim()) {
-                        this.state.playerScores[index].name = newName.trim();
-                        this.updatePlayersUI();
-                    }
-                }
-            });
-            
             container.appendChild(playerEl);
         });
     }
     
     // === ИГРОВОЙ ПРОЦЕСС ===
     startGame() {
-        // Проверяем категории
+        console.log('Старт игры');
+        console.log('Выбранные категории:', this.state.categories);
+        
         if (this.state.categories.length === 0) {
-            this.showToast('Выберите хотя бы одну категорию!', 'warning');
+            alert('Выберите хотя бы одну категорию!');
             return;
         }
         
@@ -341,12 +255,27 @@ class QuizGame {
         this.generateQuestions();
         
         if (this.state.questions.length === 0) {
-            this.showToast('Недостаточно вопросов для выбранных категорий!', 'danger');
+            alert('Недостаточно вопросов для выбранных категорий!');
             return;
         }
         
         // Сбрасываем состояние
-        this.resetGameState();
+        this.state.currentQuestion = 0;
+        this.state.score = 0;
+        this.state.streak = 0;
+        this.state.bestStreak = 0;
+        this.state.totalCorrect = 0;
+        this.state.gameTime = 0;
+        this.state.currentPlayer = 0;
+        this.state.gameStarted = true;
+        this.state.selectedAnswer = null;
+        this.state.fiftyFiftyUsed = false;
+        
+        // Сбрасываем очки игроков
+        this.state.playerScores.forEach(p => {
+            p.score = 0;
+            p.correct = 0;
+        });
         
         // Обновляем UI
         document.getElementById('fiftyFiftyBtn').disabled = false;
@@ -359,38 +288,13 @@ class QuizGame {
         this.showQuestion();
     }
     
-    resetGameState() {
-        this.state.currentQuestion = 0;
-        this.state.score = 0;
-        this.state.streak = 0;
-        this.state.bestStreak = 0;
-        this.state.totalCorrect = 0;
-        this.state.gameTime = 0;
-        this.state.currentPlayer = 0;
-        this.state.gameStarted = true;
-        this.state.gamePaused = false;
-        this.state.selectedAnswer = null;
-        this.state.hintsUsed = 0;
-        this.state.fiftyFiftyUsed = false;
-        
-        // Сбрасываем очки игроков
-        this.state.playerScores.forEach(p => {
-            p.score = 0;
-            p.correct = 0;
-            p.streak = 0;
-            p.bestStreak = 0;
-        });
-        
-        // Обновляем статистику
-        this.state.stats.totalGames++;
-    }
-    
     generateQuestions() {
+        console.log('Генерация вопросов');
         let allQuestions = [];
         
         // Собираем вопросы по выбранным категориям и сложности
         this.state.categories.forEach(cat => {
-            const catQuestions = QUIZ_DATABASE[this.state.difficulty].filter(q => q.category === cat);
+            const catQuestions = QUIZ_QUESTIONS[this.state.difficulty].filter(q => q.category === cat);
             allQuestions = allQuestions.concat(catQuestions);
         });
         
@@ -399,6 +303,8 @@ class QuizGame {
         
         // Берем нужное количество
         this.state.questions = allQuestions.slice(0, this.state.questionCount);
+        
+        console.log('Сгенерировано вопросов:', this.state.questions.length);
     }
     
     shuffleArray(array) {
@@ -410,6 +316,8 @@ class QuizGame {
     }
     
     showQuestion() {
+        console.log('Показ вопроса:', this.state.currentQuestion + 1);
+        
         if (this.state.currentQuestion >= this.state.questions.length) {
             this.endGame();
             return;
@@ -419,15 +327,10 @@ class QuizGame {
         
         // Обновляем UI
         document.getElementById('questionText').textContent = question.question;
-        document.getElementById('qCategory').textContent = CATEGORIES[question.category].name;
-        
-        let diffText = '';
-        switch(this.state.difficulty) {
-            case 'easy': diffText = 'Легко'; break;
-            case 'medium': diffText = 'Средне'; break;
-            case 'hard': diffText = 'Сложно'; break;
-        }
-        document.getElementById('qDifficulty').textContent = diffText;
+        document.getElementById('qCategory').textContent = CATEGORIES[question.category];
+        document.getElementById('qDifficulty').textContent = 
+            this.state.difficulty === 'easy' ? 'Легко' :
+            this.state.difficulty === 'medium' ? 'Средне' : 'Сложно';
         
         // Прогресс
         const progress = ((this.state.currentQuestion) / this.state.questions.length) * 100;
@@ -467,17 +370,21 @@ class QuizGame {
         
         // Сбрасываем таймер
         this.state.timer = 30;
-        this.updateTimer();
+        document.getElementById('timer').textContent = '30';
         
         // Запускаем новый таймер
         this.state.timerInterval = setInterval(() => {
-            // Если игра на паузе или ответ уже выбран - выходим
-            if (this.state.gamePaused || this.state.selectedAnswer !== null) {
-                return;
-            }
+            if (this.state.selectedAnswer !== null) return;
             
             this.state.timer--;
-            this.updateTimer();
+            document.getElementById('timer').textContent = this.state.timer;
+            
+            // Изменяем цвет при малом времени
+            const timerEl = document.getElementById('timer');
+            timerEl.style.color = this.state.timer <= 10 ? '#ef4444' : 
+                                 this.state.timer <= 20 ? '#f59e0b' : '#0f172a';
+            
+            this.state.gameTime++;
             
             if (this.state.timer <= 0) {
                 this.timeUp();
@@ -492,22 +399,12 @@ class QuizGame {
         }
     }
     
-    updateTimer() {
-        const timerEl = document.getElementById('timer');
-        timerEl.textContent = this.state.timer;
-        
-        timerEl.classList.remove('warning', 'danger');
-        if (this.state.timer <= 10) {
-            timerEl.classList.add('danger');
-        } else if (this.state.timer <= 20) {
-            timerEl.classList.add('warning');
-        }
-    }
-    
     selectAnswer(index) {
-        if (this.state.selectedAnswer !== null || this.state.gamePaused) return;
+        if (this.state.selectedAnswer !== null) return;
         
-        // Останавливаем таймер и записываем оставшееся время
+        console.log('Выбран ответ:', index);
+        
+        // Останавливаем таймер
         this.stopTimer();
         const timeRemaining = this.state.timer;
         
@@ -531,7 +428,7 @@ class QuizGame {
             btn.disabled = true;
         });
         
-        // Обновляем очки с учетом оставшегося времени
+        // Обновляем очки
         if (isCorrect) {
             this.handleCorrectAnswer(timeRemaining);
         } else {
@@ -548,11 +445,11 @@ class QuizGame {
         // Базовые очки
         let points = 100;
         
-        // Бонус за скорость (до 50 очков)
+        // Бонус за скорость
         const speedBonus = Math.floor(timeRemaining / 6) * 10;
         points += speedBonus;
         
-        // Бонус за серию (каждые 3 правильных ответа +50)
+        // Бонус за серию
         const streakBonus = Math.floor(this.state.streak / 3) * 50;
         points += streakBonus;
         
@@ -571,19 +468,11 @@ class QuizGame {
         const player = this.state.playerScores[this.state.currentPlayer];
         player.score += points;
         player.correct++;
-        player.streak++;
-        
-        if (player.streak > player.bestStreak) {
-            player.bestStreak = player.streak;
-        }
         
         // Обновляем UI
         this.updateScoreUI();
         
-        // Проверяем достижения
-        if (this.state.streak === 10) {
-            this.unlockAchievement('streak_10');
-        }
+        console.log(`+${points} очков! Серия: ${this.state.streak}`);
     }
     
     handleIncorrectAnswer() {
@@ -596,13 +485,24 @@ class QuizGame {
         
         const player = this.state.playerScores[this.state.currentPlayer];
         player.score = Math.max(0, player.score - penalty);
-        player.streak = 0;
         
         this.updateScoreUI();
+        
+        console.log(`-${penalty} очков`);
+    }
+    
+    updateScoreUI() {
+        // Очки игроков
+        this.state.playerScores.forEach((player, index) => {
+            const playerEl = document.querySelector(`.player-score:nth-child(${index + 1}) .player-points`);
+            if (playerEl) {
+                playerEl.textContent = player.score;
+            }
+        });
     }
     
     useFiftyFifty() {
-        if (this.state.fiftyFiftyUsed || this.state.selectedAnswer !== null || this.state.gamePaused) return;
+        if (this.state.fiftyFiftyUsed || this.state.selectedAnswer !== null) return;
         
         const question = this.state.questions[this.state.currentQuestion];
         const answers = document.querySelectorAll('.answer');
@@ -630,12 +530,13 @@ class QuizGame {
         });
         
         this.state.fiftyFiftyUsed = true;
-        this.state.hintsUsed++;
         document.getElementById('fiftyFiftyBtn').disabled = true;
+        
+        console.log('Использована подсказка 50/50');
     }
     
     timeUp() {
-        if (this.state.selectedAnswer !== null || this.state.gamePaused) return;
+        if (this.state.selectedAnswer !== null) return;
         
         this.stopTimer();
         this.handleIncorrectAnswer();
@@ -667,91 +568,23 @@ class QuizGame {
         });
     }
     
-    updateScoreUI() {
-        // Очки игроков
-        this.state.playerScores.forEach((player, index) => {
-            const playerEl = document.querySelector(`.player-score:nth-child(${index + 1}) .player-points`);
-            if (playerEl) {
-                playerEl.textContent = player.score;
-            }
-        });
-    }
-    
     // === ЗАВЕРШЕНИЕ ИГРЫ ===
     endGame() {
+        console.log('Конец игры');
         this.stopTimer();
         this.state.gameStarted = false;
         this.state.selectedAnswer = null;
-        
-        // Обновляем статистику
-        this.updateStats();
-        
-        // Проверяем достижения
-        this.checkAchievements();
-        
-        // Сохраняем статистику
-        this.saveStats();
         
         // Показываем результаты
         this.showResults();
     }
     
-    updateStats() {
-        this.state.stats.totalQuestions += this.state.questions.length;
-        this.state.stats.totalCorrect += this.state.totalCorrect;
-        this.state.stats.totalTime += this.state.gameTime;
-        
-        if (this.state.score > this.state.stats.bestScore) {
-            this.state.stats.bestScore = this.state.score;
-        }
-        
-        // Обновляем сыгранные категории
-        this.state.categories.forEach(cat => {
-            this.state.stats.categoriesPlayed.add(cat);
-        });
-        
-        // Проверяем достижение "все категории"
-        if (this.state.stats.categoriesPlayed.size === Object.keys(CATEGORIES).length) {
-            this.unlockAchievement('all_categories');
-        }
-    }
-    
-    checkAchievements() {
-        // Первая игра
-        if (this.state.stats.totalGames === 1) {
-            this.unlockAchievement('first_game');
-        }
-        
-        // Идеальный результат
-        if (this.state.totalCorrect === this.state.questions.length && this.state.questions.length >= 10) {
-            this.unlockAchievement('perfect_score');
-        }
-        
-        // Скоростная игра
-        const minutes = this.state.gameTime / 60;
-        if (minutes < 5 && this.state.questions.length >= 10) {
-            this.unlockAchievement('speed_run');
-        }
-    }
-    
-    unlockAchievement(achievementId) {
-        if (this.state.stats.achievements.includes(achievementId)) return;
-        
-        this.state.stats.achievements.push(achievementId);
-        const achievement = ACHIEVEMENTS.find(a => a.id === achievementId);
-        
-        if (achievement) {
-            this.showToast(`Достижение: ${achievement.name}!`, 'success');
-        }
-    }
-    
     showResults() {
+        console.log('Показ результатов');
         this.showScreen('resultsScreen');
         document.getElementById('gameSubtitle').textContent = 'Результаты';
         
-        const accuracy = this.state.questions.length > 0 
-            ? Math.round((this.state.totalCorrect / this.state.questions.length) * 100)
-            : 0;
+        const accuracy = Math.round((this.state.totalCorrect / this.state.questions.length) * 100);
         
         // Обновляем результаты
         document.getElementById('finalScore').textContent = this.state.score;
@@ -775,26 +608,39 @@ class QuizGame {
         }
         
         document.getElementById('resultsText').textContent = resultText;
-        
-        // Показываем победителя для мультиплеера
-        if (this.state.players > 1) {
-            const winner = this.state.playerScores.reduce((a, b) => a.score > b.score ? a : b);
-            const winnerCard = document.getElementById('winnerCard');
-            document.getElementById('winnerName').textContent = winner.name;
-            document.getElementById('winnerScore').textContent = `${winner.score} очков`;
-            winnerCard.style.display = 'block';
-        }
+    }
+    
+    formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
     
     restartGame() {
+        console.log('Рестарт игры');
+        
         // Сбрасываем состояние
-        this.resetGameState();
+        this.state.currentQuestion = 0;
+        this.state.score = 0;
+        this.state.streak = 0;
+        this.state.totalCorrect = 0;
+        this.state.gameTime = 0;
+        this.state.currentPlayer = 0;
+        this.state.selectedAnswer = null;
+        this.state.fiftyFiftyUsed = false;
+        
+        // Сбрасываем очки игроков
+        this.state.playerScores.forEach(p => {
+            p.score = 0;
+            p.correct = 0;
+        });
         
         // Запускаем новую игру
         this.startGame();
     }
     
     exitGame() {
+        console.log('Выход из игры');
         this.hideModal('exitModal');
         this.showMainScreen();
         this.state.gameStarted = false;
@@ -802,8 +648,8 @@ class QuizGame {
     }
     
     showMainScreen() {
+        console.log('Показ главного экрана');
         this.showScreen('mainScreen');
-        this.updateStatsUI();
         document.getElementById('gameSubtitle').textContent = 'Проверьте знания';
     }
     
@@ -818,198 +664,27 @@ class QuizGame {
     }
     
     showModal(modalId) {
-        if (this.state.gameStarted && !this.state.gamePaused) {
-            this.state.gamePaused = true;
-            this.stopTimer();
-        }
-        
         document.getElementById(modalId).classList.add('active');
     }
     
     hideModal(modalId) {
         document.getElementById(modalId).classList.remove('active');
-        
-        if (this.state.gameStarted && this.state.gamePaused) {
-            this.state.gamePaused = false;
-            if (this.state.timer > 0 && !this.state.selectedAnswer) {
-                this.startTimer();
-            }
-        }
-    }
-    
-    hideAllModals() {
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.classList.remove('active');
-        });
-        
-        if (this.state.gameStarted && this.state.gamePaused) {
-            this.state.gamePaused = false;
-            if (this.state.timer > 0 && !this.state.selectedAnswer) {
-                this.startTimer();
-            }
-        }
-    }
-    
-    toggleDropdown() {
-        const menu = document.getElementById('dropdownMenu');
-        menu.classList.toggle('active');
-    }
-    
-    showToast(message, type = 'info') {
-        const oldToast = document.querySelector('.toast');
-        if (oldToast) oldToast.remove();
-        
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.textContent = message;
-        
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
-    }
-    
-    showAchievements() {
-        this.showModal('achievementsModal');
-        
-        const container = document.getElementById('achievementsList');
-        container.innerHTML = '';
-        
-        ACHIEVEMENTS.forEach(achievement => {
-            const isUnlocked = this.state.stats.achievements.includes(achievement.id);
-            const item = document.createElement('div');
-            item.className = `achievement-item ${isUnlocked ? 'unlocked' : ''}`;
-            item.innerHTML = `
-                <i class="${achievement.icon}"></i>
-                <div class="achievement-info">
-                    <h4>${achievement.name}</h4>
-                    <p>${achievement.description}</p>
-                </div>
-            `;
-            container.appendChild(item);
-        });
-    }
-    
-    formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-    
-    shareResults() {
-        const accuracy = this.state.questions.length > 0 
-            ? Math.round((this.state.totalCorrect / this.state.questions.length) * 100)
-            : 0;
-        const time = this.formatTime(this.state.gameTime);
-        
-        let shareText = `🎯 Я набрал ${this.state.score} очков в LoveCouple Викторине!\n`;
-        shareText += `Правильных ответов: ${this.state.totalCorrect}/${this.state.questions.length} (${accuracy}%)\n`;
-        shareText += `Лучшая серия: ${this.state.bestStreak}\n`;
-        shareText += `Время: ${time}\n\n`;
-        shareText += `Попробуйте и вы: https://lovecouple.ru/friends/`;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: 'Мои результаты в LoveCouple Викторине',
-                text: shareText,
-                url: window.location.href
-            }).catch(() => {
-                this.copyToClipboard(shareText);
-            });
-        } else {
-            this.copyToClipboard(shareText);
-        }
-    }
-    
-    copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            this.showToast('Результаты скопированы!', 'success');
-        });
-    }
-    
-    // === СТАТИСТИКА ===
-    updateStatsUI() {
-        document.getElementById('totalGames').textContent = this.state.stats.totalGames;
-        document.getElementById('bestScore').textContent = this.state.stats.bestScore;
-        
-        const accuracy = this.state.stats.totalQuestions > 0 
-            ? Math.round((this.state.stats.totalCorrect / this.state.stats.totalQuestions) * 100)
-            : 0;
-        document.getElementById('accuracy').textContent = `${accuracy}%`;
-    }
-    
-    saveStats() {
-        const statsToSave = {
-            ...this.state.stats,
-            categoriesPlayed: Array.from(this.state.stats.categoriesPlayed)
-        };
-        
-        localStorage.setItem('quizStats', JSON.stringify(statsToSave));
-        this.saveSettings();
-    }
-    
-    saveSettings() {
-        const settings = {
-            players: this.state.players,
-            difficulty: this.state.difficulty,
-            categories: this.state.categories,
-            questionCount: this.state.questionCount
-        };
-        localStorage.setItem('quizSettings', JSON.stringify(settings));
-    }
-    
-    loadStats() {
-        const savedStats = localStorage.getItem('quizStats');
-        if (savedStats) {
-            const parsed = JSON.parse(savedStats);
-            this.state.stats = {
-                ...parsed,
-                categoriesPlayed: new Set(parsed.categoriesPlayed || [])
-            };
-        }
-        
-        const savedSettings = localStorage.getItem('quizSettings');
-        if (savedSettings) {
-            const settings = JSON.parse(savedSettings);
-            this.state.players = settings.players || 1;
-            this.state.difficulty = settings.difficulty || 'easy';
-            this.state.categories = settings.categories || ['general'];
-            this.state.questionCount = settings.questionCount || 10;
-            
-            // Обновляем UI настроек
-            this.setPlayers(this.state.players);
-            this.setDifficulty(this.state.difficulty);
-            this.setQuestionCount(this.state.questionCount);
-            
-            // Категории
-            document.querySelectorAll('.category-tag').forEach(tag => {
-                const cat = tag.dataset.cat;
-                tag.classList.toggle('active', this.state.categories.includes(cat));
-            });
-        }
-    }
-    
-    resetStats() {
-        if (confirm('Вы уверены, что хотите сбросить всю статистику и достижения?')) {
-            this.state.stats = {
-                totalGames: 0,
-                totalQuestions: 0,
-                totalCorrect: 0,
-                bestScore: 0,
-                achievements: [],
-                categoriesPlayed: new Set(),
-                totalTime: 0
-            };
-            
-            localStorage.removeItem('quizStats');
-            this.updateStatsUI();
-            this.showToast('Статистика сброшена', 'info');
-        }
     }
 }
 
-// Инициализация игры
+// Запуск игры
+console.log('Загрузка игры...');
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM загружен');
     window.quizGame = new QuizGame();
+    console.log('Игра готова');
 });
+
+// Простая проверка категорий
+setTimeout(() => {
+    console.log('=== ПРОВЕРКА КАТЕГОРИЙ ===');
+    console.log('Все элементы .category-tag:', document.querySelectorAll('.category-tag').length);
+    document.querySelectorAll('.category-tag').forEach(tag => {
+        console.log(`Категория: ${tag.dataset.cat}, активна: ${tag.classList.contains('active')}`);
+    });
+}, 1000);
