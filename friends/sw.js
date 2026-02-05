@@ -1,170 +1,113 @@
-// Версия кэша
-const CACHE_VERSION = 'v2.0.0';
-const CACHE_NAME = `lovecouple-cache-${CACHE_VERSION}`;
-
-// Файлы для кэширования
-const CORE_ASSETS = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/script.js',
-    '/manifest.webmanifest',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'
+const CACHE_NAME = 'lovecouple-quiz-v4';
+const urlsToCache = [
+  '/friends/',
+  '/friends/index.html',
+  '/friends/style.css',
+  '/friends/games/quiz/index.html',
+  '/friends/games/quiz/style.css',
+  '/friends/games/quiz/script.js',
+  '/friends/games/quiz/questions.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'
 ];
 
-// Установка Service Worker
+// Добавляем иконки в кэш только если они существуют
+const iconUrls = [
+  '/friends/icon-192.png',
+  '/friends/icon-512.png'
+];
+
 self.addEventListener('install', event => {
-    console.log('[Service Worker] Установка');
-    
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('[Service Worker] Кэширование основных файлов');
-                return cache.addAll(CORE_ASSETS);
-            })
-            .then(() => {
-                console.log('[Service Worker] Пропуск ожидания');
-                return self.skipWaiting();
-            })
-    );
-});
-
-// Активация Service Worker
-self.addEventListener('activate', event => {
-    console.log('[Service Worker] Активация');
-    
-    event.waitUntil(
-        caches.keys().then(cacheNames => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('[Service Worker] Кэширование основных файлов');
+        // Кэшируем основные файлы
+        return cache.addAll(urlsToCache)
+          .then(() => {
+            // Пробуем добавить иконки, но не падаем если их нет
             return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('[Service Worker] Удаление старого кэша:', cacheName);
-                        return caches.delete(cacheName);
-                    }
+              iconUrls.map(url => 
+                cache.add(url).catch(err => {
+                  console.log('[Service Worker] Иконка не найдена:', url);
+                  return Promise.resolve(); // Игнорируем ошибку
                 })
+              )
             );
-        }).then(() => {
-            console.log('[Service Worker] Клиенты активированы');
-            return self.clients.claim();
+          });
+      })
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+            console.log('[Service Worker] Удаляем старый кэш:', cache);
+            return caches.delete(cache);
+          }
         })
-    );
+      );
+    }).then(() => self.clients.claim())
+  );
 });
 
-// Перехват запросов
 self.addEventListener('fetch', event => {
-    // Пропускаем запросы к внешним API
-    if (event.request.url.includes('google-analytics') || 
-        event.request.url.includes('api.')) {
-        return;
-    }
-    
-    event.respondWith(
-        caches.match(event.request)
-            .then(cachedResponse => {
-                // Возвращаем кэшированный ответ, если он есть
-                if (cachedResponse) {
-                    // Обновляем кэш в фоне
-                    fetchAndCache(event.request);
-                    return cachedResponse;
-                }
-                
-                // Если нет в кэше, делаем сетевой запрос
-                return fetchAndCache(event.request);
-            })
-            .catch(error => {
-                console.log('[Service Worker] Ошибка fetch:', error);
-                
-                // Для HTML запросов возвращаем запасную страницу
-                if (event.request.headers.get('accept').includes('text/html')) {
-                    return caches.match('/');
-                }
-                
-                // Для других типов можно вернуть запасной контент
-                return new Response('Нет подключения к сети', {
-                    status: 503,
-                    statusText: 'Service Unavailable',
-                    headers: new Headers({
-                        'Content-Type': 'text/plain'
-                    })
-                });
-            })
-    );
-});
-
-// Функция для получения и кэширования
-function fetchAndCache(request) {
-    return fetch(request)
-        .then(response => {
-            // Проверяем, валидный ли ответ
+  // Пропускаем non-GET запросы
+  if (event.request.method !== 'GET') return;
+  
+  // Пропускаем запросы к внешним ресурсам (кроме тех что в кэше)
+  const url = new URL(event.request.url);
+  if (url.origin !== location.origin && 
+      !urlsToCache.includes(event.request.url) &&
+      !event.request.url.includes('cdnjs.cloudflare.com') &&
+      !event.request.url.includes('fonts.googleapis.com')) {
+    return;
+  }
+  
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Возвращаем из кэша если есть
+        if (response) {
+          return response;
+        }
+        
+        // Иначе загружаем из сети
+        return fetch(event.request)
+          .then(response => {
+            // Проверяем валидный ответ
             if (!response || response.status !== 200 || response.type !== 'basic') {
-                return response;
+              return response;
             }
             
-            // Клонируем ответ
+            // Клонируем для кэша
             const responseToCache = response.clone();
             
-            // Кэшируем
             caches.open(CACHE_NAME)
-                .then(cache => {
-                    cache.put(request, responseToCache);
-                });
-            
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+              
             return response;
-        });
-}
-
-// Обработка push-уведомлений
-self.addEventListener('push', event => {
-    console.log('[Service Worker] Push уведомление получено');
-    
-    const title = 'LoveCouple Games';
-    const options = {
-        body: event.data?.text() || 'Новые игры доступны!',
-        icon: 'assets/icon-192.png',
-        badge: 'assets/icon-96.png',
-        vibrate: [100, 50, 100],
-        data: {
-            dateOfArrival: Date.now(),
-            primaryKey: 1
-        }
-    };
-    
-    event.waitUntil(
-        self.registration.showNotification(title, options)
-    );
+          })
+          .catch(() => {
+            // Если офлайн и нет в кэше
+            if (event.request.headers.get('accept').includes('text/html')) {
+              return caches.match('/friends/index.html');
+            }
+            
+            // Для картинок возвращаем заглушку
+            if (event.request.headers.get('accept').includes('image')) {
+              return new Response(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192"><rect width="192" height="192" fill="#f8fafc"/><text x="96" y="100" text-anchor="middle" font-family="Arial" font-size="20" fill="#6366f1">🧠</text></svg>',
+                { headers: { 'Content-Type': 'image/svg+xml' } }
+              );
+            }
+          });
+      })
+  );
 });
-
-// Обработка кликов по уведомлениям
-self.addEventListener('notificationclick', event => {
-    console.log('[Service Worker] Уведомление было кликнуто');
-    
-    event.notification.close();
-    
-    event.waitUntil(
-        clients.matchAll({ type: 'window' })
-            .then(clientList => {
-                for (const client of clientList) {
-                    if (client.url === '/' && 'focus' in client) {
-                        return client.focus();
-                    }
-                }
-                if (clients.openWindow) {
-                    return clients.openWindow('/');
-                }
-            })
-    );
-});
-
-// Фоновые задачи
-self.addEventListener('periodicsync', event => {
-    if (event.tag === 'update-content') {
-        console.log('[Service Worker] Фоновая синхронизация');
-        event.waitUntil(updateContent());
-    }
-});
-
-async function updateContent() {
-    // Здесь можно добавить логику обновления контента
-    console.log('[Service Worker] Обновление контента...');
-}
