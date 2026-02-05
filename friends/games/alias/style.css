@@ -977,3 +977,172 @@ select:focus {
         grid-template-columns: 1fr;
     }
 }
+/* ===== ДОПОЛНЕНИЯ К СТИЛЯМ ===== */
+
+/* Кнопки типа игры */
+.game-type-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.type-btn {
+    flex: 1;
+    min-width: 120px;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+}
+
+.type-btn.active {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    border-color: #7c3aed;
+    color: white;
+}
+
+.type-hint {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 5px;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Индикатор режима в игре */
+.game-type-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.game-type-indicator i {
+    font-size: 12px;
+}
+
+/* Напоминание правил */
+.rules-reminder {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1));
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #475569;
+}
+
+.rules-reminder i {
+    color: #8b5cf6;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* Иконка режима в результатах */
+.result-stat .result-value i {
+    font-size: 28px;
+    color: #8b5cf6;
+}
+
+/* Категории - больше иконок */
+.category-btn i {
+    font-size: 20px;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.category-btn.active i {
+    color: white;
+}
+
+/* Анимации для перехода слов */
+@keyframes wordAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.word-display h2 {
+    animation: wordAppear 0.3s ease;
+}
+
+/* Адаптивность для новых элементов */
+@media (max-width: 480px) {
+    .type-btn {
+        min-width: 100px;
+        font-size: 13px;
+        padding: 10px 6px;
+    }
+    
+    .rules-reminder {
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+    
+    .game-type-indicator {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+}
+
+/* Улучшенные цвета для разных режимов */
+.type-btn[data-type="show"] {
+    border-color: #f59e0b;
+}
+
+.type-btn[data-type="show"].active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.type-btn[data-type="explain"] {
+    border-color: #8b5cf6;
+}
+
+.type-btn[data-type="explain"].active {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+/* Индикатор режима в игре */
+.game-type-indicator[data-type="show"] {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.game-type-indicator[data-type="explain"] {
+    background: rgba(139, 92, 246, 0.1);
+    color: #7c3aed;
+}
+
+/* Кнопки в игре для разных режимов */
+.control-btn.correct[data-type="show"] {
+    background: #f59e0b;
+}
+
+.control-btn.correct[data-type="explain"] {
+    background: #8b5cf6;
+}
+
+.control-btn.correct:hover {
+    opacity: 0.9;
+}
