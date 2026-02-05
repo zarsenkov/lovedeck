@@ -1,20 +1,9 @@
-// ===== КОНСТАНТЫ И ПЕРЕМЕННЫЕ =====
-const STORAGE_KEYS = {
-    STATS: 'whoami_stats_v3',
-    PLAYERS: 'whoami_players_v3'
-};
-
+// ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
 let gameState = {
-    // Настройки игры
-    mode: 'classic',
     players: [],
     categories: [],
-    rounds: 5,
-    timerEnabled: true,
-    timerMinutes: 2,
-    
-    // Игровое состояние
     currentRound: 1,
+    totalRounds: 5,
     currentPlayerIndex: 0,
     currentWord: null,
     usedWords: new Set(),
@@ -22,131 +11,64 @@ let gameState = {
     timeLeft: 120,
     timerInterval: null,
     gameActive: false,
-    
-    // Данные
-    categoriesData: {},
-    stats: {
-        totalGames: 0,
-        totalWords: 0,
-        totalTime: 0,
-        highScore: 0
-    }
+    categoriesData: {}
 };
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
-async function init() {
-    // Фикс высоты для мобильных
-    fixViewportHeight();
-    
-    // Загрузка данных
+document.addEventListener('DOMContentLoaded', async function() {
+    // Загрузка категорий
     await loadCategories();
-    loadStats();
-    loadPlayers();
     
-    // Инициализация интерфейса
-    initPlayersList();
-    initCategoriesList();
+    // Инициализация игроков
+    initPlayers();
+    
+    // Инициализация категорий
+    initCategories();
     
     // Показ главного экрана
     showScreen('homeScreen');
     
-    // События
+    // Фикс высоты для мобильных
+    fixViewportHeight();
     window.addEventListener('resize', fixViewportHeight);
-    window.addEventListener('orientationchange', fixViewportHeight);
-    
-    // Отладка
-    console.log('Игра "Кто я?" загружена');
-}
+});
 
-// Фикс высоты viewport
 function fixViewportHeight() {
     const vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
 }
 
-// Загрузка категорий
 async function loadCategories() {
     try {
-        const response = await fetch('categories.json');
+        // Правильный путь к файлу categories.json
+        const response = await fetch('/friends/games/whoami/categories.json'); // добавили ./
         const data = await response.json();
         gameState.categoriesData = data.categories;
+        console.log('Категории загружены:', Object.keys(data.categories).length, 'категорий');
     } catch (error) {
         console.error('Ошибка загрузки категорий:', error);
-        // Стандартные категории
+        // Стандартные категории на случай ошибки
         gameState.categoriesData = {
-            'Персонажи': ['Гарри Поттер', 'Шерлок Холмс', 'Дарт Вейдер', 'Индиана Джонс'],
-            'Фильмы': ['Криминальное чтиво', 'Назад в будущее', 'Крестный отец'],
-            'Знаменитости': ['Леонардо ДиКаприо', 'Бейонсе', 'Илон Маск'],
-            'Предметы': ['Холодильник', 'Смартфон', 'Книга', 'Зонтик']
+            '🎭 Персонажи': ['Гарри Поттер', 'Шерлок Холмс', 'Дарт Вейдер'],
+            '🎬 Фильмы': ['Криминальное чтиво', 'Назад в будущее'],
+            '🌟 Знаменитости': ['Леонардо ДиКаприо', 'Бейонсе', 'Илон Маск'],
+            '🍽️ Еда': ['Пицца', 'Суши', 'Шоколад']
         };
-    }
-}
-
-// Загрузка статистики
-function loadStats() {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEYS.STATS);
-        if (saved) {
-            gameState.stats = JSON.parse(saved);
-        }
-    } catch (e) {
-        console.error('Ошибка загрузки статистики:', e);
-    }
-    updateStatsDisplay();
-}
-
-// Сохранение статистики
-function saveStats() {
-    try {
-        localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(gameState.stats));
-    } catch (e) {
-        console.error('Ошибка сохранения статистики:', e);
-    }
-}
-
-// Загрузка игроков
-function loadPlayers() {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEYS.PLAYERS);
-        if (saved) {
-            gameState.players = JSON.parse(saved);
-        }
-    } catch (e) {
-        console.error('Ошибка загрузки игроков:', e);
-    }
-    
-    if (gameState.players.length === 0) {
-        gameState.players = [
-            { id: 1, name: 'Игрок 1', score: 0, guessed: 0 },
-            { id: 2, name: 'Игрок 2', score: 0, guessed: 0 },
-            { id: 3, name: 'Игрок 3', score: 0, guessed: 0 }
-        ];
-    }
-}
-
-// Сохранение игроков
-function savePlayers() {
-    try {
-        localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(gameState.players));
-    } catch (e) {
-        console.error('Ошибка сохранения игроков:', e);
+        console.warn('Используются стандартные категории');
     }
 }
 
 // ===== УПРАВЛЕНИЕ ЭКРАНАМИ =====
 function showScreen(screenId) {
-    // Скрываем все экраны
+    // Скрыть все экраны
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
     });
     
-    // Показываем нужный экран
+    // Показать нужный экран
     const screen = document.getElementById(screenId);
     if (screen) {
         screen.classList.add('active');
-        
-        // Прокрутка наверх
-        screen.scrollTop = 0;
         
         // Дополнительные действия
         switch(screenId) {
@@ -167,129 +89,123 @@ function showScreen(screenId) {
 }
 
 // ===== ГЛАВНЫЙ ЭКРАН =====
-function selectMode(mode) {
-    gameState.mode = mode;
-    showScreen('setupScreen');
+function changePlayerCount(change) {
+    const countElement = document.getElementById('playerCount');
+    let count = parseInt(countElement.textContent) + change;
+    
+    // Минимум 2, максимум 8 игроков
+    count = Math.max(2, Math.min(8, count));
+    countElement.textContent = count;
 }
 
-function quickStart() {
-    // Быстрый старт с настройками по умолчанию
-    gameState.mode = 'classic';
-    gameState.rounds = 5;
-    gameState.timerEnabled = true;
-    gameState.timerMinutes = 2;
+function goToSetup() {
+    const playerCount = parseInt(document.getElementById('playerCount').textContent);
     
-    // Выбираем все категории
-    gameState.categories = Object.keys(gameState.categoriesData);
+    // Создаем игроков
+    gameState.players = [];
+    for (let i = 0; i < playerCount; i++) {
+        gameState.players.push({
+            id: i + 1,
+            name: `Игрок ${i + 1}`,
+            score: 0,
+            guessed: 0
+        });
+    }
     
-    // Начинаем игру
-    startGame();
+    showScreen('setupScreen');
 }
 
 // ===== ЭКРАН НАСТРОЕК =====
 function initSetupScreen() {
     initPlayersList();
     initCategoriesList();
+    
+    // Установка значений по умолчанию
+    document.getElementById('timerSeconds').value = 120;
+    document.getElementById('roundsCount').value = 5;
 }
 
 function initPlayersList() {
-    const container = document.getElementById('playersContainer');
+    const container = document.getElementById('playersList');
     if (!container) return;
     
     container.innerHTML = '';
     
     gameState.players.forEach((player, index) => {
-        const div = document.createElement('div');
-        div.className = 'player-item';
-        div.innerHTML = `
-            <input type="text" 
-                   value="${player.name}" 
-                   placeholder="Имя игрока"
-                   onchange="updatePlayerName(${index}, this.value)">
-            <button class="remove-player" onclick="removePlayer(${index})">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        container.appendChild(div);
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'player-input';
+        input.value = player.name;
+        input.placeholder = `Имя игрока ${index + 1}`;
+        input.onchange = function() {
+            updatePlayerName(index, this.value);
+        };
+        container.appendChild(input);
     });
 }
 
+function updatePlayerName(index, newName) {
+    if (newName.trim()) {
+        gameState.players[index].name = newName.trim();
+    }
+}
+
 function initCategoriesList() {
-    const container = document.getElementById('categoriesContainer');
+    const container = document.getElementById('categoriesList');
     if (!container || !gameState.categoriesData) return;
     
     container.innerHTML = '';
     
     Object.keys(gameState.categoriesData).forEach(category => {
         const wordsCount = gameState.categoriesData[category].length;
+        
         const div = document.createElement('div');
         div.className = 'category-item';
-        div.innerHTML = `
-            <input type="checkbox" id="cat_${category}" value="${category}" checked>
-            <label class="category-label" for="cat_${category}">
-                ${category} (${wordsCount})
-            </label>
-        `;
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `cat_${category}`;
+        checkbox.value = category;
+        checkbox.checked = true;
+        
+        const label = document.createElement('label');
+        label.className = 'category-label';
+        label.htmlFor = `cat_${category}`;
+        label.textContent = `${category} (${wordsCount})`;
+        
+        div.appendChild(checkbox);
+        div.appendChild(label);
         container.appendChild(div);
     });
 }
 
-function addPlayer() {
-    if (gameState.players.length >= 12) {
-        showNotification('Максимум 12 игроков');
-        return;
-    }
-    
-    const newId = gameState.players.length + 1;
-    gameState.players.push({
-        id: newId,
-        name: `Игрок ${newId}`,
-        score: 0,
-        guessed: 0
-    });
-    
-    initPlayersList();
-    savePlayers();
-}
-
-function removePlayer(index) {
-    if (gameState.players.length <= 3) {
-        showNotification('Минимум 3 игрока');
-        return;
-    }
-    
-    gameState.players.splice(index, 1);
-    initPlayersList();
-    savePlayers();
-}
-
-function updatePlayerName(index, newName) {
-    if (newName.trim()) {
-        gameState.players[index].name = newName.trim();
-        savePlayers();
-    }
+function changeTimer(change) {
+    const input = document.getElementById('timerSeconds');
+    let value = parseInt(input.value) + change;
+    value = Math.max(30, Math.min(300, value));
+    input.value = value;
 }
 
 // ===== НАЧАЛО ИГРЫ =====
 function startGame() {
-    // Собираем настройки
-    gameState.rounds = parseInt(document.getElementById('roundsSelect').value);
-    gameState.timerEnabled = document.getElementById('timerToggle').checked;
-    gameState.timeLeft = gameState.timerEnabled ? gameState.timerMinutes * 60 : 0;
+    // Получаем настройки
+    gameState.totalRounds = parseInt(document.getElementById('roundsCount').value);
+    const timerSeconds = parseInt(document.getElementById('timerSeconds').value);
+    gameState.timeLeft = timerSeconds;
     
-    // Собираем выбранные категории
+    // Получаем выбранные категории
     const selectedCategories = Array.from(
         document.querySelectorAll('.category-item input:checked')
     ).map(cb => cb.value);
     
     if (selectedCategories.length === 0) {
-        showNotification('Выберите хотя бы одну категорию!');
+        alert('Выберите хотя бы одну категорию!');
         return;
     }
     
     gameState.categories = selectedCategories;
     
-    // Сброс игрового состояния
+    // Сброс состояния игры
     gameState.currentRound = 1;
     gameState.currentPlayerIndex = 0;
     gameState.usedWords.clear();
@@ -317,20 +233,50 @@ function prepareReadyScreen() {
     
     // Обновляем отображение
     document.getElementById('currentPlayerName').textContent = player.name;
-    document.getElementById('readyWord').textContent = '???';
-    document.getElementById('readyCategory').textContent = word.category;
+    document.getElementById('currentRound').textContent = gameState.currentRound;
+    document.getElementById('totalRounds').textContent = gameState.totalRounds;
+    
+    // Показываем плейсхолдеры
+    document.getElementById('wordPlaceholder').textContent = '???';
+    document.getElementById('categoryPlaceholder').textContent = 'Категория';
+    
+    // Активируем кнопку
+    const btn = document.getElementById('showWordBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-eye"></i> Показать слово';
 }
 
 function showWord() {
     if (!gameState.currentWord) return;
     
-    // Показываем слово
-    document.getElementById('readyWord').textContent = gameState.currentWord.word;
+    const btn = document.getElementById('showWordBtn');
+    const wordElement = document.getElementById('wordPlaceholder');
+    const categoryElement = document.getElementById('categoryPlaceholder');
     
-    // Через 2 секунды переходим к игре
-    setTimeout(() => {
-        showScreen('gameScreen');
-    }, 2000);
+    // Показываем счетчик
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 3';
+    
+    let count = 3;
+    const countdown = setInterval(() => {
+        count--;
+        if (count > 0) {
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${count}`;
+        } else {
+            clearInterval(countdown);
+            
+            // Показываем слово
+            wordElement.textContent = gameState.currentWord.word;
+            categoryElement.textContent = gameState.currentWord.category;
+            
+            // Меняем кнопку
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Перейти к игре';
+            btn.onclick = function() {
+                showScreen('gameScreen');
+            };
+        }
+    }, 1000);
 }
 
 function skipPlayer() {
@@ -343,9 +289,9 @@ function startGameRound() {
     const player = gameState.players[gameState.currentPlayerIndex];
     
     // Обновляем отображение
-    document.getElementById('currentPlayer').textContent = player.name;
-    document.getElementById('currentRound').textContent = gameState.currentRound;
-    document.getElementById('totalRounds').textContent = gameState.rounds;
+    document.getElementById('currentPlayerDisplay').textContent = player.name;
+    document.getElementById('roundNumber').textContent = gameState.currentRound;
+    document.getElementById('totalRoundsGame').textContent = gameState.totalRounds;
     
     if (gameState.currentWord) {
         document.getElementById('currentWord').textContent = gameState.currentWord.word;
@@ -353,19 +299,19 @@ function startGameRound() {
     }
     
     // Обновляем счет
-    updateScoresDisplay();
+    updateScoreboard();
     
     // Запускаем таймер
-    if (gameState.timerEnabled && !gameState.timerInterval) {
+    if (gameState.timeLeft > 0) {
         startTimer();
     }
 }
 
-// Таймер
 function startTimer() {
-    if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+    }
     
-    gameState.timeLeft = gameState.timerMinutes * 60;
     updateTimerDisplay();
     
     gameState.timerInterval = setInterval(() => {
@@ -374,7 +320,7 @@ function startTimer() {
         
         if (gameState.timeLeft <= 0) {
             clearInterval(gameState.timerInterval);
-            timeUp();
+            skipWord();
         }
     }, 1000);
 }
@@ -382,18 +328,10 @@ function startTimer() {
 function updateTimerDisplay() {
     const minutes = Math.floor(gameState.timeLeft / 60);
     const seconds = gameState.timeLeft % 60;
-    const display = document.getElementById('timerDisplay');
-    if (display) {
-        display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
+    document.getElementById('timerDisplay').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-function timeUp() {
-    showNotification('Время вышло!');
-    skipWord();
-}
-
-// Получение случайного слова
 function getRandomWord() {
     const availableCategories = gameState.categories.filter(cat => 
         gameState.categoriesData[cat] && gameState.categoriesData[cat].length > 0
@@ -431,20 +369,34 @@ function correctGuess() {
 }
 
 function skipWord() {
-    const player = gameState.players[gameState.currentPlayerIndex];
+    // Просто меняем слово без штрафа
+    gameState.currentWord = getRandomWord();
+    document.getElementById('currentWord').textContent = gameState.currentWord.word;
+    document.getElementById('wordCategory').textContent = gameState.currentWord.category;
     
-    player.score -= 2;
-    gameState.scores[player.id] -= 2;
+    // Сбрасываем таймер
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timeLeft = parseInt(document.getElementById('timerSeconds').value);
+        startTimer();
+    }
     
-    showNotification('Пропущено! -2 очка');
-    nextTurn();
+    showNotification('Слово изменено');
 }
 
 function giveUp() {
-    if (confirm('Сдаетесь?')) {
-        showNotification('Сдался...');
-        nextTurn();
-    }
+    showModal('giveUpModal');
+}
+
+function confirmGiveUp() {
+    const player = gameState.players[gameState.currentPlayerIndex];
+    
+    player.score -= 10;
+    gameState.scores[player.id] -= 10;
+    
+    closeModal('giveUpModal');
+    showNotification('Сдался! -10 очков', 'warning');
+    nextTurn();
 }
 
 function nextTurn() {
@@ -455,7 +407,7 @@ function nextTurn() {
     if (gameState.currentPlayerIndex === 0) {
         gameState.currentRound++;
         
-        if (gameState.currentRound > gameState.rounds) {
+        if (gameState.currentRound > gameState.totalRounds) {
             endGame();
             return;
         }
@@ -466,9 +418,8 @@ function nextTurn() {
     showScreen('readyScreen');
 }
 
-// Обновление отображения счета
-function updateScoresDisplay() {
-    const container = document.getElementById('scoresContainer');
+function updateScoreboard() {
+    const container = document.getElementById('scoreboard');
     if (!container) return;
     
     container.innerHTML = '';
@@ -478,6 +429,7 @@ function updateScoresDisplay() {
     gameState.players.forEach((player, index) => {
         const div = document.createElement('div');
         div.className = `score-row ${player.id === currentPlayerId ? 'current' : ''}`;
+        
         div.innerHTML = `
             <div class="score-name">
                 <i class="fas fa-${index === 0 ? 'crown' : 'user'}"></i>
@@ -485,6 +437,7 @@ function updateScoresDisplay() {
             </div>
             <div class="score-value">${player.score}</div>
         `;
+        
         container.appendChild(div);
     });
 }
@@ -499,114 +452,64 @@ function endGame() {
     
     gameState.gameActive = false;
     
-    // Обновление статистики
-    updateStats();
-    
     // Определение победителя
     const winner = gameState.players.reduce((prev, current) => 
         prev.score > current.score ? prev : current
     );
     
     document.getElementById('winnerName').textContent = winner.name;
-    showFinalResults();
+    showResults();
     
     showScreen('resultsScreen');
 }
 
-function showFinalResults() {
-    const tbody = document.getElementById('resultsTable');
-    if (!tbody) return;
+function showResults() {
+    const container = document.getElementById('resultsList');
+    if (!container) return;
     
-    tbody.innerHTML = '';
+    container.innerHTML = '';
     
     // Сортируем по очкам
     const sorted = [...gameState.players].sort((a, b) => b.score - a.score);
     
     sorted.forEach((player, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${player.name}</td>
-            <td>${player.score}</td>
-            <td>${player.guessed}</td>
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        
+        div.innerHTML = `
+            <div class="result-rank">${index + 1}</div>
+            <div class="result-info">
+                <div class="result-name">${player.name}</div>
+                <div class="result-stats">
+                    <span>Угадано: ${player.guessed}</span>
+                    <span>Слов сдано: ${gameState.totalRounds - player.guessed}</span>
+                </div>
+            </div>
+            <div class="result-score">${player.score}</div>
         `;
-        tbody.appendChild(row);
+        
+        container.appendChild(div);
     });
-}
-
-// ===== СТАТИСТИКА =====
-function updateStats() {
-    const totalGuessed = gameState.players.reduce((sum, p) => sum + p.guessed, 0);
-    const maxScore = Math.max(...gameState.players.map(p => p.score));
-    
-    gameState.stats.totalGames++;
-    gameState.stats.totalWords += totalGuessed;
-    gameState.stats.highScore = Math.max(gameState.stats.highScore, maxScore);
-    
-    saveStats();
-    updateStatsDisplay();
-}
-
-function updateStatsDisplay() {
-    document.getElementById('totalGames').textContent = gameState.stats.totalGames;
-    document.getElementById('totalWords').textContent = gameState.stats.totalWords;
-    document.getElementById('highScore').textContent = gameState.stats.highScore;
-    
-    // Среднее время
-    const avgTime = gameState.stats.totalGames > 0 
-        ? Math.round(gameState.stats.totalTime / gameState.stats.totalGames)
-        : 0;
-    document.getElementById('avgTime').textContent = `${avgTime}с`;
-}
-
-function showStats() {
-    updateStatsDisplay();
-    showScreen('statsScreen');
-    toggleMenu(); // Закрываем меню
-}
-
-function clearStats() {
-    if (confirm('Очистить всю статистику?')) {
-        gameState.stats = {
-            totalGames: 0,
-            totalWords: 0,
-            totalTime: 0,
-            highScore: 0
-        };
-        saveStats();
-        updateStatsDisplay();
-        showNotification('Статистика очищена');
-    }
-}
-
-// ===== ПРАВИЛА =====
-function showRules() {
-    showScreen('rulesScreen');
-    toggleMenu(); // Закрываем меню
 }
 
 // ===== УПРАВЛЕНИЕ ИГРОЙ =====
 function pauseGame() {
-    document.getElementById('pauseModal').classList.add('show');
+    if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+    }
+    showModal('pauseModal');
 }
 
 function resumeGame() {
-    document.getElementById('pauseModal').classList.remove('show');
+    closeModal('pauseModal');
+    if (gameState.timeLeft > 0) {
+        startTimer();
+    }
 }
 
 function newGame() {
     resetGameState();
     showScreen('homeScreen');
-}
-
-function resetGame() {
-    if (gameState.gameActive) {
-        if (confirm('Начать новую игру? Текущий прогресс будет потерян.')) {
-            newGame();
-        }
-    } else {
-        newGame();
-    }
 }
 
 function resetGameState() {
@@ -620,35 +523,63 @@ function resetGameState() {
     gameState.usedWords.clear();
     gameState.scores = {};
     gameState.gameActive = false;
+    gameState.timeLeft = 120;
     
     // Сброс счета игроков
-    gameState.players.forEach(player => {
-        player.score = 0;
-        player.guessed = 0;
-    });
+    if (gameState.players) {
+        gameState.players.forEach(player => {
+            player.score = 0;
+            player.guessed = 0;
+        });
+    }
 }
 
 // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
 function showNotification(text, type = 'success') {
-    const notification = document.getElementById('notification');
+    // Создаем уведомление
+    const notification = document.createElement('div');
+    notification.className = 'notification';
     notification.textContent = text;
-    notification.className = 'notification show';
     
     if (type === 'success') {
         notification.style.background = 'var(--success)';
-    } else if (type === 'error') {
-        notification.style.background = 'var(--danger)';
     } else if (type === 'warning') {
         notification.style.background = 'var(--warning)';
+    } else if (type === 'error') {
+        notification.style.background = 'var(--danger)';
     }
     
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--success);
+        color: white;
+        padding: 12px 24px;
+        border-radius: var(--radius);
+        font-weight: 600;
+        z-index: 1001;
+        box-shadow: var(--shadow-lg);
+        animation: slideDown 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
     setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
+        notification.style.animation = 'slideUp 0.3s ease';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 2000);
 }
 
-function toggleMenu() {
-    document.getElementById('menuOverlay').classList.toggle('show');
+function showModal(modalId) {
+    document.getElementById(modalId).classList.add('show');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('show');
 }
 
 function goBack() {
@@ -663,30 +594,22 @@ function goHome() {
     window.location.href = '../../index.html';
 }
 
-// ===== ИНИЦИАЛИЗАЦИЯ =====
-document.addEventListener('DOMContentLoaded', init);
-
 // Экспорт функций в глобальную область видимости
-window.selectMode = selectMode;
-window.quickStart = quickStart;
-window.addPlayer = addPlayer;
-window.removePlayer = removePlayer;
-window.updatePlayerName = updatePlayerName;
+window.changePlayerCount = changePlayerCount;
+window.goToSetup = goToSetup;
+window.changeTimer = changeTimer;
 window.startGame = startGame;
 window.showWord = showWord;
 window.skipPlayer = skipPlayer;
 window.correctGuess = correctGuess;
 window.skipWord = skipWord;
 window.giveUp = giveUp;
+window.confirmGiveUp = confirmGiveUp;
 window.pauseGame = pauseGame;
 window.resumeGame = resumeGame;
 window.endGame = endGame;
 window.newGame = newGame;
-window.showStats = showStats;
-window.clearStats = clearStats;
-window.showRules = showRules;
-window.resetGame = resetGame;
-window.toggleMenu = toggleMenu;
 window.showScreen = showScreen;
 window.goBack = goBack;
 window.goHome = goHome;
+window.closeModal = closeModal;
