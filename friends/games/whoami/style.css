@@ -4,6 +4,14 @@
     padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    touch-action: pan-x pan-y;
 }
 
 /* ===== ОСНОВНЫЕ СТИЛИ ===== */
@@ -12,27 +20,34 @@ body {
     background: #f8fafc;
     color: #0f172a;
     line-height: 1.5;
-    height: 100vh;
-    overflow: hidden;
     -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
 }
 
 .app-container {
     height: 100vh;
+    height: -webkit-fill-available;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
 }
 
 /* ===== ШАПКА ===== */
 .header {
     background: white;
     border-bottom: 1px solid #e2e8f0;
-    padding: 16px;
+    padding: 12px 16px;
     display: flex;
     align-items: center;
     gap: 12px;
     flex-shrink: 0;
+    min-height: 60px;
+    position: relative;
+    z-index: 10;
 }
 
 .btn-back {
@@ -47,29 +62,38 @@ body {
     color: #6366f1;
     font-size: 18px;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
 }
 
 .header-title {
     flex: 1;
+    min-width: 0;
 }
 
 .header-title h1 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #6366f1;
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .subtitle {
-    font-size: 12px;
+    font-size: 11px;
     color: #64748b;
     margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ===== КНОПКИ ===== */
 .btn {
-    padding: 12px 20px;
-    border-radius: 12px;
+    padding: 14px 20px;
+    border-radius: 14px;
     font-size: 16px;
     font-weight: 600;
     border: none;
@@ -80,12 +104,15 @@ body {
     gap: 8px;
     transition: all 0.2s;
     width: 100%;
-    min-height: 48px;
+    min-height: 52px;
     margin: 8px 0;
+    touch-action: manipulation;
+    position: relative;
+    -webkit-touch-callout: none;
 }
 
-.btn:hover {
-    transform: translateY(-1px);
+.btn:active {
+    transform: scale(0.98);
 }
 
 .btn-primary {
@@ -93,7 +120,7 @@ body {
     color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:active {
     background: #4f46e5;
 }
 
@@ -103,7 +130,7 @@ body {
     border: 2px solid #e2e8f0;
 }
 
-.btn-secondary:hover {
+.btn-secondary:active {
     background: #f8fafc;
 }
 
@@ -112,9 +139,17 @@ body {
     color: white;
 }
 
+.btn-success:active {
+    background: #0da271;
+}
+
 .btn-warning {
     background: #f59e0b;
     color: white;
+}
+
+.btn-warning:active {
+    background: #d97706;
 }
 
 .btn-danger {
@@ -122,9 +157,14 @@ body {
     color: white;
 }
 
+.btn-danger:active {
+    background: #dc2626;
+}
+
 .btn-large {
-    padding: 16px 24px;
-    font-size: 18px;
+    padding: 18px 24px;
+    font-size: 17px;
+    min-height: 56px;
 }
 
 /* ===== ЭКРАНЫ ===== */
@@ -132,6 +172,7 @@ body {
     flex: 1;
     overflow: hidden;
     position: relative;
+    background: #f8fafc;
 }
 
 .screen {
@@ -141,10 +182,11 @@ body {
     right: 0;
     bottom: 0;
     background: #f8fafc;
-    padding: 20px 16px;
+    padding: 16px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     display: none;
+    overscroll-behavior: contain;
 }
 
 .screen.active {
@@ -152,60 +194,63 @@ body {
 }
 
 .screen-content {
-    max-width: 500px;
+    max-width: 100%;
     margin: 0 auto;
     height: 100%;
     display: flex;
     flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom, 16px);
 }
 
 /* ===== ЭКРАН 1: ГЛАВНЫЙ ===== */
 .welcome-section {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
+    padding-top: 8px;
 }
 
 .welcome-icon {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    border-radius: 20px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
+    margin: 0 auto 16px;
     color: white;
-    font-size: 32px;
+    font-size: 28px;
 }
 
 .welcome-section h2 {
-    font-size: 24px;
+    font-size: 22px;
     margin-bottom: 12px;
     color: #0f172a;
 }
 
 .instructions {
     color: #64748b;
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 15px;
+    line-height: 1.5;
     background: white;
-    padding: 20px;
-    border-radius: 12px;
+    padding: 18px;
+    border-radius: 14px;
     border: 1px solid #e2e8f0;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    text-align: left;
 }
 
 .players-setup {
     background: white;
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: 14px;
+    padding: 20px;
     border: 1px solid #e2e8f0;
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .players-setup h3 {
-    font-size: 18px;
+    font-size: 17px;
     margin-bottom: 16px;
     color: #0f172a;
 }
@@ -219,21 +264,27 @@ body {
 }
 
 .btn-counter {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     border: 2px solid #e2e8f0;
     background: white;
     color: #0f172a;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
+    touch-action: manipulation;
+}
+
+.btn-counter:active {
+    background: #f8fafc;
+    transform: scale(0.95);
 }
 
 .count {
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 700;
     color: #6366f1;
     min-width: 60px;
@@ -241,45 +292,47 @@ body {
 }
 
 .hint {
-    font-size: 14px;
+    font-size: 13px;
     color: #64748b;
     margin-top: 8px;
+    line-height: 1.4;
 }
 
 /* Кнопка внизу экрана */
-.screen-content .btn-primary:last-child {
+.bottom-action {
     margin-top: auto;
-    margin-bottom: 20px;
+    margin-bottom: max(16px, env(safe-area-inset-bottom, 16px));
 }
 
 /* ===== ЭКРАН 2: НАСТРОЙКА ===== */
 .setup-header {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .setup-header h2 {
-    font-size: 24px;
-    margin-bottom: 8px;
+    font-size: 22px;
+    margin-bottom: 6px;
     color: #0f172a;
 }
 
 .setup-sections {
     flex: 1;
     overflow-y: auto;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .setup-section {
     background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
     border: 1px solid #e2e8f0;
 }
 
 .setup-section h3 {
-    font-size: 18px;
+    font-size: 17px;
     margin-bottom: 16px;
     color: #0f172a;
     display: flex;
@@ -289,18 +342,26 @@ body {
 
 .player-input {
     width: 100%;
-    padding: 14px;
+    padding: 15px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     font-size: 16px;
     background: white;
     color: #0f172a;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+    -webkit-appearance: none;
+    appearance: none;
+    touch-action: manipulation;
+}
+
+.player-input:focus {
+    outline: none;
+    border-color: #6366f1;
 }
 
 .categories-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 10px;
 }
 
@@ -314,14 +375,24 @@ body {
 
 .category-label {
     display: block;
-    padding: 14px 12px;
+    padding: 14px 10px;
     background: #f1f5f9;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     text-align: center;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.category-label:active {
+    transform: scale(0.98);
 }
 
 .category-item input:checked + .category-label {
@@ -338,18 +409,18 @@ body {
     font-size: 16px;
     font-weight: 600;
     color: #0f172a;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     display: block;
 }
 
 .timer-settings {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .btn-timer {
-    padding: 10px 16px;
+    padding: 12px 14px;
     background: white;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
@@ -357,45 +428,55 @@ body {
     font-weight: 600;
     cursor: pointer;
     min-width: 60px;
+    font-size: 15px;
+    touch-action: manipulation;
+}
+
+.btn-timer:active {
+    background: #f8fafc;
+    transform: scale(0.95);
 }
 
 input[type="number"] {
-    padding: 12px;
+    padding: 14px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    font-size: 16px;
+    font-size: 17px;
     text-align: center;
     background: white;
     color: #0f172a;
     width: 100%;
     max-width: 120px;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .action-buttons {
     display: flex;
     gap: 12px;
     margin-top: auto;
-    padding-bottom: 20px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
 }
 
 .action-buttons .btn {
     margin: 0;
+    min-height: 52px;
 }
 
 /* ===== ЭКРАН 3: ПОДГОТОВКА ===== */
 .ready-header {
     background: white;
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     border: 1px solid #e2e8f0;
     text-align: center;
 }
 
 .round-info {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .round-info span {
@@ -408,9 +489,10 @@ input[type="number"] {
 }
 
 .phone-container {
-    margin: 24px 0;
+    margin: 20px 0;
     display: flex;
     justify-content: center;
+    touch-action: none;
 }
 
 .phone {
@@ -418,9 +500,11 @@ input[type="number"] {
     height: 500px;
     background: white;
     border-radius: 40px;
-    padding: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     border: 3px solid #e2e8f0;
+    max-width: 100%;
+    position: relative;
 }
 
 .phone-screen {
@@ -434,35 +518,40 @@ input[type="number"] {
     justify-content: center;
     padding: 20px;
     border: 2px solid #e2e8f0;
+    overflow: hidden;
 }
 
 .word-placeholder {
-    font-size: 48px;
+    font-size: 42px;
     font-weight: 900;
     color: #6366f1;
     margin-bottom: 12px;
     text-align: center;
+    line-height: 1.2;
+    word-break: break-word;
+    padding: 0 10px;
 }
 
 .category-placeholder {
-    font-size: 16px;
+    font-size: 15px;
     color: #64748b;
     background: white;
     padding: 8px 16px;
     border-radius: 20px;
     font-weight: 500;
+    text-align: center;
 }
 
 .instructions-box {
     background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 20px;
     border: 1px solid #e2e8f0;
 }
 
 .instructions-box h3 {
-    font-size: 18px;
+    font-size: 17px;
     margin-bottom: 16px;
     color: #0f172a;
     display: flex;
@@ -473,14 +562,14 @@ input[type="number"] {
 .instruction-steps {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 14px;
+    margin-bottom: 18px;
 }
 
 .step {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    align-items: flex-start;
+    gap: 14px;
 }
 
 .step-number {
@@ -494,39 +583,44 @@ input[type="number"] {
     justify-content: center;
     font-weight: 700;
     font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
 }
 
 .step p {
     flex: 1;
     font-size: 15px;
     color: #0f172a;
+    line-height: 1.4;
 }
 
 .warning {
     background: #fff3cd;
     border: 1px solid #ffecb5;
     color: #856404;
-    padding: 16px;
+    padding: 14px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.4;
 }
 
 .ready-actions {
     margin-top: auto;
-    padding-bottom: 20px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
 }
 
 /* ===== ЭКРАН 4: ИГРА ===== */
 .game-header {
     background: white;
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     border: 1px solid #e2e8f0;
 }
 
@@ -541,69 +635,80 @@ input[type="number"] {
 .info-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 15px;
+    gap: 6px;
+    font-size: 14px;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .info-item i {
     color: #6366f1;
+    font-size: 16px;
 }
 
 .game-card {
     background: white;
     border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
     border: 2px solid #e2e8f0;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 
 .word-display {
     text-align: center;
-    margin-bottom: 32px;
-    padding: 32px 20px;
+    margin-bottom: 24px;
+    padding: 24px 16px;
     background: #f1f5f9;
-    border-radius: 12px;
+    border-radius: 14px;
     border: 2px dashed #e2e8f0;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .word {
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 900;
     color: #6366f1;
     margin-bottom: 12px;
     line-height: 1.2;
+    word-break: break-word;
+    padding: 0 10px;
 }
 
 .category {
-    font-size: 16px;
+    font-size: 15px;
     color: #64748b;
     background: white;
     padding: 8px 16px;
     border-radius: 20px;
     display: inline-block;
     font-weight: 500;
+    max-width: 90%;
+    word-break: break-word;
 }
 
 .game-actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .score-section {
     background: white;
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 14px;
+    padding: 18px;
     border: 1px solid #e2e8f0;
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 300px;
 }
 
 .score-section h3 {
-    font-size: 18px;
+    font-size: 17px;
     margin-bottom: 16px;
     color: #0f172a;
     display: flex;
@@ -616,8 +721,10 @@ input[type="number"] {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 200px;
 }
 
 .score-row {
@@ -627,11 +734,12 @@ input[type="number"] {
     padding: 14px;
     background: #f1f5f9;
     border-radius: 12px;
+    min-height: 52px;
 }
 
 .score-row.current {
     border: 2px solid #6366f1;
-    background: rgba(99, 102, 241, 0.05);
+    background: rgba(99, 102, 241, 0.08);
 }
 
 .score-name {
@@ -639,10 +747,12 @@ input[type="number"] {
     align-items: center;
     gap: 10px;
     font-weight: 500;
+    font-size: 15px;
 }
 
 .score-name i {
     color: #6366f1;
+    font-size: 16px;
 }
 
 .score-value {
@@ -653,64 +763,67 @@ input[type="number"] {
 
 .game-controls {
     display: flex;
-    gap: 12px;
+    gap: 10px;
 }
 
 /* ===== ЭКРАН 5: РЕЗУЛЬТАТЫ ===== */
 .results-header {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 .trophy {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     background: linear-gradient(135deg, #f59e0b, #d97706);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
+    margin: 0 auto 16px;
     color: white;
-    font-size: 36px;
+    font-size: 32px;
 }
 
 .results-header h2 {
-    font-size: 24px;
+    font-size: 22px;
     margin-bottom: 8px;
     color: #0f172a;
 }
 
 .winner {
-    font-size: 18px;
+    font-size: 17px;
     color: #0f172a;
+    font-weight: 600;
 }
 
 .winner span {
     color: #f59e0b;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .results-board {
     flex: 1;
     overflow-y: auto;
-    margin-bottom: 32px;
+    margin-bottom: 20px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .results-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .result-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 18px;
     background: white;
-    border-radius: 12px;
+    border-radius: 14px;
     border: 1px solid #e2e8f0;
+    min-height: 70px;
 }
 
 .result-item:first-child {
@@ -728,7 +841,9 @@ input[type="number"] {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    margin-right: 16px;
+    margin-right: 14px;
+    flex-shrink: 0;
+    font-size: 15px;
 }
 
 .result-item:first-child .result-rank {
@@ -740,32 +855,59 @@ input[type="number"] {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
 }
 
 .result-name {
     font-weight: 600;
     font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .result-stats {
     display: flex;
     gap: 12px;
-    font-size: 14px;
+    font-size: 13px;
     color: #64748b;
+    flex-wrap: wrap;
 }
 
 .result-score {
     font-weight: 700;
     font-size: 20px;
     color: #6366f1;
-    min-width: 60px;
+    min-width: 50px;
     text-align: right;
+    flex-shrink: 0;
 }
 
 .results-actions {
     display: flex;
-    gap: 12px;
-    padding-bottom: 20px;
+    gap: 10px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+}
+
+/* ===== УВЕДОМЛЕНИЯ ===== */
+.notification {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: #10b981;
+    color: white;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    z-index: 1001;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-width: 90%;
+    text-align: center;
+    font-size: 15px;
+    pointer-events: none;
 }
 
 /* ===== МОДАЛЬНЫЕ ОКНА ===== */
@@ -775,12 +917,13 @@ input[type="number"] {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.7);
     z-index: 1000;
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 16px;
+    backdrop-filter: blur(4px);
 }
 
 .modal.show {
@@ -793,6 +936,9 @@ input[type="number"] {
     padding: 24px;
     max-width: 400px;
     width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .modal-content h3 {
@@ -807,35 +953,38 @@ input[type="number"] {
     text-align: center;
     margin-bottom: 24px;
     font-size: 16px;
+    line-height: 1.4;
 }
 
 .modal-actions {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 /* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 480px) {
     .screen {
-        padding: 16px 12px;
-    }
-    
-    .categories-list {
-        grid-template-columns: 1fr;
-    }
-    
-    .game-actions {
-        grid-template-columns: 1fr;
+        padding: 12px;
     }
     
     .phone {
         width: 240px;
         height: 420px;
+        padding: 16px;
     }
     
     .word-placeholder, .word {
-        font-size: 32px;
+        font-size: 36px;
+    }
+    
+    .categories-list {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+    
+    .btn-large {
+        padding: 16px 20px;
+        font-size: 16px;
     }
 }
 
@@ -846,7 +995,20 @@ input[type="number"] {
     }
     
     .word-placeholder, .word {
-        font-size: 28px;
+        font-size: 30px;
+    }
+    
+    .categories-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-title h1 {
+        font-size: 16px;
+    }
+    
+    .btn {
+        padding: 12px 16px;
+        font-size: 15px;
     }
 }
 
@@ -859,10 +1021,16 @@ input[type="number"] {
     .phone {
         width: 200px;
         height: 340px;
+        padding: 12px;
     }
     
-    .game-actions {
-        grid-template-columns: repeat(3, 1fr);
+    .word-display {
+        min-height: 120px;
+        padding: 16px;
+    }
+    
+    .score-section {
+        min-height: 200px;
     }
 }
 
@@ -892,9 +1060,16 @@ input[type="number"] {
     .word-display {
         background: #334155;
         border-color: #475569;
+        color: #f1f5f9;
     }
     
     .player-input, input[type="number"] {
+        background: #334155;
+        border-color: #475569;
+        color: #f1f5f9;
+    }
+    
+    .btn-timer {
         background: #334155;
         border-color: #475569;
         color: #f1f5f9;
@@ -904,5 +1079,30 @@ input[type="number"] {
         background: #453411;
         border-color: #684c1c;
         color: #ffd54f;
+    }
+    
+    .word-placeholder, .word {
+        color: #818cf8;
+    }
+    
+    .score-value, .result-score {
+        color: #818cf8;
+    }
+}
+
+/* Безопасные области для iPhone X+ */
+@supports (padding: max(0px)) {
+    .screen-content {
+        padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    }
+    
+    .action-buttons,
+    .ready-actions,
+    .results-actions {
+        padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    }
+    
+    .header {
+        padding-top: max(12px, env(safe-area-inset-top, 12px));
     }
 }
