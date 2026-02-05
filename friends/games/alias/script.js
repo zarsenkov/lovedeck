@@ -97,14 +97,17 @@ function initSwipeCard() {
         
         const deltaX = swipeCurrentX - swipeStartX;
         const deltaY = swipeCurrentY - swipeStartY;
-        const rotation = deltaX * 0.1;
+        
+        // Enhanced rotation: 15-20 degrees based on swipe distance
+        const rotation = Math.min(Math.max(deltaX * 0.15, -20), 20);
         
         card.style.transform = `translateX(${deltaX}px) translateY(${deltaY}px) rotate(${rotation}deg)`;
         
-        if (deltaX < -50) {
+        // Lower threshold for better sensitivity (30px instead of 50px)
+        if (deltaX < -30) {
             card.classList.add('swiping-left');
             card.classList.remove('swiping-right');
-        } else if (deltaX > 50) {
+        } else if (deltaX > 30) {
             card.classList.add('swiping-right');
             card.classList.remove('swiping-left');
         } else {
@@ -120,20 +123,22 @@ function initSwipeCard() {
         
         card.classList.remove('dragging', 'swiping-left', 'swiping-right');
         
-        if (deltaX < -100) {
+        // Lower threshold for swipe completion (80px instead of 100px)
+        if (deltaX < -80) {
             // Swipe LEFT - SKIP
             skipWord();
-        } else if (deltaX > 100) {
+        } else if (deltaX > 80) {
             // Swipe RIGHT - CORRECT
             correctWord();
-        } else {
-            // Return to center
-            card.style.transform = '';
         }
         
+        // Elastic return to center
+        card.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        card.style.transform = '';
+        
         setTimeout(() => {
-            card.style.transform = '';
-        }, 200);
+            card.style.transition = '';
+        }, 400);
     };
     
     // Touch events
@@ -266,7 +271,7 @@ function confirmCategories() {
     
     if (selected.length === 0) {
         haptic([50, 50, 50]);
-        alert('SELECT AT LEAST ONE CATEGORY');
+        alert('ВЫБЕРИ ХОТЯ БЫ ОДНУ КАТЕГОРИЮ');
         return;
     }
     
@@ -278,8 +283,8 @@ function confirmCategories() {
 function startGame() {
     haptic(50);
     
-    state.teams[0].name = document.getElementById('team1').value.toUpperCase() || 'RED SQUAD';
-    state.teams[1].name = document.getElementById('team2').value.toUpperCase() || 'BLUE SQUAD';
+    state.teams[0].name = document.getElementById('team1').value.toUpperCase() || 'КРАСНЫЕ';
+    state.teams[1].name = document.getElementById('team2').value.toUpperCase() || 'СИНИЕ';
     state.roundTime = parseInt(document.getElementById('round-time').value) || 60;
     
     state.teams[0].score = 0;
@@ -295,7 +300,7 @@ function showTurnScreen() {
     const team = state.teams[state.currentTeam];
     document.getElementById('turn-team-name').textContent = team.name;
     
-    const modeText = state.mode === 'alias' ? 'EXPLAIN WITH WORDS' : 'SHOW WITH GESTURES';
+    const modeText = state.mode === 'alias' ? 'ОБЪЯСНЯЙ СЛОВАМИ' : 'ПОКАЗЫВАЙ ЖЕСТАМИ';
     document.getElementById('turn-mode-text').textContent = modeText;
     
     showScreen('screen-turn');
@@ -327,7 +332,7 @@ function endRound() {
 function showSummary() {
     const team = state.teams[state.currentTeam];
     
-    document.getElementById('summary-result').textContent = 'ROUND COMPLETE';
+    document.getElementById('summary-result').textContent = 'РАУНД ЗАВЕРШЁН';
     document.getElementById('summary-team').textContent = team.name;
     document.getElementById('summary-score').textContent = `+${state.roundScore}`;
     
@@ -354,9 +359,10 @@ function showSummary() {
     showScreen('screen-summary');
 }
 
-function changeCategory() {
-    haptic(30);
-    showScreen('screen-categories');
+function goHome() {
+    haptic(50);
+    stopTimer();
+    showScreen('screen-home');
 }
 
 function nextTeam() {
@@ -409,8 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'begin-round':
                     beginRound();
                     break;
-                case 'change-category':
-                    changeCategory();
+                case 'go-home':
+                    goHome();
                     break;
                 case 'next-team':
                     nextTeam();
