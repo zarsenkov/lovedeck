@@ -2,374 +2,352 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Алиас | LoveCouple Friends</title>
-    <meta name="description" content="Объясняй слова другими словами! Веселая командная игра для компании">
-    
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Крокодил & Алиас | LoveCouple Friends</title>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="crocodile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            min-height: 100vh;
-            padding: 0;
-            opacity: 0;
-            animation: fadeIn 0.5s ease forwards;
-        }
-        
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Кнопка назад в меню -->
-    <div class="back-button">
-        <a href="https://lovecouple.ru/friends/" class="back-link">
-            <i class="fas fa-arrow-left"></i> Назад к играм
-        </a>
-        <button class="rules-btn" id="rulesBtn">
-            <i class="fas fa-question-circle"></i> Правила
-        </button>
-    </div>
-
-    <div class="container">
+    <div class="game-container">
         <!-- Шапка -->
-        <header class="header">
-            <h1><i class="fas fa-comments"></i> АЛИАС</h1>
-            <p>Объясняй слова другими словами. Таймер тикает!</p>
+        <header class="game-header">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+                <span>Назад</span>
+            </button>
+            
+            <div class="header-title">
+                <div class="game-icon-sm">
+                    <i class="fas fa-hand-sparkles" id="gameIcon"></i>
+                </div>
+                <h1 id="gameTitle">КРОКОДИЛ</h1>
+                <p id="gameSubtitle">Объясняй слова без слов</p>
+            </div>
+            
+            <button class="menu-btn" onclick="toggleMenu()">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
         </header>
 
         <!-- Главный экран -->
-        <div class="screen active" id="mainScreen">
-            <div class="card">
-                <h2><i class="fas fa-gamepad"></i> Настройки игры</h2>
+        <main id="mainScreen" class="screen active">
+            <div class="game-options">
+                <h2><i class="fas fa-sliders-h"></i> Настройки игры</h2>
                 
-                <!-- Режим игры -->
-                <div class="setting">
-                    <label>Режим игры:</label>
-                    <div class="mode-selector">
-                        <button class="mode-btn active" data-mode="teams">Команды</button>
-                        <button class="mode-btn" data-mode="players">Игроки</button>
+                <!-- Тип игры -->
+                <div class="option-group">
+                    <label class="option-label">Тип игры</label>
+                    <div class="game-type-buttons">
+                        <button class="type-btn active" data-type="show">
+                            <i class="fas fa-hand-sparkles"></i> Показывать
+                        </button>
+                        <button class="type-btn" data-type="explain">
+                            <i class="fas fa-comments"></i> Объяснять
+                        </button>
                     </div>
+                    <p class="type-hint" id="typeHint">
+                        Показывай слова жестами и мимикой
+                    </p>
                 </div>
-                
-                <!-- Команды/Игроки -->
-                <div class="setting" id="teamsSetting">
-                    <label>Количество команд:</label>
-                    <select id="teamCount">
-                        <option value="2">2 команды</option>
-                        <option value="3" selected>3 команды</option>
-                        <option value="4">4 команды</option>
-                    </select>
-                </div>
-                
-                <div class="setting" id="playersSetting" style="display: none;">
-                    <label>Количество игроков:</label>
-                    <select id="playerCount">
-                        <option value="2">2 игрока</option>
-                        <option value="3">3 игрока</option>
-                        <option value="4" selected>4 игрока</option>
-                        <option value="5">5 игроков</option>
-                        <option value="6">6 игроков</option>
-                    </select>
-                </div>
-                
-                <!-- Настройки игры -->
-                <div class="settings-grid">
-                    <div class="setting">
-                        <label>Время на раунд:</label>
-                        <select id="roundTime">
-                            <option value="30">30 секунд</option>
-                            <option value="60" selected>1 минута</option>
-                            <option value="90">1,5 минуты</option>
-                            <option value="120">2 минуты</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting">
-                        <label>Количество раундов:</label>
-                        <select id="roundsCount">
-                            <option value="1">1 раунд</option>
-                            <option value="2">2 раунда</option>
-                            <option value="3" selected>3 раунда</option>
-                            <option value="4">4 раунда</option>
-                            <option value="5">5 раундов</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting">
-                        <label>Слов за раунд:</label>
-                        <select id="wordsPerRound">
-                            <option value="5">5 слов</option>
-                            <option value="10" selected>10 слов</option>
-                            <option value="15">15 слов</option>
-                            <option value="20">20 слов</option>
-                        </select>
-                </div>
-                </div>
-                
-                <!-- Категории -->
-                <div class="setting">
-                    <label>Категории слов:</label>
+
+                <!-- Категории слов -->
+                <div class="option-group">
+                    <label class="option-label">Категории слов</label>
                     <div class="categories-grid" id="categoriesGrid">
-                        <!-- Категории заполняются скриптом -->
+                        <!-- Заполняется скриптом -->
                     </div>
                 </div>
-                
-                <!-- Имена команд/игроков -->
-                <div class="names-section" id="namesSection">
-                    <h3><i class="fas fa-users"></i> Названия команд</h3>
-                    <div class="names-list" id="teamsList">
-                        <!-- Список команд -->
+
+                <!-- Количество слов -->
+                <div class="option-group">
+                    <label class="option-label">Количество слов</label>
+                    <div class="words-count">
+                        <div class="count-display">
+                            <span id="wordsCountValue">10</span> слов
+                        </div>
+                        <input type="range" id="wordsCountSlider" min="5" max="50" step="5" value="10">
+                        <div class="count-presets">
+                            <button class="count-preset" data-count="5">5</button>
+                            <button class="count-preset active" data-count="10">10</button>
+                            <button class="count-preset" data-count="15">15</button>
+                            <button class="count-preset" data-count="20">20</button>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="names-section" id="playersSection" style="display: none;">
-                    <h3><i class="fas fa-user-friends"></i> Имена игроков</h3>
-                    <div class="names-list" id="playersList">
-                        <!-- Список игроков -->
+
+                <!-- Время на слово -->
+                <div class="option-group">
+                    <label class="option-label">Время на слово</label>
+                    <div class="timer-options">
+                        <div class="timer-display">
+                            <span id="timerValue">60</span> сек
+                        </div>
+                        <input type="range" id="timerSlider" min="30" max="120" step="10" value="60">
+                        <div class="timer-presets">
+                            <button class="timer-preset" data-seconds="30">30с</button>
+                            <button class="timer-preset active" data-seconds="60">60с</button>
+                            <button class="timer-preset" data-seconds="90">90с</button>
+                            <button class="timer-preset" data-seconds="120">120с</button>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Кнопки -->
-                <div class="buttons">
-                    <button class="btn btn-primary" id="startGame">
-                        <i class="fas fa-play"></i> НАЧАТЬ ИГРУ
-                    </button>
-                    <button class="btn btn-secondary" id="randomizeNames">
-                        <i class="fas fa-random"></i> Случайные имена
-                    </button>
+
+                <!-- Режим игры -->
+                <div class="option-group">
+                    <label class="option-label">Режим игры</label>
+                    <div class="mode-buttons">
+                        <button class="mode-btn active" data-mode="classic">
+                            <i class="fas fa-user"></i> Классика
+                        </button>
+                        <button class="mode-btn" data-mode="teams">
+                            <i class="fas fa-users"></i> Команды
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="startGame()">
+                    <i class="fas fa-play"></i> Начать игру
+                </button>
+                <button class="btn-secondary" onclick="showCustomCards()">
+                    <i class="fas fa-edit"></i> Свои слова
+                </button>
+            </div>
+        </main>
 
         <!-- Экран игры -->
-        <div class="screen" id="gameScreen">
-            <div class="card">
-                <!-- Статус -->
-                <div class="game-status">
-                    <div class="status-item">
-                        <span class="label">Раунд</span>
-                        <span class="value" id="currentRound">1/3</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="label">Объясняет</span>
-                        <span class="value" id="currentExplainer">-</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="label">Очки</span>
-                        <span class="value" id="currentScore">0</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="label">Слово</span>
-                        <span class="value" id="wordProgress">0/10</span>
-                    </div>
+        <div id="gameScreen" class="screen">
+            <div class="game-info">
+                <div class="current-round">
+                    Слово <span id="currentWordNum">1</span> из <span id="totalWords">10</span>
                 </div>
-                
-                <!-- Таймер -->
                 <div class="timer-container">
-                    <div class="timer-display" id="timerDisplay">01:00</div>
-                    <div class="progress-bar">
-                        <div class="progress" id="timerProgress"></div>
+                    <div class="timer-circle">
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="timer-bg"></circle>
+                            <circle cx="50" cy="50" r="45" class="timer-progress"></circle>
+                        </svg>
+                        <div class="timer-text" id="timerText">60</div>
                     </div>
                 </div>
-                
-                <!-- Слово -->
-                <div class="word-container">
-                    <div class="word" id="currentWord">Загрузка...</div>
-                    <div class="category-badge" id="currentCategory">Категория</div>
-                </div>
-                
-                <!-- Кнопки управления -->
-                <div class="game-controls">
-                    <button class="btn btn-success" id="correctBtn">
-                        <i class="fas fa-check"></i> УГАДАНО
-                    </button>
-                    <button class="btn btn-warning" id="skipBtn">
-                        <i class="fas fa-forward"></i> ПРОПУСТИТЬ
-                    </button>
-                    <button class="btn btn-secondary" id="pauseBtn">
-                        <i class="fas fa-pause"></i> ПАУЗА
-                    </button>
-                    <button class="btn btn-danger" id="endRoundBtn">
-                        <i class="fas fa-stop"></i> ЗАКОНЧИТЬ
-                    </button>
-                </div>
-                
-                <!-- Список слов в раунде -->
-                <div class="round-words">
-                    <div class="words-list" id="wordsList">
-                        <!-- Список будет заполняться -->
-                    </div>
+                <div class="score-display">
+                    <i class="fas fa-star"></i>
+                    <span id="currentScore">0</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Экран паузы -->
-        <div class="screen" id="pauseScreen">
-            <div class="card">
-                <h2><i class="fas fa-pause"></i> ПАУЗА</h2>
-                
-                <div class="pause-info">
-                    <div class="info-item">
-                        <span>Раунд:</span>
-                        <strong id="pauseRound">1/3</strong>
-                    </div>
-                    <div class="info-item">
-                        <span>Объясняет:</span>
-                        <strong id="pauseExplainer">-</strong>
-                    </div>
-                    <div class="info-item">
-                        <span>Очков в раунде:</span>
-                        <strong id="pauseScore">0</strong>
-                    </div>
-                    <div class="info-item">
-                        <span>Осталось времени:</span>
-                        <strong id="pauseTime">01:00</strong>
-                    </div>
+            <div class="word-display">
+                <h2 id="currentWord">Загрузка...</h2>
+                <div class="word-info">
+                    <span class="word-category" id="wordCategory"></span>
+                    <span class="game-type-indicator" id="gameTypeIndicator">
+                        <i class="fas fa-hand-sparkles"></i> Показывать
+                    </span>
+                </div>
+            </div>
+
+            <div class="rules-reminder" id="rulesReminder">
+                <i class="fas fa-info-circle"></i>
+                <span id="rulesText">Показывай слова жестами и мимикой, без слов</span>
+            </div>
+
+            <div class="game-controls">
+                <div class="control-buttons">
+                    <button class="control-btn skip" onclick="skipWord()">
+                        <i class="fas fa-forward"></i> Пропустить
+                    </button>
+                    <button class="control-btn correct" onclick="correctGuess()">
+                        <i class="fas fa-check"></i> Угадано
+                    </button>
+                    <button class="control-btn wrong" onclick="wrongGuess()">
+                        <i class="fas fa-times"></i> Не угадано
+                    </button>
                 </div>
                 
-                <div class="pause-buttons">
-                    <button class="btn btn-primary" id="continueBtn">
-                        <i class="fas fa-play"></i> ПРОДОЛЖИТЬ
-                    </button>
-                    <button class="btn btn-secondary" id="quitBtn">
-                        <i class="fas fa-sign-out-alt"></i> ВЫЙТИ В МЕНЮ
+                <div class="team-scores" id="teamScores" style="display: none;">
+                    <!-- Для режима команд -->
+                </div>
+
+                <div class="game-actions">
+                    <button class="btn-danger" onclick="endGame()">
+                        <i class="fas fa-stop"></i> Завершить игру
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Экран результатов раунда -->
-        <div class="screen" id="resultsScreen">
-            <div class="card">
-                <h2><i class="fas fa-chart-bar"></i> Результаты раунда</h2>
-                
-                <div class="results-header">
-                    <div class="result-info">
-                        <h3 id="resultExplainer">Команда 1</h3>
-                        <p class="score-big" id="resultScore">0 очков</p>
-                        <p class="details" id="resultDetails">Угадано 0 из 10 слов</p>
-                    </div>
-                </div>
-                
-                <div class="words-results">
-                    <h4>Слова в раунде:</h4>
-                    <div class="results-grid" id="resultsList">
-                        <!-- Список результатов -->
-                    </div>
-                </div>
-                
-                <div class="results-buttons">
-                    <button class="btn btn-primary" id="nextBtn">
-                        <i class="fas fa-arrow-right"></i> СЛЕДУЮЩИЙ
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Экран финальных результатов -->
-        <div class="screen" id="finalScreen">
-            <div class="card">
+        <!-- Экран результатов -->
+        <div id="resultsScreen" class="screen">
+            <div class="results-header">
                 <h2><i class="fas fa-trophy"></i> Игра завершена!</h2>
-                
-                <div class="winner-card" id="winnerCard">
-                    <!-- Победитель -->
+                <div class="winner-info" id="winnerInfo" style="display: none;">
+                    <h3 id="winnerText"></h3>
                 </div>
-                
-                <div class="final-results">
-                    <h3>Итоговая таблица</h3>
-                    <div class="leaderboard" id="leaderboard">
-                        <!-- Таблица лидеров -->
+            </div>
+
+            <div class="results-stats">
+                <div class="result-stat">
+                    <div class="result-value" id="finalScore">0</div>
+                    <div class="result-label">Очков</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-value" id="wordsGuessed">0</div>
+                    <div class="result-label">Угадано слов</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-value" id="totalWordsPlayed">0</div>
+                    <div class="result-label">Всего слов</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-value" id="gameTypeResult">
+                        <i class="fas fa-hand-sparkles"></i>
                     </div>
+                    <div class="result-label">Режим</div>
                 </div>
-                
-                <div class="final-buttons">
-                    <button class="btn btn-primary" id="playAgainBtn">
-                        <i class="fas fa-redo"></i> ИГРАТЬ СНОВА
+            </div>
+
+            <div class="team-results" id="teamResults" style="display: none;">
+                <h3>Результаты команд</h3>
+                <div class="team-results-grid" id="teamResultsGrid">
+                    <!-- Результаты команд -->
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="playAgain()">
+                    <i class="fas fa-redo"></i> Играть снова
+                </button>
+                <button class="btn-secondary" onclick="goToMain()">
+                    <i class="fas fa-home"></i> В меню
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран своих слов -->
+        <div id="customScreen" class="screen">
+            <div class="custom-header">
+                <h2><i class="fas fa-edit"></i> Свои слова</h2>
+                <p>Добавьте свои слова для игры</p>
+            </div>
+
+            <div class="custom-input">
+                <textarea id="customWordsInput" placeholder="Введите слова или фразы, каждое с новой строки&#10;Пример:&#10;Космонавт&#10;Смартфон&#10;Вкусный ужин&#10;Заснеженная гора"></textarea>
+                <div class="input-info">
+                    <span id="wordCount">0 слов</span>
+                    <button class="btn-sm" onclick="clearCustomWords()">
+                        <i class="fas fa-trash"></i> Очистить
                     </button>
-                    <a href="https://lovecouple.ru/friends/" class="btn btn-secondary">
-                        <i class="fas fa-home"></i> В МЕНЮ ИГР
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="saveCustomWords()">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button class="btn-secondary" onclick="goToMain()">
+                    <i class="fas fa-times"></i> Отмена
+                </button>
+            </div>
+        </div>
+
+        <!-- Боковое меню -->
+        <div id="sideMenu" class="side-menu">
+            <div class="menu-content">
+                <div class="menu-header">
+                    <h3>Меню</h3>
+                    <button class="close-menu" onclick="toggleMenu()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="menu-items">
+                    <a href="#" class="menu-item" onclick="showRules(); toggleMenu();">
+                        <i class="fas fa-book"></i> Правила
                     </a>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Модальное окно правил -->
-        <div class="modal-overlay" id="rulesModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h3><i class="fas fa-book"></i> Правила игры Алиас</h3>
-                    <button class="close-btn" id="closeRulesBtn">&times;</button>
+    <!-- Модальное окно правил -->
+    <div id="rulesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-book"></i> Правила игры</h2>
+                <button class="close-modal" onclick="closeRules()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="rules-section">
+                    <h3><i class="fas fa-hand-sparkles"></i> Режим "Показывать" (Крокодил)</h3>
+                    <ul>
+                        <li>Нельзя говорить, шептать или издавать звуки</li>
+                        <li>Используйте только мимику и движения</li>
+                        <li>Нельзя использовать окружающие предметы</li>
+                        <li>+3 очка за каждое угаданное слово</li>
+                    </ul>
                 </div>
-                
-                <div class="modal-content">
-                    <div class="rules-section">
-                        <h4>🎯 Цель игры</h4>
-                        <p>Объяснить как можно больше слов своей команде за отведенное время.</p>
-                    </div>
-                    
-                    <div class="rules-section">
-                        <h4>👥 Режимы игры</h4>
-                        <ul>
-                            <li><strong>Командный:</strong> Играют команды по 2+ человека</li>
-                            <li><strong>Индивидуальный:</strong> Каждый играет за себя</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="rules-section">
-                        <h4>📝 Правила объяснения</h4>
-                        <ul>
-                            <li>Объясняйте слово любыми другими словами</li>
-                            <li>Нельзя использовать однокоренные слова</li>
-                            <li>Нельзя показывать жестами</li>
-                            <li>Нельзя называть само слово или его перевод</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="rules-section">
-                        <h4>⚡ Подсчет очков</h4>
-                        <ul>
-                            <li>+1 очко за каждое угаданное слово</li>
-                            <li>Пропуск слова не приносит очков</li>
-                            <li>Очки суммируются за все раунды</li>
-                            <li>Побеждает команда/игрок с наибольшим количеством очков</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="rules-section">
-                        <h4>⏱️ Таймер</h4>
-                        <p>У каждого раунда есть ограничение по времени. Когда время заканчивается, раунд завершается автоматически.</p>
-                    </div>
+
+                <div class="rules-section">
+                    <h3><i class="fas fa-comments"></i> Режим "Объяснять" (Алиас)</h3>
+                    <ul>
+                        <li>Объясняйте слово любыми другими словами</li>
+                        <li>Нельзя использовать однокоренные слова</li>
+                        <li>Нельзя показывать жестами</li>
+                        <li>Нельзя называть само слово или его перевод</li>
+                        <li>+1 очко за каждое угаданное слово</li>
+                    </ul>
                 </div>
-                
-                <div class="modal-footer">
-                    <button class="btn btn-primary" id="closeRulesBtn2">
-                        Понятно, начать игру!
-                    </button>
+
+                <div class="rules-section">
+                    <h3><i class="fas fa-users"></i> Режимы игры</h3>
+                    <ul>
+                        <li><strong>Классика:</strong> Один объясняет, все угадывают</li>
+                        <li><strong>Команды:</strong> Две команды соревнуются, очки начисляются команде</li>
+                    </ul>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="closeRules()">
+                    Понятно!
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Подключение скриптов -->
+    <!-- Кастомное модальное окно -->
+    <div id="customModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Подтверждение</h2>
+                <button class="close-modal" onclick="closeCustomModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">Вы уверены?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="modalCancel()">
+                    Отмена
+                </button>
+                <button class="btn-primary" onclick="modalConfirm()">
+                    Да
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="crocodile.js"></script>
     <script src="words.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            initGame();
+        });
+    </script>
 </body>
 </html>
