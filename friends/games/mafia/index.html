@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мафия - LoveCouple_Friends</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Стартовый экран -->
+        <div id="startScreen" class="screen active">
+            <div class="logo">
+                <i class="fas fa-user-secret"></i>
+                <h1>Мафия</h1>
+                <p class="subtitle">LoveCouple_Friends Edition</p>
+            </div>
+            
+            <div class="mode-selector">
+                <h2>Выберите режим игры</h2>
+                
+                <div class="mode-cards">
+                    <div class="mode-card" data-mode="offline">
+                        <div class="mode-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Оффлайн</h3>
+                        <p>Игра на одном устройстве с ведущим</p>
+                        <ul>
+                            <li>✓ Игра на одном устройстве</li>
+                            <li>✓ Ведущий управляет процессом</li>
+                            <li>✓ Тайный просмотр ролей</li>
+                            <li>✓ Без интернета</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mode-card" data-mode="online">
+                        <div class="mode-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3>Онлайн</h3>
+                        <p>Каждый игрок на своём устройстве</p>
+                        <ul>
+                            <li>✓ Каждый на своём устройстве</li>
+                            <li>✓ Автоматическая синхронизация</li>
+                            <li>✓ Видите только свою роль</li>
+                            <li>✓ Нужен интернет</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="game-settings">
+                    <h3>Настройки игры</h3>
+                    
+                    <div class="setting">
+                        <label for="playerCount">Количество игроков:</label>
+                        <div class="slider-container">
+                            <input type="range" id="playerCount" min="4" max="20" value="10">
+                            <span id="playerCountValue">10</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting">
+                        <label for="mafiaCount">Количество мафии:</label>
+                        <div class="slider-container">
+                            <input type="range" id="mafiaCount" min="1" max="5" value="2">
+                            <span id="mafiaCountValue">2</span>
+                        </div>
+                    </div>
+                    
+                    <div class="roles-selection">
+                        <h4>Дополнительные роли:</h4>
+                        <div class="role-checkboxes">
+                            <label><input type="checkbox" id="roleCommissioner" checked> Комиссар</label>
+                            <label><input type="checkbox" id="roleDoctor" checked> Доктор</label>
+                            <label><input type="checkbox" id="roleManiac"> Маньяк</label>
+                            <label><input type="checkbox" id="roleInformant"> Информатор</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="startGameBtn" class="btn-primary">
+                    <i class="fas fa-play"></i> Начать игру
+                </button>
+            </div>
+        </div>
+        
+        <!-- Экран регистрации -->
+        <div id="registrationScreen" class="screen">
+            <h2><i class="fas fa-user-plus"></i> Регистрация игроков</h2>
+            <div id="playersList"></div>
+            
+            <div class="add-player">
+                <input type="text" id="playerName" placeholder="Введите имя игрока" maxlength="20">
+                <button id="addPlayerBtn" class="btn-secondary">
+                    <i class="fas fa-plus"></i> Добавить
+                </button>
+            </div>
+            
+            <p class="hint">Добавьте <span id="requiredPlayers">10</span> игроков</p>
+            
+            <div class="action-buttons">
+                <button id="randomNamesBtn" class="btn-secondary">
+                    <i class="fas fa-random"></i> Случайные имена
+                </button>
+                <button id="startWithPlayersBtn" class="btn-primary" disabled>
+                    <i class="fas fa-shuffle"></i> Раздать роли
+                </button>
+            </div>
+            
+            <button id="backToModeBtn" class="btn-text">
+                <i class="fas fa-arrow-left"></i> Назад к выбору режима
+            </button>
+        </div>
+        
+        <!-- Экран ролей (оффлайн) -->
+        <div id="rolesScreen" class="screen">
+            <div class="role-header">
+                <h2><i class="fas fa-mask"></i> Раздача ролей</h2>
+                <p class="phase-info">Ведущий, передавайте устройство каждому игроку по очереди</p>
+            </div>
+            
+            <div id="currentPlayerRole" class="role-display">
+                <div class="role-card hidden">
+                    <div class="role-icon"></div>
+                    <h3 class="role-name"></h3>
+                    <p class="role-description"></p>
+                    <div class="player-name"></div>
+                </div>
+                
+                <button id="showRoleBtn" class="btn-primary">
+                    <i class="fas fa-eye"></i> Показать роль игроку
+                </button>
+                
+                <p class="instruction">
+                    Нажмите кнопку, затем передайте устройство игроку.<br>
+                    После просмотра верните устройство ведущему.
+                </p>
+            </div>
+            
+            <div class="players-progress">
+                <h3>Игроки, которые посмотрели роль:</h3>
+                <div id="viewedPlayersList"></div>
+            </div>
+            
+            <button id="startGameFromRolesBtn" class="btn-primary" disabled>
+                <i class="fas fa-play-circle"></i> Начать игру
+            </button>
+            
+            <button id="backToRegistrationBtn" class="btn-text">
+                <i class="fas fa-arrow-left"></i> Назад к регистрации
+            </button>
+        </div>
+        
+        <!-- Игровой экран -->
+        <div id="gameScreen" class="screen">
+            <div class="game-header">
+                <div class="game-info">
+                    <h2 id="gamePhase">День 1</h2>
+                    <p id="gamePhaseDescription">Обсуждение</p>
+                </div>
+                
+                <div class="game-controls">
+                    <div class="timer" id="gameTimer">02:00</div>
+                    <button id="nextPhaseBtn" class="btn-primary">
+                        <i class="fas fa-forward"></i> Следующая фаза
+                    </button>
+                </div>
+            </div>
+            
+            <div class="game-container">
+                <!-- Левая панель: игроки -->
+                <div class="players-panel">
+                    <h3><i class="fas fa-users"></i> Игроки</h3>
+                    <div id="playersStatusList"></div>
+                </div>
+                
+                <!-- Центральная панель: игровое поле -->
+                <div class="game-field">
+                    <div class="phase-instructions" id="phaseInstructions">
+                        <h3><i class="fas fa-info-circle"></i> Инструкции</h3>
+                        <div id="instructionsContent"></div>
+                    </div>
+                    
+                    <div class="actions-panel" id="actionsPanel">
+                        <h3><i class="fas fa-bullseye"></i> Действия</h3>
+                        <div id="actionsContent"></div>
+                    </div>
+                    
+                    <div class="game-history">
+                        <h3><i class="fas fa-history"></i> История раунда</h3>
+                        <div id="historyContent"></div>
+                    </div>
+                </div>
+                
+                <!-- Правая панель: информация -->
+                <div class="info-panel">
+                    <div class="role-info">
+                        <h3><i class="fas fa-user-secret"></i> Ваша роль</h3>
+                        <div id="myRoleInfo"></div>
+                    </div>
+                    
+                    <div class="game-stats">
+                        <h3><i class="fas fa-chart-bar"></i> Статистика</h3>
+                        <div id="gameStats">
+                            <p>Живых игроков: <span id="aliveCount">10</span></p>
+                            <p>Мафия: <span id="mafiaAlive">2</span></p>
+                            <p>Мирные: <span id="civiliansAlive">8</span></p>
+                            <p>Раунд: <span id="currentRound">1</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="endGameBtn" class="btn-danger">
+                <i class="fas fa-flag"></i> Завершить игру
+            </button>
+        </div>
+        
+        <!-- Экран победы -->
+        <div id="winScreen" class="screen">
+            <div class="win-content">
+                <div id="winIcon"></div>
+                <h1 id="winTitle">Победа мирных!</h1>
+                <p id="winDescription">Все мафиози были выявлены и обезврежены.</p>
+                
+                <div class="winners-list">
+                    <h3>Победители:</h3>
+                    <div id="winners"></div>
+                </div>
+                
+                <div class="game-summary">
+                    <h3>Статистика игры:</h3>
+                    <div id="summaryStats"></div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="newGameBtn" class="btn-primary">
+                        <i class="fas fa-rotate-right"></i> Новая игра
+                    </button>
+                    <button id="samePlayersBtn" class="btn-secondary">
+                        <i class="fas fa-user-friends"></i> С теми же игроками
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для онлайн режима -->
+    <div id="onlineModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-wifi"></i> Онлайн режим</h2>
+            <p>Для игры в онлайн режиме требуется серверная часть.</p>
+            
+            <div class="online-options">
+                <div class="option">
+                    <h3>1. Запустить локальный сервер</h3>
+                    <code>node server.js</code>
+                    <p>Запустите сервер на порту 3000</p>
+                </div>
+                
+                <div class="option">
+                    <h3>2. Разместить на Railway</h3>
+                    <p>Загрузите server.js на платформу Railway</p>
+                </div>
+                
+                <div class="option">
+                    <h3>3. Подключиться к комнате</h3>
+                    <input type="text" id="roomCode" placeholder="Код комнаты" maxlength="6">
+                    <button id="joinRoomBtn" class="btn-secondary">Присоединиться</button>
+                    <button id="createRoomBtn" class="btn-primary">Создать комнату</button>
+                </div>
+            </div>
+            
+            <button id="backToOfflineBtn" class="btn-text">
+                <i class="fas fa-arrow-left"></i> Вернуться к оффлайн режиму
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
