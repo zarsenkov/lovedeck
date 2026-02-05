@@ -10,212 +10,205 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="danetki-container">
-        <!-- Хедер игры -->
-        <div class="game-header">
-            <h1><i class="fas fa-mask"></i> ДАНЕТКИ</h1>
-            <p class="subtitle">Сюжетные загадки для интеллектуальных посиделок</p>
-        </div>
-        
+    <!-- Хедер с кнопкой "На главную" -->
+    <header class="game-header">
+        <button class="back-to-main-btn" onclick="window.location.href='https://lovecouple.ru/friends/'">
+            <i class="fas fa-arrow-left"></i> На главную
+        </button>
+        <h1><i class="fas fa-mask"></i> ДАНЕТКИ</h1>
+        <p class="subtitle">Сюжетные загадки для компании</p>
+    </header>
+
+    <!-- Кнопка "В настройки" (только во время игры) -->
+    <button class="back-to-setup-btn" id="back-to-setup-from-game" style="display: none;">
+        <i class="fas fa-cog"></i> В настройки
+    </button>
+
+    <main class="danetki-container">
         <!-- Экран 1: Настройки -->
-        <div id="screen-settings" class="screen active">
-            <div class="settings-card">
-                <div class="settings-group">
-                    <h3><i class="fas fa-sliders-h"></i> Сложность загадок</h3>
-                    <div class="difficulty-buttons">
+        <div id="screen-setup" class="screen active">
+            <div class="setup-card">
+                <h2><i class="fas fa-users"></i> Настройка игры</h2>
+                
+                <!-- Выбор количества игроков -->
+                <div class="setup-section">
+                    <h3>Количество игроков (2-8)</h3>
+                    <div class="player-selector">
+                        <button class="player-count-btn" data-count="2">2</button>
+                        <button class="player-count-btn" data-count="3">3</button>
+                        <button class="player-count-btn" data-count="4">4</button>
+                        <button class="player-count-btn" data-count="5">5</button>
+                        <button class="player-count-btn" data-count="6">6</button>
+                        <button class="player-count-btn" data-count="7">7</button>
+                        <button class="player-count-btn active" data-count="8">8</button>
+                    </div>
+                </div>
+
+                <!-- Выбор команд -->
+                <div class="setup-section">
+                    <h3>Количество команд (1-3)</h3>
+                    <div class="team-selector">
+                        <button class="team-count-btn active" data-teams="1">Без команд</button>
+                        <button class="team-count-btn" data-teams="2">2 команды</button>
+                        <button class="team-count-btn" data-teams="3">3 команды</button>
+                    </div>
+                </div>
+
+                <!-- Выбор сложности -->
+                <div class="setup-section">
+                    <h3>Сложность загадок</h3>
+                    <div class="difficulty-selector">
                         <button class="difficulty-btn active" data-difficulty="easy">
                             <i class="fas fa-seedling"></i> Легкие
-                            <small>Для разминки</small>
                         </button>
                         <button class="difficulty-btn" data-difficulty="medium">
                             <i class="fas fa-brain"></i> Средние
-                            <small>Интересные</small>
                         </button>
                         <button class="difficulty-btn" data-difficulty="hard">
                             <i class="fas fa-crown"></i> Сложные
-                            <small>Для экспертов</small>
                         </button>
                     </div>
                 </div>
-                
-                <div class="settings-group">
-                    <h3><i class="fas fa-clock"></i> Таймер обсуждения</h3>
-                    <div class="difficulty-buttons">
-                        <button class="difficulty-btn" data-time="180">
-                            <i class="fas fa-hourglass-start"></i> 3 мин
-                        </button>
-                        <button class="difficulty-btn active" data-time="300">
-                            <i class="fas fa-hourglass-half"></i> 5 мин
-                        </button>
-                        <button class="difficulty-btn" data-time="600">
-                            <i class="fas fa-hourglass-end"></i> 10 мин
-                        </button>
-                        <button class="difficulty-btn" data-time="0">
-                            <i class="fas fa-infinity"></i> Без таймера
-                        </button>
+
+                <!-- Таймер -->
+                <div class="setup-section">
+                    <h3>Таймер на загадку</h3>
+                    <div class="timer-selector">
+                        <button class="timer-btn active" data-time="120">2 мин</button>
+                        <button class="timer-btn" data-time="180">3 мин</button>
+                        <button class="timer-btn" data-time="240">4 мин</button>
+                        <button class="timer-btn" data-time="300">5 мин</button>
+                        <button class="timer-btn" data-time="0">Без таймера</button>
                     </div>
                 </div>
-                
-                <div class="action-buttons">
-                    <button class="btn btn-primary" id="start-game">
+
+                <!-- Кнопка старта -->
+                <div class="start-section">
+                    <button class="start-btn" id="start-game">
                         <i class="fas fa-play"></i> Начать игру
                     </button>
-                    <button class="btn btn-secondary" id="how-to-play">
-                        <i class="fas fa-question-circle"></i> Как играть?
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Статистика -->
-            <div id="stats-section" class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-label">Всего загадок</div>
-                    <div class="stat-value" id="total-riddles">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Разгадано</div>
-                    <div class="stat-value" id="solved-riddles">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Рекорд</div>
-                    <div class="stat-value" id="best-time">0:00</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Сложность</div>
-                    <div class="stat-value" id="avg-difficulty">-</div>
                 </div>
             </div>
         </div>
-        
-        <!-- Экран 2: Игра (загадка) -->
+
+        <!-- Экран 2: Игра -->
         <div id="screen-game" class="screen">
-            <div class="riddle-container">
-                <h3><i class="fas fa-scroll"></i> Сюжетная загадка</h3>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill"></div>
+            <!-- Текущий игрок/команда -->
+            <div class="current-turn">
+                <div class="turn-info">
+                    <span class="turn-label">Сейчас загадывает:</span>
+                    <span class="turn-value" id="current-turn">Игрок 1</span>
                 </div>
-                <div class="counter">
-                    <span id="current-riddle">1</span> из <span id="total-riddles-count">0</span>
+                <div class="score-info">
+                    <span class="score-label">Счёт:</span>
+                    <span class="score-value" id="current-score">0</span>
                 </div>
-                
-                <div class="riddle-text" id="riddle-text">
-                    Загрузка загадки...
-                </div>
-                
-                <!-- Подсказки -->
-                <div class="hint-container" id="hint-container">
-                    <div class="hint-title">
-                        <i class="fas fa-lightbulb"></i> Подсказка
-                    </div>
-                    <div class="hint-text" id="hint-text"></div>
+                <div class="round-info">
+                    <span class="round-value" id="round-counter">Раунд 1 из 10</span>
                 </div>
             </div>
-            
+
             <!-- Таймер -->
-            <div class="timer-container">
-                <div class="timer-label">Время на обсуждение</div>
-                <div class="timer" id="timer">05:00</div>
-                <div class="timer-actions">
-                    <button class="btn btn-secondary" id="pause-timer">
-                        <i class="fas fa-pause"></i> Пауза
+            <div class="game-timer-container">
+                <div class="timer-display" id="timer">02:00</div>
+                <div class="timer-controls">
+                    <button class="timer-btn-small" id="pause-timer">
+                        <i class="fas fa-pause"></i>
                     </button>
-                    <button class="btn btn-warning" id="show-hint">
-                        <i class="fas fa-lightbulb"></i> Подсказка
+                    <button class="timer-btn-small" id="next-player">
+                        <i class="fas fa-forward"></i>
                     </button>
                 </div>
             </div>
-            
-            <!-- Кнопки ответов -->
-            <div class="yesno-buttons">
-                <button class="yesno-btn yes-btn" data-answer="yes">
-                    <i class="fas fa-check-circle"></i> ДА
-                </button>
-                <button class="yesno-btn irrelevant-btn" data-answer="irrelevant">
-                    <i class="fas fa-minus-circle"></i> Не имеет значения
-                </button>
-                <button class="yesno-btn no-btn" data-answer="no">
-                    <i class="fas fa-times-circle"></i> НЕТ
-                </button>
+
+            <!-- Загадка -->
+            <div class="riddle-card">
+                <div class="riddle-header">
+                    <h3><i class="fas fa-scroll"></i> Загадка для объяснения</h3>
+                    <div class="riddle-number">#<span id="riddle-number">1</span></div>
+                </div>
+                <div class="riddle-content">
+                    <p class="riddle-text" id="riddle-text">Загрузка загадки...</p>
+                </div>
+                <!-- Ответ для ведущего -->
+                <div class="answer-section">
+                    <div class="answer-header">
+                        <i class="fas fa-eye"></i> Ответ для ведущего
+                    </div>
+                    <p class="answer-text" id="answer-text">Загрузка ответа...</p>
+                </div>
             </div>
-            
-            <!-- Кнопки действий -->
-            <div class="action-buttons">
-                <button class="btn btn-success" id="show-answer">
-                    <i class="fas fa-eye"></i> Показать ответ
+
+            <!-- Результат загадки -->
+            <div class="result-buttons">
+                <button class="result-btn success-btn" id="correct-guess">
+                    <i class="fas fa-check-circle"></i> Отгадано
                 </button>
-                <button class="btn btn-secondary" id="skip-riddle">
+                <button class="result-btn skip-btn" id="skip-riddle">
                     <i class="fas fa-forward"></i> Следующая загадка
                 </button>
             </div>
-        </div>
-        
-        <!-- Экран 3: Ответ -->
-        <div id="screen-answer" class="screen">
-            <div class="answer-container">
-                <div class="answer-title">
-                    <i class="fas fa-check-circle"></i> Ответ
-                </div>
-                <div class="answer-text" id="answer-text">
-                    Загрузка ответа...
+
+            <!-- Счёт и ход -->
+            <div class="score-section">
+                <h3><i class="fas fa-trophy"></i> Текущий счёт</h3>
+                <div class="scoreboard" id="scoreboard">
+                    <!-- Динамически заполняется -->
                 </div>
             </div>
-            
-            <!-- Кнопки действий после ответа -->
-            <div class="action-buttons">
-                <button class="btn btn-primary" id="next-riddle">
-                    <i class="fas fa-forward"></i> Следующая загадка
-                </button>
-                <button class="btn btn-secondary" id="back-to-settings">
-                    <i class="fas fa-cog"></i> Настройки
-                </button>
-            </div>
         </div>
-        
-        <!-- Экран 4: Правила -->
-        <div id="screen-rules" class="screen">
-            <div class="settings-card">
-                <h3><i class="fas fa-book"></i> Как играть в ДАНЕТКИ?</h3>
+
+        <!-- Экран 3: Итоги игры -->
+        <div id="screen-results" class="screen">
+            <div class="results-card">
+                <h2><i class="fas fa-trophy"></i> Итоги игры</h2>
                 
-                <div style="margin: 2rem 0;">
-                    <p><strong>ДАНЕТКИ</strong> — это сюжетные загадки, где игроки должны восстановить полную картину произошедшего, задавая вопросы, на которые можно ответить только "Да", "Нет" или "Не имеет значения".</p>
-                    
-                    <h4 style="margin: 1.5rem 0 1rem; color: var(--text-primary);">Правила игры:</h4>
-                    <ol style="padding-left: 1.5rem; margin-bottom: 1.5rem; line-height: 1.8;">
-                        <li><strong>Ведущий</strong> зачитывает загадку вслух</li>
-                        <li><strong>Игроки</strong> по очереди задают вопросы</li>
-                        <li><strong>Ведущий</strong> отвечает только "Да", "Нет" или "Не имеет значения"</li>
-                        <li>Игроки обсуждают и выдвигают версии</li>
-                        <li>Побеждает тот, кто первым правильно восстановит всю историю</li>
-                    </ol>
-                    
-                    <h4 style="margin: 1.5rem 0 1rem; color: var(--text-primary);">Советы:</h4>
-                    <ul style="padding-left: 1.5rem; line-height: 1.8;">
-                        <li>Задавайте конкретные вопросы</li>
-                        <li>Используйте логику и дедукцию</li>
-                        <li>Обращайте внимание на детали в тексте</li>
-                        <li>Не бойтесь ошибаться — это часть игры!</li>
-                    </ul>
+                <div class="end-reason" id="end-reason">
+                    Игра завершена!
                 </div>
                 
+                <div class="winner-section">
+                    <div class="winner-badge" id="winner-badge">
+                        <i class="fas fa-crown"></i>
+                        <span id="winner-name">Победитель</span>
+                    </div>
+                    <div class="winner-score" id="winner-score">0 очков</div>
+                </div>
+
+                <div class="final-scores">
+                    <h3>Финальные результаты:</h3>
+                    <div class="final-scoreboard" id="final-scoreboard">
+                        <!-- Динамически заполняется -->
+                    </div>
+                </div>
+
+                <div class="game-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-riddles">0</div>
+                        <div class="stat-label">Всего загадок</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="solved-riddles">0</div>
+                        <div class="stat-label">Отгадано</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="game-time">0:00</div>
+                        <div class="stat-label">Время игры</div>
+                    </div>
+                </div>
+
                 <div class="action-buttons">
-                    <button class="btn btn-primary" id="back-from-rules">
-                        <i class="fas fa-arrow-left"></i> Вернуться
+                    <button class="action-btn primary-btn" id="play-again">
+                        <i class="fas fa-redo"></i> Играть снова
+                    </button>
+                    <button class="action-btn secondary-btn" id="back-to-setup">
+                        <i class="fas fa-cog"></i> Новые настройки
                     </button>
                 </div>
             </div>
         </div>
-        
-        <!-- Навигация -->
-        <div class="game-nav">
-            <button class="back-btn" id="back-to-main">
-                <i class="fas fa-arrow-left"></i> На главную
-            </button>
-            <div style="color: var(--text-tertiary); font-size: 0.9rem;">
-                <i class="fas fa-users"></i> Игра для компании друзей
-            </div>
-        </div>
-    </div>
-    
+    </main>
+
     <script src="danetki.js"></script>
 </body>
 </html>
