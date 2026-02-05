@@ -4,32 +4,33 @@ let gameState = {
     selectedCategories: ['objects', 'animals', 'actions'],
     difficulty: 'easy',
     gameMode: 'classic',
+    wordsCount: 10,
     timerSeconds: 60,
     isPlaying: false,
     currentWordIndex: 0,
     score: 0,
     wordsGuessed: 0,
-    totalWords: 0,
+    wordsList: [],
     startTime: null,
     timerInterval: null,
     timeLeft: 60,
-    words: [],
     customWords: [],
     teams: [
         { id: 1, name: 'Команда 1', score: 0 },
         { id: 2, name: 'Команда 2', score: 0 }
     ],
-    currentTeam: 0
+    currentTeam: 0,
+    modalCallback: null
 };
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 function initGame() {
     initCategories();
+    initWordsCount();
     initTimer();
     loadCustomWords();
     loadSettings();
     setupEventListeners();
-    loadWords();
 }
 
 function initCategories() {
@@ -43,7 +44,7 @@ function initCategories() {
         { id: 'celebrities', name: 'Знаменитости', icon: 'fa-star' },
         { id: 'food', name: 'Еда', icon: 'fa-utensils' },
         { id: 'places', name: 'Места', icon: 'fa-globe' },
-        { id: 'adult', name: '18+', icon: 'fa-brain' },
+        { id: 'abstract', name: 'Абстрактные', icon: 'fa-brain' },
         { id: 'custom', name: 'Свои слова', icon: 'fa-edit' }
     ];
     
@@ -54,6 +55,33 @@ function initCategories() {
             <div>${category.name}</div>
         </button>
     `).join('');
+}
+
+function initWordsCount() {
+    const slider = document.getElementById('wordsCountSlider');
+    const value = document.getElementById('wordsCountValue');
+    
+    slider.value = gameState.wordsCount;
+    value.textContent = gameState.wordsCount;
+    
+    slider.addEventListener('input', function() {
+        gameState.wordsCount = parseInt(this.value);
+        value.textContent = gameState.wordsCount;
+        saveSettings();
+    });
+    
+    document.querySelectorAll('.count-preset').forEach(preset => {
+        preset.addEventListener('click', function() {
+            const count = parseInt(this.dataset.count);
+            gameState.wordsCount = count;
+            slider.value = count;
+            value.textContent = count;
+            
+            document.querySelectorAll('.count-preset').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            saveSettings();
+        });
+    });
 }
 
 function initTimer() {
@@ -104,7 +132,6 @@ function setupEventListeners() {
             }
             
             saveSettings();
-            loadWords();
         });
     });
     
@@ -115,7 +142,6 @@ function setupEventListeners() {
             this.classList.add('active');
             gameState.difficulty = this.dataset.level;
             saveSettings();
-            loadWords();
         });
     });
     
@@ -139,21 +165,27 @@ function setupEventListeners() {
     }
 }
 
-// ===== ЗАГРУЗКА СЛОВ =====
-function loadWords() {
-    gameState.words = [];
+// ===== ПОДГОТОВКА ИГРЫ =====
+function startGame() {
+    if (gameState.selectedCategories.length === 0) {
+        showAlert('Выберите хотя бы одну категорию слов!');
+        return;
+    }
+    
+    // Собираем слова из выбранных категорий
+    gameState.wordsList = [];
     
     // Слова из категорий
     gameState.selectedCategories.forEach(category => {
         if (crocodileWords[category]) {
-            gameState.words = gameState.words.concat(crocodileWords[category]);
+            gameState.wordsList = gameState.wordsList.concat(crocodileWords[category]);
         }
     });
     
-    // Свои слова
+    // Добавляем свои слова
     if (gameState.customWords.length > 0) {
         gameState.customWords.forEach(word => {
-            gameState.words.push({
+            gameState.wordsList.push({
                 word: word,
                 category: 'custom',
                 difficulty: 'custom'
@@ -163,17 +195,45 @@ function loadWords() {
     
     // Фильтрация по сложности
     if (gameState.difficulty !== 'all') {
-        gameState.words = gameState.words.filter(w => 
+        gameState.wordsList = gameState.wordsList.filter(w => 
             w.difficulty === gameState.difficulty || w.difficulty === 'custom'
         );
     }
     
-    // Перемешивание
-    shuffleArray(gameState.words);
-    gameState.totalWords = gameState.words.length;
+    if (gameState.wordsList.length === 0) {
+        showAlert('Нет слов по выбранным настройкам! Выберите другие категории или сложность.');
+        return;
+    }
     
-    // Обновление счетчика
-    document.getElementById('totalWordsCount').textContent = gameState.totalWords;
+    // Перемешиваем и берем нужное количество слов
+    shuffleArray(gameState.wordsList);
+    gameState.wordsList = gameState.wordsList.slice(0, gameState.wordsCount);
+    
+    // Сброс состояния
+    gameState.isPlaying = true;
+    gameState.currentWordIndex = 0;
+    gameState.score = 0;
+    gameState.wordsGuessed = 0;
+    gameState.startTime = Date.now();
+    gameState.timeLeft = gameState.timerSeconds;
+    gameState.currentTeam = 0;
+    
+    // Сброс очков команд
+    gameState.teams.forEach(team => team.score = 0);
+    
+    // Переключение экрана
+    switchScreen('game');
+    
+    // Обновление информации
+    document.getElementById('totalWords').textContent = gameState.wordsList.length;
+    document.getElementById('currentScore').textContent = '0';
+    
+    // Показать первое слово
+    showNextWord();
+    startTimer();
+    
+    // Обновление команд
+    updateTeamScores();
 }
 
 function shuffleArray(array) {
@@ -185,47 +245,18 @@ function shuffleArray(array) {
 }
 
 // ===== ИГРОВОЙ ПРОЦЕСС =====
-function startGame() {
-    if (gameState.words.length === 0) {
-        alert('Выберите хотя бы одну категорию слов!');
+function showNextWord() {
+    // Проверяем, закончились ли слова
+    if (gameState.currentWordIndex >= gameState.wordsList.length) {
+        // Игра завершена, показываем результаты
+        endGame();
         return;
     }
     
-    gameState.isPlaying = true;
-    gameState.currentWordIndex = 0;
-    gameState.score = 0;
-    gameState.wordsGuessed = 0;
-    gameState.startTime = Date.now();
-    gameState.timeLeft = gameState.timerSeconds;
-    gameState.currentTeam = 0;
-    
-    // Сброс команд
-    gameState.teams.forEach(team => team.score = 0);
-    
-    // Переключение экрана
-    switchScreen('game');
-    
-    // Первое слово
-    showNextWord();
-    startTimer();
-    
-    // Обновление UI
-    updateGameInfo();
-    updateTeamScores();
-}
-
-function showNextWord() {
-    if (gameState.currentWordIndex >= gameState.words.length) {
-        // Если слова закончились, перемешиваем заново
-        shuffleArray(gameState.words);
-        gameState.currentWordIndex = 0;
-    }
-    
-    const wordObj = gameState.words[gameState.currentWordIndex];
+    const wordObj = gameState.wordsList[gameState.currentWordIndex];
     document.getElementById('currentWord').textContent = wordObj.word;
     document.getElementById('wordCategory').textContent = getCategoryName(wordObj.category);
     document.getElementById('currentWordNum').textContent = gameState.currentWordIndex + 1;
-    document.getElementById('totalWords').textContent = gameState.totalWords;
     
     // Сложность
     const dot = document.getElementById('difficultyDot');
@@ -293,7 +324,7 @@ function updateTimerDisplay() {
 }
 
 function correctGuess() {
-    const points = calculatePoints();
+    const points = 3; // Фиксированные очки за угаданное слово
     gameState.score += points;
     gameState.wordsGuessed++;
     
@@ -309,10 +340,6 @@ function correctGuess() {
 }
 
 function wrongGuess() {
-    if (gameState.gameMode === 'competition') {
-        gameState.score = Math.max(0, gameState.score - 1);
-    }
-    
     if (gameState.gameMode === 'teams') {
         gameState.currentTeam = (gameState.currentTeam + 1) % gameState.teams.length;
         updateTeamScores();
@@ -324,8 +351,9 @@ function wrongGuess() {
 }
 
 function skipWord() {
-    if (gameState.gameMode === 'competition') {
-        gameState.score = Math.max(0, gameState.score - 2);
+    if (gameState.gameMode === 'teams') {
+        gameState.currentTeam = (gameState.currentTeam + 1) % gameState.teams.length;
+        updateTeamScores();
     }
     
     updateGameInfo();
@@ -333,14 +361,8 @@ function skipWord() {
     resetTimer();
 }
 
-function calculatePoints() {
-    const timeBonus = Math.floor(gameState.timeLeft / 10);
-    const basePoints = 3;
-    const quickBonus = gameState.timeLeft >= gameState.timerSeconds - 10 ? 2 : 0;
-    return basePoints + timeBonus + quickBonus;
-}
-
 function resetTimer() {
+    clearInterval(gameState.timerInterval);
     gameState.timeLeft = gameState.timerSeconds;
     updateTimerDisplay();
     startTimer();
@@ -367,19 +389,9 @@ function updateTeamScores() {
     `).join('');
 }
 
-// ===== УПРАВЛЕНИЕ ИГРОЙ =====
-function pauseGame() {
-    if (gameState.isPlaying) {
-        clearInterval(gameState.timerInterval);
-        gameState.isPlaying = false;
-        alert('Игра на паузе. Нажмите OK для продолжения.');
-        startTimer();
-        gameState.isPlaying = true;
-    }
-}
-
+// ===== ЗАВЕРШЕНИЕ ИГРЫ И РЕЗУЛЬТАТЫ =====
 function endGame() {
-    if (confirm('Завершить игру?')) {
+    if (gameState.isPlaying) {
         clearInterval(gameState.timerInterval);
         gameState.isPlaying = false;
         showResults();
@@ -389,39 +401,57 @@ function endGame() {
 function showResults() {
     switchScreen('results');
     
-    const totalTime = Math.floor((Date.now() - gameState.startTime) / 1000);
-    const minutes = Math.floor(totalTime / 60);
-    const seconds = totalTime % 60;
-    
-    // Статистика
+    // Общая статистика
     document.getElementById('finalScore').textContent = gameState.score;
     document.getElementById('wordsGuessed').textContent = gameState.wordsGuessed;
-    document.getElementById('totalTime').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('totalWordsPlayed').textContent = gameState.wordsList.length;
     
-    // Детали
-    const details = document.getElementById('resultsDetails');
-    details.innerHTML = `
-        <div class="detail-item">
-            <span class="detail-label">Режим</span>
-            <span class="detail-value">${getModeName(gameState.gameMode)}</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-label">Сложность</span>
-            <span class="detail-value">${getDifficultyName(gameState.difficulty)}</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-label">Категории</span>
-            <span class="detail-value">${gameState.selectedCategories.length}</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-label">Всего слов</span>
-            <span class="detail-value">${gameState.totalWords}</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-label">Процент угаданных</span>
-            <span class="detail-value">${gameState.totalWords > 0 ? Math.round((gameState.wordsGuessed / gameState.totalWords) * 100) : 0}%</span>
-        </div>
-    `;
+    // Обработка режима команд
+    const winnerInfo = document.getElementById('winnerInfo');
+    const teamResults = document.getElementById('teamResults');
+    
+    if (gameState.gameMode === 'teams') {
+        // Определяем победителя
+        let winner = null;
+        let maxScore = -1;
+        let draw = false;
+        
+        gameState.teams.forEach(team => {
+            if (team.score > maxScore) {
+                maxScore = team.score;
+                winner = team;
+                draw = false;
+            } else if (team.score === maxScore) {
+                draw = true;
+            }
+        });
+        
+        // Показываем победителя
+        winnerInfo.style.display = 'block';
+        if (draw) {
+            document.getElementById('winnerText').textContent = 'Ничья!';
+        } else {
+            document.getElementById('winnerText').textContent = `Победитель: ${winner.name}`;
+        }
+        
+        // Показываем результаты команд
+        teamResults.style.display = 'block';
+        const teamResultsGrid = document.getElementById('teamResultsGrid');
+        
+        // Сортируем команды по очкам
+        const sortedTeams = [...gameState.teams].sort((a, b) => b.score - a.score);
+        const maxTeamScore = sortedTeams[0].score;
+        
+        teamResultsGrid.innerHTML = sortedTeams.map(team => `
+            <div class="team-result ${team.score === maxTeamScore ? 'winner' : ''}">
+                <h4>${team.name}</h4>
+                <div class="score">${team.score}</div>
+            </div>
+        `).join('');
+    } else {
+        winnerInfo.style.display = 'none';
+        teamResults.style.display = 'none';
+    }
 }
 
 function playAgain() {
@@ -452,19 +482,17 @@ function saveCustomWords() {
     gameState.customWords = words;
     localStorage.setItem('crocodileCustomWords', JSON.stringify(words));
     
-    alert(`Сохранено ${words.length} слов!`);
+    showAlert(`Сохранено ${words.length} слов!`);
     goToMain();
-    loadWords();
 }
 
 function clearCustomWords() {
-    if (confirm('Очистить все свои слова?')) {
+    showConfirm('Очистить все свои слова?', function() {
         gameState.customWords = [];
         document.getElementById('customWordsInput').value = '';
         document.getElementById('wordCount').textContent = '0 слов';
         localStorage.removeItem('crocodileCustomWords');
-        loadWords();
-    }
+    });
 }
 
 function loadCustomWords() {
@@ -484,6 +512,7 @@ function saveSettings() {
         categories: gameState.selectedCategories,
         difficulty: gameState.difficulty,
         gameMode: gameState.gameMode,
+        wordsCount: gameState.wordsCount,
         timerSeconds: gameState.timerSeconds
     };
     localStorage.setItem('crocodileSettings', JSON.stringify(settings));
@@ -497,6 +526,7 @@ function loadSettings() {
             gameState.selectedCategories = settings.categories || ['objects', 'animals', 'actions'];
             gameState.difficulty = settings.difficulty || 'easy';
             gameState.gameMode = settings.gameMode || 'classic';
+            gameState.wordsCount = settings.wordsCount || 10;
             gameState.timerSeconds = settings.timerSeconds || 60;
             
             // Обновление UI
@@ -512,10 +542,55 @@ function loadSettings() {
                 preset.classList.toggle('active', parseInt(preset.dataset.seconds) === gameState.timerSeconds);
             });
             
+            document.querySelectorAll('.count-preset').forEach(preset => {
+                preset.classList.toggle('active', parseInt(preset.dataset.count) === gameState.wordsCount);
+            });
+            
         } catch (e) {
             console.log('Ошибка загрузки настроек');
         }
     }
+}
+
+// ===== МОДАЛЬНЫЕ ОКНА =====
+function showAlert(message) {
+    showModal('Внимание', message, null, function() {
+        closeCustomModal();
+    });
+}
+
+function showConfirm(message, callback) {
+    showModal('Подтверждение', message, callback);
+}
+
+function showModal(title, message, confirmCallback, cancelCallback) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMessage').textContent = message;
+    gameState.modalCallback = confirmCallback;
+    
+    if (cancelCallback) {
+        gameState.modalCallbackCancel = cancelCallback;
+    }
+    
+    document.getElementById('customModal').classList.add('active');
+}
+
+function closeCustomModal() {
+    document.getElementById('customModal').classList.remove('active');
+}
+
+function modalConfirm() {
+    if (gameState.modalCallback) {
+        gameState.modalCallback();
+    }
+    closeCustomModal();
+}
+
+function modalCancel() {
+    if (gameState.modalCallbackCancel) {
+        gameState.modalCallbackCancel();
+    }
+    closeCustomModal();
 }
 
 // ===== УТИЛИТЫ =====
@@ -529,11 +604,11 @@ function switchScreen(screenName) {
 
 function goBack() {
     if (gameState.activeScreen === 'game' && gameState.isPlaying) {
-        if (confirm('Выйти из игры?')) {
+        showConfirm('Выйти из игры? Текущий прогресс будет потерян.', function() {
             switchScreen('main');
             clearInterval(gameState.timerInterval);
             gameState.isPlaying = false;
-        }
+        });
     } else {
         window.location.href = '../../index.html';
     }
@@ -555,28 +630,6 @@ function closeRules() {
     document.getElementById('rulesModal').classList.remove('active');
 }
 
-function resetStats() {
-    if (confirm('Сбросить статистику?')) {
-        localStorage.removeItem('crocodileSettings');
-        localStorage.removeItem('crocodileCustomWords');
-        alert('Статистика сброшена!');
-    }
-}
-
-function shareGame() {
-    if (navigator.share) {
-        navigator.share({
-            title: 'Крокодил - Игра для компании',
-            text: 'Сыграйте в Крокодил! Объясняйте слова без слов.',
-            url: window.location.href
-        });
-    } else {
-        navigator.clipboard.writeText(window.location.href)
-            .then(() => alert('Ссылка скопирована!'))
-            .catch(() => alert('Скопируйте ссылку: ' + window.location.href));
-    }
-}
-
 function getCategoryName(category) {
     const names = {
         'objects': 'Предметы',
@@ -587,55 +640,11 @@ function getCategoryName(category) {
         'celebrities': 'Знаменитости',
         'food': 'Еда',
         'places': 'Места',
-        'adult': '18+',
+        'abstract': 'Абстрактные',
         'custom': 'Свои слова'
     };
     return names[category] || category;
 }
 
-function getDifficultyName(difficulty) {
-    const names = {
-        'easy': 'Легкая',
-        'medium': 'Средняя',
-        'hard': 'Сложная'
-    };
-    return names[difficulty] || difficulty;
-}
-
-function getModeName(mode) {
-    const names = {
-        'classic': 'Классика',
-        'teams': 'Команды',
-        'competition': 'Турнир'
-    };
-    return names[mode] || mode;
-}
-
-// ===== PWA И МОБИЛЬНЫЕ ФИКСЫ =====
-function initPWA() {
-    // Регистрация Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('../../sw.js')
-            .catch(err => console.log('Service Worker не зарегистрирован:', err));
-    }
-    
-    // Фикс для 100vh на мобильных
-    function setVH() {
-        let vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-    }
-    
-    setVH();
-    window.addEventListener('resize', setVH);
-    
-    // Добавление класса для тач-устройств
-    if ('ontouchstart' in window) {
-        document.body.classList.add('touch');
-    }
-}
-
-// Инициализация PWA
-document.addEventListener('DOMContentLoaded', initPWA);
-
-
-
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', initGame);
