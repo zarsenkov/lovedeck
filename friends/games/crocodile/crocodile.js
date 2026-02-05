@@ -43,8 +43,8 @@ function initCategories() {
         { id: 'movies', name: 'Фильмы', icon: 'fa-film' },
         { id: 'celebrities', name: 'Знаменитости', icon: 'fa-star' },
         { id: 'food', name: 'Еда', icon: 'fa-utensils' },
-        { id: 'places', name: 'Места', icon: 'fa-globe' },
-        { id: 'abstract', name: 'Абстрактные', icon: 'fa-brain' },
+        { id: 'memnoe', name: 'Мемное', icon: 'fa-globe' },
+        { id: '18+', name: '18+', icon: 'fa-brain' },
         { id: 'custom', name: 'Свои слова', icon: 'fa-edit' }
     ];
     
@@ -639,8 +639,8 @@ function getCategoryName(category) {
         'movies': 'Фильмы',
         'celebrities': 'Знаменитости',
         'food': 'Еда',
-        'places': 'Места',
-        'abstract': 'Абстрактные',
+        'memnoe': 'Мемное',
+        '18+': '18+',
         'custom': 'Свои слова'
     };
     return names[category] || category;
@@ -648,3 +648,4 @@ function getCategoryName(category) {
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', initGame);
+
