@@ -1,245 +1,121 @@
-// ==================== STATE ====================
-const state = {
-    mode: 'alias',
-    categories: ['base'],
-    teams: [
-        { name: 'Команда 1', score: 0 },
-        { name: 'Команда 2', score: 0 }
-    ],
-    roundTime: 60,
-    winScore: 30,
-    currentTeam: 0,
-    roundPoints: 0,
-    usedWords: new Set(),
-    availableWords: [],
+let game = {
+    mode: '',
+    category: '',
+    teams: [],
+    activeTeamIdx: 0,
+    timePerRound: 60,
     timer: null,
-    timeLeft: 0
+    timeLeft: 0,
+    currentRoundWords: [], // Храним историю раунда {word: '...', points: 1/-1}
+    usedWords: new Set()
 };
 
-// ==================== SCREEN MANAGER ====================
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function initGame(mode) {
+    game.mode = mode;
+    const select = document.getElementById('category-select');
+    select.innerHTML = '';
+    Object.keys(CARD_DATA[mode]).forEach(cat => {
+        let opt = new Option(CATEGORY_NAMES[cat], cat);
+        select.add(opt);
     });
-    document.getElementById(screenId).classList.add('active');
+    showScreen('screen-setup');
 }
 
-// ==================== WORD POOL MANAGEMENT ====================
-function buildWordPool() {
-    state.availableWords = [];
-    state.categories.forEach(category => {
-        if (CARDS[category]) {
-            state.availableWords.push(...CARDS[category]);
-        }
-    });
-    // Shuffle word pool
-    state.availableWords.sort(() => Math.random() - 0.5);
+document.getElementById('time-range').oninput = function() {
+    game.timePerRound = this.value;
+    document.getElementById('time-display').innerText = this.value;
 }
 
-function getNextWord() {
-    // Filter out used words
-    const availableWords = state.availableWords.filter(word => !state.usedWords.has(word));
-    
-    if (availableWords.length === 0) {
-        // Reset if all words have been used
-        state.usedWords.clear();
-        return getNextWord();
-    }
-    
-    // Get random word from available pool
-    const word = availableWords[Math.floor(Math.random() * availableWords.length)];
-    state.usedWords.add(word);
-    return word;
+function startFullGame() {
+    const t1 = document.getElementById('t1-in').value || 'Команда 1';
+    const t2 = document.getElementById('t2-in').value || 'Команда 2';
+    game.teams = [
+        { name: t1, score: 0 },
+        { name: t2, score: 0 }
+    ];
+    game.activeTeamIdx = 0;
+    showScreen('screen-game');
+    prepareNewRound();
 }
 
-// ==================== GAME LOGIC ====================
-function startGame() {
-    // Get settings
-    state.mode = document.querySelector('.toggle-btn.active').dataset.mode;
-    
-    const selectedCategories = Array.from(
-        document.querySelectorAll('.checkbox-label input:checked')
-    ).map(input => input.value);
-    
-    if (selectedCategories.length === 0) {
-        alert('Выберите хотя бы одну категорию');
-        return;
-    }
-    
-    state.categories = selectedCategories;
-    state.teams[0].name = document.getElementById('team1-name').value || 'Команда 1';
-    state.teams[1].name = document.getElementById('team2-name').value || 'Команда 2';
-    state.roundTime = parseInt(document.getElementById('round-time').value) || 60;
-    state.winScore = parseInt(document.getElementById('win-score').value) || 30;
-    
-    // Reset scores
-    state.teams[0].score = 0;
-    state.teams[1].score = 0;
-    state.currentTeam = 0;
-    state.usedWords.clear();
-    
-    buildWordPool();
-    showTeamTurn();
-}
-
-function showTeamTurn() {
-    const currentTeam = state.teams[state.currentTeam];
-    document.getElementById('current-team-display').textContent = currentTeam.name;
-    
-    const instruction = state.mode === 'alias' 
-        ? 'Объясните слова своей команде' 
-        : 'Покажите слова жестами';
-    document.getElementById('mode-instruction').textContent = instruction;
-    
-    updateScoreBoard();
-    showScreen('team-turn-screen');
+function prepareNewRound() {
+    game.timeLeft = game.timePerRound;
+    game.currentRoundWords = [];
+    document.getElementById('ready-overlay').classList.add('active');
+    document.getElementById('next-team-name').innerText = game.teams[game.activeTeamIdx].name;
 }
 
 function startRound() {
-    state.roundPoints = 0;
-    state.timeLeft = state.roundTime;
+    document.getElementById('ready-overlay').classList.remove('active');
+    document.getElementById('game-score').innerText = '0';
+    renderWord();
     
-    updateScoreBoard();
-    document.getElementById('round-points').textContent = state.roundPoints;
-    displayNextWord();
-    startTimer();
-    showScreen('game-screen');
+    game.timer = setInterval(() => {
+        game.timeLeft--;
+        document.getElementById('game-timer').innerText = game.timeLeft;
+        if (game.timeLeft <= 0) endRound();
+    }, 1000);
 }
 
-function displayNextWord() {
-    const word = getNextWord();
-    document.getElementById('current-word').textContent = word;
-}
-
-function startTimer() {
-    const timerFill = document.getElementById('timer-fill');
-    const startTime = Date.now();
-    const endTime = startTime + (state.roundTime * 1000);
+function renderWord() {
+    const pool = CARD_DATA[game.mode][document.getElementById('category-select').value];
+    const available = pool.filter(w => !game.usedWords.has(w));
     
-    clearInterval(state.timer);
+    // Если слова кончились - чистим кэш
+    if (available.length === 0) { game.usedWords.clear(); return renderWord(); }
     
-    state.timer = setInterval(() => {
-        const now = Date.now();
-        const remaining = Math.max(0, endTime - now);
-        state.timeLeft = Math.ceil(remaining / 1000);
-        
-        const progress = (remaining / (state.roundTime * 1000)) * 100;
-        timerFill.style.width = progress + '%';
-        
-        if (remaining <= 0) {
-            endRound();
-        }
-    }, 100);
+    const word = available[Math.floor(Math.random() * available.length)];
+    const card = document.getElementById('word-card');
+    card.innerText = word;
+    game.currentWord = word;
 }
 
-function correctWord() {
-    state.roundPoints++;
-    document.getElementById('round-points').textContent = state.roundPoints;
-    displayNextWord();
-}
+function handleAnswer(isCorrect) {
+    if (!game.timer) return; // Чтобы нельзя было кликать до начала
 
-function skipWord() {
-    state.roundPoints = Math.max(0, state.roundPoints - 1);
-    document.getElementById('round-points').textContent = state.roundPoints;
-    displayNextWord();
+    const points = isCorrect ? 1 : -1;
+    game.currentRoundWords.push({ word: game.currentWord, points: points });
+    game.usedWords.add(game.currentWord);
+    
+    // Анимация
+    const card = document.getElementById('word-card');
+    card.style.transform = isCorrect ? 'translateY(-20px)' : 'translateX(20px)';
+    setTimeout(() => card.style.transform = 'translateY(0)', 100);
+
+    // Обновляем текущий счет раунда (визуально)
+    const currentScore = game.currentRoundWords.reduce((acc, curr) => acc + curr.points, 0);
+    document.getElementById('game-score').innerText = currentScore;
+
+    renderWord();
 }
 
 function endRound() {
-    clearInterval(state.timer);
+    clearInterval(game.timer);
+    game.timer = null;
     
-    // Add round points to team score
-    state.teams[state.currentTeam].score += state.roundPoints;
+    const roundTotal = game.currentRoundWords.reduce((acc, curr) => acc + curr.points, 0);
+    game.teams[game.activeTeamIdx].score += roundTotal;
     
-    // Check for winner
-    if (state.teams[state.currentTeam].score >= state.winScore) {
-        showWinScreen();
-        return;
-    }
+    // Рендерим лог слов
+    const log = document.getElementById('round-words-list');
+    log.innerHTML = game.currentRoundWords.map(item => `
+        <div class="log-item ${item.points > 0 ? 'plus' : 'minus'}">
+            <span>${item.word}</span>
+            <span>${item.points > 0 ? '+1' : '-1'}</span>
+        </div>
+    `).join('');
     
-    showRoundEnd();
+    document.getElementById('round-total-points').innerText = roundTotal;
+    showScreen('screen-summary');
 }
 
-function showRoundEnd() {
-    const currentTeam = state.teams[state.currentTeam];
-    
-    document.getElementById('round-team-name').textContent = currentTeam.name;
-    document.getElementById('round-earned-points').textContent = state.roundPoints;
-    
-    document.getElementById('team1-name-display').textContent = state.teams[0].name;
-    document.getElementById('team1-final-score').textContent = state.teams[0].score;
-    document.getElementById('team2-name-display').textContent = state.teams[1].name;
-    document.getElementById('team2-final-score').textContent = state.teams[1].score;
-    
-    showScreen('round-end-screen');
+function nextRoundPre() {
+    game.activeTeamIdx = game.activeTeamIdx === 0 ? 1 : 0;
+    showScreen('screen-game');
+    prepareNewRound();
 }
-
-function nextTurn() {
-    state.currentTeam = (state.currentTeam + 1) % 2;
-    showTeamTurn();
-}
-
-function showWinScreen() {
-    const winner = state.teams[state.currentTeam];
-    const loser = state.teams[(state.currentTeam + 1) % 2];
-    
-    document.getElementById('winner-name').textContent = winner.name;
-    document.getElementById('final-score-team1').textContent = 
-        `${state.teams[0].name}: ${state.teams[0].score}`;
-    document.getElementById('final-score-team2').textContent = 
-        `${state.teams[1].name}: ${state.teams[1].score}`;
-    
-    showScreen('win-screen');
-}
-
-function updateScoreBoard() {
-    document.getElementById('team1-label').textContent = state.teams[0].name;
-    document.getElementById('team1-score').textContent = state.teams[0].score;
-    document.getElementById('team2-label').textContent = state.teams[1].name;
-    document.getElementById('team2-score').textContent = state.teams[1].score;
-}
-
-function newGame() {
-    showScreen('home-screen');
-}
-
-// ==================== EVENT LISTENERS ====================
-document.addEventListener('DOMContentLoaded', () => {
-    // Mode selection
-    document.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-        });
-    });
-    
-    // Action buttons
-    document.querySelectorAll('[data-action]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const action = e.currentTarget.dataset.action;
-            
-            switch(action) {
-                case 'start-setup':
-                    showScreen('setup-screen');
-                    break;
-                case 'start-game':
-                    startGame();
-                    break;
-                case 'start-round':
-                    startRound();
-                    break;
-                case 'correct-word':
-                    correctWord();
-                    break;
-                case 'skip-word':
-                    skipWord();
-                    break;
-                case 'next-turn':
-                    nextTurn();
-                    break;
-                case 'new-game':
-                    newGame();
-                    break;
-            }
-        });
-    });
-});
