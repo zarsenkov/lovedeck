@@ -1,6 +1,6 @@
 // Конфигурация статусов игр
 const gameStatus = {
-    'whoami': 'available',     // Доступна
+    'whoami': 'maintenance',     // Доступна
     'spy': 'available',        // Доступна
     'crocodile': 'available',  // Доступна
     'alias': 'available',      // Доступна
@@ -162,3 +162,4 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
