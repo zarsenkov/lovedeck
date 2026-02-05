@@ -2,7 +2,7 @@
 
 const crocodileWords = {
     objects: [
-{ word: 'Телефон', difficulty: 'easy', category: 'objects' },
+        { word: 'Телефон', difficulty: 'easy', category: 'objects' },
         { word: 'Книга', difficulty: 'easy', category: 'objects' },
         { word: 'Стул', difficulty: 'easy', category: 'objects' },
         { word: 'Лампа', difficulty: 'easy', category: 'objects' },
@@ -31,7 +31,7 @@ const crocodileWords = {
         { word: 'Калькулятор', difficulty: 'easy', category: 'objects' },
         { word: 'Флешка', difficulty: 'medium', category: 'objects' },
         { word: 'Клавиатура', difficulty: 'medium', category: 'objects' },
-        { word: 'Мышь', difficulty: 'medium', category: 'objects' }, // компьютерная
+        { word: 'Мышь', difficulty: 'medium', category: 'objects' },
         { word: 'Утюг', difficulty: 'easy', category: 'objects' },
         { word: 'Стиральная машина', difficulty: 'medium', category: 'objects' },
         { word: 'Пылесос', difficulty: 'medium', category: 'objects' },
@@ -71,24 +71,23 @@ const crocodileWords = {
         { word: 'Матрёшка', difficulty: 'medium', category: 'objects' },
         { word: 'Хот-дог', difficulty: 'medium', category: 'objects' },
         { word: 'Стиральная машина', difficulty: 'hard', category: 'objects' },
-    { word: 'Микроволновая печь', difficulty: 'hard', category: 'objects' },
-    { word: 'Электрочайник', difficulty: 'hard', category: 'objects' },
-    { word: 'Кофеварка', difficulty: 'hard', category: 'objects' },
-    { word: 'Блендер', difficulty: 'hard', category: 'objects' },
-    { word: 'Тостер', difficulty: 'hard', category: 'objects' },
-    { word: 'Мультиварка', difficulty: 'hard', category: 'objects' },
-    { word: 'Пароочиститель', difficulty: 'hard', category: 'objects' },
-    { word: 'Кубик Рубика', difficulty: 'hard', category: 'objects' }, // уже был medium, можно поднять
-    { word: 'Секундомер', difficulty: 'hard', category: 'objects' },
-    { word: 'Термометр', difficulty: 'hard', category: 'objects' },
-    { word: 'Манекен', difficulty: 'hard', category: 'objects' },
-    { word: 'Калейдоскоп', difficulty: 'hard', category: 'objects' },
-    { word: 'Телескоп', difficulty: 'hard', category: 'objects' },
-    { word: 'Микроскоп', difficulty: 'hard', category: 'objects' }
+        { word: 'Микроволновая печь', difficulty: 'hard', category: 'objects' },
+        { word: 'Электрочайник', difficulty: 'hard', category: 'objects' },
+        { word: 'Кофеварка', difficulty: 'hard', category: 'objects' },
+        { word: 'Блендер', difficulty: 'hard', category: 'objects' },
+        { word: 'Тостер', difficulty: 'hard', category: 'objects' },
+        { word: 'Мультиварка', difficulty: 'hard', category: 'objects' },
+        { word: 'Пароочиститель', difficulty: 'hard', category: 'objects' },
+        { word: 'Секундомер', difficulty: 'hard', category: 'objects' },
+        { word: 'Термометр', difficulty: 'hard', category: 'objects' },
+        { word: 'Манекен', difficulty: 'hard', category: 'objects' },
+        { word: 'Калейдоскоп', difficulty: 'hard', category: 'objects' },
+        { word: 'Телескоп', difficulty: 'hard', category: 'objects' },
+        { word: 'Микроскоп', difficulty: 'hard', category: 'objects' }
     ],
     
     animals: [
-{ word: 'Кошка', difficulty: 'easy', category: 'animals' },
+        { word: 'Кошка', difficulty: 'easy', category: 'animals' },
         { word: 'Собака', difficulty: 'easy', category: 'animals' },
         { word: 'Лошадь', difficulty: 'easy', category: 'animals' },
         { word: 'Корова', difficulty: 'easy', category: 'animals' },
@@ -119,21 +118,21 @@ const crocodileWords = {
         { word: 'Паук', difficulty: 'medium', category: 'animals' },
         { word: 'Бабочка', difficulty: 'easy', category: 'animals' },
         { word: 'Платипус', difficulty: 'hard', category: 'animals' },
-    { word: 'Ехидна', difficulty: 'hard', category: 'animals' },
-    { word: 'Аксолотль', difficulty: 'hard', category: 'animals' },
-    { word: 'Нарвал', difficulty: 'hard', category: 'animals' },
-    { word: 'Тарсиер', difficulty: 'hard', category: 'animals' },
-    { word: 'Манул', difficulty: 'hard', category: 'animals' },
-    { word: 'Окапи', difficulty: 'hard', category: 'animals' },
-    { word: 'Фенек', difficulty: 'hard', category: 'animals' },
-    { word: 'Ленивец', difficulty: 'hard', category: 'animals' },
-    { word: 'Муравьед', difficulty: 'hard', category: 'animals' },
-    { word: 'Броненосец', difficulty: 'hard', category: 'animals' },
-    { word: 'Капибара', difficulty: 'hard', category: 'animals' }
+        { word: 'Ехидна', difficulty: 'hard', category: 'animals' },
+        { word: 'Аксолотль', difficulty: 'hard', category: 'animals' },
+        { word: 'Нарвал', difficulty: 'hard', category: 'animals' },
+        { word: 'Тарсиер', difficulty: 'hard', category: 'animals' },
+        { word: 'Манул', difficulty: 'hard', category: 'animals' },
+        { word: 'Окапи', difficulty: 'hard', category: 'animals' },
+        { word: 'Фенек', difficulty: 'hard', category: 'animals' },
+        { word: 'Ленивец', difficulty: 'hard', category: 'animals' },
+        { word: 'Муравьед', difficulty: 'hard', category: 'animals' },
+        { word: 'Броненосец', difficulty: 'hard', category: 'animals' },
+        { word: 'Капибара', difficulty: 'hard', category: 'animals' }
     ],
     
     actions: [
-{ word: 'Бегать', difficulty: 'easy', category: 'actions' },
+        { word: 'Бегать', difficulty: 'easy', category: 'actions' },
         { word: 'Прыгать', difficulty: 'easy', category: 'actions' },
         { word: 'Плавать', difficulty: 'easy', category: 'actions' },
         { word: 'Танцевать', difficulty: 'easy', category: 'actions' },
@@ -160,20 +159,13 @@ const crocodileWords = {
         { word: 'Зевать', difficulty: 'easy', category: 'actions' },
         { word: 'Чихать', difficulty: 'easy', category: 'actions' },
         { word: 'Кашлять', difficulty: 'easy', category: 'actions' },
-        { word: 'Зевать', difficulty: 'hard', category: 'actions' }, // легко, но если добавить "одновременно жевать жвачку"
-    { word: 'Чихать с открытыми глазами', difficulty: 'hard', category: 'actions' },
-    { word: 'Икать и петь', difficulty: 'hard', category: 'actions' },
-    { word: 'Жонглировать тремя мячами', difficulty: 'hard', category: 'actions' },
-    { word: 'Делать сальто назад', difficulty: 'hard', category: 'actions' },
-    { word: 'Имитировать оргазм', difficulty: 'hard', category: 'actions' }, // если 18+ разрешено
-    { word: 'Пародировать Майкла Джексона', difficulty: 'hard', category: 'actions' },
-    { word: 'Танцевать тверк', difficulty: 'hard', category: 'actions' },
-    { word: 'Медитировать в позе лотоса', difficulty: 'hard', category: 'actions' },
-    { word: 'Показывать пантомиму "я ем спагетти вилкой"', difficulty: 'hard', category: 'actions' }
+        { word: 'Жонглировать тремя мячами', difficulty: 'hard', category: 'actions' },
+        { word: 'Делать сальто назад', difficulty: 'hard', category: 'actions' },
+        { word: 'Медитировать в позе лотоса', difficulty: 'hard', category: 'actions' }
     ],
     
     professions: [
-{ word: 'Врач', difficulty: 'easy', category: 'professions' },
+        { word: 'Врач', difficulty: 'easy', category: 'professions' },
         { word: 'Учитель', difficulty: 'easy', category: 'professions' },
         { word: 'Полицейский', difficulty: 'easy', category: 'professions' },
         { word: 'Пожарный', difficulty: 'easy', category: 'professions' },
@@ -190,23 +182,15 @@ const crocodileWords = {
         { word: 'Космонавт', difficulty: 'medium', category: 'professions' },
         { word: 'Бухгалтер', difficulty: 'medium', category: 'professions' },
         { word: 'Юрист', difficulty: 'medium', category: 'professions' },
-        { word: 'Стриптизёр', difficulty: 'medium', category: 'professions' },
-        { word: 'Акушерка', difficulty: 'medium', category: 'professions' },
         { word: 'Ветеринар', difficulty: 'medium', category: 'professions' },
         { word: 'Стоматолог', difficulty: 'hard', category: 'professions' },
-    { word: 'Гинеколог', difficulty: 'hard', category: 'professions' },
-    { word: 'Проктолог', difficulty: 'hard', category: 'professions' },
-    { word: 'Венеролог', difficulty: 'hard', category: 'professions' },
-    { word: 'Анестезиолог', difficulty: 'hard', category: 'professions' },
-    { word: 'Нейрохирург', difficulty: 'hard', category: 'professions' },
-    { word: 'Криптограф', difficulty: 'hard', category: 'professions' },
-    { word: 'Актуарий', difficulty: 'hard', category: 'professions' },
-    { word: 'Сомелье', difficulty: 'hard', category: 'professions' },
-    { word: 'Таксидермист', difficulty: 'hard', category: 'professions' }
+        { word: 'Нейрохирург', difficulty: 'hard', category: 'professions' },
+        { word: 'Криптограф', difficulty: 'hard', category: 'professions' },
+        { word: 'Сомелье', difficulty: 'hard', category: 'professions' }
     ],
     
     movies: [
-{ word: 'Титаник', difficulty: 'easy', category: 'movies' },
+        { word: 'Титаник', difficulty: 'easy', category: 'movies' },
         { word: 'Гарри Поттер', difficulty: 'easy', category: 'movies' },
         { word: 'Властелин колец', difficulty: 'easy', category: 'movies' },
         { word: 'Звездные войны', difficulty: 'easy', category: 'movies' },
@@ -219,14 +203,9 @@ const crocodileWords = {
         { word: 'Матрица', difficulty: 'medium', category: 'movies' },
         { word: 'Аватар', difficulty: 'easy', category: 'movies' },
         { word: 'Джентльмены', difficulty: 'medium', category: 'movies' },
-        { word: 'Оппенгеймер', difficulty: 'medium', category: 'movies' },
         { word: 'Очень страшное кино', difficulty: 'hard', category: 'movies' },
-    { word: 'Молчание ягнят', difficulty: 'hard', category: 'movies' },
-    { word: 'Бойцовский клуб', difficulty: 'hard', category: 'movies' },
-    { word: 'Семь', difficulty: 'hard', category: 'movies' },
-    { word: 'Олдбой', difficulty: 'hard', category: 'movies' },
-    { word: 'Мemento', difficulty: 'hard', category: 'movies' },
-    { word: 'Город грехов', difficulty: 'hard', category: 'movies' }
+        { word: 'Бойцовский клуб', difficulty: 'hard', category: 'movies' },
+        { word: 'Семь', difficulty: 'hard', category: 'movies' }
     ],
     
     celebrities: [
@@ -242,14 +221,12 @@ const crocodileWords = {
         { word: 'Ким Кардашьян', difficulty: 'medium', category: 'celebrities' },
         { word: 'Юра Борисов', difficulty: 'medium', category: 'celebrities' },
         { word: 'Никола Тесла', difficulty: 'hard', category: 'celebrities' },
-    { word: 'Стивен Хокинг', difficulty: 'hard', category: 'celebrities' },
-    { word: 'Альберт Эйнштейн', difficulty: 'hard', category: 'celebrities' }, // уже был easy, можно поднять
-    { word: 'Фридрих Ницше', difficulty: 'hard', category: 'celebrities' },
-    { word: 'Зигмунд Фрейд', difficulty: 'hard', category: 'celebrities' }
+        { word: 'Стивен Хокинг', difficulty: 'hard', category: 'celebrities' },
+        { word: 'Зигмунд Фрейд', difficulty: 'hard', category: 'celebrities' }
     ],
     
     food: [
-{ word: 'Яблоко', difficulty: 'easy', category: 'food' },
+        { word: 'Яблоко', difficulty: 'easy', category: 'food' },
         { word: 'Банан', difficulty: 'easy', category: 'food' },
         { word: 'Пицца', difficulty: 'easy', category: 'food' },
         { word: 'Бургер', difficulty: 'easy', category: 'food' },
@@ -267,15 +244,12 @@ const crocodileWords = {
         { word: 'Чипсы', difficulty: 'easy', category: 'food' },
         { word: 'Попкорн', difficulty: 'easy', category: 'food' },
         { word: 'Фуа-гра', difficulty: 'hard', category: 'food' },
-    { word: 'Тартар', difficulty: 'hard', category: 'food' },
-    { word: 'Карпаччо', difficulty: 'hard', category: 'food' },
-    { word: 'Эскарго', difficulty: 'hard', category: 'food' },
-    { word: 'Крокембуш', difficulty: 'hard', category: 'food' },
-    { word: 'Макароны с трюфелем', difficulty: 'hard', category: 'food' }
+        { word: 'Карпаччо', difficulty: 'hard', category: 'food' },
+        { word: 'Эскарго', difficulty: 'hard', category: 'food' }
     ],
     
     memnoe: [
-{ word: 'Окак', difficulty: 'easy', category: 'memnoe' },
+        { word: 'Окак', difficulty: 'easy', category: 'memnoe' },
         { word: 'Дикий огурец', difficulty: 'easy', category: 'memnoe' },
         { word: 'Брейнрот', difficulty: 'medium', category: 'memnoe' },
         { word: 'Тралалео Тралала', difficulty: 'medium', category: 'memnoe' },
@@ -297,37 +271,14 @@ const crocodileWords = {
         { word: 'Чупакабра', difficulty: 'medium', category: 'memnoe' }
     ],
     
-    18+: [
-{ word: 'Поцелуй', difficulty: 'easy', category: '18+' },
-        { word: 'Флирт', difficulty: 'easy', category: '18+' },
-        { word: 'Стриптиз', difficulty: 'easy', category: '18+' },
-        { word: 'Оргазм', difficulty: 'medium', category: '18+' },
-        { word: 'Мастурбация', difficulty: 'medium', category: '18+' },
-        { word: 'Секс', difficulty: 'medium', category: '18+' },
-        { word: 'Презерватив', difficulty: 'medium', category: '18+' },
-        { word: 'Эрекция', difficulty: 'medium', category: '18+' },
-        { word: 'Минет', difficulty: 'hard', category: '18+' },
-        { word: 'Кунилингус', difficulty: 'hard', category: '18+' },
-        { word: 'БДСМ', difficulty: 'hard', category: '18+' },
-        { word: 'Свингеры', difficulty: 'hard', category: '18+' },
-        { word: 'Порнуха', difficulty: 'hard', category: '18+' },
-        { word: 'Дилдо', difficulty: 'medium', category: '18+' },
-        { word: 'Вибратор', difficulty: 'medium', category: '18+' },
-        { word: 'Ролевые игры', difficulty: 'medium', category: '18+' },
-        { word: 'Тройничок', difficulty: 'hard', category: '18+' },
-        { word: 'Золотой дождь', difficulty: 'hard', category: '18+' },
-        { word: 'Фистинг', difficulty: 'hard', category: '18+' },
-        { word: 'Камасутра', difficulty: 'medium', category: '18+' },
-        { word: 'Либидо', difficulty: 'medium', category: '18+' },
-        { word: 'Возбуждение', difficulty: 'easy', category: '18+' },
-        { word: 'Стриптизёрша', difficulty: 'medium', category: '18+' },
-        { word: 'Золотой дождь', difficulty: 'hard', category: '18+' },
-    { word: 'Фистинг', difficulty: 'hard', category: '18+' },
-    { word: 'Пеггинг', difficulty: 'hard', category: '18+' },
-    { word: 'Буккакэ', difficulty: 'hard', category: '18+' },
-    { word: 'Сквирт', difficulty: 'hard', category: '18+' },
-    { word: 'Копрофилия', difficulty: 'hard', category: '18+' },
-    { word: 'Садомазохизм', difficulty: 'hard', category: '18+' }
+    adult: [
+        { word: 'Поцелуй', difficulty: 'easy', category: 'adult' },
+        { word: 'Флирт', difficulty: 'easy', category: 'adult' },
+        { word: 'Стриптиз', difficulty: 'easy', category: 'adult' },
+        { word: 'Секс', difficulty: 'medium', category: 'adult' },
+        { word: 'Презерватив', difficulty: 'medium', category: 'adult' },
+        { word: 'Ролевые игры', difficulty: 'medium', category: 'adult' },
+        { word: 'Камасутра', difficulty: 'medium', category: 'adult' },
+        { word: 'Возбуждение', difficulty: 'easy', category: 'adult' }
     ]
 };
-
