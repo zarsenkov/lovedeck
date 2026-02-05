@@ -5,7 +5,7 @@ class QuizGame {
             // Настройки
             players: 1,
             difficulty: 'easy',
-            categories: ['general', 'science', 'history', 'culture', 'sport', 'geography', 'movies'],
+            categories: ['general'], // ТОЛЬКО ОДНА КАТЕГОРИЯ ПО УМОЛЧАНИЮ
             questionCount: 10,
             
             // Игровой процесс
@@ -16,6 +16,7 @@ class QuizGame {
             timerInterval: null,
             gameStarted: false,
             gameTime: 0,
+            gamePaused: false,
             
             // Очки
             score: 0,
@@ -27,12 +28,19 @@ class QuizGame {
             playerScores: [],
             currentPlayer: 0,
             
+            // Подсказки
+            hintsUsed: 0,
+            fiftyFiftyUsed: false,
+            
             // Статистика
             stats: {
                 totalGames: 0,
+                totalQuestions: 0,
                 totalCorrect: 0,
                 bestScore: 0,
-                achievements: []
+                achievements: [],
+                categoriesPlayed: new Set(),
+                totalTime: 0
             }
         };
         
@@ -44,9 +52,29 @@ class QuizGame {
         this.bindEvents();
         this.updateQuestionCount();
         this.initPlayers();
+        this.updateStatsUI();
     }
     
     bindEvents() {
+        // Кнопка назад
+        document.getElementById('backBtn').addEventListener('click', () => {
+            if (this.state.gameStarted && !this.state.gamePaused) {
+                this.showModal('exitModal');
+            } else {
+                window.location.href = '../../index.html';
+            }
+        });
+        
+        // Меню
+        document.getElementById('menuBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleDropdown();
+        });
+        
+        document.addEventListener('click', () => {
+            document.getElementById('dropdownMenu').classList.remove('active');
+        });
+        
         // Игроки
         document.querySelectorAll('.player-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -66,21 +94,32 @@ class QuizGame {
         // Категории
         document.querySelectorAll('.category-tag').forEach(tag => {
             tag.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const cat = e.target.closest('.category-tag').dataset.cat;
                 this.toggleCategory(cat);
             });
         });
         
         // Слайдер вопросов
-        document.getElementById('questionSlider').addEventListener('input', (e) => {
+        const slider = document.getElementById('questionSlider');
+        slider.addEventListener('input', (e) => {
             this.setQuestionCount(e.target.value);
+        });
+        slider.addEventListener('change', () => {
+            this.saveSettings();
         });
         
         // Быстрый старт
-        document.querySelectorAll('.quick-btn').forEach(btn => {
+        document.querySelector('.quick-start-btn').addEventListener('click', () => {
+            this.showModal('quickStartModal');
+        });
+        
+        document.querySelectorAll('.quick-option').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const preset = e.target.closest('.quick-btn').dataset.preset;
+                const preset = e.target.closest('.quick-option').dataset.preset;
                 this.applyPreset(preset);
+                this.hideModal('quickStartModal');
+                this.startGame();
             });
         });
         
@@ -90,12 +129,49 @@ class QuizGame {
         });
         
         // Правила
-        document.querySelector('.show-rules').addEventListener('click', () => {
+        document.getElementById('rulesBtn').addEventListener('click', () => {
             this.showModal('rulesModal');
         });
         
-        document.querySelector('.close-modal').addEventListener('click', () => {
+        document.getElementById('closeRules').addEventListener('click', () => {
             this.hideModal('rulesModal');
+        });
+        
+        document.getElementById('closeQuickStart').addEventListener('click', () => {
+            this.hideModal('quickStartModal');
+        });
+        
+        // Достижения
+        document.getElementById('achievementsBtn').addEventListener('click', () => {
+            this.showAchievements();
+        });
+        
+        document.getElementById('closeAchievements').addEventListener('click', () => {
+            this.hideModal('achievementsModal');
+        });
+        
+        // Сброс статистики
+        document.getElementById('resetStatsBtn').addEventListener('click', () => {
+            if (confirm('Вы уверены, что хотите сбросить всю статистику?')) {
+                this.resetStats();
+            }
+        });
+        
+        // Выход из игры
+        document.getElementById('exitGameBtn').addEventListener('click', () => {
+            this.showModal('exitModal');
+        });
+        
+        document.querySelector('.cancel-exit').addEventListener('click', () => {
+            this.hideModal('exitModal');
+        });
+        
+        document.querySelector('.confirm-exit').addEventListener('click', () => {
+            this.exitGame();
+        });
+        
+        document.getElementById('closeExitModal').addEventListener('click', () => {
+            this.hideModal('exitModal');
         });
         
         // Ответы
@@ -106,14 +182,9 @@ class QuizGame {
             }
         });
         
-        // Пропустить
-        document.getElementById('skipBtn').addEventListener('click', () => {
-            this.skipQuestion();
-        });
-        
-        // Подсказка
-        document.getElementById('hintBtn').addEventListener('click', () => {
-            this.showHint();
+        // Подсказка 50/50
+        document.getElementById('fiftyFiftyBtn').addEventListener('click', () => {
+            this.useFiftyFifty();
         });
         
         // Рестарт
@@ -123,7 +194,7 @@ class QuizGame {
         
         // Новые настройки
         document.querySelector('.change-settings').addEventListener('click', () => {
-            this.showScreen('mainScreen');
+            this.showMainScreen();
         });
         
         // Поделиться
@@ -131,10 +202,17 @@ class QuizGame {
             this.shareResults();
         });
         
-        // Обработка нажатий вне модалки
+        // Обработка нажатий вне модалок
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('active');
+                this.hideAllModals();
+            }
+        });
+        
+        // Закрытие по ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.hideAllModals();
             }
         });
     }
@@ -143,11 +221,8 @@ class QuizGame {
     setPlayers(count) {
         this.state.players = count;
         
-        // Обновляем UI
         document.querySelectorAll('.player-btn').forEach(btn => {
-            btn.classList.toggle('active', 
-                parseInt(btn.dataset.players) === count
-            );
+            btn.classList.toggle('active', parseInt(btn.dataset.players) === count);
         });
         
         this.initPlayers();
@@ -163,11 +238,18 @@ class QuizGame {
     
     toggleCategory(cat) {
         const tag = document.querySelector(`[data-cat="${cat}"]`);
-        tag.classList.toggle('active');
+        const isActive = tag.classList.contains('active');
         
-        if (this.state.categories.includes(cat)) {
+        if (isActive) {
+            // Если пытаемся отключить последнюю категорию - не позволяем
+            if (this.state.categories.length === 1) {
+                this.showToast('Должна быть выбрана хотя бы одна категория!', 'warning');
+                return;
+            }
+            tag.classList.remove('active');
             this.state.categories = this.state.categories.filter(c => c !== cat);
         } else {
+            tag.classList.add('active');
             this.state.categories.push(cat);
         }
     }
@@ -188,12 +270,12 @@ class QuizGame {
         switch(preset) {
             case 'solo':
                 this.setPlayers(1);
-                this.setDifficulty('medium');
+                this.setDifficulty('easy');
                 this.setQuestionCount(10);
                 break;
             case 'duel':
                 this.setPlayers(2);
-                this.setDifficulty('hard');
+                this.setDifficulty('medium');
                 this.setQuestionCount(15);
                 break;
             case 'party':
@@ -202,7 +284,6 @@ class QuizGame {
                 this.setQuestionCount(20);
                 break;
         }
-        this.startGame();
     }
     
     initPlayers() {
@@ -210,9 +291,12 @@ class QuizGame {
         
         for (let i = 0; i < this.state.players; i++) {
             this.state.playerScores.push({
+                id: i,
                 name: `Игрок ${i + 1}`,
                 score: 0,
-                correct: 0
+                correct: 0,
+                streak: 0,
+                bestStreak: 0
             });
         }
         
@@ -231,7 +315,6 @@ class QuizGame {
                 <div class="player-points">${player.score}</div>
             `;
             
-            // Редактирование имени
             playerEl.addEventListener('click', () => {
                 if (!this.state.gameStarted) {
                     const newName = prompt('Имя игрока:', player.name);
@@ -248,7 +331,7 @@ class QuizGame {
     
     // === ИГРОВОЙ ПРОЦЕСС ===
     startGame() {
-        // Проверяем, что выбрана хотя бы одна категория
+        // Проверяем категории
         if (this.state.categories.length === 0) {
             this.showToast('Выберите хотя бы одну категорию!', 'warning');
             return;
@@ -257,7 +340,26 @@ class QuizGame {
         // Генерируем вопросы
         this.generateQuestions();
         
+        if (this.state.questions.length === 0) {
+            this.showToast('Недостаточно вопросов для выбранных категорий!', 'danger');
+            return;
+        }
+        
         // Сбрасываем состояние
+        this.resetGameState();
+        
+        // Обновляем UI
+        document.getElementById('fiftyFiftyBtn').disabled = false;
+        
+        // Показываем игровой экран
+        this.showScreen('gameScreen');
+        document.getElementById('gameSubtitle').textContent = 'Игра идет...';
+        
+        // Запускаем первый вопрос
+        this.showQuestion();
+    }
+    
+    resetGameState() {
         this.state.currentQuestion = 0;
         this.state.score = 0;
         this.state.streak = 0;
@@ -266,18 +368,18 @@ class QuizGame {
         this.state.gameTime = 0;
         this.state.currentPlayer = 0;
         this.state.gameStarted = true;
+        this.state.gamePaused = false;
+        this.state.selectedAnswer = null;
+        this.state.hintsUsed = 0;
+        this.state.fiftyFiftyUsed = false;
         
         // Сбрасываем очки игроков
         this.state.playerScores.forEach(p => {
             p.score = 0;
             p.correct = 0;
+            p.streak = 0;
+            p.bestStreak = 0;
         });
-        
-        // Показываем игровой экран
-        this.showScreen('gameScreen');
-        
-        // Запускаем первый вопрос
-        this.showQuestion();
         
         // Обновляем статистику
         this.state.stats.totalGames++;
@@ -317,16 +419,21 @@ class QuizGame {
         
         // Обновляем UI
         document.getElementById('questionText').textContent = question.question;
-        document.getElementById('qCategory').textContent = CATEGORY_NAMES[question.category];
-        document.getElementById('qDifficulty').textContent = 
-            this.state.difficulty === 'easy' ? 'Легко' :
-            this.state.difficulty === 'medium' ? 'Средне' : 'Сложно';
+        document.getElementById('qCategory').textContent = CATEGORIES[question.category].name;
+        
+        let diffText = '';
+        switch(this.state.difficulty) {
+            case 'easy': diffText = 'Легко'; break;
+            case 'medium': diffText = 'Средне'; break;
+            case 'hard': diffText = 'Сложно'; break;
+        }
+        document.getElementById('qDifficulty').textContent = diffText;
         
         // Прогресс
         const progress = ((this.state.currentQuestion) / this.state.questions.length) * 100;
         document.getElementById('progressFill').style.width = `${progress}%`;
-        document.getElementById('currentQ').textContent = this.state.currentQuestion + 1;
-        document.getElementById('totalQ').textContent = this.state.questions.length;
+        document.getElementById('progressText').textContent = 
+            `Вопрос ${this.state.currentQuestion + 1} из ${this.state.questions.length}`;
         
         // Генерируем ответы
         this.generateAnswers(question);
@@ -355,18 +462,26 @@ class QuizGame {
     }
     
     startTimer() {
+        // Очищаем старый таймер
+        this.stopTimer();
+        
+        // Сбрасываем таймер
         this.state.timer = 30;
         this.updateTimer();
         
+        // Запускаем новый таймер
         this.state.timerInterval = setInterval(() => {
+            // Если игра на паузе или ответ уже выбран - выходим
+            if (this.state.gamePaused || this.state.selectedAnswer !== null) {
+                return;
+            }
+            
             this.state.timer--;
             this.updateTimer();
             
             if (this.state.timer <= 0) {
                 this.timeUp();
             }
-            
-            this.state.gameTime++;
         }, 1000);
     }
     
@@ -381,7 +496,6 @@ class QuizGame {
         const timerEl = document.getElementById('timer');
         timerEl.textContent = this.state.timer;
         
-        // Меняем цвет при низком времени
         timerEl.classList.remove('warning', 'danger');
         if (this.state.timer <= 10) {
             timerEl.classList.add('danger');
@@ -391,7 +505,11 @@ class QuizGame {
     }
     
     selectAnswer(index) {
-        if (this.state.selectedAnswer !== null) return;
+        if (this.state.selectedAnswer !== null || this.state.gamePaused) return;
+        
+        // Останавливаем таймер и записываем оставшееся время
+        this.stopTimer();
+        const timeRemaining = this.state.timer;
         
         this.state.selectedAnswer = index;
         const question = this.state.questions[this.state.currentQuestion];
@@ -413,12 +531,9 @@ class QuizGame {
             btn.disabled = true;
         });
         
-        // Останавливаем таймер
-        this.stopTimer();
-        
-        // Обновляем очки
+        // Обновляем очки с учетом оставшегося времени
         if (isCorrect) {
-            this.handleCorrectAnswer();
+            this.handleCorrectAnswer(timeRemaining);
         } else {
             this.handleIncorrectAnswer();
         }
@@ -429,12 +544,12 @@ class QuizGame {
         }, 1500);
     }
     
-    handleCorrectAnswer() {
+    handleCorrectAnswer(timeRemaining) {
         // Базовые очки
         let points = 100;
         
         // Бонус за скорость (до 50 очков)
-        const speedBonus = Math.floor(this.state.timer / 6) * 10;
+        const speedBonus = Math.floor(timeRemaining / 6) * 10;
         points += speedBonus;
         
         // Бонус за серию (каждые 3 правильных ответа +50)
@@ -456,10 +571,14 @@ class QuizGame {
         const player = this.state.playerScores[this.state.currentPlayer];
         player.score += points;
         player.correct++;
+        player.streak++;
+        
+        if (player.streak > player.bestStreak) {
+            player.bestStreak = player.streak;
+        }
         
         // Обновляем UI
         this.updateScoreUI();
-        this.showToast(`+${points} очков!`, 'success');
         
         // Проверяем достижения
         if (this.state.streak === 10) {
@@ -477,48 +596,59 @@ class QuizGame {
         
         const player = this.state.playerScores[this.state.currentPlayer];
         player.score = Math.max(0, player.score - penalty);
+        player.streak = 0;
         
         this.updateScoreUI();
-        this.showToast(`-${penalty} очков`, 'danger');
     }
     
-    skipQuestion() {
-        this.state.streak = 0;
-        this.nextQuestion();
-        this.showToast('Вопрос пропущен', 'warning');
-    }
-    
-    showHint() {
+    useFiftyFifty() {
+        if (this.state.fiftyFiftyUsed || this.state.selectedAnswer !== null || this.state.gamePaused) return;
+        
         const question = this.state.questions[this.state.currentQuestion];
-        const correctAnswer = question.answers[question.correct];
+        const answers = document.querySelectorAll('.answer');
+        const incorrectIndices = [];
         
-        // Показываем первую букву
-        const hint = correctAnswer.charAt(0) + '...';
+        // Находим неправильные ответы
+        for (let i = 0; i < answers.length; i++) {
+            if (i !== question.correct) {
+                incorrectIndices.push(i);
+            }
+        }
         
-        // Штраф за подсказку
-        const penalty = 25;
-        this.state.score = Math.max(0, this.state.score - penalty);
+        // Выбираем 2 случайных неправильных ответа
+        const toRemove = [];
+        while (toRemove.length < 2 && incorrectIndices.length > 1) {
+            const randomIndex = Math.floor(Math.random() * incorrectIndices.length);
+            toRemove.push(incorrectIndices[randomIndex]);
+            incorrectIndices.splice(randomIndex, 1);
+        }
         
-        const player = this.state.playerScores[this.state.currentPlayer];
-        player.score = Math.max(0, player.score - penalty);
+        // Убираем выбранные ответы
+        toRemove.forEach(index => {
+            answers[index].style.opacity = '0.3';
+            answers[index].style.pointerEvents = 'none';
+        });
         
-        this.updateScoreUI();
-        this.showToast(`Подсказка: ${hint} (-${penalty} очков)`, 'info');
+        this.state.fiftyFiftyUsed = true;
+        this.state.hintsUsed++;
+        document.getElementById('fiftyFiftyBtn').disabled = true;
     }
     
     timeUp() {
-        if (this.state.selectedAnswer !== null) return;
+        if (this.state.selectedAnswer !== null || this.state.gamePaused) return;
         
         this.stopTimer();
         this.handleIncorrectAnswer();
         
-        // Автоматически переходим дальше
         setTimeout(() => {
             this.nextQuestion();
         }, 1000);
     }
     
     nextQuestion() {
+        // Останавливаем таймер
+        this.stopTimer();
+        
         this.state.currentQuestion++;
         
         // Переключаем игрока (если мультиплеер)
@@ -538,9 +668,6 @@ class QuizGame {
     }
     
     updateScoreUI() {
-        // Общий счет
-        document.getElementById('totalScore').textContent = this.state.score;
-        
         // Очки игроков
         this.state.playerScores.forEach((player, index) => {
             const playerEl = document.querySelector(`.player-score:nth-child(${index + 1}) .player-points`);
@@ -554,34 +681,77 @@ class QuizGame {
     endGame() {
         this.stopTimer();
         this.state.gameStarted = false;
+        this.state.selectedAnswer = null;
         
         // Обновляем статистику
-        this.state.stats.totalCorrect += this.state.totalCorrect;
-        
-        if (this.state.score > this.state.stats.bestScore) {
-            this.state.stats.bestScore = this.state.score;
-            this.unlockAchievement('high_score');
-        }
+        this.updateStats();
         
         // Проверяем достижения
-        if (this.state.totalCorrect === this.state.questions.length) {
-            this.unlockAchievement('perfect_score');
-        }
+        this.checkAchievements();
         
-        if (this.state.gameTime < 300) { // Меньше 5 минут
-            this.unlockAchievement('speed_run');
-        }
-        
+        // Сохраняем статистику
         this.saveStats();
         
         // Показываем результаты
         this.showResults();
     }
     
+    updateStats() {
+        this.state.stats.totalQuestions += this.state.questions.length;
+        this.state.stats.totalCorrect += this.state.totalCorrect;
+        this.state.stats.totalTime += this.state.gameTime;
+        
+        if (this.state.score > this.state.stats.bestScore) {
+            this.state.stats.bestScore = this.state.score;
+        }
+        
+        // Обновляем сыгранные категории
+        this.state.categories.forEach(cat => {
+            this.state.stats.categoriesPlayed.add(cat);
+        });
+        
+        // Проверяем достижение "все категории"
+        if (this.state.stats.categoriesPlayed.size === Object.keys(CATEGORIES).length) {
+            this.unlockAchievement('all_categories');
+        }
+    }
+    
+    checkAchievements() {
+        // Первая игра
+        if (this.state.stats.totalGames === 1) {
+            this.unlockAchievement('first_game');
+        }
+        
+        // Идеальный результат
+        if (this.state.totalCorrect === this.state.questions.length && this.state.questions.length >= 10) {
+            this.unlockAchievement('perfect_score');
+        }
+        
+        // Скоростная игра
+        const minutes = this.state.gameTime / 60;
+        if (minutes < 5 && this.state.questions.length >= 10) {
+            this.unlockAchievement('speed_run');
+        }
+    }
+    
+    unlockAchievement(achievementId) {
+        if (this.state.stats.achievements.includes(achievementId)) return;
+        
+        this.state.stats.achievements.push(achievementId);
+        const achievement = ACHIEVEMENTS.find(a => a.id === achievementId);
+        
+        if (achievement) {
+            this.showToast(`Достижение: ${achievement.name}!`, 'success');
+        }
+    }
+    
     showResults() {
         this.showScreen('resultsScreen');
+        document.getElementById('gameSubtitle').textContent = 'Результаты';
         
-        const accuracy = Math.round((this.state.totalCorrect / this.state.questions.length) * 100);
+        const accuracy = this.state.questions.length > 0 
+            ? Math.round((this.state.totalCorrect / this.state.questions.length) * 100)
+            : 0;
         
         // Обновляем результаты
         document.getElementById('finalScore').textContent = this.state.score;
@@ -606,93 +776,119 @@ class QuizGame {
         
         document.getElementById('resultsText').textContent = resultText;
         
-        // Если мультиплеер, показываем победителя
+        // Показываем победителя для мультиплеера
         if (this.state.players > 1) {
-            const winner = this.state.playerScores.reduce((a, b) => 
-                a.score > b.score ? a : b
-            );
-            
-            this.showToast(`Победитель: ${winner.name} с ${winner.score} очками!`, 'success');
+            const winner = this.state.playerScores.reduce((a, b) => a.score > b.score ? a : b);
+            const winnerCard = document.getElementById('winnerCard');
+            document.getElementById('winnerName').textContent = winner.name;
+            document.getElementById('winnerScore').textContent = `${winner.score} очков`;
+            winnerCard.style.display = 'block';
         }
     }
     
     restartGame() {
-        this.state.currentQuestion = 0;
-        this.state.score = 0;
-        this.state.streak = 0;
-        this.state.totalCorrect = 0;
-        this.state.gameTime = 0;
-        this.state.currentPlayer = 0;
-        this.state.selectedAnswer = null;
+        // Сбрасываем состояние
+        this.resetGameState();
         
-        // Сбрасываем очки игроков
-        this.state.playerScores.forEach(p => {
-            p.score = 0;
-            p.correct = 0;
-        });
-        
+        // Запускаем новую игру
         this.startGame();
+    }
+    
+    exitGame() {
+        this.hideModal('exitModal');
+        this.showMainScreen();
+        this.state.gameStarted = false;
+        document.getElementById('gameSubtitle').textContent = 'Проверьте знания';
+    }
+    
+    showMainScreen() {
+        this.showScreen('mainScreen');
+        this.updateStatsUI();
+        document.getElementById('gameSubtitle').textContent = 'Проверьте знания';
     }
     
     // === УТИЛИТЫ ===
     showScreen(screenId) {
-        // Скрываем все экраны
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
         
-        // Показываем нужный экран
         document.getElementById(screenId).classList.add('active');
-        
-        // Прокручиваем вверх
         document.getElementById(screenId).scrollTop = 0;
     }
     
     showModal(modalId) {
+        if (this.state.gameStarted && !this.state.gamePaused) {
+            this.state.gamePaused = true;
+            this.stopTimer();
+        }
+        
         document.getElementById(modalId).classList.add('active');
     }
     
     hideModal(modalId) {
         document.getElementById(modalId).classList.remove('active');
+        
+        if (this.state.gameStarted && this.state.gamePaused) {
+            this.state.gamePaused = false;
+            if (this.state.timer > 0 && !this.state.selectedAnswer) {
+                this.startTimer();
+            }
+        }
+    }
+    
+    hideAllModals() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.classList.remove('active');
+        });
+        
+        if (this.state.gameStarted && this.state.gamePaused) {
+            this.state.gamePaused = false;
+            if (this.state.timer > 0 && !this.state.selectedAnswer) {
+                this.startTimer();
+            }
+        }
+    }
+    
+    toggleDropdown() {
+        const menu = document.getElementById('dropdownMenu');
+        menu.classList.toggle('active');
     }
     
     showToast(message, type = 'info') {
-        // Удаляем старые тосты
         const oldToast = document.querySelector('.toast');
         if (oldToast) oldToast.remove();
         
-        // Создаем новый
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         toast.textContent = message;
         
-        // Цвета по типу
-        const colors = {
-            success: '#10b981',
-            warning: '#f59e0b',
-            danger: '#ef4444',
-            info: '#3b82f6'
-        };
-        
-        toast.style.borderLeft = `4px solid ${colors[type] || colors.info}`;
-        
         document.body.appendChild(toast);
         
-        // Автоматическое удаление
         setTimeout(() => {
             toast.remove();
         }, 3000);
     }
     
-    unlockAchievement(achievementId) {
-        if (this.state.stats.achievements.includes(achievementId)) return;
+    showAchievements() {
+        this.showModal('achievementsModal');
         
-        this.state.stats.achievements.push(achievementId);
-        const achievement = ACHIEVEMENTS.find(a => a.id === achievementId);
+        const container = document.getElementById('achievementsList');
+        container.innerHTML = '';
         
-        if (achievement) {
-            this.showToast(`Достижение: ${achievement.name}!`, 'success');
-        }
+        ACHIEVEMENTS.forEach(achievement => {
+            const isUnlocked = this.state.stats.achievements.includes(achievement.id);
+            const item = document.createElement('div');
+            item.className = `achievement-item ${isUnlocked ? 'unlocked' : ''}`;
+            item.innerHTML = `
+                <i class="${achievement.icon}"></i>
+                <div class="achievement-info">
+                    <h4>${achievement.name}</h4>
+                    <p>${achievement.description}</p>
+                </div>
+            `;
+            container.appendChild(item);
+        });
     }
     
     formatTime(seconds) {
@@ -702,7 +898,9 @@ class QuizGame {
     }
     
     shareResults() {
-        const accuracy = Math.round((this.state.totalCorrect / this.state.questions.length) * 100);
+        const accuracy = this.state.questions.length > 0 
+            ? Math.round((this.state.totalCorrect / this.state.questions.length) * 100)
+            : 0;
         const time = this.formatTime(this.state.gameTime);
         
         let shareText = `🎯 Я набрал ${this.state.score} очков в LoveCouple Викторине!\n`;
@@ -730,21 +928,45 @@ class QuizGame {
         });
     }
     
-    // === СОХРАНЕНИЕ ===
+    // === СТАТИСТИКА ===
+    updateStatsUI() {
+        document.getElementById('totalGames').textContent = this.state.stats.totalGames;
+        document.getElementById('bestScore').textContent = this.state.stats.bestScore;
+        
+        const accuracy = this.state.stats.totalQuestions > 0 
+            ? Math.round((this.state.stats.totalCorrect / this.state.stats.totalQuestions) * 100)
+            : 0;
+        document.getElementById('accuracy').textContent = `${accuracy}%`;
+    }
+    
     saveStats() {
-        localStorage.setItem('quizStats', JSON.stringify(this.state.stats));
-        localStorage.setItem('quizSettings', JSON.stringify({
+        const statsToSave = {
+            ...this.state.stats,
+            categoriesPlayed: Array.from(this.state.stats.categoriesPlayed)
+        };
+        
+        localStorage.setItem('quizStats', JSON.stringify(statsToSave));
+        this.saveSettings();
+    }
+    
+    saveSettings() {
+        const settings = {
             players: this.state.players,
             difficulty: this.state.difficulty,
             categories: this.state.categories,
             questionCount: this.state.questionCount
-        }));
+        };
+        localStorage.setItem('quizSettings', JSON.stringify(settings));
     }
     
     loadStats() {
         const savedStats = localStorage.getItem('quizStats');
         if (savedStats) {
-            this.state.stats = JSON.parse(savedStats);
+            const parsed = JSON.parse(savedStats);
+            this.state.stats = {
+                ...parsed,
+                categoriesPlayed: new Set(parsed.categoriesPlayed || [])
+            };
         }
         
         const savedSettings = localStorage.getItem('quizSettings');
@@ -767,26 +989,27 @@ class QuizGame {
             });
         }
     }
-}
-
-// Инициализация игры при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-    window.game = new QuizGame();
-});
-
-// Предотвращаем стандартное поведение свайпа в браузере
-document.addEventListener('touchmove', (e) => {
-    if (e.scale !== 1) {
-        e.preventDefault();
+    
+    resetStats() {
+        if (confirm('Вы уверены, что хотите сбросить всю статистику и достижения?')) {
+            this.state.stats = {
+                totalGames: 0,
+                totalQuestions: 0,
+                totalCorrect: 0,
+                bestScore: 0,
+                achievements: [],
+                categoriesPlayed: new Set(),
+                totalTime: 0
+            };
+            
+            localStorage.removeItem('quizStats');
+            this.updateStatsUI();
+            this.showToast('Статистика сброшена', 'info');
+        }
     }
-}, { passive: false });
-
-// Фиксим баг с 100vh на мобильных
-function setVH() {
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
 }
 
-setVH();
-window.addEventListener('resize', setVH);
-window.addEventListener('orientationchange', setVH);
+// Инициализация игры
+document.addEventListener('DOMContentLoaded', () => {
+    window.quizGame = new QuizGame();
+});
