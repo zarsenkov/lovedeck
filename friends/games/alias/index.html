@@ -3,80 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alias & Crocodile</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Алиас + Крокодил</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app">
-        <a href="https://lovecouple.ru/" class="back-link">← На главную</a>
+    <header class="app-header">
+        <a href="https://lovecouple.ru/" class="back-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </a>
+    </header>
 
-        <section id="screen-main" class="screen active">
-            <div class="logo">
-                <h1>Game<span>Party</span></h1>
-                <p>Выбирайте режим игры</p>
-            </div>
-            <div class="mode-selector">
-                <button class="btn-mode" onclick="setupGame('alias')">
-                    <span class="icon">🗣️</span>
-                    <div class="text"><b>Алиас</b><small>Объясни словами</small></div>
-                </button>
-                <button class="btn-mode" onclick="setupGame('crocodile')">
-                    <span class="icon">🎭</span>
-                    <div class="text"><b>Крокодил</b><small>Покажи жестами</small></div>
-                </button>
+    <main class="app-container">
+        <!-- Home Screen -->
+        <section class="screen active" id="home-screen">
+            <div class="screen-content">
+                <h1 class="app-title">Алиас + Крокодил</h1>
+                <div class="button-group">
+                    <button class="btn btn-primary" data-action="start-setup">Начать игру</button>
+                </div>
             </div>
         </section>
 
-        <section id="screen-setup" class="screen">
-            <h2>Настройки</h2>
-            <div class="setup-group">
-                <label>Категория</label>
-                <select id="select-category"></select>
+        <!-- Setup Screen -->
+        <section class="screen" id="setup-screen">
+            <div class="screen-content">
+                <h2 class="screen-title">Настройки игры</h2>
+                
+                <div class="form-group">
+                    <label>Режим игры</label>
+                    <div class="toggle-group">
+                        <button class="toggle-btn active" data-mode="alias">Алиас</button>
+                        <button class="toggle-btn" data-mode="crocodile">Крокодил</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Категории</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="base" checked>
+                            <span>Базовая</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="movies">
+                            <span>Кино</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="food">
+                            <span>Еда</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="adult">
+                            <span>18+</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Команда 1</label>
+                    <input type="text" class="input-field" id="team1-name" placeholder="Введите название" value="Команда 1">
+                </div>
+
+                <div class="form-group">
+                    <label>Команда 2</label>
+                    <input type="text" class="input-field" id="team2-name" placeholder="Введите название" value="Команда 2">
+                </div>
+
+                <div class="form-group">
+                    <label>Время раунда (сек)</label>
+                    <input type="number" class="input-field" id="round-time" value="60" min="30" max="180" step="10">
+                </div>
+
+                <div class="form-group">
+                    <label>Очков для победы</label>
+                    <input type="number" class="input-field" id="win-score" value="30" min="10" max="100" step="5">
+                </div>
+
+                <button class="btn btn-primary" data-action="start-game">Начать</button>
             </div>
-            <div class="setup-group">
-                <label>Команды</label>
-                <input type="text" id="team1-name" placeholder="Команда 1" value="Тигры">
-                <input type="text" id="team2-name" placeholder="Команда 2" value="Львы">
-            </div>
-            <div class="setup-group">
-                <label>Время раунда: <span id="time-val">60</span>с</label>
-                <input type="range" id="round-time" min="30" max="120" step="30" value="60">
-            </div>
-            <button class="btn-primary" onclick="startGame()">Погнали!</button>
         </section>
 
-        <section id="screen-game" class="screen">
+        <!-- Team Turn Screen -->
+        <section class="screen" id="team-turn-screen">
+            <div class="screen-content centered">
+                <h2 class="turn-announcement">Ход команды</h2>
+                <h3 class="team-name-large" id="current-team-display"></h3>
+                <p class="turn-instruction" id="mode-instruction"></p>
+                <button class="btn btn-primary" data-action="start-round">Готовы</button>
+            </div>
+        </section>
+
+        <!-- Game Screen -->
+        <section class="screen" id="game-screen">
             <div class="game-header">
-                <div id="current-team-display">Команда 1</div>
-                <div id="timer">60</div>
+                <div class="score-board">
+                    <div class="team-score">
+                        <span class="team-label" id="team1-label"></span>
+                        <span class="score" id="team1-score">0</span>
+                    </div>
+                    <div class="team-score">
+                        <span class="team-label" id="team2-label"></span>
+                        <span class="score" id="team2-score">0</span>
+                    </div>
+                </div>
+                <div class="timer-bar">
+                    <div class="timer-fill" id="timer-fill"></div>
+                </div>
             </div>
-            <div class="progress-bar"><div id="progress-fill"></div></div>
-            
-            <div class="card-container">
-                <div class="card" id="word-card">Нажми "Начать"</div>
+
+            <div class="game-content">
+                <div class="card-container">
+                    <div class="word-card">
+                        <span class="word" id="current-word"></span>
+                    </div>
+                </div>
+
+                <div class="round-score">
+                    <span class="round-points" id="round-points">0</span>
+                </div>
             </div>
 
             <div class="game-controls">
-                <button class="btn-skip" onclick="nextWord(false)">Пропустить (-1)</button>
-                <button class="btn-done" onclick="nextWord(true)">Готово (+1)</button>
+                <button class="btn btn-control btn-skip" data-action="skip-word">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                    Пропустить
+                </button>
+                <button class="btn btn-control btn-correct" data-action="correct-word">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    Верно
+                </button>
             </div>
         </section>
 
-        <section id="screen-results" class="screen">
-            <h2 id="results-title">Раунд окончен</h2>
-            <div class="score-board">
-                <div class="team-score">
-                    <span id="res-team1-name">Команда 1</span>
-                    <b id="res-team1-score">0</b>
+        <!-- Round End Screen -->
+        <section class="screen" id="round-end-screen">
+            <div class="screen-content centered">
+                <h2 class="round-result">Раунд завершён</h2>
+                <div class="round-stats">
+                    <p class="stat-line">Команда: <strong id="round-team-name"></strong></p>
+                    <p class="stat-line">Заработано: <strong id="round-earned-points"></strong></p>
                 </div>
-                <div class="team-score">
-                    <span id="res-team2-name">Команда 2</span>
-                    <b id="res-team2-score">0</b>
+                <div class="score-board-full">
+                    <div class="team-score-full">
+                        <span id="team1-name-display"></span>
+                        <span class="score-large" id="team1-final-score">0</span>
+                    </div>
+                    <div class="team-score-full">
+                        <span id="team2-name-display"></span>
+                        <span class="score-large" id="team2-final-score">0</span>
+                    </div>
                 </div>
+                <button class="btn btn-primary" data-action="next-turn">Следующий ход</button>
             </div>
-            <button id="btn-next-step" class="btn-primary" onclick="nextStep()">Следующий раунд</button>
         </section>
-    </div>
+
+        <!-- Win Screen -->
+        <section class="screen" id="win-screen">
+            <div class="screen-content centered">
+                <h1 class="win-title">🏆</h1>
+                <h2 class="winner-name" id="winner-name"></h2>
+                <p class="win-subtitle">Победа!</p>
+                <div class="final-scores">
+                    <p id="final-score-team1"></p>
+                    <p id="final-score-team2"></p>
+                </div>
+                <button class="btn btn-primary" data-action="new-game">Новая игра</button>
+            </div>
+        </section>
+    </main>
 
     <script src="cards.js"></script>
     <script src="script.js"></script>
