@@ -193,17 +193,22 @@ function startGame() {
         });
     }
     
-    // Фильтрация по сложности
-    if (gameState.difficulty !== 'all') {
-        gameState.wordsList = gameState.wordsList.filter(w => 
-            w.difficulty === gameState.difficulty || w.difficulty === 'custom'
-        );
-    }
-    
-    if (gameState.wordsList.length === 0) {
-        showAlert('Нет слов по выбранным настройкам! Выберите другие категории или сложность.');
-        return;
-    }
+// Фильтрация по сложности (но для memnoe и adult не фильтруем)
+if (gameState.difficulty !== 'all') {
+    gameState.wordsList = gameState.wordsList.filter(w => {
+        // Для категорий memnoe и adult - всегда показываем слова
+        if (w.category === 'memnoe' || w.category === 'adult') {
+            return true;
+        }
+        // Для остальных категорий - фильтруем по сложности
+        return w.difficulty === gameState.difficulty || w.difficulty === 'custom';
+    });
+}
+
+if (gameState.wordsList.length === 0) {
+    showAlert('Нет слов по выбранным настройкам! Выберите другие категории или сложность.');
+    return;
+}
     
     // Перемешиваем и берем нужное количество слов
     shuffleArray(gameState.wordsList);
@@ -648,5 +653,6 @@ function getCategoryName(category) {
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', initGame);
+
 
 
