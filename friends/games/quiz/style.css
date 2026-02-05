@@ -151,6 +151,71 @@ body {
     margin-bottom: 1rem;
 }
 
+/* Кнопки игроков */
+.player-select {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.player-btn {
+    flex: 1;
+    padding: 1rem 0.5rem;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.player-btn.active {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+}
+
+.player-btn:active {
+    transform: scale(0.95);
+}
+
+/* Кнопки сложности */
+.difficulty-select {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.diff-btn {
+    flex: 1;
+    padding: 1rem 0.5rem;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.diff-btn.active {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+}
+
+.diff-btn:active {
+    transform: scale(0.95);
+}
+
 /* Категории */
 .categories-grid {
     display: grid;
@@ -184,7 +249,58 @@ body {
     transform: scale(0.95);
 }
 
-/* Кнопки */
+/* Слайдер вопросов */
+.questions-slider {
+    margin: 1.5rem 0;
+}
+
+#questionSlider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+}
+
+#questionSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+#questionSlider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.slider-values {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+#questionCount {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+/* Кнопки действий */
 .btn-primary, .btn-secondary, .btn-danger {
     padding: 1rem;
     border-radius: 16px;
@@ -599,5 +715,46 @@ body {
     
     .results-btns {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .player-select {
+        max-width: 400px;
+    }
+    
+    .difficulty-select {
+        max-width: 400px;
+    }
+}
+
+/* Ховер эффекты для десктопа */
+@media (hover: hover) {
+    .player-btn:hover:not(.active) {
+        background: var(--surface-2);
+    }
+    
+    .diff-btn:hover:not(.active) {
+        background: var(--surface-2);
+    }
+    
+    .category-tag:hover:not(.active) {
+        background: var(--surface-2);
+    }
+    
+    .answer:hover:not(:disabled) {
+        background: var(--surface-2);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    
+    .btn-secondary:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
     }
 }
