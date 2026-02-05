@@ -5,26 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Викторина - LoveCouple Friends</title>
     
-    <!-- PWA метатеги -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
-    <link rel="manifest" href="../../manifest.json">
-    <link rel="apple-touch-icon" href="../../icon-192.png">
-    
-    <!-- Стили -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Шрифт -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body>
-    <!-- Контейнер игры -->
     <div class="quiz-game">
         <!-- Шапка -->
         <header class="quiz-header">
@@ -83,39 +72,30 @@
                         <h3><i class="fas fa-star"></i> Категории</h3>
                         <div class="categories-grid">
                             <label class="category-tag active" data-cat="general">
-                                <input type="checkbox" checked hidden>
                                 <i class="fas fa-globe"></i> Общее
                             </label>
                             <label class="category-tag" data-cat="science">
-                                <input type="checkbox" hidden>
                                 <i class="fas fa-flask"></i> Наука
                             </label>
                             <label class="category-tag" data-cat="history">
-                                <input type="checkbox" hidden>
                                 <i class="fas fa-landmark"></i> История
                             </label>
                             <label class="category-tag" data-cat="culture">
-                                <input type="checkbox" hidden>
                                 <i class="fas fa-palette"></i> Культура
                             </label>
                             <label class="category-tag" data-cat="sport">
-                                <input type="checkbox" hidden>
                                 <i class="fas fa-futbol"></i> Спорт
                             </label>
                             <label class="category-tag" data-cat="geography">
-                                <input type="checkbox" hidden>
                                 <i class="fas fa-map"></i> География
                             </label>
                             <label class="category-tag" data-cat="movies">
-                                <input type="checkbox" hidden>
                                 <i class="fas fa-film"></i> Кино
                             </label>
                             <label class="category-tag" data-cat="music">
-                                <input type="checkbox" hidden>
                                 <i class="fas fa-music"></i> Музыка
                             </label>
                             <label class="category-tag" data-cat="literature">
-                                <input type="checkbox" hidden>
                                 <i class="fas fa-book"></i> Литература
                             </label>
                         </div>
@@ -140,28 +120,6 @@
                     <button class="btn-primary start-game">
                         <i class="fas fa-play"></i> Начать игру
                     </button>
-                    <button class="btn-secondary quick-start-btn">
-                        <i class="fas fa-bolt"></i> Быстрый старт
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Статистика -->
-            <div class="stats-card">
-                <h3><i class="fas fa-chart-bar"></i> Статистика</h3>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalGames">0</div>
-                        <div class="stat-label">Игр сыграно</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="bestScore">0</div>
-                        <div class="stat-label">Лучший счет</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="accuracy">0%</div>
-                        <div class="stat-label">Точность</div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -228,15 +186,6 @@
                 <h2>Викторина завершена!</h2>
                 <p class="results-text" id="resultsText">Отличный результат!</p>
                 
-                <!-- Победитель -->
-                <div class="winner-card" id="winnerCard" style="display: none;">
-                    <div class="winner-crown">
-                        <i class="fas fa-crown"></i>
-                    </div>
-                    <div class="winner-name" id="winnerName">Игрок 1</div>
-                    <div class="winner-score" id="winnerScore">1000 очков</div>
-                </div>
-                
                 <div class="score-display">
                     <div class="total-score">
                         <span>Общий счет</span>
@@ -266,135 +215,6 @@
                     <button class="btn-secondary change-settings">
                         <i class="fas fa-cog"></i> Настройки
                     </button>
-                    <button class="btn-share share-results">
-                        <i class="fas fa-share-alt"></i> Поделиться
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Меню -->
-        <div class="dropdown-menu" id="dropdownMenu">
-            <div class="menu-content">
-                <button class="menu-item" id="rulesBtn">
-                    <i class="fas fa-book"></i> Правила игры
-                </button>
-                <button class="menu-item" id="achievementsBtn">
-                    <i class="fas fa-trophy"></i> Достижения
-                </button>
-                <button class="menu-item" id="themeToggle">
-                    <i class="fas fa-moon"></i> Тема
-                </button>
-                <button class="menu-item" id="resetStatsBtn">
-                    <i class="fas fa-trash"></i> Сбросить статистику
-                </button>
-            </div>
-        </div>
-
-        <!-- Модалка правил -->
-        <div class="modal" id="rulesModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-book"></i> Правила игры</h3>
-                    <button class="modal-close" id="closeRules">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="rules">
-                    <div class="rule">
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <h4>Формат игры</h4>
-                            <p>Вопросы с 4 вариантами ответов. Только один правильный.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="rule">
-                        <i class="fas fa-clock"></i>
-                        <div>
-                            <h4>Время</h4>
-                            <p>30 секунд на вопрос. За быстрый ответ - бонусные очки.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="rule">
-                        <i class="fas fa-star"></i>
-                        <div>
-                            <h4>Очки</h4>
-                            <p>Правильный ответ: +100 очков. Серия правильных ответов увеличивает множитель.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="rule">
-                        <i class="fas fa-users"></i>
-                        <div>
-                            <h4>Игроки</h4>
-                            <p>В мультиплеере игроки отвечают по очереди.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="rule">
-                        <i class="fas fa-lightbulb"></i>
-                        <div>
-                            <h4>Подсказка 50/50</h4>
-                            <p>Убирает 2 неверных ответа. Можно использовать 1 раз за игру.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Модалка достижений -->
-        <div class="modal" id="achievementsModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-trophy"></i> Достижения</h3>
-                    <button class="modal-close" id="closeAchievements">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="achievements-list" id="achievementsList">
-                    <!-- Динамически генерируется -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Модалка быстрого старта -->
-        <div class="modal" id="quickStartModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-bolt"></i> Быстрый старт</h3>
-                    <button class="modal-close" id="closeQuickStart">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="quick-start-options">
-                    <button class="quick-option" data-preset="solo">
-                        <i class="fas fa-user"></i>
-                        <div>
-                            <h4>Одиночная игра</h4>
-                            <p>1 игрок • Легкая сложность • 10 вопросов</p>
-                        </div>
-                    </button>
-                    
-                    <button class="quick-option" data-preset="duel">
-                        <i class="fas fa-user-friends"></i>
-                        <div>
-                            <h4>Дуэль</h4>
-                            <p>2 игрока • Средняя сложность • 15 вопросов</p>
-                        </div>
-                    </button>
-                    
-                    <button class="quick-option" data-preset="party">
-                        <i class="fas fa-users"></i>
-                        <div>
-                            <h4>Вечеринка</h4>
-                            <p>4 игрока • Легкая сложность • 20 вопросов</p>
-                        </div>
-                    </button>
                 </div>
             </div>
         </div>
@@ -422,29 +242,5 @@
     <!-- Скрипты -->
     <script src="questions.js"></script>
     <script src="script.js"></script>
-    
-    <!-- PWA -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('../../sw.js')
-                .then(() => console.log('SW зарегистрирован'))
-                .catch(err => console.log('SW ошибка:', err));
-        }
-        
-        // Фикс для 100vh на мобильных
-        function setVH() {
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-        }
-        
-        setVH();
-        window.addEventListener('resize', setVH);
-        window.addEventListener('orientationchange', setVH);
-        
-        // Предотвращаем зум
-        document.addEventListener('touchmove', function(e) {
-            if(e.scale !== 1) e.preventDefault();
-        }, { passive: false });
-    </script>
 </body>
 </html>
