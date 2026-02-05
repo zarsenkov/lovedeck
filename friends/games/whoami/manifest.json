@@ -1,0 +1,20 @@
+{
+  "name": "Кто я? - Угадай персонажа",
+  "short_name": "Кто я?",
+  "description": "Увлекательная игра для компании на одном устройстве. Угадывайте персонажей, задавая вопросы!",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎭</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "lang": "ru",
+  "dir": "ltr"
+}
