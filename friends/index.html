@@ -3,56 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>LoveCouple: World Hub</title>
+    <title>LoveCouple: Soft World</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Space+Grotesk:wght@500;700&family=Bungee&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="black-fade"></div>
 
     <div class="container">
-        <header class="hub-header">
-            <h1 class="hub-title">CHOOSE YOUR WORLD</h1>
-            <p class="hub-subtitle">КАЖДАЯ ИГРА — УНИКАЛЬНАЯ ВСЕЛЕННАЯ</p>
+        <header class="soft-header">
+            <h1 class="soft-logo">LOVE<span>COUPLE</span></h1>
+            <p class="soft-tagline">ИГРАЙТЕ МЯГКО</p>
         </header>
 
-        <main class="hub-grid">
-            
-            <div class="world-card neo-pop" data-game="alias">
-                <div class="world-label">NEO-POP</div>
-                <div class="world-content">
-                    <h3 class="world-name">ALIAS<span>!</span></h3>
-                    <div class="world-icon"><i class="fas fa-smile-beam"></i></div>
+        <main class="soft-grid">
+            <div class="soft-card available" data-game="alias">
+                <div class="soft-badge">HOT</div>
+                <div class="soft-icon-box">
+                    <i class="fas fa-comments"></i>
                 </div>
+                <h3 class="soft-title">АЛИАС</h3>
+                <p class="soft-desc">Объясняй слова и веселись</p>
+                <button class="soft-btn">ИГРАТЬ</button>
             </div>
 
-            <div class="world-card retro-vinyl" data-game="danetki">
-                <div class="vinyl-texture"></div>
-                <div class="world-label">VINTAGE</div>
-                <div class="world-content">
-                    <h3 class="world-name">ДАНЕТКИ</h3>
-                    <div class="world-icon"><i class="fas fa-record-vinyl"></i></div>
+            <div class="soft-card available" data-game="spy">
+                <div class="soft-icon-box blue">
+                    <i class="fas fa-user-secret"></i>
                 </div>
+                <h3 class="soft-title">ШПИОН</h3>
+                <p class="soft-desc">Найди чужого среди своих</p>
+                <button class="soft-btn">ИГРАТЬ</button>
             </div>
 
-            <div class="world-card glass-world" data-game="spy">
-                <div class="glass-blur"></div>
-                <div class="world-label">TECH</div>
-                <div class="world-content">
-                    <h3 class="world-name">ШПИОН</h3>
-                    <div class="world-icon"><i class="fas fa-fingerprint"></i></div>
+            <div class="soft-card available" data-game="danetki">
+                <div class="soft-icon-box yellow">
+                    <i class="fas fa-lightbulb"></i>
                 </div>
+                <h3 class="soft-title">ДАНЕТКИ</h3>
+                <p class="soft-desc">Детективные загадки</p>
+                <button class="soft-btn">ИГРАТЬ</button>
             </div>
 
-            <div class="world-card brutal-world" data-game="crocodile">
-                <div class="world-label">RAW</div>
-                <div class="world-content">
-                    <h3 class="world-name">КРОКОДИЛ</h3>
-                    <div class="world-icon"><i class="fas fa-hand-rock"></i></div>
+            <div class="soft-card locked" data-game="bunker">
+                <div class="soft-badge lock">СКОРО</div>
+                <div class="soft-icon-box gray">
+                    <i class="fas fa-radiation"></i>
                 </div>
+                <h3 class="soft-title">БУНКЕР</h3>
+                <p class="soft-desc">Выживи в апокалипсисе</p>
+                <button class="soft-btn disabled">ЖДЕМ</button>
             </div>
-
         </main>
     </div>
 
