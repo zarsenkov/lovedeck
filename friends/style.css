@@ -8,8 +8,8 @@
     --card-croc: #C6F6D5;
     --card-whoami: #FEEBC8;
     --card-quiz: #BEE3F8;
-    --card-couples: #FFB7B2; /* Нежный коралл/розовый */
-    --card-mafia: #CBD5E0;    /* Стальной серый */
+    --card-couples: #FFB7B2; /* Цвет для Love Moments */
+    --card-mafia: #CBD5E0;   /* Цвет для Мафии */
     --card-locked: #EDF2F7;
     --accent: #667EEA;
 }
@@ -40,7 +40,6 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
-    padding-bottom: 60px;
 }
 
 .neo-card {
@@ -55,13 +54,14 @@ body {
     box-shadow: 10px 10px 0px var(--text);
 }
 
-/* Цвета карточек */
+/* Новые классы цветов */
 .neo-card.couples { background: var(--card-couples); }
+.neo-card.mafia { background: var(--card-mafia); }
+
 .neo-card.alias { background: var(--card-alias); }
 .neo-card.spy { background: var(--card-spy); }
 .neo-card.danetki { background: var(--card-danetki); }
 .neo-card.quiz { background: var(--card-quiz); }
-.neo-card.mafia { background: var(--card-mafia); }
 .neo-card.crocodile { background: var(--card-croc); }
 .neo-card.locked { background: var(--card-locked); opacity: 0.8; cursor: not-allowed; }
 
@@ -86,20 +86,9 @@ body {
     padding: 6px 14px; border-radius: 100px;
     font-size: 10px; font-weight: 900;
 }
-.neo-badge.lock { opacity: 0.5; }
 
-/* ФУТЕР ССЫЛКИ */
-.neo-footer-links {
-    margin-top: 80px;
-    padding: 40px 0;
-    border-top: 4px solid var(--text);
-    text-align: center;
-}
-.footer-link { color: var(--text); text-decoration: none; font-weight: 900; font-size: 14px; }
-.footer-sep { margin: 0 15px; opacity: 0.2; }
-.footer-copy { font-weight: 900; font-size: 14px; opacity: 0.4; }
+.neo-footer { margin-top: 80px; padding: 40px 0; text-align: center; opacity: 0.4; font-weight: 800; font-size: 12px; }
 
-/* Анимация при нажатии на закрытую карту */
 .shake { animation: shake 0.3s ease-in-out; }
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
