@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ALIAS BATTLE</title>
+    <title>ALIAS BATTLE PRO</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-shell">
-        <div class="home-btn" onclick="location.href='../../index.html'">🏠</div>
-        <div class="rules-btn" onclick="toggleRules(true)">?</div>
+        <div id="menu-controls">
+            <div class="home-btn" onclick="location.href='../../index.html'">🏠</div>
+            <div class="rules-btn" onclick="toggleRules(true)">?</div>
+        </div>
 
         <header class="pop-header" id="game-header">
             <div class="back-circle" onclick="confirmExit()">⚙️</div>
@@ -63,26 +65,34 @@
         </section>
 
         <section class="pop-screen" id="screen-results">
-            <h2 class="pop-title" style="font-size: 2rem;">ИТОГИ ХОДА</h2>
+            <h2 class="pop-title" style="font-size: 2rem;">ПРОВЕРКА</h2>
             <div class="summary-box">
                 <span id="res-team-name">...</span>: 
                 <span id="res-team-score" style="color:var(--accent)">0</span>
             </div>
-            <p class="section-label" style="text-align: center;">Нажми на иконку, чтобы исправить</p>
+            <p class="section-label" style="text-align: center;">Нажми на значок, чтобы исправить</p>
             <div class="pop-list" id="results-list"></div>
-            <button class="btn-pop-main" id="res-continue-btn" onclick="handleResultContinue()">ПРОДОЛЖИТЬ</button>
+            <button class="btn-pop-main" id="res-continue-btn" onclick="handleResultContinue()">ДАЛЕЕ</button>
+        </section>
+
+        <section class="pop-screen" id="screen-final">
+            <h1 class="pop-title">ФИНАЛ</h1>
+            <div class="summary-box" id="final-stats" style="background: var(--mint); padding: 30px; font-size: 1.5rem;">
+                </div>
+            <h2 id="final-winner-name" style="text-align: center; font-weight: 900; margin: 20px 0;"></h2>
+            <button class="btn-pop-main" onclick="location.reload()">НОВЫЙ БАТТЛ</button>
         </section>
 
         <div class="modal-overlay" id="modal-rules">
             <div class="modal-content">
                 <h2>ПРАВИЛА</h2>
                 <ul>
-                    <li>Объясняй слова, не называя однокоренные.</li>
-                    <li>Свайп <b>вправо</b> — угадано.</li>
-                    <li>Свайп <b>влево</b> — пропуск.</li>
-                    <li>Побеждает тот, кто наберет больше очков за раунд.</li>
+                    <li>Объясняй слова, не используя однокоренные.</li>
+                    <li>Свайп <b>вправо</b> — угадано (+1).</li>
+                    <li>Свайп <b>влево</b> — пропуск (-1).</li>
+                    <li>После раунда можно отредактировать ошибки.</li>
                 </ul>
-                <button class="btn-pop-main" onclick="toggleRules(false)" style="padding:15px; font-size:1rem;">ПОНЯТНО</button>
+                <button class="btn-pop-main" onclick="toggleRules(false)" style="padding:15px; font-size:1rem;">ПОНЯЛ!</button>
             </div>
         </div>
     </div>
