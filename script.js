@@ -7,7 +7,7 @@ function loadGame(gameId) {
 
         if (gameId === 'couples') {
             // Ведем в папку lovecoulpe (с твоей опечаткой) и далее в online
-            path = "couples/online/index.html";
+            path = "couples/index.html";
         } else {
             // Для всех остальных игр: alias, crocodile, spy и т.д.
             path = `/games/${gameId}/index.html`;
