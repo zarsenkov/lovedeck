@@ -5,9 +5,25 @@ let scores = {};
 let gamePool = [];
 let currentPlayerIdx = 0;
 let currentScore = 0;
-let timer;
-let timeLeft;
+let timer = null;
+let timeLeft = 0;
+let wakeLock = null;
 
+// Блокировка засыпания
+async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+        try { wakeLock = await navigator.wakeLock.request('screen'); } 
+        catch (err) { console.error("WakeLock failed:", err); }
+    }
+}
+
+function releaseWakeLock() {
+    if (wakeLock !== null) {
+        wakeLock.release().then(() => wakeLock = null);
+    }
+}
+
+// Загрузка
 async function init() {
     try {
         const res = await fetch('categories.json');
@@ -17,14 +33,42 @@ async function init() {
         Object.keys(categoriesData).forEach(cat => {
             const div = document.createElement('div');
             div.className = 'cat-item';
-            div.innerHTML = `<div style="font-size:24px">${cat.match(/[\u{1F300}-\u{1F9FF}]/u)?.[0] || '🎲'}</div>${cat.replace(/[\u{1F300}-\u{1F9FF}]/u, '').trim()}`;
+            div.innerText = cat;
             div.onclick = () => {
                 div.classList.toggle('selected');
                 selectedCats.includes(cat) ? selectedCats = selectedCats.filter(c => c !== cat) : selectedCats.push(cat);
             };
             list.appendChild(div);
         });
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Init failed:", e); }
+}
+
+// Навигация "Назад"
+function goBack() {
+    const activeScreen = document.querySelector('.screen.active').id;
+    
+    if (timer) clearInterval(timer);
+    releaseWakeLock();
+
+    switch(activeScreen) {
+        case 'setup-screen':
+            window.location.href = '../../index.html';
+            break;
+        case 'category-screen':
+            showScreen('setup-screen');
+            break;
+        case 'transfer-screen':
+        case 'game-screen':
+        case 'result-screen':
+            if (confirm("Вернуться в настройки? Текущий прогресс будет потерян.")) {
+                showScreen('category-screen');
+            }
+            break;
+    }
+}
+
+function toggleRules(show) {
+    document.getElementById('rules-modal').classList.toggle('active', show);
 }
 
 function addPlayer() {
@@ -36,7 +80,7 @@ function addPlayer() {
 
 function confirmPlayers() {
     players = Array.from(document.querySelectorAll('.joy-input')).map(i => i.value.trim()).filter(v => v);
-    if(players.length < 2) return alert("Нужно минимум 2 игрока");
+    if(players.length < 2) return alert("Нужно минимум 2 игрока!");
     players.forEach(p => scores[p] = 0);
     showScreen('category-screen');
 }
@@ -57,6 +101,7 @@ function preparePlayer() {
 }
 
 function startRound() {
+    requestWakeLock();
     showScreen('game-screen');
     currentScore = 0;
     timeLeft = parseInt(document.getElementById('time-select').value);
@@ -68,6 +113,8 @@ function startRound() {
         document.getElementById('timer-display').innerText = timeLeft;
         if(timeLeft <= 0) {
             clearInterval(timer);
+            timer = null;
+            releaseWakeLock();
             scores[players[currentPlayerIdx]] += currentScore;
             currentPlayerIdx++;
             preparePlayer();
@@ -78,6 +125,7 @@ function startRound() {
 function nextWord() {
     if(gamePool.length === 0) {
         clearInterval(timer);
+        timer = null;
         showResults();
         return;
     }
@@ -93,7 +141,6 @@ function correctWord() {
 
 function skipWord() {
     nextWord();
-    if(window.navigator.vibrate) window.navigator.vibrate(30);
 }
 
 function updateUI() {
@@ -104,7 +151,7 @@ function updateUI() {
 function showResults() {
     showScreen('result-screen');
     const board = document.getElementById('final-results');
-    board.innerHTML = `<h3 style="margin-bottom:15px">ФИНАЛЬНЫЙ СЧЕТ:</h3>` + 
+    board.innerHTML = `<h3 style="margin-bottom:15px">ИТОГИ ИГРЫ:</h3>` + 
         Object.entries(scores)
         .sort((a,b) => b[1] - a[1])
         .map(([name, score], i) => `
