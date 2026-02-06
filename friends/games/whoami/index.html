@@ -2,368 +2,57 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Кто я? | Угадай слово на лбу</title>
-    
-    <!-- Стили -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>КТО Я? | LOVECOUPLE</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* Простой фикс для мобильных */
-        body {
-            -webkit-text-size-adjust: 100%;
-            touch-action: manipulation;
-        }
-        
-        /* Убираем подсветку при тапе */
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Фикс для скролла на iOS */
-        .scroll-fix {
-            -webkit-overflow-scrolling: touch;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Главный контейнер -->
-    <div class="game-wrapper">
-        <!-- Шапка -->
-        <header class="game-header">
-            <button class="back-btn" onclick="goBack()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <div class="header-title">
-                <h1><i class="fas fa-mask"></i> Кто я?</h1>
-                <p>Угадай слово на лбу</p>
-            </div>
-            <button class="rules-btn" onclick="showRules()">
-                <i class="fas fa-question-circle"></i>
-            </button>
-        </header>
-
-        <!-- Основное содержимое -->
-        <main class="game-main scroll-fix" id="gameMain">
+    <div class="app-container">
+        <section class="screen active" id="start-screen">
+            <div class="back-link" onclick="location.href='../../index.html'">← В МЕНЮ</div>
+            <h1 class="hero-title">КТО <span>Я?</span></h1>
             
-            <!-- ЭКРАН 1: Главный меню -->
-            <section class="screen active" id="screen1">
-                <div class="screen-content">
-                    <div class="welcome-section">
-                        <div class="welcome-icon">
-                            <i class="fas fa-theater-masks"></i>
-                        </div>
-                        <h2>Как играть?</h2>
-                        <div class="instructions">
-                            <div class="instruction-step">
-                                <span class="step-num">1</span>
-                                <p>Прислоните телефон ко лбу</p>
-                            </div>
-                            <div class="instruction-step">
-                                <span class="step-num">2</span>
-                                <p>Друзья видят слово, вы - нет</p>
-                            </div>
-                            <div class="instruction-step">
-                                <span class="step-num">3</span>
-                                <p>Задавайте вопросы "Да/Нет/Не важно"</p>
-                            </div>
-                            <div class="instruction-step">
-                                <span class="step-num">4</span>
-                                <p>Угадайте своего персонажа!</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="players-selector">
-                        <h3><i class="fas fa-users"></i> Количество игроков</h3>
-                        <div class="counter">
-                            <button class="counter-btn" onclick="changePlayers(-1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <span class="count" id="playersCount">4</span>
-                            <button class="counter-btn" onclick="changePlayers(1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                        <p class="hint">От 2 до 8 игроков</p>
-                    </div>
-                    
-                    <button class="start-btn" onclick="goToSetup()">
-                        <i class="fas fa-play-circle"></i> Начать игру
-                    </button>
+            <div class="setup-box">
+                <div class="input-group">
+                    <label>ВРЕМЯ НА РАУНД (СЕК)</label>
+                    <input type="number" id="time-input" value="60" min="30" max="300">
                 </div>
-            </section>
-
-            <!-- ЭКРАН 2: Настройки -->
-            <section class="screen" id="screen2">
-                <div class="screen-content">
-                    <div class="screen-header">
-                        <h2><i class="fas fa-cog"></i> Настройки игры</h2>
-                        <p>Настройте параметры под вашу компанию</p>
+                
+                <label>ВЫБЕРИТЕ КАТЕГОРИИ:</label>
+                <div class="category-grid" id="category-list">
                     </div>
-                    
-                    <!-- Имена игроков -->
-                    <div class="settings-section">
-                        <h3><i class="fas fa-user-friends"></i> Имена игроков</h3>
-                        <div class="names-list" id="namesList">
-                            <!-- Заполнится скриптом -->
-                        </div>
-                    </div>
-                    
-                    <!-- Категории -->
-                    <div class="settings-section">
-                        <h3><i class="fas fa-tags"></i> Категории</h3>
-                        <div class="categories-grid" id="categoriesGrid">
-                            <!-- Заполнится скриптом -->
-                        </div>
-                    </div>
-                    
-                    <!-- Время -->
-                    <div class="settings-section">
-                        <h3><i class="fas fa-clock"></i> Время на ход</h3>
-                        <div class="time-options">
-                            <button class="time-opt" onclick="setTime(60)">1 мин</button>
-                            <button class="time-opt active" onclick="setTime(120)">2 мин</button>
-                            <button class="time-opt" onclick="setTime(180)">3 мин</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Раунды -->
-                    <div class="settings-section">
-                        <h3><i class="fas fa-redo"></i> Количество раундов</h3>
-                        <div class="rounds-selector">
-                            <button class="rounds-btn" onclick="changeRounds(-1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="text" id="roundsInput" value="5" readonly>
-                            <button class="rounds-btn" onclick="changeRounds(1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                        <p class="hint">Сколько слов угадает каждый игрок</p>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn-secondary" onclick="showScreen('screen1')">
-                            <i class="fas fa-arrow-left"></i> Назад
-                        </button>
-                        <button class="btn-primary" onclick="startGame()">
-                            Начать <i class="fas fa-play"></i>
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ЭКРАН 3: Подготовка -->
-            <section class="screen" id="screen3">
-                <div class="screen-content">
-                    <div class="turn-info">
-                        <div class="round-badge">
-                            Раунд <span id="currentRound">1</span> из <span id="totalRounds">5</span>
-                        </div>
-                        <h3>Сейчас угадывает:</h3>
-                        <h2 id="currentPlayerName">Игрок 1</h2>
-                    </div>
-                    
-                    <div class="phone-simulator">
-                        <div class="phone-frame">
-                            <div class="phone-screen">
-                                <div class="word-display" id="wordPlaceholder">???</div>
-                                <div class="category-display" id="categoryPlaceholder">Категория</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="instructions-box">
-                        <h4><i class="fas fa-mobile-alt"></i> Как держать телефон:</h4>
-                        <div class="steps">
-                            <p>1. Передайте телефон игроку</p>
-                            <p>2. Прислоните экраном к друзьям</p>
-                            <p>3. Нажмите "Показать слово"</p>
-                        </div>
-                        <div class="warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            Угадывающий не должен видеть экран!
-                        </div>
-                    </div>
-                    
-                    <div class="action-buttons vertical">
-                        <button class="btn-primary large" onclick="revealWord()" id="revealBtn">
-                            <i class="fas fa-eye"></i> Показать слово
-                        </button>
-                        <button class="btn-secondary" onclick="skipCurrentPlayer()">
-                            <i class="fas fa-forward"></i> Пропустить игрока
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ЭКРАН 4: Игра -->
-            <section class="screen" id="screen4">
-                <div class="screen-content">
-                    <!-- Инфо панель -->
-                    <div class="game-info-panel">
-                        <div class="info-item">
-                            <i class="fas fa-user"></i>
-                            <span id="activePlayer">Игрок 1</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-clock"></i>
-                            <span id="gameTimer">02:00</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-redo"></i>
-                            <span>Раунд <span id="gameRound">1</span>/<span id="gameTotalRounds">5</span></span>
-                        </div>
-                    </div>
-                    
-                    <!-- Слово -->
-                    <div class="word-card">
-                        <div class="word-big" id="gameWord">ЗАГРУЗКА...</div>
-                        <div class="category-badge" id="gameCategory">Категория</div>
-                    </div>
-                    
-                    <!-- Кнопки действий -->
-                    <div class="game-actions">
-                        <button class="action-btn success" onclick="markCorrect()">
-                            <i class="fas fa-check"></i>
-                            <span>Угадал<br><small>+10 очков</small></span>
-                        </button>
-                        <button class="action-btn warning" onclick="skipWord()">
-                            <i class="fas fa-forward"></i>
-                            <span>Сменить<br><small>слово</small></span>
-                        </button>
-                        <button class="action-btn danger" onclick="giveUpWord()">
-                            <i class="fas fa-flag"></i>
-                            <span>Сдаюсь<br><small>-10 очков</small></span>
-                        </button>
-                    </div>
-                    
-                    <!-- Таблица счета -->
-                    <div class="score-board">
-                        <h4><i class="fas fa-trophy"></i> Счет игры</h4>
-                        <div class="scores-list" id="scoresList">
-                            <!-- Заполнится скриптом -->
-                        </div>
-                        
-                        <div class="game-controls">
-                            <button class="btn-secondary" onclick="pauseGame()">
-                                <i class="fas fa-pause"></i> Пауза
-                            </button>
-                            <button class="btn-danger" onclick="endGame()">
-                                <i class="fas fa-stop"></i> Завершить
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ЭКРАН 5: Результаты -->
-            <section class="screen" id="screen5">
-                <div class="screen-content">
-                    <div class="results-header">
-                        <div class="trophy-icon">
-                            <i class="fas fa-award"></i>
-                        </div>
-                        <h2>Игра завершена!</h2>
-                        <p class="winner">Победитель: <span id="winnerName">Игрок 1</span></p>
-                    </div>
-                    
-                    <div class="results-list" id="resultsList">
-                        <!-- Заполнится скриптом -->
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn-secondary" onclick="newGame()">
-                            <i class="fas fa-redo"></i> Новая игра
-                        </button>
-                        <button class="btn-primary" onclick="goToMainMenu()">
-                            <i class="fas fa-home"></i> Главная
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- Модальные окна -->
-        <div class="modal-overlay" id="pauseModal">
-            <div class="modal-content">
-                <h3><i class="fas fa-pause-circle"></i> Игра на паузе</h3>
-                <div class="modal-buttons">
-                    <button class="btn-primary" onclick="resumeGame()">
-                        <i class="fas fa-play"></i> Продолжить
-                    </button>
-                    <button class="btn-secondary" onclick="goToMainMenu()">
-                        <i class="fas fa-home"></i> Главная
-                    </button>
-                </div>
             </div>
-        </div>
-        
-        <div class="modal-overlay" id="rulesModal">
-            <div class="modal-content">
-                <h3><i class="fas fa-book"></i> Правила игры</h3>
-                <div class="rules-text">
-                    <p><strong>Цель:</strong> Угадать слово на своем "лбу".</p>
-                    <p><strong>Как играть:</strong></p>
-                    <ol>
-                        <li>Прислоните телефон ко лбу</li>
-                        <li>Друзья видят слово</li>
-                        <li>Задавайте вопросы "Да/Нет/Не важно"</li>
-                        <li>Угадайте персонажа за время</li>
-                    </ol>
-                    <p><strong>Очки:</strong> Угадал +10, сдался -10.</p>
-                </div>
-                <button class="btn-primary" onclick="closeModal('rulesModal')">
-                    Понятно
-                </button>
-            </div>
-        </div>
-        
-        <div class="modal-overlay" id="confirmModal">
-            <div class="modal-content">
-                <h3><i class="fas fa-question-circle"></i> Подтверждение</h3>
-                <p id="confirmText">Вы уверены?</p>
-                <div class="modal-buttons">
-                    <button class="btn-secondary" onclick="closeModal('confirmModal')">
-                        Отмена
-                    </button>
-                    <button class="btn-primary" onclick="confirmAction()">
-                        Да
-                    </button>
-                </div>
-            </div>
-        </div>
 
-        <!-- Мобильный футер -->
-        <footer class="mobile-footer">
-            <p><i class="fas fa-mobile-alt"></i> Передавайте телефон по кругу</p>
-        </footer>
+            <button class="primary-btn" onclick="startGame()">ПОЕХАЛИ!</button>
+        </section>
+
+        <section class="screen" id="ready-screen">
+            <h2 class="ready-title">ПРИЛОЖИ ТЕЛЕФОН КО ЛБУ</h2>
+            <p class="ready-subtitle">ИГРОКИ ДОЛЖНЫ ВИДЕТЬ СЛОВО</p>
+            <div class="countdown" id="countdown">3</div>
+        </section>
+
+        <section class="screen" id="game-screen">
+            <div class="timer-bar" id="timer-display">60</div>
+            <div class="word-card">
+                <h2 id="current-word">???</h2>
+            </div>
+            <div class="game-controls">
+                <button class="skip-btn" onclick="nextWord(false)">ПРОПУСТИТЬ</button>
+                <button class="correct-btn" onclick="nextWord(true)">УГАДАЛ!</button>
+            </div>
+        </section>
+
+        <section class="screen" id="result-screen">
+            <h2 class="hero-title">ИТОГ: <span id="final-score">0</span></h2>
+            <p class="subtitle">ОТЛИЧНЫЙ РЕЗУЛЬТАТ!</p>
+            <div class="result-actions">
+                <button class="primary-btn" onclick="location.reload()">ЕЩЕ РАЗ</button>
+                <button class="text-btn" onclick="location.href='../../index.html'">ВЫЙТИ</button>
+            </div>
+        </section>
     </div>
-
     <script src="script.js"></script>
-    
-    <script>
-        // Простой фикс для мобильной высоты
-        function setMobileHeight() {
-            let vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-        }
-        
-        setMobileHeight();
-        window.addEventListener('resize', setMobileHeight);
-        window.addEventListener('orientationchange', setMobileHeight);
-        
-        // Фикс для iOS скролла
-        document.addEventListener('touchmove', function(e) {
-            if (e.target.classList.contains('scroll-fix')) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-    </script>
 </body>
 </html>
