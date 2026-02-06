@@ -1,108 +1,71 @@
-let game = {
-    score: 0,
-    time: 60,
-    currentT: 60,
-    history: [],
-    words: [],
-    cat: 'base',
-    timer: null,
-    startX: 0
+// Настройки по умолчанию
+let config = { time: 60, diff: 'easy' };
+let gameState = { score: 0, timer: null, timeLeft: 0, wordsLog: [] };
+
+const wordsBase = {
+    easy: ["Кошка", "Арбуз", "Пицца", "Школа", "Гитара", "Космос", "Лимон", "Кино", "Облако", "Море"],
+    hard: ["Синхрофазотрон", "Дефолт", "Когнитивность", "Аскетизм", "Метафора", "Эфемерность"]
 };
 
-// Выбор категории
-document.querySelectorAll('.pop-chip').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.pop-chip').forEach(b => b.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        game.cat = e.currentTarget.dataset.cat;
-    });
-});
-
-function adjustTime(v) {
-    game.time = Math.max(10, Math.min(180, game.time + v));
-    document.getElementById('time-val').textContent = game.time;
+function toScreen(id) {
+    document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('game-header').style.display = (id === 'screen-game') ? 'flex' : 'none';
 }
 
-function initGame() {
-    game.words = [...CARDS[game.cat]].sort(() => Math.random() - 0.5);
-    game.score = 0;
-    game.currentT = game.time;
-    game.history = [];
+function setOpt(key, val, el) {
+    config[key] = val;
+    el.parentElement.querySelectorAll('.pop-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+}
+
+function startGame() {
+    gameState.score = 0;
+    gameState.wordsLog = [];
+    gameState.timeLeft = config.time;
+    document.getElementById('live-score').innerText = '0';
     
-    document.getElementById('score-val').textContent = '0';
-    showScreen('screen-play');
+    toScreen('screen-game');
     nextWord();
-    startTimer();
-    initSwipe();
-}
-
-function nextWord() {
-    if (game.words.length === 0) return endGame();
-    document.getElementById('word-display').textContent = game.words.pop();
-}
-
-function handleSwipe(isRight) {
-    const word = document.getElementById('word-display').textContent;
-    game.history.push({ word, isRight });
-    game.score += isRight ? 1 : -1;
-    document.getElementById('score-val').textContent = game.score;
     
-    // Визуальный отклик
-    const card = document.getElementById('card');
-    card.style.background = isRight ? 'var(--mint)' : 'var(--pink)';
-    setTimeout(() => card.style.background = 'white', 200);
-
-    if ('vibrate' in navigator) navigator.vibrate(isRight ? 25 : 50);
-    nextWord();
-}
-
-function initSwipe() {
-    const card = document.getElementById('card');
-    card.addEventListener('touchstart', e => { game.startX = e.touches[0].clientX; card.style.transition = 'none'; });
-    card.addEventListener('touchmove', e => {
-        let x = e.touches[0].clientX - game.startX;
-        card.style.transform = `translateX(${x}px) rotate(${x/15}deg)`;
-    });
-    card.addEventListener('touchend', (e) => {
-        card.style.transition = '0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        let x = e.changedTouches[0].clientX - game.startX;
-        if (Math.abs(x) > 100) handleSwipe(x > 0);
-        card.style.transform = '';
-    });
-}
-
-function startTimer() {
-    if (game.timer) clearInterval(game.timer);
-    game.timer = setInterval(() => {
-        game.currentT--;
-        document.getElementById('game-timer').textContent = game.currentT;
-        if (game.currentT <= 0) endGame();
+    gameState.timer = setInterval(() => {
+        gameState.timeLeft--;
+        let m = Math.floor(gameState.timeLeft / 60);
+        let s = gameState.timeLeft % 60;
+        document.getElementById('timer').innerText = `${m}:${s < 10 ? '0'+s : s}`;
+        
+        if (gameState.timeLeft <= 0) finishGame();
     }, 1000);
 }
 
-function endGame() {
-    clearInterval(game.timer);
-    showScreen('screen-results');
-    document.getElementById('res-score').textContent = game.score;
-    const list = document.getElementById('words-review');
-    list.innerHTML = game.history.map(i => `
-        <div class="word-row" style="border-color: ${i.isRight ? '#B2F5EA' : '#FED7E2'}">
-            <span>${i.word}</span>
-            <span>${i.isRight ? '👍' : '👎'}</span>
+function nextWord() {
+    const pool = wordsBase[config.diff];
+    const word = pool[Math.floor(Math.random() * pool.length)];
+    document.getElementById('word-display').innerText = word;
+}
+
+function handleWord(isCorrect) {
+    const currentWord = document.getElementById('word-display').innerText;
+    gameState.score += isCorrect ? 1 : -1;
+    gameState.wordsLog.push({ word: currentWord, status: isCorrect });
+    document.getElementById('live-score').innerText = gameState.score;
+    
+    // Эффект "прыжка" карточки
+    const card = document.querySelector('.word-card');
+    card.style.transform = "scale(0.95)";
+    setTimeout(() => { card.style.transform = "scale(1)"; nextWord(); }, 100);
+}
+
+function finishGame() {
+    clearInterval(gameState.timer);
+    toScreen('screen-results');
+    document.getElementById('final-score').innerText = gameState.score;
+    
+    const list = document.getElementById('results-list');
+    list.innerHTML = gameState.wordsLog.map(item => `
+        <div class="word-row">
+            <span>${item.word}</span>
+            <span style="color: ${item.status ? 'var(--mint)' : '#FEB2B2'}">${item.status ? '✓' : '✕'}</span>
         </div>
     `).join('');
-}
-
-function showScreen(id) {
-    document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-
-function undoLast() {
-    if (game.history.length === 0) return;
-    const last = game.history.pop();
-    game.words.push(document.getElementById('word-display').textContent);
-    document.getElementById('word-display').textContent = last.word;
-    game.score -= last.isRight ? 1 : -1;
-    document.getElementById('score-val').textContent = game.score;
 }
