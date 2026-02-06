@@ -37,7 +37,6 @@ function initBattle() {
     prepareTurn();
 }
 
-// --- ИГРОВОЙ ЦИКЛ ---
 function prepareTurn() {
     const team = game.teams[game.currentTeamIdx];
     document.getElementById('ready-team-name').innerText = team.name.toUpperCase();
@@ -75,8 +74,9 @@ function handleWord(isCorrect) {
     const word = document.getElementById('word-display').innerText;
     game.roundLog.push({ word, isCorrect });
     
-    // Считаем временный счет для экрана игры
-    updateLiveScore();
+    // Мгновенный пересчет для экрана игры
+    let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
+    document.getElementById('live-score').innerText = score;
 
     const card = document.getElementById('main-card');
     card.style.transition = '0.3s ease-out';
@@ -89,40 +89,33 @@ function handleWord(isCorrect) {
     }, 200);
 }
 
-function updateLiveScore() {
-    let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
-    document.getElementById('live-score').innerText = score;
-}
-
-// --- ПРОВЕРКА И ИСПРАВЛЕНИЕ ---
+// --- ПРОВЕРКА СЛОВ (ИСПРАВЛЕННАЯ МАТЕМАТИКА) ---
 function showRoundReview() {
     clearInterval(game.timer);
     toScreen('screen-results');
     document.getElementById('res-team-name').innerText = game.teams[game.currentTeamIdx].name;
     renderReviewList();
     
-    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ХОД СЛЕДУЮЩЕЙ КОМАНДЫ" : "УЗНАТЬ РЕЗУЛЬТАТ";
+    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "СЛЕДУЮЩИЙ ХОД" : "РЕЗУЛЬТАТ";
 }
 
 function renderReviewList() {
     const list = document.getElementById('results-list');
     list.innerHTML = game.roundLog.map((item, index) => `
         <div class="word-row">
-            <span>${item.word}</span>
-            <span class="status-icon" onclick="toggleWordStatus(${index})">
-                ${item.isCorrect ? '✅' : '❌'}
-            </span>
+            <span style="${item.isCorrect ? '' : 'opacity: 0.5; text-decoration: line-through;'}">${item.word}</span>
+            <div class="status-icon ${item.isCorrect ? 'status-ok' : 'status-err'}" onclick="toggleWordStatus(${index})">
+                ${item.isCorrect ? '✓' : '✕'}
+            </div>
         </div>
     `).join('');
     
-    // Пересчитываем финальный балл для команды
-    let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
-    document.getElementById('res-team-score').innerText = score;
-    game.teams[game.currentTeamIdx].score = score;
+    let total = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
+    document.getElementById('res-team-score').innerText = total;
+    game.teams[game.currentTeamIdx].score = total;
 }
 
 function toggleWordStatus(index) {
-    // Просто меняем статус и перерисовываем список (счет пересчитается внутри renderReviewList)
     game.roundLog[index].isCorrect = !game.roundLog[index].isCorrect;
     renderReviewList();
 }
@@ -148,18 +141,14 @@ function showFinalWinner() {
     `;
 
     let winnerText = "";
-    if (t1.score > t2.score) winnerText = `🏆 ПОБЕДА: ${t1.name}!`;
-    else if (t2.score > t1.score) winnerText = `🏆 ПОБЕДА: ${t2.name}!`;
-    else winnerText = "🤝 НИЧЬЯ!";
+    if (t1.score > t2.score) winnerText = `🏆 ${t1.name}`;
+    else if (t2.score > t1.score) winnerText = `🏆 ${t2.name}`;
+    else winnerText = "🤝 НИЧЬЯ";
     
     document.getElementById('final-winner-name').innerText = winnerText;
-    
-    // Меняем текст кнопки на финальном экране
-    const finalBtn = document.querySelector('#screen-final .btn-pop-main');
-    finalBtn.innerText = "В МЕНЮ";
 }
 
-// --- СИСТЕМНОЕ ---
+// --- СИСТЕМА ---
 function toggleRules(show) {
     document.getElementById('modal-rules').classList.toggle('active', show);
 }
