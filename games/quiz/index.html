@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ВИКТОРИНА БАТТЛ</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <button class="nav-btn back-btn" onclick="goBack()">←</button>
+        <button class="nav-btn rules-btn" onclick="toggleRules(true)">?</button>
+
+        <section class="screen active" id="setup-screen">
+            <div class="logo-area">
+                <div class="emoji-float">💡</div>
+                <h1 class="main-title">КВИЗ<span>БАТТЛ</span></h1>
+            </div>
+            
+            <div class="card-glass">
+                <p class="section-tag">КТО ИГРАЕТ?</p>
+                <div id="player-list" class="players-container">
+                    <div class="player-input-wrapper">
+                        <input type="text" class="joy-input" placeholder="Имя игрока" value="Игрок 1">
+                    </div>
+                    <div class="player-input-wrapper">
+                        <input type="text" class="joy-input" placeholder="Имя игрока" value="Игрок 2">
+                        <button class="remove-player-btn" onclick="this.parentElement.remove()">×</button>
+                    </div>
+                </div>
+                <button class="add-player-circle" onclick="addPlayer()">+</button>
+
+                <p class="section-tag" style="margin-top:20px">ВЫБЕРИ ТЕМЫ</p>
+                <div class="category-grid" id="categories-box"></div>
+            </div>
+            <button class="primary-btn pulse" onclick="confirmSetup()">ПОЕХАЛИ!</button>
+        </section>
+
+        <section class="screen" id="transfer-screen">
+            <div class="transfer-card">
+                <div class="avatar-circle">👤</div>
+                <p>СЛЕДУЮЩИЙ ИГРОК:</p>
+                <h2 id="next-player-name" class="big-name">---</h2>
+                <div class="hint-text">Приготовься ответить на 5 вопросов</div>
+                <button class="primary-btn" onclick="startTurn()">Я ГОТОВ</button>
+            </div>
+        </section>
+
+        <section class="screen" id="game-screen">
+            <div class="game-top">
+                <div class="timer-pill" id="timer-display">30</div>
+                <div class="score-pill">СЧЕТ: <span id="score-counter">0</span></div>
+            </div>
+            <div class="player-indicator" id="current-active-player">Игрок</div>
+            <div class="question-container">
+                <h2 id="question-text">Загрузка...</h2>
+            </div>
+            <div class="answers-stack" id="answers-box"></div>
+        </section>
+
+        <section class="screen" id="result-screen">
+            <h1 class="main-title-small">ФИНАЛ</h1>
+            <div class="card-glass" id="final-results"></div>
+            <button class="primary-btn" onclick="location.reload()">ГЛАВНОЕ МЕНЮ</button>
+        </section>
+
+        <div id="rules-modal" class="modal-overlay" onclick="toggleRules(false)">
+            <div class="modal-card" onclick="event.stopPropagation()">
+                <h2>ПРАВИЛА 📖</h2>
+                <div class="rules-list-fixed">
+                    <div class="rule-row"><span>1</span> Каждый игрок отвечает на 5 вопросов подряд.</div>
+                    <div class="rule-row"><span>2</span> На ответ дается 30 секунд.</div>
+                    <div class="rule-row"><span>3</span> Победит тот, кто наберет больше всех очков!</div>
+                </div>
+                <button class="primary-btn" onclick="toggleRules(false)">ПОНЯТНО</button>
+            </div>
+        </div>
+    </div>
+    <script src="questions.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
