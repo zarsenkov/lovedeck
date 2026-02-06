@@ -72,11 +72,12 @@ function nextWord() {
 
 function handleWord(isCorrect) {
     const word = document.getElementById('word-display').innerText;
-    game.roundLog.push({ word, isCorrect });
+    game.roundLog.push({ word: word, isCorrect: isCorrect });
     
-    // Мгновенный пересчет для экрана игры
-    let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
-    document.getElementById('live-score').innerText = score;
+    // Считаем временный счет для экрана игры
+    let tempScore = 0;
+    game.roundLog.forEach(i => tempScore += i.isCorrect ? 1 : -1);
+    document.getElementById('live-score').innerText = tempScore;
 
     const card = document.getElementById('main-card');
     card.style.transition = '0.3s ease-out';
@@ -89,35 +90,56 @@ function handleWord(isCorrect) {
     }, 200);
 }
 
-// --- ПРОВЕРКА СЛОВ (ИСПРАВЛЕННАЯ МАТЕМАТИКА) ---
+// --- ПРОВЕРКА СЛОВ (БЕЗБАГОВАЯ ЛОГИКА) ---
 function showRoundReview() {
     clearInterval(game.timer);
     toScreen('screen-results');
     document.getElementById('res-team-name').innerText = game.teams[game.currentTeamIdx].name;
     renderReviewList();
     
-    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "СЛЕДУЮЩИЙ ХОД" : "РЕЗУЛЬТАТ";
+    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ХОД СЛЕДУЮЩЕЙ КОМАНДЫ" : "УЗНАТЬ КТО ПОБЕДИЛ";
 }
 
 function renderReviewList() {
     const list = document.getElementById('results-list');
-    list.innerHTML = game.roundLog.map((item, index) => `
-        <div class="word-row">
-            <span style="${item.isCorrect ? '' : 'opacity: 0.5; text-decoration: line-through;'}">${item.word}</span>
-            <div class="status-icon ${item.isCorrect ? 'status-ok' : 'status-err'}" onclick="toggleWordStatus(${index})">
-                ${item.isCorrect ? '✓' : '✕'}
-            </div>
-        </div>
-    `).join('');
+    list.innerHTML = ''; // Полная очистка перед рендером
+
+    game.roundLog.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'word-row';
+        
+        const textStyle = item.isCorrect ? '' : 'opacity: 0.5; text-decoration: line-through;';
+        const iconClass = item.isCorrect ? 'status-ok' : 'status-err';
+        const iconSign = item.isCorrect ? '✓' : '✕';
+
+        row.innerHTML = `
+            <span style="${textStyle}">${item.word}</span>
+            <div class="status-icon ${iconClass}">${iconSign}</div>
+        `;
+        
+        // Навешиваем клик на всю строку или иконку
+        row.onclick = () => toggleWordStatus(index);
+        list.appendChild(row);
+    });
     
-    let total = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
-    document.getElementById('res-team-score').innerText = total;
-    game.teams[game.currentTeamIdx].score = total;
+    recalculateScore();
 }
 
 function toggleWordStatus(index) {
+    // Инвертируем статус
     game.roundLog[index].isCorrect = !game.roundLog[index].isCorrect;
+    // Перерисовываем список
     renderReviewList();
+}
+
+function recalculateScore() {
+    let total = 0;
+    game.roundLog.forEach(item => {
+        total += item.isCorrect ? 1 : -1;
+    });
+    
+    document.getElementById('res-team-score').innerText = total;
+    game.teams[game.currentTeamIdx].score = total;
 }
 
 function handleResultContinue() {
@@ -141,14 +163,14 @@ function showFinalWinner() {
     `;
 
     let winnerText = "";
-    if (t1.score > t2.score) winnerText = `🏆 ${t1.name}`;
-    else if (t2.score > t1.score) winnerText = `🏆 ${t2.name}`;
-    else winnerText = "🤝 НИЧЬЯ";
+    if (t1.score > t2.score) winnerText = `🏆 ПОБЕДА: ${t1.name}!`;
+    else if (t2.score > t1.score) winnerText = `🏆 ПОБЕДА: ${t2.name}!`;
+    else winnerText = "🤝 НИЧЬЯ!";
     
     document.getElementById('final-winner-name').innerText = winnerText;
 }
 
-// --- СИСТЕМА ---
+// --- СИСТЕМНОЕ ---
 function toggleRules(show) {
     document.getElementById('modal-rules').classList.toggle('active', show);
 }
