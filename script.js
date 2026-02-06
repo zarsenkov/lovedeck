@@ -10,7 +10,7 @@ function loadGame(gameId) {
             path = "couples/online/index.html";
         } else {
             // Для всех остальных игр: alias, crocodile, spy и т.д.
-            path = `${gameId}/games/index.html`;
+            path = `/games/${gameId}/index.html`;
         }
 
         window.location.href = path;
