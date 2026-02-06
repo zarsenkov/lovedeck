@@ -1,35 +1,61 @@
-/* Инфо-панель сверху */
-.game-header-info {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px; background: rgba(255,255,255,0.05); border-radius: 15px; margin-bottom: 15px;
-}
-#active-guesser { font-weight: 800; font-size: 12px; color: var(--primary-light); }
-
-/* Управление очередью вопросов */
-.turn-manager {
-    margin-top: 20px; text-align: center;
-    background: var(--card-bg); padding: 15px; border-radius: 20px;
-    border: 1px dashed var(--primary);
-}
-.asker-badge {
-    font-family: 'Unbounded'; font-size: 18px; color: var(--accent);
-    text-transform: uppercase; margin-top: 5px;
+:root {
+    --bg: #0F172A;
+    --primary: #6366F1;
+    --accent: #F43F5E;
+    --success: #10B981;
+    --text: #F8FAFC;
+    --card-bg: #1E293B;
 }
 
-/* Карточка передачи телефона */
-.transfer-card {
-    text-align: center; background: white; color: var(--bg);
-    padding: 40px 20px; border-radius: 30px; box-shadow: 0 20px 0 var(--primary);
-}
-.next-player-badge {
-    background: var(--primary); color: white; padding: 15px;
-    border-radius: 15px; font-family: 'Unbounded'; font-size: 20px;
-    margin: 20px 0; display: inline-block; width: 100%;
-}
-.icon-spin { font-size: 50px; animation: rotate 2s linear infinite; }
-@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); height: 100dvh; overflow: hidden; }
 
-.player-input {
-    width: 100%; background: var(--bg); border: 2px solid #334155;
-    border-radius: 12px; padding: 12px; color: white; margin-bottom: 10px;
-}
+.app-container { height: 100%; padding: 20px; display: flex; flex-direction: column; max-width: 500px; margin: 0 auto; }
+
+.screen { display: none; flex-direction: column; height: 100%; justify-content: center; }
+.screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.hero-title { font-family: 'Unbounded'; font-size: 2rem; text-align: center; margin-bottom: 20px; }
+.hero-title span { color: var(--accent); }
+
+.setup-box { background: var(--card-bg); padding: 20px; border-radius: 24px; margin-bottom: 20px; flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
+.scroll-area { overflow-y: auto; flex-grow: 1; padding-right: 5px; }
+
+.section-label { display: block; font-size: 10px; font-weight: 800; margin-bottom: 10px; opacity: 0.6; letter-spacing: 1px; }
+
+.player-input { width: 100%; background: var(--bg); border: 2px solid #334155; border-radius: 12px; padding: 12px; color: white; margin-bottom: 10px; font-weight: 600; outline: none; }
+.btn-add { background: none; border: 2px dashed #334155; color: var(--text); padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 700; margin-top: 5px; }
+
+.primary-btn { background: var(--primary); color: white; border: none; padding: 20px; border-radius: 20px; font-family: 'Unbounded'; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 6px 0 #4338CA; }
+.primary-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #4338CA; }
+
+/* КАТЕГОРИИ */
+.category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto; }
+.cat-item { background: var(--bg); border: 2px solid #334155; padding: 15px; border-radius: 16px; text-align: center; cursor: pointer; }
+.cat-item.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
+
+/* ИГРОВОЙ ПРОЦЕСС */
+.game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card-bg); padding: 15px; border-radius: 20px; }
+.timer { font-family: 'Unbounded'; font-size: 2rem; color: var(--accent); }
+.guesser-info { font-size: 12px; font-weight: 800; text-align: right; }
+#active-guesser-name { color: var(--primary); display: block; font-size: 16px; }
+
+.word-card { background: white; color: var(--bg); height: 220px; border-radius: 32px; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; box-shadow: 0 0 30px rgba(99,102,241,0.3); }
+#current-word { font-family: 'Unbounded'; font-size: 2.2rem; text-transform: uppercase; }
+
+.turn-manager { margin: 25px 0; text-align: center; background: rgba(255,193,7,0.1); padding: 15px; border-radius: 20px; border: 2px solid var(--primary); }
+.asker-badge { font-family: 'Unbounded'; font-size: 1.2rem; color: var(--accent); margin-top: 5px; }
+
+.game-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.skip-btn { background: var(--accent); color: white; border: none; padding: 18px; border-radius: 15px; font-weight: 800; font-size: 11px; box-shadow: 0 5px 0 #BE123C; }
+.correct-btn { background: var(--success); color: white; border: none; padding: 18px; border-radius: 15px; font-weight: 800; font-size: 11px; box-shadow: 0 5px 0 #065F46; }
+
+/* УВЕДОМЛЕНИЕ О ПЕРЕДАЧЕ */
+.transfer-card { text-align: center; background: white; color: var(--bg); padding: 40px 20px; border-radius: 30px; box-shadow: 0 15px 0 var(--primary); }
+.next-player-badge { background: var(--primary); color: white; padding: 15px; border-radius: 15px; font-family: 'Unbounded'; font-size: 1.5rem; margin: 20px 0; }
+.icon-spin { font-size: 40px; animation: spin 2s linear infinite; margin-bottom: 10px; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.countdown { font-family: 'Unbounded'; font-size: 8rem; text-align: center; color: var(--primary); }
