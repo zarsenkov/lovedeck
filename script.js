@@ -10,7 +10,7 @@ function loadGame(gameId) {
             path = "lovecoulpe/online/index.html";
         } else {
             // Для всех остальных игр: alias, crocodile, spy и т.д.
-            path = `${gameId}/index.html`;
+            path = `${gameId}/games/index.html`;
         }
 
         window.location.href = path;
