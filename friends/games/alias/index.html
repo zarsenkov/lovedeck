@@ -3,65 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>ALIAS | SWISS LIGHT</title>
+    <title>ALIAS | NEO-POP</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="app-wrapper">
+        <div class="flash-overlay" id="flash-overlay"></div>
         <div class="progress-container"><div id="progress-bar" class="progress-fill"></div></div>
 
         <header class="game-header">
-            <button class="icon-btn" onclick="goToMenu()"><i class="fas fa-times"></i></button>
-            <div class="timer-minimal" id="game-timer">60</div>
-            <div class="score-minimal">СЧЕТ: <span id="score-val">0</span></div>
+            <button class="header-btn icon-only" onclick="goToMenu()"><i class="fas fa-arrow-left"></i></button>
+            <div class="header-title">ALIAS</div>
+            <div class="timer-display" id="game-timer">60</div>
         </header>
 
         <section id="screen-setup" class="screen active">
-            <h1 class="hero-title">ALIAS<span>.</span></h1>
+            <h1 class="main-title">НАСТРОЙКИ<span>.</span></h1>
             
-            <div class="setup-box">
-                <label class="label-tiny">КАТЕГОРИЯ</label>
-                <div class="cat-selector">
-                    <button class="cat-chip active" data-cat="base">БАЗА</button>
+            <div class="setting-block">
+                <label>КАТЕГОРИИ</label>
+                <div class="chip-group">
+                    <button class="cat-chip active" data-cat="base">БАЗОВАЯ</button>
                     <button class="cat-chip" data-cat="movies">КИНО</button>
                     <button class="cat-chip" data-cat="adult">18+</button>
                 </div>
+            </div>
 
-                <label class="label-tiny">ТАЙМЕР</label>
-                <div class="time-stepper">
+            <div class="setting-block">
+                <label>ВРЕМЯ РАУНДА (СЕК)</label>
+                <div class="stepper-control">
                     <button onclick="adjustTime(-10)">—</button>
                     <span id="time-val">60</span>
                     <button onclick="adjustTime(10)">+</button>
                 </div>
             </div>
-
-            <button class="btn-black" onclick="initGame()">НАЧАТЬ ИГРУ</button>
+            
+            <button class="btn-action" onclick="initGame()">НАЧАТЬ ИГРУ</button>
         </section>
 
         <section id="screen-play" class="screen">
-            <div class="card-scene">
-                <div id="card" class="card-swiss">
-                    <div id="word-display">СЛОВО</div>
+            <div class="score-display">СЧЕТ: <span id="score-val">0</span></div>
+            
+            <div class="card-stack">
+                <div id="card" class="game-card">
+                    <div class="card-front">
+                        <h2 id="word-display">СЛОВО</h2>
+                    </div>
                 </div>
             </div>
 
-            <div class="play-controls">
-                <div class="swipe-legend">
-                    <span class="bad">← ПРОПУСК</span>
-                    <span class="good">УГАДАЛ →</span>
+            <div class="play-footer">
+                <button class="btn-undo" onclick="undoLast()"><i class="fas fa-undo-alt"></i> ОТМЕНИТЬ</button>
+                <div class="swipe-indicators">
+                    <span>← ПРОПУСК</span>
+                    <span>УГАДАЛ →</span>
                 </div>
-                <button class="btn-outline" onclick="undoLast()"><i class="fas fa-undo-alt"></i> ОТМЕНИТЬ</button>
             </div>
         </section>
 
         <section id="screen-results" class="screen">
-            <h2 class="hero-title">ИТОГ<span>:</span> <span id="res-score">0</span></h2>
-            <div class="review-container" id="words-review"></div>
+            <h1 class="main-title">ИТОГИ<span>!</span></h1>
+            <div class="final-score-bubble">
+                <span id="res-score">0</span>
+                <small>ОЧКОВ</small>
+            </div>
             
-            <div class="footer-actions">
-                <button class="btn-outline" onclick="showScreen('screen-setup')">НАСТРОЙКИ</button>
-                <button class="btn-black" onclick="initGame()">ЕЩЕ РАЗ</button>
+            <div class="review-list" id="words-review">
+                </div>
+
+            <div class="results-actions">
+                <button class="btn-secondary" onclick="showScreen('screen-setup')">НАСТРОЙКИ</button>
+                <button class="btn-action" onclick="location.reload()">НОВЫЙ РАУНД</button>
             </div>
         </section>
     </div>
