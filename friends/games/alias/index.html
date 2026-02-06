@@ -3,66 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ALIAS | NEO-POP EDITION</title>
+    <title>ALIAS PRO</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-shell">
-        <div class="home-btn" onclick="window.location.href='../../index.html'">🏠</div>
+        <div class="home-btn" onclick="location.href='../../index.html'">🏠</div>
 
         <header class="pop-header" id="game-header">
-            <div class="back-circle" onclick="confirmExit()">←</div>
-            <div class="timer-bubble" id="timer">00:60</div>
-            <div class="score-pill">ОЧКИ: <span id="live-score">0</span></div>
+            <div class="back-circle" onclick="confirmExit()">⚙️</div>
+            <div class="timer-bubble" id="timer">00:00</div>
+            <div class="score-pill">🔥 <span id="live-score">0</span></div>
         </header>
 
         <section class="pop-screen active" id="screen-start">
             <h1 class="pop-title">AL<span>IAS</span></h1>
             
-            <div class="team-turn-indicator" id="team-info">ОЧЕРЕДЬ: КОМАНДА 1</div>
+            <div class="team-turn-indicator">
+                <span id="team-info">ГОТОВЬТЕСЬ!</span>
+            </div>
+
+            <p class="section-label">ЦЕЛЬ (ОЧКОВ)</p>
+            <div class="chips-group">
+                <div class="pop-chip" onclick="setOpt('goal', 10, this)">10</div>
+                <div class="pop-chip active" onclick="setOpt('goal', 25, this)">25</div>
+                <div class="pop-chip" onclick="setOpt('goal', 50, this)">50</div>
+            </div>
 
             <p class="section-label">ВРЕМЯ РАУНДА</p>
             <div class="chips-group">
-                <div class="pop-chip" onclick="setOpt('time', 30, this)">30 СЕК</div>
                 <div class="pop-chip active" onclick="setOpt('time', 60, this)">60 СЕК</div>
                 <div class="pop-chip" onclick="setOpt('time', 90, this)">90 СЕК</div>
             </div>
 
-            <p class="section-label">КОМАНДЫ</p>
-            <div class="chips-group">
-                <div class="pop-chip active" onclick="setTeams(2, this)">2 КОМАНДЫ</div>
-                <div class="pop-chip" onclick="setTeams(3, this)">3 КОМАНДЫ</div>
-            </div>
-
-            <p class="section-label">КАТЕГОРИЯ СЛОВ</p>
+            <p class="section-label">КАТЕГОРИЯ</p>
             <div class="chips-group">
                 <div class="pop-chip active" onclick="setOpt('cat', 'common', this)">ОБЩЕЕ</div>
                 <div class="pop-chip" onclick="setOpt('cat', 'movies', this)">КИНО</div>
-                <div class="pop-chip" onclick="setOpt('cat', 'hard', this)">ХАРДКОР</div>
+                <div class="pop-chip" onclick="setOpt('cat', 'brands', this)">БРЕНДЫ</div>
             </div>
 
-            <button class="btn-pop-main" onclick="startGame()">ПОГНАЛИ!</button>
+            <button class="btn-pop-main" onclick="startGame()">ПОЕХАЛИ!</button>
         </section>
 
         <section class="pop-screen" id="screen-game">
             <div class="swipe-hint">← ПРОПУСК | УГАДАНО →</div>
-            <div class="pop-card word-card" id="main-card">
-                <h2 id="word-display">СЛОВО</h2>
+            <div class="card-container">
+                <div class="pop-card word-card" id="main-card">
+                    <h2 id="word-display">...</h2>
+                </div>
             </div>
-            
             <div class="game-actions">
-                <button class="btn-pop-main btn-skip" onclick="handleWord(false)">ПРОПУСК</button>
+                <button class="btn-pop-main btn-skip" onclick="handleWord(false)">ПРОПУСТИТЬ</button>
                 <button class="btn-pop-main btn-check" onclick="handleWord(true)">УГАДАНО</button>
             </div>
         </section>
 
         <section class="pop-screen" id="screen-results">
-            <h2 class="pop-title" style="font-size: 3rem;">ИТОГИ</h2>
-            <div id="team-scores-summary" class="summary-box"></div>
-            <div class="pop-list" id="results-list">
-                </div>
-            <button class="btn-pop-main" id="next-turn-btn" onclick="prepareNextTurn()">ПЕРЕДАТЬ ХОД</button>
+            <h2 class="pop-title" style="font-size: 2.5rem;">РАУНД КОНЕЦ</h2>
+            <div id="leaderboard" class="summary-box"></div>
+            <div class="pop-list" id="results-list"></div>
+            <button class="btn-pop-main" id="next-btn" onclick="nextTurn()">СЛЕДУЮЩИЙ ХОД</button>
+        </section>
+
+        <section class="pop-screen" id="screen-win">
+            <h1 class="pop-title">ПОБЕДА!</h1>
+            <div id="winner-name" class="summary-box" style="background: var(--mint);"></div>
+            <button class="btn-pop-main" onclick="location.reload()">НОВАЯ ИГРА</button>
         </section>
     </div>
 
