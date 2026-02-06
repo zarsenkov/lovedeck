@@ -75,8 +75,8 @@ function handleWord(isCorrect) {
     const word = document.getElementById('word-display').innerText;
     game.roundLog.push({ word, isCorrect });
     
-    let currentTempScore = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
-    document.getElementById('live-score').innerText = currentTempScore;
+    // Считаем временный счет для экрана игры
+    updateLiveScore();
 
     const card = document.getElementById('main-card');
     card.style.transition = '0.3s ease-out';
@@ -89,6 +89,11 @@ function handleWord(isCorrect) {
     }, 200);
 }
 
+function updateLiveScore() {
+    let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
+    document.getElementById('live-score').innerText = score;
+}
+
 // --- ПРОВЕРКА И ИСПРАВЛЕНИЕ ---
 function showRoundReview() {
     clearInterval(game.timer);
@@ -96,7 +101,7 @@ function showRoundReview() {
     document.getElementById('res-team-name').innerText = game.teams[game.currentTeamIdx].name;
     renderReviewList();
     
-    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ХОД СЛЕДУЮЩЕЙ КОМАНДЫ" : "УЗНАТЬ КТО ПОБЕДИЛ";
+    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ХОД СЛЕДУЮЩЕЙ КОМАНДЫ" : "УЗНАТЬ РЕЗУЛЬТАТ";
 }
 
 function renderReviewList() {
@@ -110,12 +115,14 @@ function renderReviewList() {
         </div>
     `).join('');
     
+    // Пересчитываем финальный балл для команды
     let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
     document.getElementById('res-team-score').innerText = score;
     game.teams[game.currentTeamIdx].score = score;
 }
 
 function toggleWordStatus(index) {
+    // Просто меняем статус и перерисовываем список (счет пересчитается внутри renderReviewList)
     game.roundLog[index].isCorrect = !game.roundLog[index].isCorrect;
     renderReviewList();
 }
@@ -146,6 +153,10 @@ function showFinalWinner() {
     else winnerText = "🤝 НИЧЬЯ!";
     
     document.getElementById('final-winner-name').innerText = winnerText;
+    
+    // Меняем текст кнопки на финальном экране
+    const finalBtn = document.querySelector('#screen-final .btn-pop-main');
+    finalBtn.innerText = "В МЕНЮ";
 }
 
 // --- СИСТЕМНОЕ ---
@@ -157,9 +168,7 @@ function toScreen(id) {
     document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     
-    // Показываем хедер игры только в процессе свайпов
     document.getElementById('game-header').style.visibility = (id === 'screen-game') ? 'visible' : 'hidden';
-    // Кнопки управления меню (Домой и Правила) показываем только на стартовом экране
     document.getElementById('menu-controls').style.display = (id === 'screen-start') ? 'block' : 'none';
 }
 
