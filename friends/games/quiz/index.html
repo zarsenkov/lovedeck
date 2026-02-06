@@ -3,243 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Викторина - LoveCouple Friends</title>
-    
+    <title>QUIZ // NEON</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="quiz-game">
-        <!-- Шапка -->
-        <header class="quiz-header">
-            <button class="back-btn" id="backBtn">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <div class="header-center">
-                <h1><i class="fas fa-brain"></i> Викторина</h1>
-                <p class="subtitle" id="gameSubtitle">Проверьте знания</p>
-            </div>
-            <button class="menu-btn" id="menuBtn">
-                <i class="fas fa-ellipsis-v"></i>
-            </button>
-        </header>
-
-        <!-- Главный экран -->
-        <div class="screen main-screen active" id="mainScreen">
-            <div class="card welcome-card">
-                <div class="welcome-icon">
-                    <i class="fas fa-trophy"></i>
-                </div>
-                <h2>Добро пожаловать!</h2>
-                <p>Соревнуйтесь с друзьями или играйте в одиночку</p>
-                
-                <!-- Настройки -->
-                <div class="settings">
-                    <!-- Игроки -->
-                    <div class="setting-group">
-                        <h3><i class="fas fa-users"></i> Игроки</h3>
-                        <div class="player-select">
-                            <button class="player-btn active" data-players="1">1</button>
-                            <button class="player-btn" data-players="2">2</button>
-                            <button class="player-btn" data-players="3">3</button>
-                            <button class="player-btn" data-players="4">4</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Сложность -->
-                    <div class="setting-group">
-                        <h3><i class="fas fa-chart-line"></i> Сложность</h3>
-                        <div class="difficulty-select">
-                            <button class="diff-btn active" data-diff="easy">
-                                <i class="fas fa-seedling"></i> Легко
-                            </button>
-                            <button class="diff-btn" data-diff="medium">
-                                <i class="fas fa-mountain"></i> Средне
-                            </button>
-                            <button class="diff-btn" data-diff="hard">
-                                <i class="fas fa-fire"></i> Сложно
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Категории -->
-                    <div class="setting-group">
-                        <h3><i class="fas fa-star"></i> Категории</h3>
-                        <div class="categories-grid">
-                            <label class="category-tag active" data-cat="general">
-                                <i class="fas fa-globe"></i> Общее
-                            </label>
-                            <label class="category-tag" data-cat="science">
-                                <i class="fas fa-flask"></i> Наука
-                            </label>
-                            <label class="category-tag" data-cat="history">
-                                <i class="fas fa-landmark"></i> История
-                            </label>
-                            <label class="category-tag" data-cat="culture">
-                                <i class="fas fa-palette"></i> Культура
-                            </label>
-                            <label class="category-tag" data-cat="sport">
-                                <i class="fas fa-futbol"></i> Спорт
-                            </label>
-                            <label class="category-tag" data-cat="geography">
-                                <i class="fas fa-map"></i> География
-                            </label>
-                            <label class="category-tag" data-cat="movies">
-                                <i class="fas fa-film"></i> Кино
-                            </label>
-                            <label class="category-tag" data-cat="music">
-                                <i class="fas fa-music"></i> Музыка
-                            </label>
-                            <label class="category-tag" data-cat="literature">
-                                <i class="fas fa-book"></i> Литература
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- Вопросы -->
-                    <div class="setting-group">
-                        <h3><i class="fas fa-question-circle"></i> Количество вопросов</h3>
-                        <div class="questions-slider">
-                            <input type="range" id="questionSlider" min="5" max="30" value="10">
-                            <div class="slider-values">
-                                <span>5</span>
-                                <span id="questionCount">10</span>
-                                <span>30</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Кнопки -->
-                <div class="action-buttons">
-                    <button class="btn-primary start-game">
-                        <i class="fas fa-play"></i> Начать игру
-                    </button>
-                </div>
-            </div>
+    <div class="app-container">
+        <div class="top-nav">
+            <button class="nav-btn-neon" onclick="goBack()">←</button>
+            <div class="logo-text">QUIZ<span>NEON</span></div>
+            <button class="nav-btn-neon" onclick="toggleRules(true)">?</button>
         </div>
 
-        <!-- Экран игры -->
-        <div class="screen game-screen" id="gameScreen">
-            <!-- Прогресс -->
-            <div class="game-progress">
-                <div class="progress-top">
-                    <span class="progress-text" id="progressText">Вопрос 1 из 10</span>
-                    <button class="exit-game" id="exitGameBtn">
-                        <i class="fas fa-times"></i>
-                    </button>
+        <section class="screen active" id="setup-screen">
+            <div class="hero-area">
+                <div class="neon-circle">
+                    <span class="icon-main">💡</span>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="glass-card">
+                <div class="settings-group">
+                    <label>СЛОЖНОСТЬ</label>
+                    <div class="tab-selector">
+                        <button class="tab-btn active" onclick="setDiff('easy', this)">EASY</button>
+                        <button class="tab-btn" onclick="setDiff('medium', this)">MID</button>
+                        <button class="tab-btn" onclick="setDiff('hard', this)">HARD</button>
+                    </div>
+                </div>
+
+                <div class="settings-group" style="margin-top: 20px;">
+                    <label>ТЕМЫ</label>
+                    <div class="cat-list" id="categories-box">
+                        </div>
                 </div>
             </div>
             
-            <!-- Вопрос -->
-            <div class="question-card">
-                <div class="question-header">
-                    <span class="cat-badge" id="qCategory">Общее</span>
-                    <span class="diff-badge" id="qDifficulty">Легко</span>
-                    <div class="timer-container">
-                        <i class="fas fa-clock"></i>
-                        <span class="timer" id="timer">30</span>
-                    </div>
-                </div>
-                
-                <h2 class="question-text" id="questionText">
-                    Как называется самая высокая гора в мире?
-                </h2>
-                
-                <!-- Ответы -->
-                <div class="answers" id="answersContainer">
-                    <button class="answer" data-index="0">Эверест</button>
-                    <button class="answer" data-index="1">К2</button>
-                    <button class="answer" data-index="2">Килиманджаро</button>
-                    <button class="answer" data-index="3">Монблан</button>
-                </div>
-                
-                <!-- Подсказка -->
-                <div class="hints">
-                    <button class="hint-btn" id="fiftyFiftyBtn">
-                        <i class="fas fa-adjust"></i> 50/50
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Очки игроков -->
-            <div class="players-scores" id="playersScores">
-                <!-- Динамически генерируется -->
-            </div>
-        </div>
+            <button class="neon-primary-btn" onclick="startQuiz()">ПОЕХАЛИ</button>
+        </section>
 
-        <!-- Результаты -->
-        <div class="screen results-screen" id="resultsScreen">
-            <div class="results-card">
-                <div class="results-icon">
-                    <i class="fas fa-trophy"></i>
+        <section class="screen" id="game-screen">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="label">ТАЙМЕР</span>
+                    <span class="value" id="timer-display">30</span>
                 </div>
-                
-                <h2>Викторина завершена!</h2>
-                <p class="results-text" id="resultsText">Отличный результат!</p>
-                
-                <div class="score-display">
-                    <div class="total-score">
-                        <span>Общий счет</span>
-                        <span id="finalScore">0</span>
-                    </div>
-                    
-                    <div class="score-details">
-                        <div class="detail">
-                            <span>Правильные ответы</span>
-                            <span id="correctCount">0/10</span>
-                        </div>
-                        <div class="detail">
-                            <span>Лучшая серия</span>
-                            <span id="bestStreak">0</span>
-                        </div>
-                        <div class="detail">
-                            <span>Время игры</span>
-                            <span id="timeSpent">0:00</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="results-btns">
-                    <button class="btn-primary play-again">
-                        <i class="fas fa-redo"></i> Играть снова
-                    </button>
-                    <button class="btn-secondary change-settings">
-                        <i class="fas fa-cog"></i> Настройки
-                    </button>
+                <div class="stat-item">
+                    <span class="label">ОЧКИ</span>
+                    <span class="value" id="score-counter">0</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Модалка выхода -->
-        <div class="modal" id="exitModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-sign-out-alt"></i> Выйти из игры?</h3>
-                    <button class="modal-close" id="closeExitModal">
-                        <i class="fas fa-times"></i>
-                    </button>
+            <div class="progress-bar-wrap">
+                <div class="progress-fill" id="progress-line"></div>
+            </div>
+
+            <div class="question-container">
+                <h2 id="question-text">Загружаем вопрос...</h2>
+            </div>
+
+            <div class="answers-stack" id="answers-box">
                 </div>
-                
-                <p class="modal-text">Вы уверены, что хотите выйти? Текущий прогресс не сохранится.</p>
-                
-                <div class="modal-buttons">
-                    <button class="btn-secondary cancel-exit">Отмена</button>
-                    <button class="btn-danger confirm-exit">Выйти</button>
+        </section>
+
+        <section class="screen" id="result-screen">
+            <div class="result-glow">
+                <h1 class="main-title-neon">ФИНАЛ</h1>
+                <div class="score-circle">
+                    <span id="final-score">0</span>
+                    <label>PTS</label>
                 </div>
+                <p id="result-comment">Неплохо для начала!</p>
+            </div>
+            <button class="neon-primary-btn" onclick="location.reload()">ЕЩЕ РАЗ</button>
+        </section>
+
+        <div id="rules-modal" class="modal-blur" onclick="toggleRules(false)">
+            <div class="modal-content-neon" onclick="event.stopPropagation()">
+                <h3>ПРАВИЛА</h3>
+                <div class="rule-line"><span>1</span>Выбирай сложность и темы.</div>
+                <div class="rule-item"><span>2</span>На каждый вопрос — 30 секунд.</div>
+                <div class="rule-item"><span>3</span>Чем быстрее ответ, тем больше бонус!</div>
+                <button class="neon-primary-btn" onclick="toggleRules(false)">ПОНЯЛ</button>
             </div>
         </div>
     </div>
-
-    <!-- Скрипты -->
     <script src="questions.js"></script>
     <script src="script.js"></script>
 </body>
