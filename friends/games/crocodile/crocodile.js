@@ -6,7 +6,9 @@ let game = {
     currentWordIndex: 0,
     score: {},
     timer: 60,
-    interval: null
+    interval: null,
+    touchStart: 0,
+    touchEnd: 0
 };
 
 const CAT_NAMES = {
@@ -14,9 +16,8 @@ const CAT_NAMES = {
     professions: 'ПРОФЕССИИ', movies: 'КИНО', food: 'ЕДА', memnoe: 'МЕМНОЕ'
 };
 
-function initCategories() {
+function init() {
     const grid = document.getElementById('categoriesGrid');
-    grid.innerHTML = '';
     Object.keys(crocodileWords).forEach(cat => {
         if (cat === 'adult') return;
         const div = document.createElement('div');
@@ -30,15 +31,16 @@ function initCategories() {
         };
         grid.appendChild(div);
     });
+    setupSwipe();
 }
 
 function addPlayerField() {
     const stack = document.getElementById('playerList');
     const div = document.createElement('div');
-    div.className = 'player-chip';
+    div.className = 'chip';
     div.innerHTML = `
         <input type="text" class="player-input" placeholder="Игрок">
-        <button class="chip-del" onclick="this.parentElement.remove()">×</button>
+        <button class="chip-remove" onclick="this.parentElement.remove()">×</button>
     `;
     stack.appendChild(div);
 }
@@ -46,25 +48,24 @@ function addPlayerField() {
 function startGame() {
     const inputs = document.querySelectorAll('.player-input');
     game.players = Array.from(inputs).map(i => i.value.trim()).filter(v => v);
-    
-    if (game.players.length < 2) return alert('Нужно минимум 2 игрока!');
-    if (game.selectedCategories.length === 0) return alert('Выберите категорию!');
+    if (game.players.length < 2) return alert('Минимум 2 игрока!');
+    if (game.selectedCategories.length === 0) return alert('Выбери тему!');
 
     game.players.forEach(p => game.score[p] = 0);
     game.currentPlayerIndex = 0;
-    showTransferScreen();
+    showTransfer();
 }
 
-function showTransferScreen() {
+function showTransfer() {
     if (game.currentPlayerIndex >= game.players.length) return showResults();
     switchScreen('transferScreen');
     document.getElementById('currentPlayerName').innerText = game.players[game.currentPlayerIndex];
 }
 
 function startRound() {
-    let allWords = [];
-    game.selectedCategories.forEach(cat => allWords = allWords.concat(crocodileWords[cat]));
-    game.roundWords = allWords.sort(() => Math.random() - 0.5).slice(0, 10);
+    let pool = [];
+    game.selectedCategories.forEach(c => pool = pool.concat(crocodileWords[c]));
+    game.roundWords = pool.sort(() => Math.random() - 0.5).slice(0, 15);
     game.currentWordIndex = 0;
     
     switchScreen('gameScreen');
@@ -75,15 +76,52 @@ function startRound() {
 
 function setWord() {
     if (game.currentWordIndex >= game.roundWords.length) return endRound();
-    const wordObj = game.roundWords[game.currentWordIndex];
-    document.getElementById('currentWord').innerText = wordObj.word;
-    document.getElementById('wordCategory').innerText = CAT_NAMES[wordObj.category];
+    const w = game.roundWords[game.currentWordIndex];
+    document.getElementById('currentWord').innerText = w.word;
+    document.getElementById('wordCategory').innerText = CAT_NAMES[w.category];
 }
 
-function nextWord(isSuccess) {
-    if (isSuccess) game.score[game.players[game.currentPlayerIndex]] += 1;
+function nextWord(ok) {
+    if (ok) game.score[game.players[game.currentPlayerIndex]] += 1;
     game.currentWordIndex++;
-    setWord();
+    
+    // Анимация карточки при переключении
+    const card = document.getElementById('wordCard');
+    card.style.transform = 'scale(0.8)';
+    setTimeout(() => {
+        setWord();
+        card.style.transform = 'scale(1)';
+    }, 100);
+}
+
+function setupSwipe() {
+    const area = document.getElementById('swipeArea');
+    const card = document.getElementById('wordCard');
+    const hLeft = document.querySelector('.swipe-hint.left');
+    const hRight = document.querySelector('.swipe-hint.right');
+
+    area.addEventListener('touchstart', e => {
+        game.touchStart = e.changedTouches[0].screenX;
+    });
+
+    area.addEventListener('touchmove', e => {
+        let diff = e.changedTouches[0].screenX - game.touchStart;
+        card.style.transform = `translateX(${diff}px) rotate(${diff/10}deg)`;
+        hLeft.style.opacity = diff < 0 ? Math.abs(diff/100) : 0;
+        hRight.style.opacity = diff > 0 ? Math.abs(diff/100) : 0;
+    });
+
+    area.addEventListener('touchend', e => {
+        game.touchEnd = e.changedTouches[0].screenX;
+        let diff = game.touchEnd - game.touchStart;
+        
+        card.style.transform = '';
+        hLeft.style.opacity = 0;
+        hRight.style.opacity = 0;
+
+        if (diff > 100) nextWord(true); // Вправо - Угадано
+        else if (diff < -100) nextWord(false); // Влево - Пас
+    });
 }
 
 function startTimer() {
@@ -100,17 +138,17 @@ function startTimer() {
 function endRound() {
     clearInterval(game.interval);
     game.currentPlayerIndex++;
-    showTransferScreen();
+    showTransfer();
 }
 
 function showResults() {
     switchScreen('resultsScreen');
     const board = document.getElementById('leaderboard');
     const sorted = Object.entries(game.score).sort((a,b) => b[1] - a[1]);
-    board.innerHTML = sorted.map(([name, score], i) => `
-        <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #2d2d44;">
-            <span>${i+1}. ${name}</span>
-            <span style="color:var(--neon-blue)">${score} очков</span>
+    board.innerHTML = sorted.map(([n, s], i) => `
+        <div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid var(--glass-border);">
+            <span>${i+1}. ${n}</span>
+            <span style="color:var(--accent-blue)">${s} очков</span>
         </div>
     `).join('');
 }
@@ -120,8 +158,6 @@ function switchScreen(id) {
     document.getElementById(id).classList.add('active');
 }
 
-function showRules() { document.getElementById('rulesModal').classList.add('active'); }
-function closeRules() { document.getElementById('rulesModal').classList.remove('active'); }
 function goBack() { if (confirm('Выйти?')) location.reload(); }
 
-document.addEventListener('DOMContentLoaded', initCategories);
+document.addEventListener('DOMContentLoaded', init);
