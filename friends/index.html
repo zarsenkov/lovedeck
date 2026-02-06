@@ -3,58 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>LoveCouple: Bento Glass</title>
+    <title>LoveCouple: World Hub</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Space+Grotesk:wght@500;700&family=Bungee&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="glass-bg"></div> <div class="black-fade"></div>
+    <div class="black-fade"></div>
 
     <div class="container">
-        <header class="bento-header">
-            <span class="badge-mini">COMMUNITY DRIVEN</span>
-            <h1 class="bento-title">LOVECOUPLE<span>.</span></h1>
+        <header class="hub-header">
+            <h1 class="hub-title">CHOOSE YOUR WORLD</h1>
+            <p class="hub-subtitle">КАЖДАЯ ИГРА — УНИКАЛЬНАЯ ВСЕЛЕННАЯ</p>
         </header>
 
-        <main class="bento-grid">
-            <div class="bento-item wide available" data-game="alias">
-                <div class="bento-content">
-                    <div class="item-tag">HOT 🔥</div>
-                    <h3 class="item-title">АЛИАС</h3>
-                    <p>Объясняй слова. Смейся. Побеждай.</p>
+        <main class="hub-grid">
+            
+            <div class="world-card neo-pop" data-game="alias">
+                <div class="world-label">NEO-POP</div>
+                <div class="world-content">
+                    <h3 class="world-name">ALIAS<span>!</span></h3>
+                    <div class="world-icon"><i class="fas fa-smile-beam"></i></div>
                 </div>
-                <div class="item-icon"><i class="fas fa-comments"></i></div>
             </div>
 
-            <div class="bento-item available" data-game="spy">
-                <div class="item-tag">POPULAR</div>
-                <h3 class="item-title">ШПИОН</h3>
-                <div class="item-icon-small"><i class="fas fa-user-secret"></i></div>
-            </div>
-
-            <div class="bento-item available" data-game="crocodile">
-                <h3 class="item-title">КРОКОДИЛ</h3>
-                <div class="item-icon-small"><i class="fas fa-hands"></i></div>
-            </div>
-
-            <div class="bento-item tall available" data-game="whoami">
-                <div class="bento-content">
-                    <h3 class="item-title">КТО Я?</h3>
-                    <p>Стань героем на один вечер.</p>
+            <div class="world-card retro-vinyl" data-game="danetki">
+                <div class="vinyl-texture"></div>
+                <div class="world-label">VINTAGE</div>
+                <div class="world-content">
+                    <h3 class="world-name">ДАНЕТКИ</h3>
+                    <div class="world-icon"><i class="fas fa-record-vinyl"></i></div>
                 </div>
-                <div class="item-icon-bottom"><i class="fas fa-user-tag"></i></div>
             </div>
 
-            <div class="bento-item available" data-game="danetki">
-                <h3 class="item-title">ДАНЕТКИ</h3>
-                <div class="item-icon-small"><i class="fas fa-lightbulb"></i></div>
+            <div class="world-card glass-world" data-game="spy">
+                <div class="glass-blur"></div>
+                <div class="world-label">TECH</div>
+                <div class="world-content">
+                    <h3 class="world-name">ШПИОН</h3>
+                    <div class="world-icon"><i class="fas fa-fingerprint"></i></div>
+                </div>
             </div>
 
-            <div class="bento-item coming-soon" data-game="bunker">
-                <div class="item-tag">COMING</div>
-                <h3 class="item-title">БУНКЕР</h3>
+            <div class="world-card brutal-world" data-game="crocodile">
+                <div class="world-label">RAW</div>
+                <div class="world-content">
+                    <h3 class="world-name">КРОКОДИЛ</h3>
+                    <div class="world-icon"><i class="fas fa-hand-rock"></i></div>
+                </div>
             </div>
+
         </main>
     </div>
 
