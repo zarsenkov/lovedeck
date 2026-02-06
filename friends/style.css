@@ -1,23 +1,100 @@
 :root {
-    --bg: #F0F4F8;       /* Светлый серо-голубой фон (глаза отдыхают) */
-    --black: #1A202C;    /* Мягкий черный (не режет взгляд) */
+    /* Основные цвета */
+    --bg: #F7FAFC;          /* Очень светлый, почти белый фон */
+    --text: #1A202C;       /* Глубокий темный (вместо резкого черного) */
     --white: #FFFFFF;
     
-    /* Пастельные цвета карточек */
-    --pink: #FFD1DC;     /* Нежно-розовый для Alias */
-    --cyan: #B2F5EA;     /* Мягкая мята для Spy */
-    --purple: #E9D8FD;   /* Лавандовый для Danetki */
-    --green: #C6F6D5;    /* Светло-зеленый для Croc */
+    /* Цвета карточек (Пастельный Neo-Pop) */
+    --card-alias: #FFD1DC;  /* Нежная роза */
+    --card-spy: #B2F5EA;    /* Мягкая мята */
+    --card-danetki: #E9D8FD; /* Лаванда */
+    --card-croc: #C6F6D5;   /* Светлый клевер */
+    --card-locked: #EDF2F7; /* Холодный серый */
+    
+    /* Параметры стиля */
+    --border-width: 4px;
+    --shadow-offset: 8px;
+    --shadow-hover: 14px;
 }
 
-/* В style.css обнови только эти части: */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+body {
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    padding: 20px;
+    line-height: 1.5;
+}
+
+/* Шторка для красивого перехода между играми */
+.black-fade {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--text); z-index: 9999; opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+.black-fade.active { opacity: 1; pointer-events: all; }
+
+.neo-wrapper { 
+    max-width: 1100px; 
+    margin: 0 auto; 
+    padding-top: 60px; 
+}
+
+/* HEADER */
+.neo-header { 
+    text-align: center; 
+    margin-bottom: 70px; 
+}
 
 .neo-logo {
-    color: var(--black); /* Убираем белый контур, делаем буквы просто черными */
-    -webkit-text-stroke: 0;
-    text-shadow: 4px 4px 0px var(--pink); /* Тень у заголовка теперь мягко-розовая */
+    font-family: 'Unbounded', sans-serif; /* Или любой жирный шрифт */
+    font-size: clamp(36px, 7vw, 72px);
+    font-weight: 900;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    text-shadow: 6px 6px 0px var(--card-alias); /* Приятная розовая тень у лого */
+    margin-bottom: 5px;
 }
 
-.neo-card {
-    box-shadow: 8px 8px 0px var(--black); /* Чуть уменьшим тень для мягкости */
+.neo-subtitle { 
+    font-weight: 800; 
+    letter-spacing: 4px; 
+    font-size: 12px; 
+    text-transform: uppercase;
+    opacity: 0.6;
 }
+
+/* GRID СЕТКА */
+.neo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 35px;
+}
+
+/* ОБЩИЙ СТИЛЬ КАРТОЧЕК */
+.neo-card {
+    background: var(--white);
+    border: var(--border-width) solid var(--text);
+    border-radius: 32px;
+    padding: 35px;
+    box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--text);
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Индивидуальные цвета */
+.neo-card.alias { background: var(--card-alias); }
+.neo-card.spy { background: var(--card-spy); }
+.neo-card.danetki { background: var(--card-danetki); }
+.neo-card.crocodile { background: var(--card-croc); }
+.neo-card.locked { background: var(--card-locked); opacity: 0.8; cursor: not-allowed; }
