@@ -3,87 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>КТО Я? // SYSTEM_OVERRIDE</title>
+    <title>КТО Я? // КРАФТ</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
         
         <section class="screen active" id="player-setup-screen">
-            <h1 class="glitch-title">WHO_AM_I?</h1>
-            <div class="system-box">
-                <div class="label-tag">DETECTIVES_LOG</div>
-                <div id="player-list-inputs" class="scroll-area">
-                    <input type="text" class="system-input" placeholder="OBJECT_01" value="Алексей">
-                    <input type="text" class="system-input" placeholder="OBJECT_02" value="Мария">
+            <h1 class="hero-title">КТО ТУТ?</h1>
+            <div class="setup-box">
+                <div id="player-list-inputs">
+                    <input type="text" class="paper-input" value="Алексей">
+                    <input type="text" class="paper-input" value="Мария">
                 </div>
-                <button class="btn-ghost" onclick="addPlayerInput()">+ ADD_ENTITY</button>
+                <button class="btn-add" onclick="addPlayerInput()">+ ЕЩЕ ИГРОК</button>
             </div>
-            <button class="action-btn" onclick="confirmPlayers()">INITIALIZE_SYSTEM ></button>
+            <button class="craft-btn" onclick="confirmPlayers()">ЗАПИСАТЬ ></button>
         </section>
 
         <section class="screen" id="category-screen">
-            <h2 class="glitch-title" style="font-size: 1.5rem;">SELECT_DATA</h2>
-            <div class="system-box">
-                <div class="settings-row">
-                    <label>RUNTIME_SEC:</label>
-                    <input type="number" id="time-input" value="60">
+            <h2 class="hero-title">ТЕМЫ</h2>
+            <div class="setup-box">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 12px;">ВРЕМЯ (СЕК):</label>
+                    <input type="number" id="time-input" class="paper-input" value="60" style="width: 80px;">
                 </div>
-                <div class="label-tag">AVAILABLE_MODULES</div>
                 <div class="category-grid" id="category-list"></div>
             </div>
-            <button class="action-btn" onclick="startGame()">EXECUTE_GAME</button>
+            <button class="craft-btn" onclick="startGame()">ИГРАЕМ!</button>
         </section>
 
-        <section class="screen" id="transfer-screen">
-            <div class="alert-box">
-                <div class="warning-header">! ATTENTION !</div>
-                <p>TIME_EXPIRED. PASS DEVICE TO:</p>
-                <div class="next-player-display" id="next-player-name">---</div>
-                <button class="action-btn" onclick="prepareCountdown()">I_AM_READY</button>
-            </div>
+        <section class="screen" id="transfer-screen" style="text-align: center;">
+            <p>ВРЕМЯ ВЫШЛО. ОТДАЙ ТЕЛЕФОН:</p>
+            <div class="next-player-banner" id="next-player-name">---</div>
+            <button class="craft-btn" onclick="prepareCountdown()">Я ВЗЯЛ!</button>
         </section>
 
-        <section class="screen" id="countdown-screen">
-            <div class="big-counter" id="countdown-number">3</div>
-            <div class="scanline"></div>
+        <section class="screen" id="countdown-screen" style="justify-content: center;">
+            <div style="font-size: 8rem; font-weight: 900; text-align: center;" id="countdown-number">3</div>
+            <p style="text-align:center">КО ЛБУ!</p>
         </section>
 
         <section class="screen" id="game-screen">
             <div class="game-header">
-                <div class="timer-box">
-                    <span class="small-label">TIME</span>
-                    <div id="timer-display">60</div>
-                </div>
-                <div class="guesser-box">
-                    <span class="small-label">SUBJECT</span>
-                    <div id="active-guesser-name">---</div>
-                </div>
+                <div class="timer-val" id="timer-display">60</div>
+                <div style="text-align:right; font-size:12px">УГАДЫВАЕТ:<br><b id="active-guesser-name">---</b></div>
             </div>
             
-            <div class="data-stream">
-                <div class="word-wrap">
-                    <span class="bracket">[</span>
-                    <h2 id="current-word">---</h2>
-                    <span class="bracket">]</span>
-                </div>
+            <div class="word-card">
+                <h2 id="current-word">---</h2>
             </div>
 
-            <div class="asker-alert">
-                <div class="label-tag" style="background: var(--accent);">ASKING_NOW</div>
-                <div id="current-asker-name" class="asker-text">---</div>
+            <div class="turn-notice">
+                СПРАШИВАЕТ: <span id="current-asker-name">---</span>
             </div>
 
-            <div class="control-grid">
-                <button class="btn-fail" onclick="handleNo()">FAILED (NO)</button>
-                <button class="btn-success" onclick="handleYes()">SOLVED (YES)</button>
+            <div class="action-grid">
+                <button class="btn-no" onclick="handleNo()">НЕТ</button>
+                <button class="btn-yes" onclick="handleYes()">ДА!</button>
             </div>
         </section>
 
         <section class="screen" id="result-screen">
-            <h2 class="glitch-title">MISSION_STATS</h2>
-            <div class="system-box" id="final-scoreboard"></div>
-            <button class="action-btn" onclick="location.reload()">REBOOT_SYSTEM</button>
+            <h1 class="hero-title">КТО ЛУЧШИЙ?</h1>
+            <div class="setup-box" id="final-scoreboard"></div>
+            <button class="craft-btn" onclick="location.reload()">ЗАНОВО</button>
         </section>
 
     </div>
