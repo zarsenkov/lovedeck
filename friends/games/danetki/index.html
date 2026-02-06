@@ -17,12 +17,12 @@
             <div class="header-block">
                 <h1 class="title">ДАНЕТКИ</h1>
                 <div class="divider"></div>
-                <p class="tagline">ДЕПАРТАМЕНТ РАССЛЕДОВАНИЙ</p>
+                <p class="tagline">АРХИВ ДЛЯ ВЕДУЩЕГО</p>
             </div>
 
             <div class="stats-card">
                 <div class="stat-item">
-                    <span class="stat-label">ВАШ РАНГ:</span>
+                    <span class="stat-label">РАНГ ДЕТЕКТИВА:</span>
                     <span id="rank-display" class="stat-value">НОВИЧОК</span>
                 </div>
                 <div class="stat-item">
@@ -32,48 +32,46 @@
             </div>
 
             <div class="main-actions">
-                <button class="btn-main large" onclick="startGame()">НАЧАТЬ РАССЛЕДОВАНИЕ</button>
+                <button class="btn-main large" onclick="startGame()">ОТКРЫТЬ НОВОЕ ДЕЛО</button>
             </div>
         </section>
 
         <section class="screen" id="game-screen">
             <div class="paper-sheet">
-                <div class="stamp">CLASSIFIED</div>
-                <div class="paper-content">
-                    <span class="label">СУТЬ ДЕЛА:</span>
-                    <p id="riddle-text">Загрузка материалов дела...</p>
+                <div class="stamp">SECRET</div>
+                
+                <div class="paper-section">
+                    <span class="label">ЗАЧИТАЙТЕ ИГРОКАМ:</span>
+                    <p id="riddle-text" class="riddle-text">...</p>
+                </div>
+
+                <div class="paper-divider"></div>
+
+                <div class="paper-section highlight">
+                    <span class="label">ОТВЕТ ДЛЯ ВЕДУЩЕГО:</span>
+                    <p id="solution-text" class="solution-text">...</p>
                 </div>
             </div>
 
-            <div class="actions">
-                <button class="btn-main" onclick="showSolution()">ВЫЯВИТЬ РАЗГАДКУ</button>
-                <button class="btn-outline" onclick="toScreen('setup-screen')">ВЕРНУТЬ В АРХИВ</button>
-            </div>
-        </section>
-
-        <section class="screen" id="solution-screen">
-            <div class="paper-sheet solution">
-                <div class="paper-content">
-                    <span class="label">РЕКОНСТРУКЦИЯ:</span>
-                    <p id="solution-text">...</p>
+            <div class="scoring-box">
+                <p class="question-prompt">ИГРОКИ РАЗГАДАЛИ ИСТОРИЮ?</p>
+                <div class="scoring-actions">
+                    <button class="btn-no" onclick="nextRiddle(false)">НЕТ, СМЕНИТЬ</button>
+                    <button class="btn-yes" onclick="nextRiddle(true)">ДА, РАСКРЫТО!</button>
                 </div>
             </div>
-
-            <p class="question-prompt">ВЫ СМОГЛИ РАСКРЫТЬ ЭТО ДЕЛО?</p>
-            <div class="scoring-actions">
-                <button class="btn-no" onclick="nextRiddle(false)">НЕТ</button>
-                <button class="btn-yes" onclick="nextRiddle(true)">ДА, УГАДАЛИ</button>
-            </div>
+            
+            <button class="btn-text" onclick="toScreen('setup-screen')">ВЕРНУТЬСЯ В МЕНЮ</button>
         </section>
 
         <div class="modal" id="rules-modal">
             <div class="modal-content">
-                <h3>ПРОТОКОЛ ИГРЫ</h3>
-                <p>1. Ведущий зачитывает «Суть дела» из архива.</p>
-                <p>2. Детективы задают вопросы, на которые можно ответить только <b>«Да»</b>, <b>«Нет»</b> или <b>«Неважно»</b>.</p>
-                <p>3. Цель — полностью восстановить детали происшествия.</p>
-                <p>4. За каждое раскрытое дело ваш ранг в департаменте растет.</p>
-                <button class="btn-main" style="margin-top: 20px; width: 100%;" onclick="toggleRules(false)">ПРИНЯТО</button>
+                <h3>ПРОТОКОЛ ВЕДУЩЕГО</h3>
+                <p>1. Выберите одного ведущего, он берет телефон.</p>
+                <p>2. Ведущий зачитывает «Суть дела» всем игрокам.</p>
+                <p>3. Ведущий тайно читает «Ответ» (он уже на экране).</p>
+                <p>4. Игроки задают вопросы, на которые можно ответить только <b>«Да»</b>, <b>«Нет»</b> или <b>«Неважно»</b>.</p>
+                <button class="btn-main" style="margin-top: 20px; width: 100%;" onclick="toggleRules(false)">ПОНЯЛ</button>
             </div>
         </div>
     </div>
