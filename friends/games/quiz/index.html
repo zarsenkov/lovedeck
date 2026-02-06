@@ -3,88 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>QUIZ // NEON</title>
+    <title>ВИКТОРИНА ДЛЯ ДРУЗЕЙ</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
-        <div class="top-nav">
-            <button class="nav-btn-neon" onclick="goBack()">←</button>
-            <div class="logo-text">QUIZ<span>NEON</span></div>
-            <button class="nav-btn-neon" onclick="toggleRules(true)">?</button>
-        </div>
+        <button class="nav-btn back-btn" onclick="goBack()">←</button>
+        <button class="nav-btn rules-btn" onclick="toggleRules(true)">?</button>
 
         <section class="screen active" id="setup-screen">
-            <div class="hero-area">
-                <div class="neon-circle">
-                    <span class="icon-main">💡</span>
-                </div>
-            </div>
-
-            <div class="glass-card">
-                <div class="settings-group">
-                    <label>СЛОЖНОСТЬ</label>
-                    <div class="tab-selector">
-                        <button class="tab-btn active" onclick="setDiff('easy', this)">EASY</button>
-                        <button class="tab-btn" onclick="setDiff('medium', this)">MID</button>
-                        <button class="tab-btn" onclick="setDiff('hard', this)">HARD</button>
-                    </div>
-                </div>
-
-                <div class="settings-group" style="margin-top: 20px;">
-                    <label>ТЕМЫ</label>
-                    <div class="cat-list" id="categories-box">
-                        </div>
-                </div>
+            <div class="logo-area">
+                <div class="emoji-float">💡</div>
+                <h1 class="main-title">КВИЗ<span>БАТТЛ</span></h1>
             </div>
             
-            <button class="neon-primary-btn" onclick="startQuiz()">ПОЕХАЛИ</button>
+            <div class="card-glass">
+                <p class="section-tag">КТО ИГРАЕТ?</p>
+                <div id="player-list" class="players-container">
+                    <input type="text" class="joy-input" placeholder="Имя игрока" value="Игрок 1">
+                    <input type="text" class="joy-input" placeholder="Имя игрока" value="Игрок 2">
+                </div>
+                <button class="add-player-circle" onclick="addPlayer()">+</button>
+
+                <p class="section-tag" style="margin-top:20px">ВЫБЕРИ ТЕМЫ</p>
+                <div class="category-grid" id="categories-box"></div>
+            </div>
+            <button class="primary-btn pulse" onclick="confirmSetup()">ПОЕХАЛИ!</button>
+        </section>
+
+        <section class="screen" id="transfer-screen">
+            <div class="transfer-card">
+                <div class="avatar-circle">👤</div>
+                <p>СЕЙЧАС ОТВЕЧАЕТ:</p>
+                <h2 id="next-player-name" class="big-name">---</h2>
+                <button class="primary-btn" onclick="startTurn()">Я ГОТОВ</button>
+            </div>
         </section>
 
         <section class="screen" id="game-screen">
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <span class="label">ТАЙМЕР</span>
-                    <span class="value" id="timer-display">30</span>
-                </div>
-                <div class="stat-item">
-                    <span class="label">ОЧКИ</span>
-                    <span class="value" id="score-counter">0</span>
-                </div>
+            <div class="game-top">
+                <div class="timer-pill" id="timer-display">30</div>
+                <div class="score-pill">СЧЕТ: <span id="score-counter">0</span></div>
             </div>
-
-            <div class="progress-bar-wrap">
-                <div class="progress-fill" id="progress-line"></div>
-            </div>
-
             <div class="question-container">
-                <h2 id="question-text">Загружаем вопрос...</h2>
+                <h2 id="question-text">Загрузка...</h2>
             </div>
-
-            <div class="answers-stack" id="answers-box">
-                </div>
+            <div class="answers-stack" id="answers-box"></div>
         </section>
 
         <section class="screen" id="result-screen">
-            <div class="result-glow">
-                <h1 class="main-title-neon">ФИНАЛ</h1>
-                <div class="score-circle">
-                    <span id="final-score">0</span>
-                    <label>PTS</label>
-                </div>
-                <p id="result-comment">Неплохо для начала!</p>
-            </div>
-            <button class="neon-primary-btn" onclick="location.reload()">ЕЩЕ РАЗ</button>
+            <h1 class="main-title-small">ФИНАЛ</h1>
+            <div class="card-glass" id="final-results"></div>
+            <button class="primary-btn" onclick="location.reload()">ГЛАВНОЕ МЕНЮ</button>
         </section>
 
-        <div id="rules-modal" class="modal-blur" onclick="toggleRules(false)">
-            <div class="modal-content-neon" onclick="event.stopPropagation()">
-                <h3>ПРАВИЛА</h3>
-                <div class="rule-line"><span>1</span>Выбирай сложность и темы.</div>
-                <div class="rule-item"><span>2</span>На каждый вопрос — 30 секунд.</div>
-                <div class="rule-item"><span>3</span>Чем быстрее ответ, тем больше бонус!</div>
-                <button class="neon-primary-btn" onclick="toggleRules(false)">ПОНЯЛ</button>
+        <div id="rules-modal" class="modal-overlay" onclick="toggleRules(false)">
+            <div class="modal-card" onclick="event.stopPropagation()">
+                <h2>ПРАВИЛА 📖</h2>
+                <div class="rules-list-fixed">
+                    <div class="rule-row"><span>1</span> Каждый игрок отвечает на 5 вопросов.</div>
+                    <div class="rule-row"><span>2</span> На раздумье — 30 секунд.</div>
+                    <div class="rule-row"><span>3</span> Выигрывает тот, кто наберет больше очков!</div>
+                </div>
+                <button class="primary-btn" onclick="toggleRules(false)">ПОНЯТНО</button>
             </div>
         </div>
     </div>
