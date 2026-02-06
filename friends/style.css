@@ -1,82 +1,70 @@
 :root {
-    --bg-dark: #05070A;
-    --text-main: #FFFFFF;
-    --accent-blue: #3B82F6;
-    --accent-purple: #8B5CF6;
+    --bg: #1a1a2e;
+    --card-w: 260px;
+    --card-h: 380px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
 body {
-    background-color: var(--bg-dark);
-    color: var(--text-main);
-    font-family: 'Outfit', sans-serif;
-    min-height: 100vh;
+    background: var(--bg);
+    color: white;
+    font-family: 'Exo 2', sans-serif;
+    perspective: 1000px; /* Глубина сцены */
     overflow-x: hidden;
 }
 
-/* ФОНОВЫЕ ПЯТНА */
-.aurora-container {
-    position: fixed; width: 100%; height: 100%;
-    z-index: -1; overflow: hidden; filter: blur(100px);
-}
-.blur-dot {
-    position: absolute; width: 400px; height: 400px; border-radius: 50%; opacity: 0.4;
-    animation: move 20s infinite alternate;
-}
-.blue { background: var(--accent-blue); top: -100px; left: -100px; }
-.purple { background: var(--accent-purple); bottom: -100px; right: -100px; animation-delay: -5s; }
-.pink { background: #EC4899; top: 40%; left: 50%; animation-delay: -10s; }
+.shelf-wrapper { padding: 60px 20px; text-align: center; }
+.shelf-title { font-size: 40px; font-weight: 900; letter-spacing: 5px; margin-bottom: 60px; opacity: 0.3; }
 
-@keyframes move {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(100px, 50px) scale(1.2); }
+.shelf-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 50px;
 }
 
-.wrapper { padding: 40px; max-width: 1200px; margin: 0 auto; }
-
-.a-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 80px; }
-.a-logo { font-weight: 900; font-size: 24px; letter-spacing: 2px; }
-.a-logo span { font-weight: 300; opacity: 0.6; }
-.a-session-id { font-size: 10px; letter-spacing: 3px; opacity: 0.4; }
-
-/* ГРИД КАРТОЧЕК */
-.a-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
+/* Контейнер для 3D */
+.card-3d-wrap {
+    width: var(--card-w);
+    height: var(--card-h);
+    transition: transform 0.1s;
 }
 
-.a-card {
-    position: relative; height: 350px; border-radius: 30px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    cursor: pointer; transition: 0.4s ease;
-    overflow: hidden;
+.card-3d {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.a-card-inner {
-    height: 100%; padding: 40px;
-    display: flex; flex-direction: column; justify-content: space-between;
+.card-front {
+    position: absolute; width: 100%; height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+    backface-visibility: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-.a-icon { font-size: 40px; opacity: 0.8; }
-.a-category { font-size: 10px; letter-spacing: 2px; opacity: 0.5; font-weight: 600; }
-.a-title { font-size: 32px; font-weight: 900; margin-top: 10px; letter-spacing: -1px; }
+.card-content { transform: translateZ(50px); /* Выносит текст "вперед" из карточки */ }
 
-/* ЭФФЕКТ СВЕЧЕНИЯ ПРИ ХОВЕРЕ */
-.a-glow {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at center, var(--accent-blue), transparent 70%);
-    opacity: 0; transition: 0.4s; z-index: -1;
+.card-icon { font-size: 60px; margin-bottom: 20px; display: block; }
+.card-name { font-size: 32px; font-weight: 900; }
+.card-tag { font-size: 12px; letter-spacing: 2px; opacity: 0.6; }
+
+/* Динамическая тень под карточкой */
+.card-shadow {
+    position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;
+    background: rgba(0,0,0,0.5);
+    filter: blur(30px);
+    transform: translateZ(-50px);
+    z-index: 1;
 }
 
-.a-card:hover {
-    transform: translateY(-10px);
-    border-color: rgba(255, 255, 255, 0.3);
+/* Эффект при наведении */
+.card-3d-wrap:hover .card-3d {
+    transform: rotateY(15deg) rotateX(10deg);
 }
-.a-card:hover .a-glow { opacity: 0.2; }
 
-/* LOCKED */
-.locked { opacity: 0.3; filter: grayscale(1); }
+.spy-bg { background: linear-gradient(135deg, #232526 0%, #414345 100%); }
+.dan-bg { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
