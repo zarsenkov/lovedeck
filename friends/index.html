@@ -1,61 +1,89 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LC | 3D SHELF</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <div class="black-fade"></div>
+:root {
+    --bg: #FFD600; /* Яркий желтый фон всего сайта */
+    --black: #000000;
+    --white: #FFFFFF;
+    --card-1: #FF006E; /* Розовый для Alias */
+    --card-2: #00F5FF; /* Голубой для Spy */
+    --card-3: #7000FF; /* Фиолетовый для Danetki */
+}
 
-    <div class="shelf-wrapper">
-        <h1 class="shelf-title">GAME LIBRARY</h1>
-        
-        <main class="shelf-grid">
-            <div class="card-3d-wrap" data-game="alias">
-                <div class="card-3d">
-                    <div class="card-front">
-                        <div class="card-content">
-                            <i class="fas fa-comment-dots card-icon"></i>
-                            <h2 class="card-name">ALIAS</h2>
-                            <p class="card-tag">PARTY MODE</p>
-                        </div>
-                    </div>
-                    <div class="card-shadow"></div>
-                </div>
-            </div>
+body {
+    background: var(--bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--black);
+    padding: 20px;
+}
 
-            <div class="card-3d-wrap" data-game="spy">
-                <div class="card-3d">
-                    <div class="card-front spy-bg">
-                        <div class="card-content">
-                            <i class="fas fa-user-secret card-icon"></i>
-                            <h2 class="card-name">SPY</h2>
-                            <p class="card-tag">STEALTH MODE</p>
-                        </div>
-                    </div>
-                    <div class="card-shadow"></div>
-                </div>
-            </div>
+.header-neo {
+    text-align: center;
+    padding: 60px 0;
+}
 
-            <div class="card-3d-wrap" data-game="danetki">
-                <div class="card-3d">
-                    <div class="card-front dan-bg">
-                        <div class="card-content">
-                            <i class="fas fa-lightbulb card-icon"></i>
-                            <h2 class="card-name">DANETKI</h2>
-                            <p class="card-tag">LOGIC MODE</p>
-                        </div>
-                    </div>
-                    <div class="card-shadow"></div>
-                </div>
-            </div>
-        </main>
-    </div>
+.header-neo h1 {
+    font-size: 64px;
+    font-weight: 900;
+    text-transform: uppercase;
+    -webkit-text-stroke: 2px var(--black);
+    color: var(--white);
+    text-shadow: 8px 8px 0px var(--black);
+    letter-spacing: -2px;
+}
 
-    <script src="script.js"></script>
-</body>
-</html>
+.neo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* КАРТОЧКА-НАКЛЕЙКА */
+.neo-card {
+    background: var(--white);
+    border: 4px solid var(--black);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 12px 12px 0px var(--black);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+}
+
+.neo-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 20px 20px 0px var(--black);
+}
+
+.neo-card:active {
+    transform: translate(8px, 8px);
+    box-shadow: 0px 0px 0px var(--black);
+}
+
+/* Цвета карточек */
+.neo-card.alias { background: var(--card-1); color: white; }
+.neo-card.spy { background: var(--card-2); }
+.neo-card.danetki { background: var(--card-3); color: white; }
+
+.neo-icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+    filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.5));
+}
+
+.neo-title {
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+
+.neo-btn {
+    margin-top: 20px;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    font-weight: 900;
+    border-radius: 12px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
