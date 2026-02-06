@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SPY NEON | LOVECOUPLE</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="spy-app">
+        <div class="back-link" onclick="location.href='../../index.html'">← В МЕНЮ</div>
+
+        <section class="screen active" id="setup-screen">
+            <div class="rules-icon" onclick="toggleRules(true)">?</div>
+            <h1 class="glitch-title">ШПИ<span>ОН</span></h1>
+            
+            <div class="glass-card">
+                <div class="setting-row">
+                    <span>ИГРОКИ</span>
+                    <div class="counter">
+                        <button onclick="changeVal('players', -1)">-</button>
+                        <span id="player-count">3</span>
+                        <button onclick="changeVal('players', 1)">+</button>
+                    </div>
+                </div>
+
+                <div id="player-names-list" class="names-container"></div>
+
+                <div class="setting-row">
+                    <span>ШПИОНЫ</span>
+                    <div class="counter">
+                        <button onclick="changeVal('spies', -1)">-</button>
+                        <span id="spy-count">1</span>
+                        <button onclick="changeVal('spies', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <span>ВРЕМЯ (МИН)</span>
+                    <div class="counter">
+                        <button onclick="changeVal('time', -1)">-</button>
+                        <span id="time-limit">5</span>
+                        <button onclick="changeVal('time', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="neon-btn" onclick="startDistribution()">РАЗДАТЬ РОЛИ</button>
+        </section>
+
+        <section class="screen" id="card-screen">
+            <div class="status-bar">ПЕРЕДАЙТЕ ТЕЛЕФОН: <br><span id="current-player-display">ИГРОК 1</span></div>
+            
+            <div class="spy-card-inner" id="main-card" onclick="toggleRoleVisible()">
+                <div class="card-side front">
+                    <div class="fingerprint"></div>
+                    <p>НАЖМИ, ЧТОБЫ УЗНАТЬ РОЛЬ</p>
+                </div>
+                <div class="card-side back">
+                    <h2 id="role-text">ЛОКАЦИЯ</h2>
+                    <p id="location-name">...</p>
+                </div>
+            </div>
+
+            <button class="neon-btn hidden" id="next-player-btn" onclick="nextPlayer()">ПОНЯТНО</button>
+        </section>
+
+        <section class="screen" id="game-screen">
+            <div class="timer-circle">
+                <svg><circle cx="110" cy="110" r="90"></circle><circle id="timer-progress" cx="110" cy="110" r="90"></circle></svg>
+                <div id="countdown">05:00</div>
+            </div>
+            
+            <div class="search-status">
+                <div class="scanner-line"></div>
+                <p>ИДЕТ ПОИСК ШПИОНА...</p>
+            </div>
+
+            <button class="neon-btn danger" onclick="stopGame()">ГОЛОСОВАНИЕ</button>
+        </section>
+
+        <section class="screen" id="vote-screen">
+            <div class="status-bar">ГОЛОСУЕТ: <br><span id="voter-name-display">...</span></div>
+            <p style="margin-bottom: 20px; opacity: 0.7; text-align: center;">КТО ВЫЗЫВАЕТ ПОДОЗРЕНИЕ?</p>
+            <div class="vote-grid" id="vote-list"></div>
+        </section>
+
+        <section class="screen" id="results-screen">
+            <h1 class="glitch-title">ИТО<span>ГИ</span></h1>
+            <div class="glass-card">
+                <div id="winner-status" class="winner-label">...</div>
+                <div class="result-details">
+                    <p>ШПИОНОМ БЫЛ(И): <span id="true-spies-list" style="color: var(--neon-red);">...</span></p>
+                    <p>ЛОКАЦИЯ: <span id="true-location" style="color: var(--neon-cyan);">...</span></p>
+                </div>
+                <div id="vote-stats" class="vote-stats-box"></div>
+            </div>
+            <button class="neon-btn" onclick="location.reload()">В МЕНЮ</button>
+        </section>
+
+        <div class="modal" id="rules-modal">
+            <div class="modal-content glass-card">
+                <h2>ИНСТРУКЦИЯ</h2>
+                <ul>
+                    <li>Все знают локацию, кроме <b>Шпиона</b>.</li>
+                    <li>Игроки ищут шпиона, задавая вопросы.</li>
+                    <li>Шпион пытается угадать локацию.</li>
+                    <li>Голосование: каждый тайно выбирает цель.</li>
+                </ul>
+                <button class="neon-btn" onclick="toggleRules(false)">ПОНЯЛ</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

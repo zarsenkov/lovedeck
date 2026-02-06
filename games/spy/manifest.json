@@ -1,0 +1,21 @@
+{
+  "name": "Шпион • LoveCouple Friends",
+  "short_name": "Шпион",
+  "description": "Найди шпиона среди друзей! Игра для компании",
+  "start_url": "/games/spy/index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
