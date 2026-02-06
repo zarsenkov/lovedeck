@@ -10,7 +10,6 @@
 <body>
     <div class="app-container">
         <button class="nav-btn back-btn" id="global-back-btn" onclick="goBack()">←</button>
-        
         <button class="nav-btn rules-btn" onclick="toggleRules(true)">?</button>
 
         <section class="screen active" id="setup-screen">
@@ -31,8 +30,8 @@
 
         <section class="screen" id="category-screen">
             <h1 class="main-title-small">ТЕМЫ</h1>
-            <div class="settings-pill">
-                <span>ТАЙМЕР:</span>
+            <div class="timer-simple">
+                ВРЕМЯ: 
                 <select id="time-select">
                     <option value="60">60 сек</option>
                     <option value="90" selected>90 сек</option>
@@ -91,3 +90,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
