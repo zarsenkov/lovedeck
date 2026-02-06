@@ -4,11 +4,11 @@ let game = {
     currentTeamIdx: 0,
     timer: null,
     timeLeft: 0,
-    roundLog: [], // Сюда сохраняем объекты {word, isCorrect}
+    roundLog: [],
     wordsStack: []
 };
 
-// 1. ИНИЦИАЛИЗАЦИЯ
+// --- НАСТРОЙКИ ---
 function setOpt(key, val, el) {
     config[key] = val;
     el.parentElement.querySelectorAll('.pop-chip').forEach(c => c.classList.remove('active'));
@@ -30,20 +30,20 @@ function toggleCat(cat, el) {
 function initBattle() {
     const names = [...TEAM_NAMES].sort(() => 0.5 - Math.random());
     game.teams = [
-        { name: names[0], score: 0, roundLog: [] },
-        { name: names[1], score: 0, roundLog: [] }
+        { name: names[0], score: 0 },
+        { name: names[1], score: 0 }
     ];
     game.currentTeamIdx = 0;
     prepareTurn();
 }
 
+// --- ИГРОВОЙ ЦИКЛ ---
 function prepareTurn() {
     const team = game.teams[game.currentTeamIdx];
     document.getElementById('ready-team-name').innerText = team.name.toUpperCase();
     toScreen('screen-ready');
 }
 
-// 2. ИГРОВОЙ ПРОЦЕСС
 function startGame() {
     game.timeLeft = config.time;
     game.roundLog = [];
@@ -75,7 +75,6 @@ function handleWord(isCorrect) {
     const word = document.getElementById('word-display').innerText;
     game.roundLog.push({ word, isCorrect });
     
-    // Мгновенный счет на экране
     let currentTempScore = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
     document.getElementById('live-score').innerText = currentTempScore;
 
@@ -90,18 +89,14 @@ function handleWord(isCorrect) {
     }, 200);
 }
 
-// 3. ЭКРАН ПРОВЕРКИ СЛОВ
+// --- ПРОВЕРКА И ИСПРАВЛЕНИЕ ---
 function showRoundReview() {
     clearInterval(game.timer);
     toScreen('screen-results');
-    
-    const team = game.teams[game.currentTeamIdx];
-    document.getElementById('res-team-name').innerText = team.name;
-    
+    document.getElementById('res-team-name').innerText = game.teams[game.currentTeamIdx].name;
     renderReviewList();
     
-    // Если походил второй игрок, меняем текст кнопки
-    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ПЕРЕДАТЬ ХОД" : "К ИТОГАМ БАТТЛА";
+    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ХОД СЛЕДУЮЩЕЙ КОМАНДЫ" : "УЗНАТЬ КТО ПОБЕДИЛ";
 }
 
 function renderReviewList() {
@@ -115,7 +110,6 @@ function renderReviewList() {
         </div>
     `).join('');
     
-    // Считаем итоговый балл
     let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
     document.getElementById('res-team-score').innerText = score;
     game.teams[game.currentTeamIdx].score = score;
@@ -135,30 +129,26 @@ function handleResultContinue() {
     }
 }
 
-// 4. ФИНАЛ
+// --- ФИНАЛ ---
 function showFinalWinner() {
-    toScreen('screen-results'); // Используем тот же экран, но с финальным оформлением
+    toScreen('screen-final');
     const t1 = game.teams[0];
     const t2 = game.teams[1];
     
-    let winMsg = "";
-    if (t1.score > t2.score) winMsg = `ПОБЕДИЛИ ${t1.name.toUpperCase()}!`;
-    else if (t2.score > t1.score) winMsg = `ПОБЕДИЛИ ${t2.name.toUpperCase()}!`;
-    else winMsg = "НИЧЬЯ! ВОТ ЭТО БИТВА!";
-
-    document.querySelector('#screen-results h2').innerText = "ФИНАЛ";
-    document.getElementById('results-list').innerHTML = `
-        <div class="summary-box" style="background:var(--mint); margin: 20px 0;">
-            ${t1.name}: ${t1.score}<br>
-            ${t2.name}: ${t2.score}
-        </div>
-        <h3 style="text-align:center; font-weight:900;">${winMsg}</h3>
+    document.getElementById('final-stats').innerHTML = `
+        ${t1.name}: ${t1.score} БАЛЛОВ<br>
+        ${t2.name}: ${t2.score} БАЛЛОВ
     `;
-    document.getElementById('res-continue-btn').innerText = "НОВЫЙ БАТТЛ";
-    document.getElementById('res-continue-btn').onclick = () => location.reload();
+
+    let winnerText = "";
+    if (t1.score > t2.score) winnerText = `🏆 ПОБЕДА: ${t1.name}!`;
+    else if (t2.score > t1.score) winnerText = `🏆 ПОБЕДА: ${t2.name}!`;
+    else winnerText = "🤝 НИЧЬЯ!";
+    
+    document.getElementById('final-winner-name').innerText = winnerText;
 }
 
-// 5. ВСПОМОГАТЕЛЬНОЕ
+// --- СИСТЕМНОЕ ---
 function toggleRules(show) {
     document.getElementById('modal-rules').classList.toggle('active', show);
 }
@@ -166,14 +156,18 @@ function toggleRules(show) {
 function toScreen(id) {
     document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    
+    // Показываем хедер игры только в процессе свайпов
     document.getElementById('game-header').style.visibility = (id === 'screen-game') ? 'visible' : 'hidden';
+    // Кнопки управления меню (Домой и Правила) показываем только на стартовом экране
+    document.getElementById('menu-controls').style.display = (id === 'screen-start') ? 'block' : 'none';
 }
 
 function confirmExit() {
     if (confirm("Выйти в меню? Прогресс будет потерян.")) location.reload();
 }
 
-// Свайпы (без изменений)
+// Свайпы
 let startX = 0;
 const card = document.getElementById('main-card');
 card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; card.style.transition = 'none'; }, {passive:true});
@@ -187,5 +181,3 @@ card.addEventListener('touchend', e => {
     else if (x < -110) handleWord(false);
     else { card.style.transition = '0.2s'; card.style.transform = 'none'; }
 });
-
-initBattle(); // Предзагрузка имен
