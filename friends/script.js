@@ -1,168 +1,257 @@
-// Конфигурация статусов игр
+// ===== GAME STATUS CONFIGURATION =====
 const gameStatus = {
-    'whoami': 'available',     // Доступна
-    'spy': 'available',        // Доступна
-    'crocodile': 'available',  // Доступна
-    'alias': 'available',      // Технические работы
-    'danetki': 'available',    // Доступна
-    'quiz': 'available',       // Доступна
-    'bunker': 'coming-soon',   // Скоро
-    'mafia': 'maintenance',    // Технические работы (пример другого статуса)
-    'newgame': 'coming-soon'   // Скоро
+    'whoami': 'available',
+    'spy': 'available',
+    'crocodile': 'available',
+    'alias': 'available',
+    'danetki': 'available',
+    'quiz': 'available',
+    'bunker': 'coming-soon',
+    'mafia': 'maintenance',
+    'newgame': 'coming-soon'
 };
 
-// Тексты для разных статусов
-const statusTexts = {
-    'available': {
-        button: '<i class="fas fa-play"></i> Начать игру',
-        badge: null
-    },
-    'coming-soon': {
-        button: '<i class="fas fa-hourglass-half"></i> В разработке',
-        badge: 'СКОРО'
-    },
-    'maintenance': {
-        button: '<i class="fas fa-tools"></i> Технические работы',
-        badge: 'РЕМОНТ'
+// ===== UTILITY FUNCTIONS =====
+
+/**
+ * Активирует черную шторку для перехода
+ */
+function activateBlackFade() {
+    const fade = document.querySelector('.black-fade');
+    if (fade) {
+        fade.classList.add('active');
     }
-};
+}
 
-// Загрузка игры
-function loadGame(gameName) {
-    // Проверяем статус игры
-    const status = gameStatus[gameName];
+/**
+ * Деактивирует черную шторку
+ */
+function deactivateBlackFade() {
+    const fade = document.querySelector('.black-fade');
+    if (fade) {
+        fade.classList.remove('active');
+    }
+}
+
+/**
+ * Показывает loading state на кнопке
+ */
+function setButtonLoading(button, isLoading) {
+    if (!button) return;
     
-    // Если игра недоступна, не переходим
-    if (status !== 'available') {
-        const card = document.querySelector(`[data-game="${gameName}"]`);
-        if (card) {
-            // Анимация "запрета"
-            card.style.animation = 'none';
-            setTimeout(() => {
-                card.style.animation = 'shake 0.5s ease';
-            }, 10);
+    if (isLoading) {
+        button.classList.add('loading');
+        button.disabled = true;
+        const span = button.querySelector('span');
+        if (span) {
+            span.setAttribute('data-original-text', span.textContent);
+            span.textContent = 'ЗАГРУЗКА';
         }
-        return;
+    } else {
+        button.classList.remove('loading');
+        button.disabled = false;
+        const span = button.querySelector('span');
+        if (span) {
+            const originalText = span.getAttribute('data-original-text');
+            if (originalText) {
+                span.textContent = originalText;
+            }
+        }
     }
+}
+
+/**
+ * Анимация "запрета" для недоступных игр
+ */
+function shakeCard(card) {
+    if (!card) return;
     
-    // Сохраняем в localStorage
-    localStorage.setItem('selectedGame', gameName);
+    // Удаляем класс, если он уже есть
+    card.classList.remove('shake');
     
-    // Показываем loading state
-    const btn = event.target.closest('.play-btn') || event.target;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
-    btn.disabled = true;
+    // Триггерим reflow
+    void card.offsetWidth;
     
-    // Переход через секунду (для плавности)
+    // Добавляем класс заново
+    card.classList.add('shake');
+    
+    // Удаляем класс после анимации
     setTimeout(() => {
-        window.location.href = `games/${gameName}/index.html`;
+        card.classList.remove('shake');
     }, 500);
 }
 
-// Обновляем статусы карточек игр
-function updateGameStatus() {
+// ===== MAIN GAME LOADING FUNCTION =====
+
+/**
+ * Загружает игру с валидацией и плавным переходом
+ * @param {string} gameName - ID игры
+ * @param {Event} event - Event объект
+ */
+function loadGame(gameName, event) {
+    // Предотвращаем баббл события
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    // Проверяем статус игры
+    const status = gameStatus[gameName];
+    
+    // Если игра недоступна
+    if (status !== 'available') {
+        const card = document.querySelector(`[data-game="${gameName}"]`);
+        shakeCard(card);
+        return;
+    }
+    
+    // Сохраняем выбранную игру
+    try {
+        localStorage.setItem('selectedGame', gameName);
+    } catch (e) {
+        console.warn('localStorage недоступен:', e);
+    }
+    
+    // Находим кнопку
+    const button = event ? event.currentTarget : null;
+    
+    // Показываем loading state
+    setButtonLoading(button, true);
+    
+    // Активируем черную шторку
+    activateBlackFade();
+    
+    // Переходим на страницу игры
+    setTimeout(() => {
+        window.location.href = `games/${gameName}/index.html`;
+    }, 400);
+}
+
+// ===== INITIALIZATION =====
+
+/**
+ * Инициализирует обработчики событий для карточек игр
+ */
+function initializeGameCards() {
     const cards = document.querySelectorAll('.game-card');
     
     cards.forEach(card => {
         const gameName = card.getAttribute('data-game');
-        const status = gameStatus[gameName];
+        const status = card.getAttribute('data-status');
+        const button = card.querySelector('.play-btn');
         
-        if (status !== 'available') {
-            // Добавляем класс для стилизации
-            card.classList.add(status);
+        // Для доступных игр
+        if (status === 'available' && button) {
+            // Убираем старые обработчики
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
             
-            // Обновляем текст кнопки
-            const button = card.querySelector('.play-btn');
-            if (button) {
-                button.innerHTML = statusTexts[status].button;
-                button.classList.add('disabled');
-            }
+            // Добавляем новый обработчик
+            newButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadGame(gameName, e);
+            });
             
-            // Добавляем бейдж, если нужно
-            if (statusTexts[status].badge) {
-                let badge = card.querySelector('.game-status-badge');
-                if (!badge) {
-                    badge = document.createElement('div');
-                    badge.className = 'game-status-badge';
-                    card.appendChild(badge);
+            // Добавляем обработчик на саму карточку
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (e) => {
+                // Игнорируем клики по кнопке (они обрабатываются отдельно)
+                if (e.target.closest('.play-btn')) {
+                    return;
                 }
-                badge.textContent = statusTexts[status].badge;
-                
-                // Убираем клик по карточке для недоступных игр
-                card.removeAttribute('onclick');
-                card.style.cursor = 'default';
-            }
-        } else {
-            // Для доступных игр добавляем обработчик клика
-            const button = card.querySelector('.play-btn');
-            if (button) {
-                button.addEventListener('click', () => loadGame(gameName));
-            }
+                loadGame(gameName, e);
+            });
+        }
+        
+        // Для недоступных игр
+        if ((status === 'coming-soon' || status === 'maintenance') && button) {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                shakeCard(card);
+            });
+            
+            card.addEventListener('click', (e) => {
+                e.preventDefault();
+                shakeCard(card);
+            });
         }
     });
 }
 
-// Проверяем, есть ли сохраненная игра
+/**
+ * Проверяет наличие сохраненной игры
+ */
 function checkSavedGame() {
-    const savedGame = localStorage.getItem('selectedGame');
-    if (savedGame) {
-        console.log(`Есть сохраненная игра: ${savedGame}`);
-        // Здесь можно добавить логику продолжения игры
+    try {
+        const savedGame = localStorage.getItem('selectedGame');
+        if (savedGame) {
+            console.log(`Сохраненная игра: ${savedGame}`);
+            // Здесь можно добавить логику для отображения "Продолжить игру"
+        }
+    } catch (e) {
+        console.warn('localStorage недоступен:', e);
     }
 }
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * Добавляет CSS для анимации shake
+ */
+function injectShakeAnimation() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+        
+        .game-card.shake {
+            animation: shake 0.5s ease;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ===== DOCUMENT READY =====
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Инициализация
     checkSavedGame();
-    updateGameStatus();
+    injectShakeAnimation();
+    initializeGameCards();
     
-    // Плавное появление контента
+    // Убираем черную шторку при загрузке (если осталась)
+    deactivateBlackFade();
+    
+    // Плавное появление body
     document.body.style.opacity = '0';
     setTimeout(() => {
-        document.body.style.transition = 'opacity 0.5s ease';
+        document.body.style.transition = 'opacity 0.3s ease';
         document.body.style.opacity = '1';
-    }, 100);
+    }, 50);
     
-    // Добавляем hover-эффекты для карточек
-    const cards = document.querySelectorAll('.game-card');
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            if (!card.classList.contains('coming-soon') && 
-                !card.classList.contains('maintenance')) {
-                card.style.transform = 'translateY(-4px) scale(1.02)';
-            }
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-    
-    // Добавляем анимацию появления карточек
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        
-        setTimeout(() => {
-            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
+    console.log('✓ LoveCouple Games инициализирован');
 });
 
-// Анимация для недоступных игр
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-        20%, 40%, 60%, 80% { transform: translateX(5px); }
-    }
-`;
-document.head.appendChild(style);
+// ===== ERROR HANDLING =====
 
+// Глобальный обработчик ошибок
+window.addEventListener('error', (e) => {
+    console.error('Глобальная ошибка:', e.error);
+    // Деактивируем fade в случае ошибки
+    deactivateBlackFade();
+});
 
+// Обработчик unhandled promise rejections
+window.addEventListener('unhandledrejection', (e) => {
+    console.error('Unhandled promise rejection:', e.reason);
+    deactivateBlackFade();
+});
 
+// ===== PREVENT SCROLL ISSUES =====
 
+// Предотвращаем горизонтальный скролл
+document.addEventListener('DOMContentLoaded', () => {
+    document.body.style.overflowX = 'hidden';
+    document.documentElement.style.overflowX = 'hidden';
+});
