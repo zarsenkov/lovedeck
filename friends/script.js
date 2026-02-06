@@ -3,11 +3,11 @@ function loadGame(gameId) {
     fade.classList.add('active');
     
     setTimeout(() => {
+        // Здесь будет переход в папку с игрой
         window.location.href = `games/${gameId}/index.html`;
     }, 400);
 }
 
-// Эффект тряски для заблокированных карточек
 document.querySelectorAll('.locked').forEach(card => {
     card.addEventListener('click', () => {
         card.classList.add('shake');
