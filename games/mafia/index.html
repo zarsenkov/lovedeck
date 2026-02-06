@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MAFIA ULTIMATE</title>
+    <title>MAFIA ULTIMATE | Professional Host Tool</title>
     <link rel="stylesheet" href="mafia.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
                 <div class="roles-preview" id="rolesGrid"></div>
             </div>
 
-            <button class="action-btn red" onclick="startDistribution()">НАЧАТЬ РАЗДАЧУ</button>
+            <button class="action-btn red" onclick="startDistribution()">К РАЗДАЧЕ РОЛЕЙ</button>
         </section>
 
         <section class="page" id="distributeScreen">
@@ -54,7 +54,7 @@
                             <div id="roleIcon" class="role-icon"></div>
                             <h2 id="roleTitle">РОЛЬ</h2>
                             <p id="roleDesc"></p>
-                            <button class="next-btn" onclick="nextPlayer()">ПОНЯЛ, ПЕРЕДАТЬ</button>
+                            <button class="next-btn" onclick="nextPlayer()">ПОНЯЛ, СКРЫТЬ</button>
                         </div>
                     </div>
                 </div>
@@ -62,15 +62,16 @@
         </section>
 
         <section class="page" id="nightScreen">
-            <h2 class="logo-small">УПРАВЛЕНИЕ НОЧЬЮ</h2>
+            <h2 class="logo-small">НОЧНОЙ СЦЕНАРИЙ</h2>
             <div class="night-scroll" id="nightActionList"></div>
-            <button class="action-btn red" onclick="processNight()">ЗАКОНЧИТЬ НОЧЬ</button>
+            <button class="action-btn red" onclick="processNight()">ГОРОД ПРОСЫПАЕТСЯ</button>
         </section>
 
         <section class="page" id="morningScreen">
             <div class="center-content">
                 <div class="script-tag">ГОЛОС ВЕДУЩЕГО</div>
                 <div class="summary-box">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
                     <p id="morningReport" class="report-text"></p>
                 </div>
                 <button class="action-btn" onclick="startDay()">ПЕРЕЙТИ К ОБСУЖДЕНИЮ</button>
@@ -83,14 +84,14 @@
                 <p id="timerLabel">ВРЕМЯ ИГРОКА</p>
             </div>
             <div class="voting-grid" id="dayPlayerList"></div>
-            <button class="action-btn red" onclick="confirmVote()">ПОДТВЕРДИТЬ ИЗГНАНИЕ</button>
+            <button class="action-btn red" onclick="confirmVote()">ВЫГНАТЬ ВЫБРАННОГО</button>
         </section>
 
         <section class="page" id="finalScreen">
             <div class="center-content">
                 <div id="winIcon" class="giant-icon"></div>
                 <h2 id="winText">ПОБЕДА</h2>
-                <button class="action-btn red" onclick="location.reload()">НОВАЯ ПАРТИЯ</button>
+                <button class="action-btn red" onclick="location.reload()" style="margin-top:30px">В ГЛАВНОЕ МЕНЮ</button>
             </div>
         </section>
     </div>
