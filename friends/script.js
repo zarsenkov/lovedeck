@@ -3,7 +3,7 @@ function loadGame(gameId) {
     fade.classList.add('active');
     
     setTimeout(() => {
-        // Переход в папку с игрой: games/couples/index.html и т.д.
+        // Здесь будет переход в папку с игрой
         window.location.href = `games/${gameId}/index.html`;
     }, 400);
 }
