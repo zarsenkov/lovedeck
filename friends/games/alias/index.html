@@ -3,175 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
-    <title>GAMEPARTY</title>
+    <title>ALIAS - LOVECOUPLE FRIENDS</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://rsms.me/">
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Film Grain Overlay -->
-    <div class="grain"></div>
-    
-    <!-- Persistent Header -->
-    <header class="app-header">
-        <a href="https://lovecouple.ru/" class="header-link">← LOVERCO.</a>
-    </header>
+    <div class="black-fade"></div>
 
-    <!-- Flash Overlay for Haptic Feedback -->
-    <div class="flash-overlay" id="flash"></div>
+    <main class="game-container">
+        <header class="game-header">
+            <button onclick="window.location.href='../../index.html'" class="btn-back">
+                <i class="fas fa-arrow-left"></i> В МЕНЮ
+            </button>
+            <div class="game-logo">ALIAS</div>
+        </header>
 
-    <main class="app-main">
-        
-        <!-- HOME SCREEN -->
-        <section class="screen active" id="screen-home">
-            <div class="screen-inner">
-                <h1 class="title-main">GAMEPARTY</h1>
-                <div class="mode-selector">
-                    <button class="mode-card" data-mode="alias">
-                        <span class="mode-label">ALIAS</span>
-                        <span class="mode-desc">Explain with words</span>
-                    </button>
-                    <button class="mode-card" data-mode="crocodile">
-                        <span class="mode-label">CROCODILE</span>
-                        <span class="mode-desc">Show with gestures</span>
-                    </button>
+        <section id="screen-setup" class="screen active">
+            <h1 class="screen-title">НАСТРОЙКИ</h1>
+            <div class="setup-grid">
+                <div class="setup-item">
+                    <label>ВРЕМЯ РАУНДА</label>
+                    <select id="timer-select">
+                        <option value="60">60 СЕК</option>
+                        <option value="90">90 СЕК</option>
+                    </select>
+                </div>
+                <div class="setup-item">
+                    <label>КАТЕГОРИИ</label>
+                    <div class="category-list">
+                        <button class="cat-btn active" data-cat="base">БАЗОВАЯ</button>
+                        <button class="cat-btn" data-cat="movies">КИНО</button>
+                        <button class="cat-btn" data-cat="adult">18+</button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-main" onclick="startGame()">ПОЕХАЛИ!</button>
+        </section>
+
+        <section id="screen-play" class="screen">
+            <div class="timer-bar" id="timer-display">60</div>
+            <div class="score-counter">СЧЕТ: <span id="current-score">0</span></div>
+            
+            <div class="card-area">
+                <div id="active-card" class="swipe-card">
+                    <span id="word-text">СЛОВО</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-action undo" onclick="undoAction()">ОТМЕНИТЬ</button>
+                <div class="hints">
+                    <span>← ПРОПУСК</span>
+                    <span>УГАДАЛ →</span>
                 </div>
             </div>
         </section>
 
-        <!-- CATEGORY SCREEN -->
-        <section class="screen" id="screen-categories">
-            <div class="screen-inner">
-                <h2 class="title-screen">SELECT CATEGORIES</h2>
-                <div class="category-grid">
-                    <label class="category-card">
-                        <input type="checkbox" value="base" checked>
-                        <span class="category-name">BASIC</span>
-                    </label>
-                    <label class="category-card">
-                        <input type="checkbox" value="movies">
-                        <span class="category-name">MOVIES</span>
-                    </label>
-                    <label class="category-card">
-                        <input type="checkbox" value="food">
-                        <span class="category-name">FOOD</span>
-                    </label>
-                    <label class="category-card">
-                        <input type="checkbox" value="adult">
-                        <span class="category-name">18+</span>
-                    </label>
-                </div>
-                <button class="btn-primary" data-action="confirm-categories">CONTINUE</button>
+        <section id="screen-results" class="screen">
+            <h1 class="screen-title">ФИНИШ</h1>
+            <div class="result-box">
+                <div class="final-score" id="final-score">15</div>
+                <p>ОЧКОВ ЗА РАУНД</p>
             </div>
+            <button class="btn-main" onclick="location.reload()">ЕЩЕ РАЗ</button>
         </section>
-
-        <!-- SETTINGS SCREEN -->
-        <section class="screen" id="screen-settings">
-            <div class="screen-inner">
-                <h2 class="title-screen">GAME SETTINGS</h2>
-                <div class="settings-form">
-                    <div class="input-group">
-                        <label class="input-label">TEAM 1</label>
-                        <input type="text" class="input-field" id="team1" value="RED SQUAD" maxlength="20">
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">TEAM 2</label>
-                        <input type="text" class="input-field" id="team2" value="BLUE SQUAD" maxlength="20">
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">ROUND TIME (SEC)</label>
-                        <input type="number" class="input-field" id="round-time" value="60" min="30" max="120" step="10">
-                    </div>
-                </div>
-                <button class="btn-primary" data-action="start-game">START GAME</button>
-            </div>
-        </section>
-
-        <!-- TEAM TURN SCREEN -->
-        <section class="screen" id="screen-turn">
-            <div class="screen-inner centered">
-                <h2 class="turn-label">READY?</h2>
-                <h1 class="turn-team" id="turn-team-name"></h1>
-                <p class="turn-mode" id="turn-mode-text"></p>
-                <button class="btn-primary btn-huge" data-action="begin-round">GO</button>
-            </div>
-        </section>
-
-        <!-- GAME SCREEN -->
-        <section class="screen" id="screen-game">
-            <div class="game-ui">
-                <div class="game-header">
-                    <div class="timer-display">
-                        <div class="timer-bar">
-                            <div class="timer-fill" id="timer-fill"></div>
-                        </div>
-                        <span class="timer-text" id="timer-text">60</span>
-                    </div>
-                    <div class="score-display">
-                        <span class="score-value" id="score-value">0</span>
-                    </div>
-                </div>
-
-                <div class="card-area">
-                    <div class="swipe-card" id="swipe-card">
-                        <span class="card-word" id="card-word"></span>
-                        <div class="swipe-indicator swipe-left">
-                            <span>SKIP</span>
-                        </div>
-                        <div class="swipe-indicator swipe-right">
-                            <span>CORRECT</span>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn-undo" id="btn-undo">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                        <path d="M3 7v6h6M21 17v-6h-6"/>
-                        <path d="M3 13a9 9 0 0 1 9-9 9 9 0 0 1 9 9"/>
-                    </svg>
-                    UNDO
-                </button>
-
-                <div class="swipe-hints">
-                    <div class="hint hint-left">
-                        <span>← SKIP (-1)</span>
-                    </div>
-                    <div class="hint hint-right">
-                        <span>CORRECT (+1) →</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ROUND SUMMARY SCREEN -->
-        <section class="screen" id="screen-summary">
-            <div class="screen-inner">
-                <h2 class="summary-result" id="summary-result">ROUND COMPLETE</h2>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">TEAM</span>
-                        <span class="stat-value" id="summary-team"></span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">SCORE</span>
-                        <span class="stat-value" id="summary-score"></span>
-                    </div>
-                </div>
-                <div class="words-list">
-                    <h3 class="words-title">WORDS PLAYED</h3>
-                    <div class="words-container" id="words-container"></div>
-                </div>
-                <div class="summary-actions">
-                    <button class="btn-secondary" data-action="change-category">CHANGE CATEGORY</button>
-                    <button class="btn-primary" data-action="next-team">NEXT TEAM</button>
-                </div>
-            </div>
-        </section>
-
     </main>
 
     <script src="cards.js"></script>
