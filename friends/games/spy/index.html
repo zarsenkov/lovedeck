@@ -12,6 +12,7 @@
         <div class="back-link" onclick="location.href='../../index.html'">← В МЕНЮ</div>
 
         <section class="screen active" id="setup-screen">
+            <div class="rules-icon" onclick="toggleRules(true)">?</div>
             <h1 class="glitch-title">ШПИ<span>ОН</span></h1>
             
             <div class="glass-card">
@@ -23,6 +24,7 @@
                         <button onclick="changeVal('players', 1)">+</button>
                     </div>
                 </div>
+                <div id="player-names-list" class="names-container"></div>
 
                 <div class="setting-row">
                     <span>ШПИОНЫ</span>
@@ -34,7 +36,7 @@
                 </div>
 
                 <div class="setting-row">
-                    <span>ВРЕМЯ</span>
+                    <span>ВРЕМЯ (МИН)</span>
                     <div class="counter">
                         <button onclick="changeVal('time', -1)">-</button>
                         <span id="time-limit">5</span>
@@ -47,7 +49,7 @@
         </section>
 
         <section class="screen" id="card-screen">
-            <div class="status-bar">ИГРОК <span id="current-player-num">1</span></div>
+            <div class="status-bar">ПЕРЕДАЙТЕ СМАРТФОН: <br><span id="current-player-display">ИГРОК 1</span></div>
             
             <div class="spy-card-inner" id="main-card" onclick="toggleRoleVisible()">
                 <div class="card-side front">
@@ -60,25 +62,44 @@
                 </div>
             </div>
 
-            <button class="neon-btn hidden" id="next-player-btn" onclick="nextPlayer()">СЛЕДУЮЩИЙ</button>
+            <button class="neon-btn hidden" id="next-player-btn" onclick="nextPlayer()">ПОНЯТНО</button>
         </section>
 
         <section class="screen" id="game-screen">
             <div class="timer-circle">
-                <svg>
-                    <circle cx="100" cy="100" r="90"></circle>
-                    <circle id="timer-progress" cx="100" cy="100" r="90"></circle>
-                </svg>
+                <svg><circle cx="100" cy="100" r="90"></circle><circle id="timer-progress" cx="100" cy="100" r="90"></circle></svg>
                 <div id="countdown">05:00</div>
             </div>
             
-            <div class="locations-grid" id="loc-list">
-                </div>
+            <div class="search-status">
+                <div class="scanner-line"></div>
+                <p>ИДЕТ ПОИСК ШПИОНА...</p>
+            </div>
 
-            <button class="neon-btn danger" onclick="location.reload()">ЗАВЕРШИТЬ</button>
+            <button class="neon-btn danger" onclick="stopGame()">ГОЛОСОВАНИЕ</button>
         </section>
-    </div>
 
+        <section class="screen" id="vote-screen">
+            <h2 class="glitch-title" style="font-size: 2rem;">ГОЛОСОВАНИЕ</h2>
+            <p style="margin-bottom: 20px; opacity: 0.7;">КТО ВЫЗЫВАЕТ ПОДОЗРЕНИЕ?</p>
+            <div class="vote-grid" id="vote-list"></div>
+            <button class="neon-btn" onclick="location.reload()" style="margin-top: 20px;">В МЕНЮ</button>
+        </section>
+
+        <div class="modal" id="rules-modal">
+            <div class="modal-content glass-card">
+                <h2>ИНСТРУКЦИЯ</h2>
+                <ul>
+                    <li>Все игроки знают локацию, кроме <b>Шпиона</b>.</li>
+                    <li>Задавайте друг другу вопросы, чтобы вычислить шпиона.</li>
+                    <li>Шпион должен догадаться, где он находится.</li>
+                    <li>Победа игроков: вычислить шпиона голосованием.</li>
+                    <li>Победа шпиона: назвать локацию или дождаться конца времени.</li>
+                </ul>
+                <button class="neon-btn" onclick="toggleRules(false)">ПРИНЯТО</button>
+            </div>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
