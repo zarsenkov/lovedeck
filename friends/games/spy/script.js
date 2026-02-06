@@ -1,28 +1,54 @@
 const LOCATIONS = [
     "ОРБИТАЛЬНАЯ СТАНЦИЯ", "НОЧНОЙ КЛУБ", "БОЛЬНИЦА", "ТЕАТР", "ПОДВОДНАЯ ЛОДКА",
     "БАНК", "АЭРОПОРТ", "ЦЕРКОВЬ", "АРКТИЧЕСКАЯ СТАНЦИЯ", "ПИРАТСКИЙ КОРАБЛЬ",
-    "ШКОЛА", "РЕСТОРАН", "ПОЛИЦЕЙСКИЙ УЧАСТОК", "ОТЕЛЬ", "БАЗА ОТДЫХА"
+    "ШКОЛА", "РЕСТОРАН", "ПОЛИЦЕЙСКИЙ УЧАСТОК", "ОТЕЛЬ", "ЦИРК ШАПИТО"
 ];
 
 let state = {
     players: 3,
     spies: 1,
     time: 5,
+    playerNames: ["Игрок 1", "Игрок 2", "Игрок 3"],
     roles: [],
     currentPlayer: 0,
     timerInterval: null
 };
 
+// Инициализация имен при загрузке
+updateNameInputs();
+
 function changeVal(key, delta) {
     if (key === 'players') {
         state.players = Math.max(3, Math.min(12, state.players + delta));
-        if (state.spies >= state.players) state.spies = state.players - 1;
+        
+        // 1. ОГРАНИЧЕНИЕ ШПИОНОВ
+        // 3-6 игроков: 1 шпион | 7-10: до 2 | 11-12: до 3
+        let maxSpies = 1;
+        if (state.players >= 7) maxSpies = 2;
+        if (state.players >= 11) maxSpies = 3;
+        
+        if (state.spies > maxSpies) state.spies = maxSpies;
+        updateNameInputs();
     } else if (key === 'spies') {
-        state.spies = Math.max(1, Math.min(state.players - 1, state.spies + delta));
+        let maxAllowed = (state.players >= 11) ? 3 : (state.players >= 7 ? 2 : 1);
+        state.spies = Math.max(1, Math.min(maxAllowed, state.spies + delta));
     } else if (key === 'time') {
         state.time = Math.max(1, Math.min(15, state.time + delta));
     }
     updateUI();
+}
+
+function updateNameInputs() {
+    const container = document.getElementById('player-names-list');
+    container.innerHTML = '';
+    for(let i = 0; i < state.players; i++) {
+        const input = document.createElement('input');
+        input.className = 'name-input';
+        input.placeholder = `Имя игрока ${i+1}`;
+        input.value = state.playerNames[i] || "";
+        input.onchange = (e) => state.playerNames[i] = e.target.value;
+        container.appendChild(input);
+    }
 }
 
 function updateUI() {
@@ -32,15 +58,21 @@ function updateUI() {
 }
 
 function startDistribution() {
+    // Собираем имена окончательно
+    for(let i=0; i<state.players; i++) {
+        if(!state.playerNames[i]) state.playerNames[i] = `Игрок ${i+1}`;
+    }
+
     const location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
     state.roles = new Array(state.players).fill(location);
     
-    // Назначаем шпионов
-    for (let i = 0; i < state.spies; i++) {
-        let idx;
-        do { idx = Math.floor(Math.random() * state.players); } 
-        while (state.roles[idx] === "ШПИОН");
-        state.roles[idx] = "ШПИОН";
+    let assignedSpies = 0;
+    while(assignedSpies < state.spies) {
+        let idx = Math.floor(Math.random() * state.players);
+        if(state.roles[idx] !== "ШПИОН") {
+            state.roles[idx] = "ШПИОН";
+            assignedSpies++;
+        }
     }
 
     state.currentPlayer = 0;
@@ -49,7 +81,7 @@ function startDistribution() {
 }
 
 function showPlayerCard() {
-    document.getElementById('current-player-num').innerText = state.currentPlayer + 1;
+    document.getElementById('current-player-display').innerText = state.playerNames[state.currentPlayer].toUpperCase();
     document.getElementById('main-card').classList.remove('flipped');
     document.getElementById('next-player-btn').classList.add('hidden');
     
@@ -81,28 +113,32 @@ function startTimer() {
     toScreen('game-screen');
     let timeLeft = state.time * 60;
     const totalTime = timeLeft;
-    const countdownEl = document.getElementById('countdown');
-    const progressEl = document.getElementById('timer-progress');
     
-    // Заполняем список локаций для подсказки
-    const locList = document.getElementById('loc-list');
-    locList.innerHTML = LOCATIONS.map(l => `<div class="loc-item">${l}</div>`).join('');
-
     state.timerInterval = setInterval(() => {
         timeLeft--;
         let m = Math.floor(timeLeft / 60);
         let s = timeLeft % 60;
-        countdownEl.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-        
-        // Анимация круга
-        let offset = 565 - (timeLeft / totalTime) * 565;
-        progressEl.style.strokeDashoffset = offset;
+        document.getElementById('countdown').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+        document.getElementById('timer-progress').style.strokeDashoffset = 565 - (timeLeft / totalTime) * 565;
 
         if (timeLeft <= 0) {
             clearInterval(state.timerInterval);
-            alert("ВРЕМЯ ВЫШЛО! КТО ЖЕ ШПИОН?");
+            stopGame();
         }
     }, 1000);
+}
+
+function stopGame() {
+    clearInterval(state.timerInterval);
+    toScreen('vote-screen');
+    const voteList = document.getElementById('vote-list');
+    voteList.innerHTML = state.playerNames.map(name => 
+        `<div class="vote-item" onclick="this.style.background='var(--neon-red)'">${name}</div>`
+    ).join('');
+}
+
+function toggleRules(show) {
+    document.getElementById('rules-modal').classList.toggle('active', show);
 }
 
 function toScreen(id) {
