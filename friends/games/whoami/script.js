@@ -18,8 +18,8 @@ async function loadCats() {
         Object.keys(categoriesData).forEach(cat => {
             const div = document.createElement('div');
             div.className = 'cat-item';
-            div.innerHTML = `<div style="font-size:20px">${cat.match(/[\u{1F300}-\u{1F9FF}]/u)?.[0] || '🏷️'}</div>
-                             <div style="font-size:10px; font-weight:800">${cat.replace(/[\u{1F300}-\u{1F9FF}]/u, '').trim()}</div>`;
+            div.innerHTML = `<div style="font-size:22px; margin-bottom:5px">${cat.match(/[\u{1F300}-\u{1F9FF}]/u)?.[0] || '🏷️'}</div>
+                             <div style="font-size:10px; font-weight:800; line-height:1.2">${cat.replace(/[\u{1F300}-\u{1F9FF}]/u, '').trim()}</div>`;
             div.onclick = () => {
                 div.classList.toggle('selected');
                 selectedCategories.includes(cat) ? 
@@ -36,7 +36,7 @@ function addPlayerInput() {
     const container = document.getElementById('player-list-inputs');
     const input = document.createElement('input');
     input.className = 'player-input';
-    input.placeholder = `Имя игрока ${container.children.length + 1}`;
+    input.placeholder = `Игрок ${container.children.length + 1}`;
     container.appendChild(input);
 }
 
@@ -79,12 +79,11 @@ function prepareCountdown() {
 function beginRound() {
     toScreen('game-screen');
     timeLeft = parseInt(document.getElementById('time-input').value) || 60;
+    document.getElementById('timer-display').innerText = timeLeft;
     document.getElementById('active-guesser-name').innerText = players[currentPlayerIdx];
     
-    // Кто начинает спрашивать? (Следующий после угадывающего)
     currentAskerIdx = (currentPlayerIdx + 1) % players.length;
     updateAskerUI();
-    
     renderWord();
     
     timer = setInterval(() => {
@@ -99,24 +98,22 @@ function renderWord() {
     document.getElementById('current-word').innerText = gamePool.pop();
 }
 
-// Нажали "НЕТ" - меняем спрашивающего
 function handleNo() {
     currentAskerIdx = (currentAskerIdx + 1) % players.length;
     if(currentAskerIdx === currentPlayerIdx) {
         currentAskerIdx = (currentAskerIdx + 1) % players.length;
     }
     updateAskerUI();
-    if(window.navigator.vibrate) window.navigator.vibrate(40);
+    if(window.navigator.vibrate) window.navigator.vibrate(30);
 }
 
 function updateAskerUI() {
     document.getElementById('current-asker-name').innerText = players[currentAskerIdx];
 }
 
-// Нажали "УГАДАЛ"
 function handleYes() {
     scores[players[currentPlayerIdx]]++;
-    if(window.navigator.vibrate) window.navigator.vibrate([50, 30, 50]);
+    if(window.navigator.vibrate) window.navigator.vibrate([40, 30, 40]);
     renderWord();
 }
 
@@ -136,9 +133,9 @@ function endGame() {
     board.innerHTML = Object.entries(scores)
         .sort((a,b) => b[1]-a[1])
         .map(([name, score], i) => `
-            <div style="display:flex; justify-content:space-between; padding:15px; background:var(--bg); border-radius:12px; margin-bottom:10px; border: 1px solid ${i===0?'var(--primary)':'#334155'}">
-                <span style="font-weight:800">${i===0?'🏆 ':''}${name}</span>
-                <span style="color:var(--accent); font-family:'Unbounded'">${score}</span>
+            <div style="display:flex; justify-content:space-between; padding:18px; background:var(--bg); border-radius:18px; margin-bottom:10px;">
+                <span style="font-weight:800; font-size:14px">${i===0?'🏆 ':''}${name}</span>
+                <span style="color:var(--primary); font-family:'Unbounded'; font-size:14px">${score}</span>
             </div>
         `).join('');
 }
