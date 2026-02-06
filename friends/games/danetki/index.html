@@ -2,213 +2,74 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ДАНЕТКИ - LoveCouple Friends</title>
-    <link rel="stylesheet" href="../../style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DANETKI | MYSTERY</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Хедер с кнопкой "На главную" -->
-    <header class="game-header">
-        <button class="back-to-main-btn" onclick="window.location.href='https://lovecouple.ru/friends/'">
-            <i class="fas fa-arrow-left"></i> На главную
-        </button>
-        <h1><i class="fas fa-mask"></i> ДАНЕТКИ</h1>
-        <p class="subtitle">Сюжетные загадки для компании</p>
-    </header>
+    <div class="mystery-container">
+        <div class="top-nav" onclick="location.href='../../index.html'">← ВЕРНУТЬСЯ В ХАБ</div>
 
-    <!-- Кнопка "В настройки" (только во время игры) -->
-    <button class="back-to-setup-btn" id="back-to-setup-from-game" style="display: none;">
-        <i class="fas fa-cog"></i> В настройки
-    </button>
+        <section class="screen active" id="setup-screen">
+            <div class="header-block">
+                <h1 class="title">ДАНЕТКИ</h1>
+                <div class="divider"></div>
+                <p class="tagline">АРХИВ НЕРАСКРЫТЫХ ДЕЛ</p>
+            </div>
 
-    <main class="danetki-container">
-        <!-- Экран 1: Настройки -->
-        <div id="screen-setup" class="screen active">
-            <div class="setup-card">
-                <h2><i class="fas fa-users"></i> Настройка игры</h2>
-                
-                <!-- Выбор количества игроков -->
-                <div class="setup-section">
-                    <h3>Количество игроков (2-8)</h3>
-                    <div class="player-selector">
-                        <button class="player-count-btn" data-count="2">2</button>
-                        <button class="player-count-btn" data-count="3">3</button>
-                        <button class="player-count-btn" data-count="4">4</button>
-                        <button class="player-count-btn" data-count="5">5</button>
-                        <button class="player-count-btn" data-count="6">6</button>
-                        <button class="player-count-btn" data-count="7">7</button>
-                        <button class="player-count-btn active" data-count="8">8</button>
+            <div class="folder-grid">
+                <div class="case-folder" onclick="startGame('easy')">
+                    <div class="case-id">CASE #01</div>
+                    <div class="case-info">
+                        <h3>НОВИЧОК</h3>
+                        <p>Очевидные улики</p>
                     </div>
                 </div>
-
-                <!-- Выбор команд -->
-                <div class="setup-section">
-                    <h3>Количество команд (1-3)</h3>
-                    <div class="team-selector">
-                        <button class="team-count-btn active" data-teams="1">Без команд</button>
-                        <button class="team-count-btn" data-teams="2">2 команды</button>
-                        <button class="team-count-btn" data-teams="3">3 команды</button>
+                <div class="case-folder" onclick="startGame('medium')">
+                    <div class="case-id">CASE #02</div>
+                    <div class="case-info">
+                        <h3>ДЕТЕКТИВ</h3>
+                        <p>Сложные связи</p>
                     </div>
                 </div>
-
-                <!-- Выбор сложности -->
-                <div class="setup-section">
-                    <h3>Сложность загадок</h3>
-                    <div class="difficulty-selector">
-                        <button class="difficulty-btn active" data-difficulty="easy">
-                            <i class="fas fa-seedling"></i> Легкие
-                        </button>
-                        <button class="difficulty-btn" data-difficulty="medium">
-                            <i class="fas fa-brain"></i> Средние
-                        </button>
-                        <button class="difficulty-btn" data-difficulty="hard">
-                            <i class="fas fa-crown"></i> Сложные
-                        </button>
+                <div class="case-folder" onclick="startGame('hard')">
+                    <div class="case-id">CASE #03</div>
+                    <div class="case-info">
+                        <h3>ИНСПЕКТОР</h3>
+                        <p>Тупиковые ситуации</p>
                     </div>
-                </div>
-
-                <!-- Таймер -->
-                <div class="setup-section">
-                    <h3>Таймер на загадку</h3>
-                    <div class="timer-selector">
-                        <button class="timer-btn active" data-time="120">2 мин</button>
-                        <button class="timer-btn" data-time="180">3 мин</button>
-                        <button class="timer-btn" data-time="240">4 мин</button>
-                        <button class="timer-btn" data-time="300">5 мин</button>
-                        <button class="timer-btn" data-time="0">Без таймера</button>
-                    </div>
-                </div>
-
-                <!-- Кнопка старта -->
-                <div class="start-section">
-                    <button class="start-btn" id="start-game">
-                        <i class="fas fa-play"></i> Начать игру
-                    </button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Экран 2: Игра -->
-        <div id="screen-game" class="screen">
-            <!-- Текущий игрок/команда -->
-            <div class="current-turn">
-                <div class="turn-info">
-                    <span class="turn-label">Кто сейчас угадывает:</span>
-                    <span class="turn-value" id="current-turn">Игроку 1</span>
-                </div>
-                <div class="score-info">
-                    <span class="score-label">Счёт:</span>
-                    <span class="score-value" id="current-score">0</span>
-                </div>
-                <div class="round-info">
-                    <span class="round-value" id="round-counter">Раунд 1 из 10</span>
+        <section class="screen" id="game-screen">
+            <div class="paper-sheet">
+                <div class="stamp">CLASSIFIED</div>
+                <div class="paper-content">
+                    <span class="label">СУТЬ ДЕЛА:</span>
+                    <p id="riddle-text">...</p>
                 </div>
             </div>
 
-            <!-- Таймер -->
-            <div class="game-timer-container">
-                <div class="timer-display" id="timer">02:00</div>
-                <div class="timer-controls">
-                    <button class="timer-btn-small" id="pause-timer">
-                        <i class="fas fa-pause"></i>
-                    </button>
-                    <button class="timer-btn-small" id="next-player">
-                        <i class="fas fa-forward"></i>
-                    </button>
+            <div class="actions">
+                <button class="btn-outline" onclick="location.reload()">ЗАКРЫТЬ ДЕЛО</button>
+                <button class="btn-main" onclick="showSolution()">ВСКРЫТЬ УЛИКИ</button>
+            </div>
+        </section>
+
+        <section class="screen" id="solution-screen">
+            <div class="paper-sheet solution">
+                <div class="paper-content">
+                    <span class="label">РЕКОНСТРУКЦИЯ:</span>
+                    <p id="solution-text">...</p>
                 </div>
             </div>
 
-            <!-- Загадка -->
-            <div class="riddle-card">
-                <div class="riddle-header">
-                    <h3><i class="fas fa-scroll"></i> Загадка для объяснения</h3>
-                    <div class="riddle-number">#<span id="riddle-number">1</span></div>
-                </div>
-                <div class="riddle-content">
-                    <p class="riddle-text" id="riddle-text">Загрузка загадки...</p>
-                </div>
-                <!-- Ответ для ведущего -->
-                <div class="answer-section">
-                    <div class="answer-header">
-                        <i class="fas fa-eye"></i> Ответ для ведущего
-                    </div>
-                    <p class="answer-text" id="answer-text">Загрузка ответа...</p>
-                </div>
-            </div>
-
-            <!-- Результат загадки -->
-            <div class="result-buttons">
-                <button class="result-btn success-btn" id="correct-guess">
-                    <i class="fas fa-check-circle"></i> Отгадано
-                </button>
-                <button class="result-btn skip-btn" id="skip-riddle">
-                    <i class="fas fa-forward"></i> Следующая загадка
-                </button>
-            </div>
-
-            <!-- Счёт и ход -->
-            <div class="score-section">
-                <h3><i class="fas fa-trophy"></i> Текущий счёт</h3>
-                <div class="scoreboard" id="scoreboard">
-                    <!-- Динамически заполняется -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Экран 3: Итоги игры -->
-        <div id="screen-results" class="screen">
-            <div class="results-card">
-                <h2><i class="fas fa-trophy"></i> Итоги игры</h2>
-                
-                <div class="end-reason" id="end-reason">
-                    Игра завершена!
-                </div>
-                
-                <div class="winner-section">
-                    <div class="winner-badge" id="winner-badge">
-                        <i class="fas fa-crown"></i>
-                        <span id="winner-name">Победитель</span>
-                    </div>
-                    <div class="winner-score" id="winner-score">0 очков</div>
-                </div>
-
-                <div class="final-scores">
-                    <h3>Финальные результаты:</h3>
-                    <div class="final-scoreboard" id="final-scoreboard">
-                        <!-- Динамически заполняется -->
-                    </div>
-                </div>
-
-                <div class="game-stats">
-                    <div class="stat-item">
-                        <div class="stat-value" id="total-riddles">0</div>
-                        <div class="stat-label">Всего загадок</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="solved-riddles">0</div>
-                        <div class="stat-label">Отгадано</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="game-time">0:00</div>
-                        <div class="stat-label">Время игры</div>
-                    </div>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="action-btn primary-btn" id="play-again">
-                        <i class="fas fa-redo"></i> Играть снова
-                    </button>
-                    <button class="action-btn secondary-btn" id="back-to-setup">
-                        <i class="fas fa-cog"></i> Новые настройки
-                    </button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script src="danetki.js"></script>
+            <button class="btn-main" onclick="nextRiddle()">СЛЕДУЮЩЕЕ ДЕЛО</button>
+            <button class="btn-text" onclick="location.reload()">ВЫЙТИ ИЗ АРХИВА</button>
+        </section>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
