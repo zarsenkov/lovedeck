@@ -1,358 +1,106 @@
 :root {
-    --bg-light: #F0F4F8; /* Мягкий фон */
-    --primary-text: #2C3E50; /* Глубокий синий для текста */
-    --accent-pink: #FF69B4; /* Яркий акцент - розовый */
-    --accent-mint: #66FFCC; /* Мятный акцент */
-    --accent-purple: #9B59B6; /* Фиолетовый акцент */
-    --card-bg: #FFFFFF;
-    --shadow-light: 0 10px 30px rgba(0,0,0,0.05);
-    --shadow-pop: 0 15px 40px rgba(255,105,180,0.3); /* Яркая тень для pop-эффекта */
+    --white: #FFFFFF;
+    --black: #000000;
+    --blue: #0057FF;
+    --red: #FF0000;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body { 
+    background: var(--white); 
+    color: var(--black); 
     font-family: 'Inter', sans-serif;
-    -webkit-tap-highlight-color: transparent;
-}
-
-body {
-    background: var(--bg-light);
-    color: var(--primary-text);
     height: 100dvh;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
-.app-wrapper {
-    background: var(--bg-light);
-    width: 100%;
-    max-width: 450px; /* Ограничиваем ширину для мобильного вида */
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow-light);
-    border-radius: 20px; /* Мягкие скругления */
-    overflow: hidden;
-    position: relative;
-}
+.app-wrapper { display: flex; flex-direction: column; height: 100%; }
 
-/* Header */
+/* HEADER */
 .game-header {
     padding: env(safe-area-inset-top) 20px 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--card-bg);
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 3px solid var(--black);
 }
 
 .header-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    color: var(--primary-text);
-    cursor: pointer;
+    background: var(--black); color: var(--white);
+    border: none; padding: 8px 12px; font-weight: 900; font-size: 12px;
 }
 
-.header-title {
-    font-weight: 900;
-    font-size: 24px;
-    letter-spacing: -1px;
-    color: var(--primary-text);
+.logo { font-weight: 900; font-size: 24px; letter-spacing: -1px; }
+
+.timer-badge {
+    background: var(--blue); color: var(--white);
+    padding: 5px 15px; font-weight: 900; min-width: 50px; text-align: center;
 }
 
-.timer-display {
-    background: var(--accent-mint); /* Яркий таймер */
-    color: white;
-    padding: 5px 15px;
-    font-weight: 800;
-    border-radius: 15px;
-    min-width: 60px;
-    text-align: center;
+/* SCREENS */
+.screen { 
+    display: none; 
+    flex-direction: column; 
+    padding: 24px; 
+    flex-grow: 1; 
 }
+.screen.active { display: flex; }
 
-/* Screens */
-.screen {
-    display: none;
-    flex-direction: column;
-    padding: 30px 25px;
-    flex-grow: 1;
-    background: var(--bg-light);
-}
-.screen.active {
-    display: flex;
-}
+.title { font-size: 42px; font-weight: 900; line-height: 0.9; margin-bottom: 30px; }
 
-.main-title {
-    font-size: 48px;
-    font-weight: 900;
-    line-height: 1;
-    margin-bottom: 40px;
-    color: var(--primary-text);
-}
-.main-title span {
-    color: var(--accent-pink); /* Розовая точка */
-}
-
-/* Setup Screen */
-.setting-block {
-    margin-bottom: 30px;
-}
-.setting-block label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: #888;
-    margin-bottom: 15px;
-}
-
-.chip-group {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-.cat-chip {
-    background: var(--card-bg);
-    border: 1px solid #E0E0E0;
-    padding: 10px 15px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--primary-text);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.cat-chip.active {
-    background: var(--accent-pink);
-    color: white;
-    border-color: var(--accent-pink);
-    box-shadow: 0 5px 15px rgba(255,105,180,0.4);
-}
-
-.stepper-control {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    background: var(--card-bg);
-    border-radius: 25px;
-    padding: 10px 0;
-    box-shadow: var(--shadow-light);
-}
-.stepper-control button {
-    background: none;
-    border: none;
-    font-size: 30px;
-    font-weight: 700;
-    color: var(--accent-pink);
-    width: 40px;
-    height: 40px;
-    line-height: 1;
-    cursor: pointer;
-}
-.stepper-control span {
-    font-size: 36px;
-    font-weight: 900;
-    color: var(--primary-text);
-}
-
-/* Play Screen */
-.score-display {
-    text-align: center;
-    font-size: 18px;
-    font-weight: 700;
-    color: #777;
-    margin-bottom: 20px;
-}
-.score-display span {
-    color: var(--accent-pink);
-    font-size: 24px;
-}
-
+/* КАРТОЧКА И СВАЙПЫ */
 .card-stack {
     flex-grow: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    touch-action: none; /* Для плавного свайпа */
+    touch-action: none;
 }
 
-.game-card {
-    width: 90%;
+.card {
+    width: 100%;
+    max-width: 320px;
     height: 400px;
-    background: var(--card-bg);
-    border-radius: 25px; /* Мягкие углы */
-    box-shadow: var(--shadow-light);
+    background: var(--white);
+    border: 4px solid var(--black);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+    z-index: 10;
+    transition: transform 0.1s ease-out;
 }
 
-#word-display {
+.card-inner h2 {
     font-size: 3rem;
     font-weight: 900;
     text-align: center;
     text-transform: uppercase;
     padding: 20px;
-    line-height: 1.2;
-    color: var(--primary-text);
 }
 
-.play-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: auto;
-    padding-bottom: env(safe-area-inset-bottom);
+/* КНОПКИ */
+.btn-primary {
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    padding: 24px;
+    font-weight: 900;
+    font-size: 1.5rem;
+    margin-bottom: env(safe-area-inset-bottom);
+    cursor: pointer;
 }
 
 .btn-undo {
-    background: none;
-    border: 1px dashed #CCC; /* Пунктирная граница */
-    padding: 12px 25px;
-    border-radius: 30px;
-    font-weight: 600;
-    color: #888;
-    font-size: 14px;
-    margin-bottom: 20px;
-    cursor: pointer;
+    background: none; border: 2px solid var(--black);
+    padding: 10px; font-weight: 800; margin-top: 10px;
 }
 
-.swipe-indicators {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    color: #AAA;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-/* Result Screen */
-.final-score-bubble {
-    background: var(--accent-mint);
-    color: white;
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 4rem;
-    font-weight: 900;
-    line-height: 1;
-    margin: 30px auto 40px;
-    box-shadow: 0 10px 20px rgba(102,255,204,0.4);
-}
-.final-score-bubble small {
-    font-size: 16px;
-    font-weight: 600;
-    display: block;
-    margin-top: 5px;
-}
-
-.review-list {
-    flex-grow: 1;
-    overflow-y: auto;
-    background: var(--card-bg);
-    border-radius: 15px;
-    padding: 15px;
-    box-shadow: var(--shadow-light);
-    margin-bottom: 20px;
-}
-.word-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #EEE;
-    font-weight: 600;
-    color: #555;
-    font-size: 14px;
-}
-.word-item:last-child {
-    border-bottom: none;
-}
-.word-item.correct span:first-child { color: var(--accent-pink); }
-.word-item.wrong span:first-child { color: #BBB; text-decoration: line-through; }
-
-.results-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: auto;
-    padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* Common Buttons */
-.btn-action {
-    background: var(--accent-pink);
-    color: white;
-    border: none;
-    padding: 18px 25px;
-    border-radius: 30px;
-    font-weight: 800;
-    font-size: 16px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(255,105,180,0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    width: 100%;
-}
-.btn-action:active {
-    transform: translateY(2px);
-    box-shadow: 0 5px 10px rgba(255,105,180,0.3);
-}
-
-.btn-secondary {
-    background: var(--bg-light);
-    color: var(--primary-text);
-    border: 1px solid #D0D0D0;
-    padding: 18px 25px;
-    border-radius: 30px;
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    width: 100%;
-}
-
-/* Progress Bar */
-.progress-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: rgba(0,0,0,0.05);
-    z-index: 50;
-}
-.progress-fill {
-    height: 100%;
-    background: var(--accent-pink);
-    width: 100%; /* Начинаем с полного */
-    transition: width 1s linear;
-}
-
-/* Flash Overlay */
 .flash-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255,255,255,0.8);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.1s ease;
-    z-index: 100;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 100; opacity: 0;
 }
-.flash-good { background: rgba(102,255,204,0.3); opacity: 1
+.flash-blue { background: var(--blue); opacity: 0.3; }
+.flash-red { background: var(--red); opacity: 0.3; }
