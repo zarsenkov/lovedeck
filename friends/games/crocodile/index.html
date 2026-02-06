@@ -3,94 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крокодил – Веселая игра для компаний</title>
+    <title>Крокодил Neon</title>
     <link rel="stylesheet" href="crocodile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="game-container">
-        <button class="nav-btn back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
-        <button class="nav-btn rules-btn" onclick="showRules()"><i class="fas fa-question"></i></button>
+    <div class="app-wrapper">
+        <header class="neon-header">
+            <button class="icon-btn" onclick="goBack()"><i class="fas fa-chevron-left"></i></button>
+            <div class="logo">CROCO<span>NEON</span></div>
+            <button class="icon-btn" onclick="showRules()"><i class="fas fa-info-circle"></i></button>
+        </header>
 
         <section class="screen active" id="mainScreen">
-            <div class="hero-section">
-                <div class="logo-circle">🐊</div>
-                <h1>КРОКО<span>ДИЛ</span></h1>
-            </div>
-
-            <div class="setup-card">
-                <p class="label">ИГРОКИ</p>
-                <div id="playerList" class="player-stack">
-                    <div class="input-group">
-                        <input type="text" class="player-input" value="Игрок 1">
+            <div class="scroll-area">
+                <div class="setup-group">
+                    <label class="neon-label">АКТИВНЫЕ ИГРОКИ</label>
+                    <div id="playerList" class="player-grid">
+                        <div class="player-chip">
+                            <input type="text" class="player-input" value="Игрок 1">
+                        </div>
+                        <div class="player-chip">
+                            <input type="text" class="player-input" value="Игрок 2">
+                            <button class="chip-del" onclick="this.parentElement.remove()">×</button>
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <input type="text" class="player-input" value="Игрок 2">
-                        <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
-                    </div>
+                    <button class="add-chip-btn" onclick="addPlayerField()">+ ДОБАВИТЬ</button>
                 </div>
-                <button class="add-player-btn" onclick="addPlayerField()">+ Добавить игрока</button>
 
-                <p class="label" style="margin-top: 20px;">КАТЕГОРИИ</p>
-                <div id="categoriesGrid" class="categories-grid">
-                    </div>
+                <div class="setup-group">
+                    <label class="neon-label">ТЕМАТИКА</label>
+                    <div id="categoriesGrid" class="neon-grid"></div>
+                </div>
             </div>
-
-            <button class="start-btn" onclick="startGame()">ПОЕХАЛИ!</button>
+            
+            <div class="bottom-action">
+                <button class="neon-btn main" onclick="startGame()">ЗАПУСТИТЬ</button>
+            </div>
         </section>
 
         <section class="screen" id="transferScreen">
-            <div class="message-card">
-                <p>ПРИГОТОВИТЬСЯ ИГРОКУ:</p>
-                <h2 id="currentPlayerName">Игрок 1</h2>
-                <div class="icon-box"><i class="fas fa-mask"></i></div>
-                <p class="hint">Никому не показывай экран!</p>
-                <button class="start-btn" onclick="startRound()">ПОКАЗАТЬ СЛОВО</button>
+            <div class="central-content">
+                <div class="glow-circle">
+                    <i class="fas fa-user-secret"></i>
+                </div>
+                <p>ХОД ИГРОКА</p>
+                <h2 id="currentPlayerName" class="player-name-display">---</h2>
+                <button class="neon-btn" onclick="startRound()">УЗНАТЬ СЛОВО</button>
             </div>
         </section>
 
         <section class="screen" id="gameScreen">
-            <div class="game-header">
-                <div class="timer" id="timer">60</div>
-                <div class="player-tag" id="gamePlayerName">Игрок 1</div>
-            </div>
-
-            <div class="word-card" id="wordCard">
-                <p class="category-label" id="wordCategory">ПРЕДМЕТЫ</p>
-                <h2 id="currentWord">СЛОВО</h2>
-                <div class="difficulty-dots" id="difficultyLevel">
-                    <span></span><span></span><span></span>
+            <div class="game-stats">
+                <div class="stat-box">
+                    <span id="timer">60</span>
+                    <small>СЕКУНД</small>
+                </div>
+                <div class="stat-box">
+                    <span id="gamePlayerName">---</span>
+                    <small>ИГРОК</small>
                 </div>
             </div>
 
-            <div class="game-controls">
-                <button class="control-btn fail" onclick="nextWord(false)">
-                    <i class="fas fa-times"></i> Сдаюсь
+            <div class="word-stage">
+                <div class="word-glow-box">
+                    <span id="wordCategory" class="cat-badge">КАТЕГОРИЯ</span>
+                    <h2 id="currentWord">СЛОВО</h2>
+                </div>
+            </div>
+
+            <div class="game-footer-actions">
+                <button class="action-btn fail" onclick="nextWord(false)">
+                    <i class="fas fa-redo"></i> ПАС
                 </button>
-                <button class="control-btn success" onclick="nextWord(true)">
-                    <i class="fas fa-check"></i> Угадано
+                <button class="action-btn success" onclick="nextWord(true)">
+                    <i class="fas fa-check"></i> ГОТОВО
                 </button>
             </div>
         </section>
 
         <section class="screen" id="resultsScreen">
-            <h1>ФИНАЛ</h1>
-            <div class="setup-card" id="leaderboard">
-                </div>
-            <button class="start-btn" onclick="location.reload()">ИГРАТЬ ЕЩЕ РАЗ</button>
-        </section>
-
-        <div id="rulesModal" class="modal">
-            <div class="modal-content">
-                <h3>ПРАВИЛА ИГРЫ</h3>
-                <ul>
-                    <li>Объясняй слова жестами и мимикой.</li>
-                    <li>Нельзя издавать звуки и говорить.</li>
-                    <li>Нельзя показывать на предметы вокруг.</li>
-                </ul>
-                <button class="start-btn" onclick="closeRules()">ПОНЯТНО</button>
+            <div class="central-content">
+                <h2 class="neon-title">ФИНАЛ</h2>
+                <div id="leaderboard" class="results-list"></div>
+                <button class="neon-btn" onclick="location.reload()">НОВАЯ ИГРА</button>
             </div>
+        </section>
+    </div>
+
+    <div id="rulesModal" class="neon-modal" onclick="closeRules()">
+        <div class="modal-inner" onclick="event.stopPropagation()">
+            <h3>ПРАВИЛА</h3>
+            <p>1. Молчи. 2. Только жесты. 3. Набирай очки!</p>
+            <button class="neon-btn sm" onclick="closeRules()">ОК</button>
         </div>
     </div>
 
