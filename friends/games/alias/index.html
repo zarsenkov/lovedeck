@@ -76,21 +76,22 @@
         </section>
 
         <section class="pop-screen" id="screen-final">
-            <h1 class="pop-title">ФИНАЛ</h1>
-            <div class="summary-box" id="final-stats" style="background: var(--mint); padding: 30px; font-size: 1.5rem;">
-                </div>
+            <h1 class="pop-title">ИТОГИ</h1>
+            <div class="summary-box" id="final-stats" style="background: var(--mint); padding: 30px; font-size: 1.5rem;"></div>
             <h2 id="final-winner-name" style="text-align: center; font-weight: 900; margin: 20px 0;"></h2>
-            <button class="btn-pop-main" onclick="location.reload()">НОВЫЙ БАТТЛ</button>
+            <button class="btn-pop-main" onclick="location.reload()">В МЕНЮ</button>
         </section>
 
         <div class="modal-overlay" id="modal-rules">
             <div class="modal-content">
                 <h2>ПРАВИЛА</h2>
                 <ul>
-                    <li>Объясняй слова, не используя однокоренные.</li>
+                    <li>Команды ходят по очереди. Названия даются автоматически.</li>
+                    <li>Сначала играет первая команда, затем вторая.</li>
+                    <li>Объясняй слова, не называя однокоренные.</li>
                     <li>Свайп <b>вправо</b> — угадано (+1).</li>
                     <li>Свайп <b>влево</b> — пропуск (-1).</li>
-                    <li>После раунда можно отредактировать ошибки.</li>
+                    <li>Побеждает тот, кто наберет больше за раунд!</li>
                 </ul>
                 <button class="btn-pop-main" onclick="toggleRules(false)" style="padding:15px; font-size:1rem;">ПОНЯЛ!</button>
             </div>
