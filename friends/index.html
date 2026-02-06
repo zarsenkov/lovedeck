@@ -3,67 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOVECOUPLE | AURORA</title>
+    <title>LC | 3D SHELF</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="aurora-container">
-        <div class="blur-dot blue"></div>
-        <div class="blur-dot purple"></div>
-        <div class="blur-dot pink"></div>
-    </div>
-
     <div class="black-fade"></div>
 
-    <div class="wrapper">
-        <header class="a-header">
-            <div class="a-logo">LOVE<span>COUPLE</span></div>
-            <div class="a-session-id">SESSION ID: #2026</div>
-        </header>
-
-        <main class="a-grid">
-            <div class="a-card available" data-game="alias">
-                <div class="a-card-inner">
-                    <div class="a-icon"><i class="fas fa-comment-dots"></i></div>
-                    <div class="a-content">
-                        <span class="a-category">PARTY WORLD</span>
-                        <h2 class="a-title">ALIAS</h2>
+    <div class="shelf-wrapper">
+        <h1 class="shelf-title">GAME LIBRARY</h1>
+        
+        <main class="shelf-grid">
+            <div class="card-3d-wrap" data-game="alias">
+                <div class="card-3d">
+                    <div class="card-front">
+                        <div class="card-content">
+                            <i class="fas fa-comment-dots card-icon"></i>
+                            <h2 class="card-name">ALIAS</h2>
+                            <p class="card-tag">PARTY MODE</p>
+                        </div>
                     </div>
-                    <div class="a-glow"></div>
+                    <div class="card-shadow"></div>
                 </div>
             </div>
 
-            <div class="a-card available" data-game="spy">
-                <div class="a-card-inner">
-                    <div class="a-icon"><i class="fas fa-user-secret"></i></div>
-                    <div class="a-content">
-                        <span class="a-category">SECRET WORLD</span>
-                        <h2 class="a-title">SPY</h2>
+            <div class="card-3d-wrap" data-game="spy">
+                <div class="card-3d">
+                    <div class="card-front spy-bg">
+                        <div class="card-content">
+                            <i class="fas fa-user-secret card-icon"></i>
+                            <h2 class="card-name">SPY</h2>
+                            <p class="card-tag">STEALTH MODE</p>
+                        </div>
                     </div>
-                    <div class="a-glow"></div>
+                    <div class="card-shadow"></div>
                 </div>
             </div>
 
-            <div class="a-card available" data-game="danetki">
-                <div class="a-card-inner">
-                    <div class="a-icon"><i class="fas fa-brain"></i></div>
-                    <div class="a-content">
-                        <span class="a-category">LOGIC WORLD</span>
-                        <h2 class="a-title">DANETKI</h2>
+            <div class="card-3d-wrap" data-game="danetki">
+                <div class="card-3d">
+                    <div class="card-front dan-bg">
+                        <div class="card-content">
+                            <i class="fas fa-lightbulb card-icon"></i>
+                            <h2 class="card-name">DANETKI</h2>
+                            <p class="card-tag">LOGIC MODE</p>
+                        </div>
                     </div>
-                    <div class="a-glow"></div>
-                </div>
-            </div>
-
-            <div class="a-card locked" data-game="bunker">
-                <div class="a-card-inner">
-                    <div class="a-icon"><i class="fas fa-radiation"></i></div>
-                    <div class="a-content">
-                        <span class="a-category">SOON</span>
-                        <h2 class="a-title">BUNKER</h2>
-                    </div>
+                    <div class="card-shadow"></div>
                 </div>
             </div>
         </main>
