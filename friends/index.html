@@ -3,49 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOVECOUPLE | JOURNAL</title>
+    <title>LOVECOUPLE | AURORA</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <div class="aurora-container">
+        <div class="blur-dot blue"></div>
+        <div class="blur-dot purple"></div>
+        <div class="blur-dot pink"></div>
+    </div>
+
     <div class="black-fade"></div>
 
-    <div class="journal-wrapper">
-        <header class="j-header">
-            <div class="j-logo">LC<span>©</span>2026</div>
-            <div class="j-menu">MENU</div>
+    <div class="wrapper">
+        <header class="a-header">
+            <div class="a-logo">LOVE<span>COUPLE</span></div>
+            <div class="a-session-id">SESSION ID: #2026</div>
         </header>
 
-        <main class="j-list">
-            <div class="j-item available" data-game="alias">
-                <span class="j-num">01</span>
-                <h2 class="j-name">ALIAS</h2>
-                <div class="j-meta"> PARTY GAME / FAST / FUN </div>
-                <div class="j-hover-img" style="background-image: url('alias-bg.jpg');"></div>
+        <main class="a-grid">
+            <div class="a-card available" data-game="alias">
+                <div class="a-card-inner">
+                    <div class="a-icon"><i class="fas fa-comment-dots"></i></div>
+                    <div class="a-content">
+                        <span class="a-category">PARTY WORLD</span>
+                        <h2 class="a-title">ALIAS</h2>
+                    </div>
+                    <div class="a-glow"></div>
+                </div>
             </div>
 
-            <div class="j-item available" data-game="spy">
-                <span class="j-num">02</span>
-                <h2 class="j-name">SPY</h2>
-                <div class="j-meta"> PSYCHOLOGICAL / STEALTH </div>
+            <div class="a-card available" data-game="spy">
+                <div class="a-card-inner">
+                    <div class="a-icon"><i class="fas fa-user-secret"></i></div>
+                    <div class="a-content">
+                        <span class="a-category">SECRET WORLD</span>
+                        <h2 class="a-title">SPY</h2>
+                    </div>
+                    <div class="a-glow"></div>
+                </div>
             </div>
 
-            <div class="j-item available" data-game="danetki">
-                <span class="j-num">03</span>
-                <h2 class="j-name">DANETKI</h2>
-                <div class="j-meta"> LOGIC / DETECTIVE </div>
+            <div class="a-card available" data-game="danetki">
+                <div class="a-card-inner">
+                    <div class="a-icon"><i class="fas fa-brain"></i></div>
+                    <div class="a-content">
+                        <span class="a-category">LOGIC WORLD</span>
+                        <h2 class="a-title">DANETKI</h2>
+                    </div>
+                    <div class="a-glow"></div>
+                </div>
             </div>
 
-            <div class="j-item locked" data-game="bunker">
-                <span class="j-num">04</span>
-                <h2 class="j-name">BUNKER</h2>
-                <div class="j-meta"> SURVIVAL / SOON </div>
+            <div class="a-card locked" data-game="bunker">
+                <div class="a-card-inner">
+                    <div class="a-icon"><i class="fas fa-radiation"></i></div>
+                    <div class="a-content">
+                        <span class="a-category">SOON</span>
+                        <h2 class="a-title">BUNKER</h2>
+                    </div>
+                </div>
             </div>
         </main>
-
-        <footer class="j-footer">
-            <p>SELECT THE UNIVERSE TO START THE SESSION</p>
-        </footer>
     </div>
 
     <script src="script.js"></script>
