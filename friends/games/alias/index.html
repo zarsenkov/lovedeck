@@ -2,76 +2,58 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ALIAS | NEO-POP</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="app-shell">
-        <header class="pop-header">
-            <button class="back-circle" onclick="window.location.href='../../index.html'">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="timer-bubble" id="game-timer">60</div>
-            <div class="score-pill">Счет: <span id="score-val">0</span></div>
+        
+        <header class="pop-header" id="game-header" style="display: none;">
+            <div class="back-circle" onclick="toScreen('screen-start')"></div>
+            <div class="timer-bubble" id="timer">01:00</div>
+            <div class="score-pill">СЧЕТ: <span id="live-score">0</span></div>
         </header>
 
-        <section id="screen-setup" class="pop-screen active">
-            <h1 class="pop-title">ЭЛИС<span>!</span></h1>
+        <section class="pop-screen active" id="screen-start">
+            <h1 class="pop-title">AL<span>IAS</span></h1>
             
-            <div class="pop-card setup-box">
-                <p class="section-label">КАТЕГОРИЯ</p>
-                <div class="chips-group">
-                    <button class="pop-chip active" data-cat="base">БАЗА</button>
-                    <button class="pop-chip" data-cat="movies">КИНО</button>
-                    <button class="pop-chip" data-cat="adult">18+</button>
-                </div>
-
-                <p class="section-label">ТАЙМЕР (СЕК)</p>
-                <div class="pop-stepper">
-                    <button onclick="adjustTime(-10)">-</button>
-                    <span id="time-val">60</span>
-                    <button onclick="adjustTime(10)">+</button>
-                </div>
+            <p class="section-label">ВРЕМЯ РАУНДА</p>
+            <div class="chips-group">
+                <div class="pop-chip active" onclick="setOpt('time', 60, this)">60 СЕК</div>
+                <div class="pop-chip" onclick="setOpt('time', 90, this)">90 СЕК</div>
             </div>
 
-            <button class="btn-pop-main" onclick="initGame()">ПОГНАЛИ</button>
+            <p class="section-label">СЛОЖНОСТЬ</p>
+            <div class="chips-group">
+                <div class="pop-chip active" onclick="setOpt('diff', 'easy', this)">ЛЕГКО</div>
+                <div class="pop-chip" onclick="setOpt('diff', 'hard', this)">ХАРДКОР</div>
+            </div>
+
+            <button class="btn-pop-main" onclick="startGame()">ПОГНАЛИ!</button>
         </section>
 
-        <section id="screen-play" class="pop-screen">
-            <div class="card-container">
-                <div id="card" class="pop-card word-card">
-                    <h2 id="word-display">СЛОВО</h2>
-                </div>
+        <section class="pop-screen" id="screen-game">
+            <div class="pop-card word-card">
+                <h2 id="word-display">СЛОВО</h2>
             </div>
             
-            <div class="swipe-hints">
-                <div class="hint-icon skip"><i class="fas fa-arrow-left"></i> МИМО</div>
-                <div class="hint-icon win">ЕСТЬ <i class="fas fa-arrow-right"></i></div>
-            </div>
-
-            <button class="btn-pop-undo" onclick="undoLast()">
-                <i class="fas fa-undo"></i> ВЕРНУТЬ СЛОВО
-            </button>
-        </section>
-
-        <section id="screen-results" class="pop-screen">
-            <h1 class="pop-title">ГОТОВО<span>!</span></h1>
-            <div class="pop-card result-summary">
-                <div class="total-score" id="res-score">0</div>
-                <p>КРУТОЙ РЕЗУЛЬТАТ!</p>
-            </div>
-            <div class="pop-list" id="words-review"></div>
-            <div class="footer-btns">
-                <button class="btn-pop-outline" onclick="showScreen('screen-setup')">НАЗАД</button>
-                <button class="btn-pop-main" onclick="initGame()">ЕЩЕ РАЗ</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px;">
+                <button class="btn-pop-main" style="background: #FEB2B2; margin:0;" onclick="handleWord(false)">ПРОПУСК</button>
+                <button class="btn-pop-main" style="background: var(--mint); margin:0;" onclick="handleWord(true)">ГОТОВО</button>
             </div>
         </section>
+
+        <section class="pop-screen" id="screen-results">
+            <h2 class="pop-title" style="font-size: 3rem;">ИТОГ: <span id="final-score">0</span></h2>
+            <div class="pop-list" id="results-list">
+                </div>
+            <button class="btn-pop-main" onclick="toScreen('screen-start')">ЕЩЕ РАЗ</button>
+        </section>
+
     </div>
 
-    <script src="cards.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
