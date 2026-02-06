@@ -72,11 +72,11 @@ function nextWord() {
 
 function handleWord(isCorrect) {
     const word = document.getElementById('word-display').innerText;
-    game.roundLog.push({ word: word, isCorrect: isCorrect });
+    game.roundLog.push({ word, isCorrect });
     
-    let tempScore = 0;
-    game.roundLog.forEach(i => tempScore += i.isCorrect ? 1 : -1);
-    document.getElementById('live-score').innerText = tempScore;
+    // Мгновенный пересчет для экрана игры
+    let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
+    document.getElementById('live-score').innerText = score;
 
     const card = document.getElementById('main-card');
     card.style.transition = '0.3s ease-out';
@@ -89,59 +89,35 @@ function handleWord(isCorrect) {
     }, 200);
 }
 
-// --- ПРОВЕРКА СЛОВ (ФИКС ДВОЙНОГО КЛИКА) ---
+// --- ПРОВЕРКА СЛОВ (ИСПРАВЛЕННАЯ МАТЕМАТИКА) ---
 function showRoundReview() {
     clearInterval(game.timer);
     toScreen('screen-results');
     document.getElementById('res-team-name').innerText = game.teams[game.currentTeamIdx].name;
     renderReviewList();
     
-    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ХОД СЛЕДУЮЩЕЙ КОМАНДЫ" : "УЗНАТЬ ПОБЕДИТЕЛЯ";
+    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "СЛЕДУЮЩИЙ ХОД" : "РЕЗУЛЬТАТ";
 }
 
 function renderReviewList() {
     const list = document.getElementById('results-list');
-    list.innerHTML = ''; 
-
-    game.roundLog.forEach((item, index) => {
-        const row = document.createElement('div');
-        row.className = 'word-row';
-        
-        const textStyle = item.isCorrect ? '' : 'opacity: 0.5; text-decoration: line-through;';
-        const iconClass = item.isCorrect ? 'status-ok' : 'status-err';
-        const iconSign = item.isCorrect ? '✓' : '✕';
-
-        row.innerHTML = `
-            <span style="${textStyle}">${item.word}</span>
-            <div class="status-icon ${iconClass}">${iconSign}</div>
-        `;
-        
-        // Используем touchend для мобилок, click как запасной. 
-        // e.preventDefault() предотвратит дублирование.
-        const toggleHandler = (e) => {
-            e.preventDefault(); 
-            game.roundLog[index].isCorrect = !game.roundLog[index].isCorrect;
-            renderReviewList();
-        };
-
-        row.addEventListener('touchend', toggleHandler);
-        row.addEventListener('click', toggleHandler);
-
-        list.appendChild(row);
-    });
+    list.innerHTML = game.roundLog.map((item, index) => `
+        <div class="word-row">
+            <span style="${item.isCorrect ? '' : 'opacity: 0.5; text-decoration: line-through;'}">${item.word}</span>
+            <div class="status-icon ${item.isCorrect ? 'status-ok' : 'status-err'}" onclick="toggleWordStatus(${index})">
+                ${item.isCorrect ? '✓' : '✕'}
+            </div>
+        </div>
+    `).join('');
     
-    recalculateScore();
-}
-
-function recalculateScore() {
-    let total = 0;
-    // Считаем массив с нуля — это самый надежный метод
-    for(let i = 0; i < game.roundLog.length; i++) {
-        total += game.roundLog[i].isCorrect ? 1 : -1;
-    }
-    
+    let total = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
     document.getElementById('res-team-score').innerText = total;
     game.teams[game.currentTeamIdx].score = total;
+}
+
+function toggleWordStatus(index) {
+    game.roundLog[index].isCorrect = !game.roundLog[index].isCorrect;
+    renderReviewList();
 }
 
 function handleResultContinue() {
@@ -165,14 +141,14 @@ function showFinalWinner() {
     `;
 
     let winnerText = "";
-    if (t1.score > t2.score) winnerText = `🏆 ПОБЕДА: ${t1.name}!`;
-    else if (t2.score > t1.score) winnerText = `🏆 ПОБЕДА: ${t2.name}!`;
-    else winnerText = "🤝 НИЧЬЯ!";
+    if (t1.score > t2.score) winnerText = `🏆 ${t1.name}`;
+    else if (t2.score > t1.score) winnerText = `🏆 ${t2.name}`;
+    else winnerText = "🤝 НИЧЬЯ";
     
     document.getElementById('final-winner-name').innerText = winnerText;
 }
 
-// --- СИСТЕМНОЕ ---
+// --- СИСТЕМА ---
 function toggleRules(show) {
     document.getElementById('modal-rules').classList.toggle('active', show);
 }
