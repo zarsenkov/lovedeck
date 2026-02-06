@@ -2,87 +2,70 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Crocodile CyberGlass</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Croco Flow</title>
     <link rel="stylesheet" href="crocodile.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <nav class="top-nav">
-            <button class="back-pill" onclick="goBack()"><i class="fas fa-arrow-left"></i> Назад</button>
-        </nav>
-
-        <section class="screen active" id="mainScreen">
-            <div class="welcome-header">
-                <h1>КРОКО<span>ДИЛ</span></h1>
-                <p>Cyber Edition</p>
+    <div class="main-wrapper">
+        <section class="page active" id="mainScreen">
+            <div class="top-bar">
+                <button class="minimal-btn" onclick="goBack()">ВЫЙТИ</button>
+                <div class="brand">CROCO</div>
             </div>
 
-            <div class="glass-panel players-box">
-                <div class="panel-label">КОМАНДА / ИГРОКИ</div>
-                <div id="playerList" class="player-chips">
-                    <div class="chip">
-                        <input type="text" class="player-input" value="Игрок 1">
+            <div class="setup-section">
+                <div class="horizontal-scroll" id="playerList">
+                    <div class="player-bubble active">
+                        <input type="text" value="Игрок 1">
                     </div>
-                    <div class="chip">
-                        <input type="text" class="player-input" value="Игрок 2">
-                        <button class="chip-remove" onclick="this.parentElement.remove()">×</button>
-                    </div>
+                    <button class="add-player-circle" onclick="addPlayerField()">+</button>
                 </div>
-                <button class="add-btn-outline" onclick="addPlayerField()">+ ДОБАВИТЬ</button>
-            </div>
 
-            <div class="glass-panel">
-                <div class="panel-label">КАТЕГОРИИ</div>
-                <div id="categoriesGrid" class="cat-grid"></div>
-            </div>
-
-            <div class="bottom-safe-area">
-                <button class="btn-main glow-blue" onclick="startGame()">ИГРАТЬ</button>
-            </div>
-        </section>
-
-        <section class="screen flex-center" id="transferScreen">
-            <div class="ready-card">
-                <div class="pulse-icon"><i class="fas fa-fingerprint"></i></div>
-                <p class="ready-text">ГОТОВИТСЯ</p>
-                <h2 id="currentPlayerName" class="neon-name">---</h2>
-                <div class="spacer"></div>
-                <button class="btn-main glow-pink" onclick="startRound()">УЗНАТЬ СЛОВО</button>
-            </div>
-        </section>
-
-        <section class="screen" id="gameScreen">
-            <div class="game-info">
-                <div class="timer-ring" id="timer">60</div>
-                <div class="current-user" id="gamePlayerName">---</div>
-            </div>
-
-            <div class="swipe-area" id="swipeArea">
-                <div class="swipe-hint left"><i class="fas fa-chevron-left"></i> ПАС</div>
-                <div class="word-card-container">
-                    <div class="word-card-glass" id="wordCard">
-                        <span id="wordCategory" class="word-cat">---</span>
-                        <h2 id="currentWord">СЛОВО</h2>
-                        <div class="swipe-instruction">Смахни вправо, если угадано</div>
+                <div class="category-list" id="categoriesGrid">
                     </div>
-                </div>
-                <div class="swipe-hint right">ОК <i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <div class="bottom-safe-area grid-2">
-                <button class="btn-action b-fail" onclick="nextWord(false)">ПАС</button>
-                <button class="btn-action b-success" onclick="nextWord(true)">УГАДАНО</button>
+            <div class="action-zone">
+                <button class="play-trigger" onclick="startGame()">ИГРАТЬ</button>
             </div>
         </section>
 
-        <section class="screen flex-center" id="resultsScreen">
-            <div class="glass-panel full-w">
-                <h2 class="title-cyan">РЕЗУЛЬТАТЫ</h2>
-                <div id="leaderboard" class="score-list"></div>
-                <button class="btn-main glow-blue" style="margin-top: 20px;" onclick="location.reload()">ЗАНОВО</button>
+        <section class="page" id="transferScreen">
+            <div class="center-focus">
+                <div class="round-indicator">ХОД</div>
+                <h2 id="currentPlayerName">ИГРОК</h2>
+                <button class="giant-tap-zone" onclick="startRound()">
+                    <div class="pulse-ring"></div>
+                    <span>УЗНАТЬ<br>СЛОВО</span>
+                </button>
+            </div>
+        </section>
+
+        <section class="page" id="gameScreen">
+            <div class="game-ui">
+                <div id="timer" class="big-timer">60</div>
+                <div id="gamePlayerName" class="p-name">Игрок</div>
+            </div>
+
+            <div class="canvas" id="swipeArea">
+                <div class="word-wrap" id="wordCard">
+                    <small id="wordCategory">КАТЕГОРИЯ</small>
+                    <h2 id="currentWord">СЛОВО</h2>
+                </div>
+                <div class="swipe-label skip">ПРОПУСК</div>
+                <div class="swipe-label done">УГАДАЛ</div>
+            </div>
+            
+            <div class="gesture-hint">← СВАЙП ДЛЯ ПАСА | ОК ДЛЯ УДАЧИ →</div>
+        </section>
+
+        <section class="page" id="resultsScreen">
+            <div class="results-wrap">
+                <h2 class="finish-title">ФИНАЛ</h2>
+                <div id="leaderboard" class="score-grid"></div>
+                <button class="restart-btn" onclick="location.reload()">ЕЩЕ РАЗ</button>
             </div>
         </section>
     </div>
