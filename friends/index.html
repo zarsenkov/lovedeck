@@ -9,184 +9,191 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Black Screen Fade для переходов -->
+    <div class="black-fade"></div>
+
     <div class="container">
         <!-- Шапка -->
         <header class="main-header">
-            <div class="header-content">
-                <h1 class="header-title">
-                    <i class="fas fa-sparkles"></i> LoveCouple Friends
-                </h1>
-                <p class="header-subtitle">
-                    Современные игры для вашей компании. Красиво, удобно, без рекламы.
-                </p>
-            </div>
+            <h1 class="header-title">LOVECOUPLE FRIENDS</h1>
+            <p class="header-subtitle">СОВРЕМЕННЫЕ ИГРЫ ДЛЯ ВАШЕЙ КОМПАНИИ</p>
         </header>
 
         <!-- Сетка игр -->
         <main class="games-grid">
             <!-- Кто я? -->
-            <div class="game-card" data-game="whoami">
-                <div class="game-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+            <div class="game-card" data-game="whoami" data-status="available">
+                <div class="game-icon">
                     <i class="fas fa-shield-alt"></i>
                 </div>
-                <h3>Кто я?</h3>
-                <p>Веселая игра для компании, попытайтесь угадать, что вы за персонаж, предмет или явление</p>
+                <h3 class="game-title">КТО Я?</h3>
+                <p class="game-description">Веселая игра для компании, попытайтесь угадать, что вы за персонаж, предмет или явление</p>
                 <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 4-8 игроков</span>
-                    <span><i class="fas fa-clock"></i> 20-40 мин</span>
+                    <span><i class="fas fa-users"></i> 4-8</span>
+                    <span><i class="fas fa-clock"></i> 20-40 МИН</span>
                 </div>
                 <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                    <span>НАЧАТЬ ИГРУ</span>
+                    <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
 
             <!-- Шпион -->
-            <div class="game-card" data-game="spy">
-                <div class="game-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+            <div class="game-card" data-game="spy" data-status="available">
+                <div class="game-icon">
                     <i class="fas fa-user-secret"></i>
                 </div>
-                <h3>Шпион</h3>
-                <p>Найди шпиона среди друзей! Блеф, дедукция и напряженные обсуждения.</p>
+                <h3 class="game-title">ШПИОН</h3>
+                <p class="game-description">Найди шпиона среди друзей! Блеф, дедукция и напряженные обсуждения.</p>
                 <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 3-8 игроков</span>
-                    <span><i class="fas fa-clock"></i> 10-25 мин</span>
+                    <span><i class="fas fa-users"></i> 3-8</span>
+                    <span><i class="fas fa-clock"></i> 10-25 МИН</span>
                 </div>
                 <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                    <span>НАЧАТЬ ИГРУ</span>
+                    <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
 
             <!-- Крокодил -->
-            <div class="game-card" data-game="crocodile">
-                <div class="game-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <div class="game-card" data-game="crocodile" data-status="available">
+                <div class="game-icon">
                     <i class="fas fa-hand-sparkles"></i>
                 </div>
-                <h3>Крокодил</h3>
-                <p>Объясняй слова без слов! Жесты, мимика и безудержный смех гарантированы.</p>
+                <h3 class="game-title">КРОКОДИЛ</h3>
+                <p class="game-description">Объясняй слова без слов! Жесты, мимика и безудержный смех гарантированы.</p>
                 <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 2-∞ игроков</span>
-                    <span><i class="fas fa-clock"></i> 5-30 мин</span>
+                    <span><i class="fas fa-users"></i> 2-∞</span>
+                    <span><i class="fas fa-clock"></i> 5-30 МИН</span>
                 </div>
                 <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                    <span>НАЧАТЬ ИГРУ</span>
+                    <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
 
             <!-- Алиас -->
-            <div class="game-card" data-game="alias">
-                <div class="game-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+            <div class="game-card" data-game="alias" data-status="available">
+                <div class="game-icon">
                     <i class="fas fa-comments"></i>
                 </div>
-                <h3>Алиас</h3>
-                <p>Объясняй слова другими словами. Скорость, сообразительность и веселье.</p>
+                <h3 class="game-title">АЛИАС</h3>
+                <p class="game-description">Объясняй слова другими словами. Скорость, сообразительность и веселье.</p>
                 <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 4+ игроков</span>
-                    <span><i class="fas fa-clock"></i> 15-45 мин</span>
+                    <span><i class="fas fa-users"></i> 4+</span>
+                    <span><i class="fas fa-clock"></i> 15-45 МИН</span>
                 </div>
                 <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                    <span>НАЧАТЬ ИГРУ</span>
+                    <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
 
-            <!-- ДАНЕТКИ -->
-            <div class="game-card" data-game="danetki">
-                <div class="game-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                    <i class="fas fa-mask"></i>
+            <!-- Данетки -->
+            <div class="game-card" data-game="danetki" data-status="available">
+                <div class="game-icon">
+                    <i class="fas fa-question"></i>
                 </div>
-                <h3>ДАНЕТКИ</h3>
-                <p>Угадай, что произошло дальше?</p>
+                <h3 class="game-title">ДАНЕТКИ</h3>
+                <p class="game-description">Угадай, что произошло дальше? Логические загадки для компании.</p>
                 <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 6-15 игроков</span>
-                    <span><i class="fas fa-clock"></i> 20-60 мин</span>
+                    <span><i class="fas fa-users"></i> 6-15</span>
+                    <span><i class="fas fa-clock"></i> 20-60 МИН</span>
                 </div>
                 <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                    <span>НАЧАТЬ ИГРУ</span>
+                    <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
 
             <!-- Викторина -->
-            <div class="game-card" data-game="quiz">
-                <div class="game-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                    <i class="fas fa-mask"></i>
+            <div class="game-card" data-game="quiz" data-status="available">
+                <div class="game-icon">
+                    <i class="fas fa-brain"></i>
                 </div>
-                <h3>Викторина</h3>
-                <p>Проверьте свои знания в 7 категориях. 3 уровня сложности, достижения!</p>
+                <h3 class="game-title">ВИКТОРИНА</h3>
+                <p class="game-description">Проверьте свои знания в 7 категориях. 3 уровня сложности, достижения!</p>
                 <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 1-6 игроков</span>
-                    <span><i class="fas fa-clock"></i> 20-60 мин</span>
+                    <span><i class="fas fa-users"></i> 1-6</span>
+                    <span><i class="fas fa-clock"></i> 20-60 МИН</span>
                 </div>
                 <button class="play-btn">
-                    <i class="fas fa-play"></i> Начать игру
+                    <span>НАЧАТЬ ИГРУ</span>
+                    <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
 
-            <!-- Бункер Онлайн (ЗАБЛОКИРОВАН) -->
-            <div class="game-card coming-soon" data-game="bunker">
+            <!-- Бункер (заблокирован) -->
+            <div class="game-card" data-game="bunker" data-status="coming-soon">
                 <div class="game-status-badge">СКОРО</div>
-                <div class="game-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
-                    <i class="fas fa-bunker"></i>
+                <div class="game-icon">
+                    <i class="fas fa-door-closed"></i>
                 </div>
-                <h3>Бункер Онлайн</h3>
-                <p>Выживание после апокалипсиса. Выбирайте, кто достоин спастись в бункере.</p>
+                <h3 class="game-title">БУНКЕР</h3>
+                <p class="game-description">Выживание после апокалипсиса. Выбирайте, кто достоин спастись в бункере.</p>
                 <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 5-8 игроков</span>
-                    <span><i class="fas fa-clock"></i> 30-60 мин</span>
+                    <span><i class="fas fa-users"></i> 5-8</span>
+                    <span><i class="fas fa-clock"></i> 30-60 МИН</span>
                 </div>
                 <button class="play-btn disabled">
-                    <i class="fas fa-hourglass-half"></i> В разработке
+                    <span>В РАЗРАБОТКЕ</span>
+                    <i class="fas fa-lock"></i>
                 </button>
             </div>
 
-            <!-- Мафия Онлайн (ЗАБЛОКИРОВАН) -->
-            <div class="game-card coming-soon" data-game="mafia">
-                <div class="game-status-badge">СКОРО</div>
-                <div class="game-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+            <!-- Мафия (заблокирован) -->
+            <div class="game-card" data-game="mafia" data-status="maintenance">
+                <div class="game-status-badge maintenance">РЕМОНТ</div>
+                <div class="game-icon">
                     <i class="fas fa-user-ninja"></i>
                 </div>
-                <h3>Мафия Онлайн</h3>
-                <p>Классическая психологическая игра. Мафия против мирных жителей.</p>
+                <h3 class="game-title">МАФИЯ</h3>
+                <p class="game-description">Классическая психологическая игра. Мафия против мирных жителей.</p>
                 <div class="game-meta">
-                    <span><i class="fas fa-users"></i> 6-12 игроков</span>
-                    <span><i class="fas fa-clock"></i> 20-40 мин</span>
+                    <span><i class="fas fa-users"></i> 6-12</span>
+                    <span><i class="fas fa-clock"></i> 20-40 МИН</span>
                 </div>
                 <button class="play-btn disabled">
-                    <i class="fas fa-hourglass-half"></i> В разработке
+                    <span>ТЕХНИЧЕСКИЕ РАБОТЫ</span>
+                    <i class="fas fa-tools"></i>
                 </button>
             </div>
 
-            <!-- Новая игра (ЗАБЛОКИРОВАН) -->
-            <div class="game-card coming-soon" data-game="newgame">
+            <!-- Новая игра (заблокирован) -->
+            <div class="game-card" data-game="newgame" data-status="coming-soon">
                 <div class="game-status-badge">СКОРО</div>
-                <div class="game-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                <div class="game-icon">
                     <i class="fas fa-question-circle"></i>
                 </div>
-                <h3>Новая игра</h3>
-                <p>Секретная новая игра уже в разработке. Следите за обновлениями!</p>
+                <h3 class="game-title">НОВАЯ ИГРА</h3>
+                <p class="game-description">Секретная новая игра уже в разработке. Следите за обновлениями!</p>
                 <div class="game-meta">
-                    <span><i class="fas fa-users"></i> ? игроков</span>
-                    <span><i class="fas fa-clock"></i> ? мин</span>
+                    <span><i class="fas fa-users"></i> ?</span>
+                    <span><i class="fas fa-clock"></i> ? МИН</span>
                 </div>
                 <button class="play-btn disabled">
-                    <i class="fas fa-hourglass-half"></i> В разработке
+                    <span>В РАЗРАБОТКЕ</span>
+                    <i class="fas fa-lock"></i>
                 </button>
             </div>
         </main>
 
-<!-- Футер -->
-<footer class="main-footer">
-    <p>© 2026 LoveCouple Game Studio. Все игры созданы с ❤️ для вашей компании.</p>
-    <div class="footer-links">
-        <a href="https://lovecouple.ru" target="_blank" rel="noopener noreferrer">LoveCouple - Для пар</a>
+        <!-- Футер -->
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p class="footer-text">© 2026 LOVECOUPLE GAME STUDIO</p>
+                <div class="footer-links">
+                    <a href="https://lovecouple.ru" target="_blank" rel="noopener noreferrer">LOVECOUPLE - ДЛЯ ПАР</a>
+                    <a href="https://t.me/LoveCouple_news" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-telegram"></i> TELEGRAM
+                    </a>
+                </div>
+            </div>
+        </footer>
     </div>
-    <div class="social-links">
-        <a href="https://t.me/LoveCouple_news" target="_blank" rel="noopener noreferrer" title="Наш Telegram канал">
-            <i class="fab fa-telegram"></i>
-        </a>
-    </div>
-</footer>
 
     <script src="script.js"></script>
 </body>
