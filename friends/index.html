@@ -1,89 +1,20 @@
-:root {
-    --bg: #FFD600; /* Яркий желтый фон всего сайта */
-    --black: #000000;
-    --white: #FFFFFF;
-    --card-1: #FF006E; /* Розовый для Alias */
-    --card-2: #00F5FF; /* Голубой для Spy */
-    --card-3: #7000FF; /* Фиолетовый для Danetki */
-}
+<header class="header-neo">
+    <h1>LOVECOUPLE</h1>
+</header>
 
-body {
-    background: var(--bg);
-    font-family: 'Inter', sans-serif;
-    color: var(--black);
-    padding: 20px;
-}
+<main class="neo-grid">
+    <div class="neo-card alias" data-game="alias">
+        <div class="neo-icon">📢</div>
+        <h2 class="neo-title">ALIAS</h2>
+        <p>Кричи, объясняй, побеждай!</p>
+        <button class="neo-btn">GO!</button>
+    </div>
 
-.header-neo {
-    text-align: center;
-    padding: 60px 0;
-}
-
-.header-neo h1 {
-    font-size: 64px;
-    font-weight: 900;
-    text-transform: uppercase;
-    -webkit-text-stroke: 2px var(--black);
-    color: var(--white);
-    text-shadow: 8px 8px 0px var(--black);
-    letter-spacing: -2px;
-}
-
-.neo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* КАРТОЧКА-НАКЛЕЙКА */
-.neo-card {
-    background: var(--white);
-    border: 4px solid var(--black);
-    border-radius: 24px;
-    padding: 30px;
-    box-shadow: 12px 12px 0px var(--black);
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    cursor: pointer;
-    position: relative;
-}
-
-.neo-card:hover {
-    transform: translate(-4px, -4px);
-    box-shadow: 20px 20px 0px var(--black);
-}
-
-.neo-card:active {
-    transform: translate(8px, 8px);
-    box-shadow: 0px 0px 0px var(--black);
-}
-
-/* Цвета карточек */
-.neo-card.alias { background: var(--card-1); color: white; }
-.neo-card.spy { background: var(--card-2); }
-.neo-card.danetki { background: var(--card-3); color: white; }
-
-.neo-icon {
-    font-size: 50px;
-    margin-bottom: 20px;
-    filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.5));
-}
-
-.neo-title {
-    font-size: 32px;
-    font-weight: 900;
-    margin-bottom: 10px;
-}
-
-.neo-btn {
-    margin-top: 20px;
-    background: var(--black);
-    color: var(--white);
-    border: none;
-    padding: 12px 24px;
-    font-weight: 900;
-    border-radius: 12px;
-    text-transform: uppercase;
-    cursor: pointer;
-}
+    <div class="neo-card spy" data-game="spy">
+        <div class="neo-icon">🕵️‍♂️</div>
+        <h2 class="neo-title">SPY</h2>
+        <p>Кто здесь лишний?</p>
+        <button class="neo-btn">GO!</button>
+    </div>
+    
+    </main>
