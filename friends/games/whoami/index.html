@@ -3,71 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>КТО Я? // КРАФТ</title>
+    <title>КТО Я? // CLASSIC</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
         
-        <section class="screen active" id="player-setup-screen">
-            <h1 class="hero-title">КТО ТУТ?</h1>
-            <div class="setup-box">
-                <div id="player-list-inputs">
-                    <input type="text" class="paper-input" value="Алексей">
-                    <input type="text" class="paper-input" value="Мария">
-                </div>
-                <button class="btn-add" onclick="addPlayerInput()">+ ЕЩЕ ИГРОК</button>
+        <section class="screen active" id="setup-screen">
+            <h1 class="title">ИГРОКИ</h1>
+            <div class="list-container" id="player-list">
+                <input type="text" class="minimal-input" placeholder="Игрок 1" value="Алексей">
+                <input type="text" class="minimal-input" placeholder="Игрок 2" value="Мария">
             </div>
-            <button class="craft-btn" onclick="confirmPlayers()">ЗАПИСАТЬ ></button>
+            <button class="add-btn" onclick="addPlayer()">+ ДОБАВИТЬ</button>
+            <button class="primary-btn" onclick="confirmPlayers()">ДАЛЕЕ</button>
         </section>
 
         <section class="screen" id="category-screen">
-            <h2 class="hero-title">ТЕМЫ</h2>
-            <div class="setup-box">
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 12px;">ВРЕМЯ (СЕК):</label>
-                    <input type="number" id="time-input" class="paper-input" value="60" style="width: 80px;">
-                </div>
-                <div class="category-grid" id="category-list"></div>
+            <h1 class="title">КАТЕГОРИИ</h1>
+            <div class="settings-bar">
+                <span>ВРЕМЯ:</span>
+                <select id="time-select">
+                    <option value="60">60 СЕК</option>
+                    <option value="90" selected>90 СЕК</option>
+                    <option value="120">120 СЕК</option>
+                </select>
             </div>
-            <button class="craft-btn" onclick="startGame()">ИГРАЕМ!</button>
+            <div class="category-grid" id="categories-box"></div>
+            <button class="primary-btn" onclick="startGame()">НАЧАТЬ ИГРУ</button>
         </section>
 
-        <section class="screen" id="transfer-screen" style="text-align: center;">
-            <p>ВРЕМЯ ВЫШЛО. ОТДАЙ ТЕЛЕФОН:</p>
-            <div class="next-player-banner" id="next-player-name">---</div>
-            <button class="craft-btn" onclick="prepareCountdown()">Я ВЗЯЛ!</button>
-        </section>
-
-        <section class="screen" id="countdown-screen" style="justify-content: center;">
-            <div style="font-size: 8rem; font-weight: 900; text-align: center;" id="countdown-number">3</div>
-            <p style="text-align:center">КО ЛБУ!</p>
+        <section class="screen" id="transfer-screen">
+            <div class="center-content">
+                <p class="label">ПЕРЕДАЙТЕ ТЕЛЕФОН</p>
+                <h2 id="next-player-name" class="big-name">---</h2>
+                <button class="primary-btn" onclick="startRound()">Я ГОТОВ</button>
+            </div>
         </section>
 
         <section class="screen" id="game-screen">
-            <div class="game-header">
-                <div class="timer-val" id="timer-display">60</div>
-                <div style="text-align:right; font-size:12px">УГАДЫВАЕТ:<br><b id="active-guesser-name">---</b></div>
+            <div class="status-line">
+                <div id="timer-display">90</div>
+                <div id="score-counter">ОЧКИ: 0</div>
             </div>
             
-            <div class="word-card">
-                <h2 id="current-word">---</h2>
+            <div class="word-box">
+                <h1 id="current-word">СЛОВО</h1>
             </div>
 
-            <div class="turn-notice">
-                СПРАШИВАЕТ: <span id="current-asker-name">---</span>
-            </div>
-
-            <div class="action-grid">
-                <button class="btn-no" onclick="handleNo()">НЕТ</button>
-                <button class="btn-yes" onclick="handleYes()">ДА!</button>
+            <div class="game-footer">
+                <p class="instruction">Держи телефон у лба, чтобы остальные видели слово</p>
+                <div class="action-buttons">
+                    <button class="skip-btn" onclick="skipWord()">ПРОПУСТИТЬ</button>
+                    <button class="success-btn" onclick="correctWord()">УГАДАЛ!</button>
+                </div>
             </div>
         </section>
 
         <section class="screen" id="result-screen">
-            <h1 class="hero-title">КТО ЛУЧШИЙ?</h1>
-            <div class="setup-box" id="final-scoreboard"></div>
-            <button class="craft-btn" onclick="location.reload()">ЗАНОВО</button>
+            <h1 class="title">РЕЗУЛЬТАТЫ</h1>
+            <div id="final-results" class="results-table"></div>
+            <button class="primary-btn" onclick="location.reload()">НОВАЯ ИГРА</button>
         </section>
 
     </div>
