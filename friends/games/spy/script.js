@@ -11,7 +11,7 @@ let state = {
     votes: {}, currentVoterIdx: 0, currentLoc: ""
 };
 
-// Старт
+// Инициализация имен
 updateNameInputs();
 
 function changeVal(key, delta) {
@@ -119,15 +119,20 @@ function renderVoting() {
     document.getElementById('voter-name-display').innerText = state.playerNames[state.currentVoterIdx].toUpperCase();
     const list = document.getElementById('vote-list');
     list.innerHTML = state.playerNames.map((n, i) => 
-        (i === state.currentVoterIdx) ? '' : `<div class="vote-item" onclick="castVote('${n}')">${n}</div>`
+        (i === state.currentVoterIdx) ? '' : `<div class="vote-item" onclick="castVote('${n}', this)">${n}</div>`
     ).join('');
 }
 
-function castVote(name) {
-    state.votes[name]++;
-    state.currentVoterIdx++;
-    if (state.currentVoterIdx < state.players) renderVoting();
-    else showFinal();
+function castVote(name, element) {
+    element.classList.add('selected');
+    if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(40);
+
+    setTimeout(() => {
+        state.votes[name]++;
+        state.currentVoterIdx++;
+        if (state.currentVoterIdx < state.players) renderVoting();
+        else showFinal();
+    }, 300);
 }
 
 function showFinal() {
