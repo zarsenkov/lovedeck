@@ -1,0 +1,156 @@
+:root {
+    --bg-warm: #fff0f3;
+    --accent: #ff758f;
+    --accent-light: #ffb3c1;
+    --white: #ffffff;
+    --text: #592d33;
+    --glass: rgba(255, 255, 255, 0.7);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+body { 
+    background: var(--bg-warm);
+    /* Мягкие розовые пятна на фоне, чтобы не выглядело пусто */
+    background-image: 
+        radial-gradient(at 0% 0%, #ffccd5 0px, transparent 50%),
+        radial-gradient(at 100% 100%, #fff0f3 0px, transparent 50%);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+/* ЭКРАН ЗАГРУЗКИ */
+.loading-screen {
+    position: fixed; inset: 0; background: var(--white); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+}
+.loader-content { text-align: center; width: 80%; }
+.loading-heart { font-size: 60px; filter: drop-shadow(0 0 10px var(--accent-light)); animation: floating 2s infinite ease-in-out; }
+@keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+.loader-bar-bg {
+    width: 200px; height: 6px; background: #ffe5ec; border-radius: 10px;
+    margin: 20px auto; overflow: hidden;
+}
+.loader-bar-fill {
+    height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-light), var(--accent));
+    border-radius: 10px; animation: progress 2.5s ease-in-out forwards;
+}
+@keyframes progress { to { width: 100%; } }
+
+/* КОНТЕЙНЕР ПРИЛОЖЕНИЯ */
+.app-container { width: 100%; max-width: 420px; padding: 20px; position: relative; }
+
+.screen { display: none; animation: softFade 0.6s ease; }
+.screen.active { display: flex; flex-direction: column; height: 95vh; }
+
+@keyframes softFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* КАРТОЧКИ ТЕМ */
+.themes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+.theme-card {
+    background: var(--white); border-radius: 30px; padding: 25px 15px;
+    text-align: center; border: 2px solid transparent;
+    box-shadow: 0 10px 25px rgba(255, 117, 143, 0.15);
+    transition: 0.3s; cursor: pointer;
+}
+.theme-card:active { transform: scale(0.95); background: var(--bg-warm); }
+.theme-card i { font-size: 30px; margin-bottom: 10px; display: block; color: var(--accent); }
+.theme-card h3 { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); }
+
+/* ИГРОВАЯ КАРТОЧКА */
+.main-game-card {
+    background: var(--white); border-radius: 40px; padding: 30px;
+    margin: 20px 0; min-height: 400px; position: relative;
+    display: flex; flex-direction: column;
+    box-shadow: 0 20px 40px rgba(255, 117, 143, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.card-tag {
+    align-self: center; background: #fff0f3; color: var(--accent);
+    padding: 6px 18px; border-radius: 50px; font-size: 11px; font-weight: 800;
+    margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;
+}
+
+#card-text {
+    flex-grow: 1; display: flex; align-items: center; justify-content: center;
+    text-align: center; font-size: 22px; font-weight: 700; color: var(--text);
+    line-height: 1.4;
+}
+
+/* КНОПКИ */
+.btn-next {
+    background: linear-gradient(135deg, var(--accent-light), var(--accent));
+    color: white; border: none; padding: 22px; border-radius: 30px;
+    font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 900;
+    box-shadow: 0 10px 20px rgba(255, 117, 143, 0.3);
+    cursor: pointer; transition: 0.3s;
+}
+.btn-next:active { transform: scale(0.98); filter: brightness(1.1); }
+
+.timer-btn {
+    background: white; border: none; width: 65px; height: 65px;
+    border-radius: 25px; box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+    color: var(--accent); font-size: 22px; cursor: pointer;
+}
+
+/* ПОЛЯ ВВОДА */
+.input-group { margin-bottom: 15px; }
+.input-group input {
+    width: 100%; background: white; border: 2px solid #fff0f3;
+    padding: 18px 25px; border-radius: 25px; font-size: 16px;
+    outline: none; transition: 0.3s; color: var(--text);
+}
+.input-group input:focus { border-color: var(--accent-light); box-shadow: 0 0 15px rgba(255, 117, 143, 0.1); }
+
+/* ДЕТАЛИ ДЛЯ СВИДАНИЙ */
+.dates-info {
+    background: #fff9fa; border-radius: 20px; padding: 15px; margin-top: 15px;
+    font-size: 14px; border: 1px dashed var(--accent-light);
+}
+/* Кнопка хаба */
+.hub-navigation { position: absolute; top: 15px; left: 15px; z-index: 100; }
+.btn-hub { 
+    text-decoration: none; color: var(--accent); font-size: 11px; font-weight: 900; 
+    display: flex; align-items: center; gap: 6px; background: white; padding: 8px 12px; border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+/* Дополнительные кнопки на главном */
+.extra-controls { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+.btn-outline { 
+    background: none; border: 1px solid var(--accent-light); color: var(--accent);
+    padding: 8px 15px; border-radius: 15px; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+
+/* Модальные окна */
+.modal-overlay { 
+    position: fixed; inset: 0; background: rgba(89, 45, 51, 0.4); backdrop-filter: blur(5px);
+    display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal-content { 
+    background: white; width: 100%; max-width: 350px; padding: 30px; border-radius: 35px; 
+    text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+}
+.modal-view { display: none; }
+.modal-view.active { display: block; }
+.modal-title { font-family: 'Unbounded'; color: var(--accent); margin-bottom: 20px; }
+.stat-row { margin: 10px 0; font-weight: 700; font-size: 18px; }
+.stat-row span { color: var(--accent); }
+.pink-input { 
+    width: 100%; height: 100px; border: 2px solid var(--bg-warm); border-radius: 20px; 
+    padding: 15px; outline: none; margin-bottom: 15px; font-family: inherit;
+}
+.btn-close-modal { margin-top: 20px; background: none; border: none; color: #a38a8e; font-weight: 700; cursor: pointer; }
+
+/* Игровой интерфейс */
+.game-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+.icon-btn { background:none; border:none; font-size: 24px; color: var(--accent); cursor: pointer; }
+.timer-badge { font-family: 'Unbounded'; font-weight: 900; color: var(--accent); background: white; padding: 5px 15px; border-radius: 20px; box-shadow: var(--shadow); }
+.game-footer { display: grid; grid-template-columns: 65px 1fr; gap: 15px; margin-top: auto; padding-bottom: 20px; }
+.fav-action { position: absolute; bottom: 25px; right: 25px; background: none; border: none; font-size: 22px; color: var(--accent-light); cursor: pointer; }
+.online-link { color: #ff758f; text-decoration: none; font-weight: 800; font-size: 12px; letter-spacing: 1px; }
