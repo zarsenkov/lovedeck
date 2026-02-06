@@ -1,112 +1,128 @@
 :root {
-    --bg-color: #f0f4f8;
-    --primary: #ff7e5f;
-    --secondary: #feb47b;
-    --text-dark: #2d3436;
-    --white: #ffffff;
-    --success: #00b894;
-    --fail: #d63031;
-    --shadow: 0 10px 20px rgba(0,0,0,0.1);
+    --dark-bg: #0a0a12;
+    --card-bg: #161625;
+    --neon-blue: #00f2ff;
+    --neon-pink: #ff00e5;
+    --neon-green: #39ff14;
+    --text-main: #e0e0e0;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-body { background: var(--bg-color); color: var(--text-dark); overflow: hidden; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Raleway', sans-serif; }
 
-.game-container { 
-    max-width: 500px; margin: 0 auto; height: 100vh; 
-    padding: 20px; display: flex; flex-direction: column; position: relative;
+body { 
+    background: var(--dark-bg); 
+    color: var(--text-main); 
+    overflow: hidden; 
 }
 
-/* Навигация */
-.nav-btn {
-    position: absolute; top: 20px; width: 45px; height: 45px;
-    border-radius: 15px; border: none; background: var(--white);
-    box-shadow: var(--shadow); cursor: pointer; z-index: 10;
+/* Фикс для мобильных браузеров */
+.app-wrapper {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding: env(safe-area-inset-top) 15px calc(env(safe-area-inset-bottom) + 15px) 15px;
 }
-.back-btn { left: 20px; }
-.rules-btn { right: 20px; }
 
-/* Экраны */
-.screen { display: none; height: 100%; flex-direction: column; animation: fadeIn 0.3s ease; }
-.screen.active { display: flex; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Заголовок */
-.hero-section { text-align: center; margin: 40px 0 20px; }
-.logo-circle { font-size: 60px; margin-bottom: 10px; }
-h1 { font-weight: 800; letter-spacing: -1px; font-size: 2.5rem; }
-h1 span { color: var(--primary); }
-
-/* Карточки настройки */
-.setup-card {
-    background: var(--white); border-radius: 30px; padding: 25px;
-    box-shadow: var(--shadow); flex-grow: 1; overflow-y: auto; margin-bottom: 20px;
+.neon-header {
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
-.label { font-size: 12px; font-weight: 800; color: #b2bec3; letter-spacing: 1px; margin-bottom: 15px; }
 
-/* Ввод игроков */
+.logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px var(--neon-blue);
+}
+.logo span { color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); }
+
+.icon-btn {
+    background: none; border: 1px solid rgba(0, 242, 255, 0.3);
+    color: var(--neon-blue); width: 40px; height: 40px; border-radius: 50%;
+}
+
+/* Списки и группы */
+.scroll-area { flex-grow: 1; overflow-y: auto; padding: 10px 0; }
+.setup-group { margin-bottom: 25px; }
+.neon-label { font-size: 0.7rem; font-weight: 700; color: var(--neon-pink); margin-bottom: 15px; display: block; letter-spacing: 2px; }
+
+/* Игроки как "чипсы" */
+.player-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.player-chip {
+    background: var(--card-bg); border: 1px solid #2d2d44;
+    padding: 10px 15px; border-radius: 12px; display: flex; align-items: center;
+}
 .player-input {
-    width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #dfe6e9;
-    margin-bottom: 10px; font-weight: 600; outline: none;
+    background: none; border: none; color: white; font-weight: 700; width: 80px;
 }
-.input-group { position: relative; display: flex; align-items: center; }
-.remove-btn {
-    position: absolute; right: 10px; background: #fab1a0; color: #d63031;
-    border: none; width: 30px; height: 30px; border-radius: 10px; font-weight: 800;
-}
-.add-player-btn {
-    width: 100%; padding: 12px; border: 2px dashed #b2bec3; background: none;
-    border-radius: 15px; color: #636e72; font-weight: 700; cursor: pointer;
+.chip-del { background: none; border: none; color: var(--neon-pink); font-size: 1.2rem; margin-left: 10px; }
+
+.add-chip-btn {
+    margin-top: 10px; background: none; border: 1px dashed var(--neon-blue);
+    color: var(--neon-blue); padding: 8px 15px; border-radius: 10px; font-weight: 700;
 }
 
-/* Категории */
-.categories-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* Сетка категорий */
+.neon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .cat-item {
-    padding: 15px; border-radius: 15px; border: 2px solid #dfe6e9;
-    text-align: center; font-size: 13px; font-weight: 700; cursor: pointer;
+    background: var(--card-bg); padding: 15px; border-radius: 12px;
+    text-align: center; font-weight: 700; border: 1px solid #2d2d44; transition: 0.3s;
 }
-.cat-item.active { border-color: var(--primary); background: #fff5f2; color: var(--primary); }
+.cat-item.active {
+    border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+    background: rgba(0, 242, 255, 0.1);
+}
 
-/* Кнопка старта */
-.start-btn {
-    background: linear-gradient(45deg, var(--primary), var(--secondary));
-    color: white; border: none; padding: 20px; border-radius: 20px;
-    font-size: 1.2rem; font-weight: 800; box-shadow: 0 10px 20px rgba(255, 126, 95, 0.3);
-    cursor: pointer; transition: 0.2s;
+/* Кнопки внизу (Фикс видимости) */
+.bottom-action {
+    padding: 15px 0;
+    margin-bottom: 10px; /* Дополнительный отступ от края браузера */
 }
-.start-btn:active { transform: scale(0.95); }
 
-/* Игровой экран */
-.game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-.timer { 
-    background: var(--white); padding: 15px 25px; border-radius: 20px;
-    font-size: 1.5rem; font-weight: 800; box-shadow: var(--shadow); color: var(--primary);
+.neon-btn {
+    width: 100%; padding: 18px; border-radius: 15px; border: none;
+    font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 700;
+    background: var(--neon-pink); color: white;
+    box-shadow: 0 0 20px rgba(255, 0, 229, 0.4);
 }
-.player-tag { font-weight: 800; color: #636e72; }
+.neon-btn.sm { padding: 10px; font-size: 0.8rem; }
 
-.word-card {
-    background: var(--white); border-radius: 40px; padding: 40px 20px;
-    box-shadow: var(--shadow); flex-grow: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; text-align: center;
-}
-.category-label { background: #f0f4f8; padding: 8px 15px; border-radius: 10px; font-size: 12px; font-weight: 800; margin-bottom: 20px; color: var(--primary); }
-#currentWord { font-size: 2.2rem; font-weight: 800; margin-bottom: 20px; }
+/* Игровой процесс */
+.game-stats { display: flex; justify-content: space-around; padding: 20px 0; }
+.stat-box { text-align: center; }
+.stat-box span { display: block; font-size: 1.5rem; font-weight: 800; color: var(--neon-blue); }
+.stat-box small { font-size: 0.6rem; opacity: 0.6; }
 
-.game-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
-.control-btn {
-    padding: 20px; border: none; border-radius: 25px; color: white;
-    font-size: 1.1rem; font-weight: 800; cursor: pointer; box-shadow: var(--shadow);
+.word-stage {
+    flex-grow: 1; display: flex; align-items: center; justify-content: center;
 }
-.control-btn.success { background: var(--success); }
-.control-btn.fail { background: var(--fail); }
+.word-glow-box {
+    background: var(--card-bg); width: 100%; padding: 40px 20px;
+    border-radius: 20px; text-align: center; border: 1px solid var(--neon-blue);
+    box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+}
+.cat-badge { color: var(--neon-pink); font-size: 0.7rem; letter-spacing: 2px; }
+#currentWord { font-size: 2rem; margin-top: 10px; text-transform: uppercase; }
+
+.game-footer-actions {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-bottom: 20px;
+}
+.action-btn {
+    padding: 20px; border-radius: 15px; border: none; font-weight: 800; color: white;
+}
+.action-btn.success { background: var(--neon-green); box-shadow: 0 0 15px rgba(57, 255, 20, 0.3); }
+.action-btn.fail { background: #333; }
 
 /* Модалка */
-.modal { 
+.neon-modal {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 1000;
+    align-items: center; justify-content: center; padding: 20px;
 }
-.modal.active { display: flex; }
-.modal-content { background: var(--white); padding: 30px; border-radius: 30px; width: 100%; max-width: 400px; }
-.modal-content h3 { margin-bottom: 15px; }
-.modal-content ul { margin-bottom: 20px; padding-left: 20px; }
-.modal-content li { margin-bottom: 10px; font-weight: 600; color: #636e72; }
+.neon-modal.active { display: flex; }
+.modal-inner { background: var(--card-bg); padding: 30px; border-radius: 20px; border: 1px solid var(--neon-pink); width: 100%; }
+
+.screen { display: none; height: 100%; flex-direction: column; }
+.screen.active { display: flex; }
