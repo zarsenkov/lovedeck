@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ALIAS PRO | PARTY HUB</title>
+    <title>ALIAS PRO</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 </head>
@@ -20,11 +20,7 @@
         <section class="pop-screen active" id="screen-start">
             <h1 class="pop-title">AL<span>IAS</span></h1>
             
-            <div class="team-turn-indicator">
-                <span id="team-info">ЗАГРУЗКА...</span>
-            </div>
-
-            <p class="section-label">ЦЕЛЬ (КТО ПЕРВЫМ НАБЕРЕТ)</p>
+            <p class="section-label">ЦЕЛЬ (ОЧКОВ)</p>
             <div class="chips-group">
                 <div class="pop-chip" onclick="setOpt('goal', 10, this)">10</div>
                 <div class="pop-chip active" onclick="setOpt('goal', 25, this)">25</div>
@@ -37,14 +33,26 @@
                 <div class="pop-chip" onclick="setOpt('time', 90, this)">90 СЕК</div>
             </div>
 
-            <p class="section-label">КАТЕГОРИЯ</p>
-            <div class="chips-group">
-                <div class="pop-chip active" onclick="setOpt('cat', 'common', this)">ОБЩЕЕ</div>
-                <div class="pop-chip" onclick="setOpt('cat', 'movies', this)">КИНО</div>
-                <div class="pop-chip" onclick="setOpt('cat', 'brands', this)">БРЕНДЫ</div>
+            <p class="section-label">КАТЕГОРИИ (МОЖНО НЕСКОЛЬКО)</p>
+            <div class="chips-group" id="cat-group">
+                <div class="pop-chip active" data-cat="common" onclick="toggleCat('common', this)">ОБЩЕЕ</div>
+                <div class="pop-chip" data-cat="movies" onclick="toggleCat('movies', this)">КИНО</div>
+                <div class="pop-chip" data-cat="food" onclick="toggleCat('food', this)">ЕДА</div>
+                <div class="pop-chip" data-cat="brands" onclick="toggleCat('brands', this)">БРЕНДЫ</div>
+                <div class="pop-chip" data-cat="adult" onclick="toggleCat('adult', this)">18+</div>
             </div>
 
-            <button class="btn-pop-main" onclick="startGame()">НАЧАТЬ РАУНД</button>
+            <button class="btn-pop-main" onclick="prepareTurn()">ДАЛЕЕ</button>
+        </section>
+
+        <section class="pop-screen" id="screen-ready">
+            <h2 class="pop-title" style="font-size: 2.5rem;">К БОЮ!</h2>
+            <div class="team-ready-box">
+                <p>СЕЙЧАС ХОДИТ:</p>
+                <h3 id="ready-team-name">...</h3>
+            </div>
+            <div class="summary-box" id="ready-leaderboard"></div>
+            <button class="btn-pop-main" onclick="startGame()">ПОГНАЛИ!</button>
         </section>
 
         <section class="pop-screen" id="screen-game">
@@ -61,16 +69,16 @@
         </section>
 
         <section class="pop-screen" id="screen-results">
-            <h2 class="pop-title" style="font-size: 2.5rem;">ИТОГИ ХОДА</h2>
+            <h2 class="pop-title" style="font-size: 2rem;">ХОД ЗАВЕРШЕН</h2>
             <div id="leaderboard" class="summary-box"></div>
             <div class="pop-list" id="results-list"></div>
-            <button class="btn-pop-main" id="next-btn" onclick="nextTurn()">ПЕРЕДАТЬ ХОД</button>
+            <button class="btn-pop-main" onclick="prepareTurn()">СЛЕДУЮЩИЙ ХОД</button>
         </section>
 
         <section class="pop-screen" id="screen-win">
-            <h1 class="pop-title">ПОБЕДА!</h1>
+            <h1 class="pop-title">ЧЕМПИОНЫ!</h1>
             <div id="winner-name" class="summary-box" style="background: var(--mint); font-size: 1.5rem;"></div>
-            <button class="btn-pop-main" onclick="location.reload()">ИГРАТЬ СНОВА</button>
+            <button class="btn-pop-main" onclick="location.reload()">НОВАЯ ИГРА</button>
         </section>
     </div>
 
