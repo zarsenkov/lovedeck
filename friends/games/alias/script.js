@@ -1,157 +1,159 @@
-// Проверка загрузки словаря
-const dictionary = typeof ALIAS_WORDS !== 'undefined' ? ALIAS_WORDS : {
-    common: ["Ошибка загрузки", "Проверьте cards.js"],
-    movies: ["Ошибка"], hard: ["Ошибка"]
+// Конфигурация и состояние
+let config = { time: 60, cat: 'common', goal: 25 };
+let game = {
+    teams: [],
+    currentTeamIdx: 0,
+    timeLeft: 0,
+    timer: null,
+    roundLog: [],
+    availableWords: [],
+    sessionWords: []
 };
 
-let config = { time: 60, cat: 'common', teams: 2 };
-let state = { 
-    score: 0, 
-    timer: null, 
-    timeLeft: 0, 
-    roundLog: [], 
-    currentTeam: 1, 
-    scores: { 1: 0, 2: 0, 3: 0 },
-    availableWords: []
-};
+// 1. Инициализация команд при загрузке
+function initTeams() {
+    let shuffled = [...TEAM_NAMES].sort(() => 0.5 - Math.random());
+    game.teams = [
+        { name: shuffled[0], score: 0 },
+        { name: shuffled[1], score: 0 }
+    ];
+    updateUI();
+}
 
-// Переключение настроек (время и категория)
+function updateUI() {
+    const info = document.getElementById('team-info');
+    const current = game.teams[game.currentTeamIdx];
+    info.innerText = `СЕЙЧАС ХОДИТ: ${current.name.toUpperCase()}`;
+}
+
 function setOpt(key, val, el) {
     config[key] = val;
     el.parentElement.querySelectorAll('.pop-chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
 }
 
-// Выбор количества команд
-function setTeams(val, el) {
-    config.teams = val;
-    el.parentElement.querySelectorAll('.pop-chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-}
-
-// Навигация по экранам
-function toScreen(id) {
-    document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    
-    const header = document.getElementById('game-header');
-    header.style.visibility = (id === 'screen-game') ? 'visible' : 'hidden';
-    
-    if(id === 'screen-start') {
-        document.getElementById('team-info').innerText = `ОЧЕРЕДЬ: КОМАНДА ${state.currentTeam}`;
-    }
-}
-
-// Запуск раунда
+// 2. Логика Раунда
 function startGame() {
-    state.score = 0;
-    state.roundLog = [];
-    state.timeLeft = config.time;
-    state.availableWords = [...dictionary[config.cat]];
+    game.timeLeft = config.time;
+    game.roundLog = [];
+    game.sessionWords = [...ALIAS_WORDS[config.cat]].sort(() => 0.5 - Math.random());
     
     document.getElementById('live-score').innerText = '0';
-    document.getElementById('timer').innerText = `00:${state.timeLeft}`;
+    document.getElementById('timer').innerText = `00:${game.timeLeft}`;
     
     toScreen('screen-game');
     nextWord();
     
-    state.timer = setInterval(() => {
-        state.timeLeft--;
-        let s = state.timeLeft;
-        document.getElementById('timer').innerText = `00:${s < 10 ? '0'+s : s}`;
-        if (state.timeLeft <= 0) finishGame();
+    game.timer = setInterval(() => {
+        game.timeLeft--;
+        const s = game.timeLeft;
+        document.getElementById('timer').innerText = `00:${s < 10 ? '0' + s : s}`;
+        if (game.timeLeft <= 0) finishRound();
     }, 1000);
 }
 
-// Выдача следующего слова
 function nextWord() {
-    if (state.availableWords.length === 0) {
-        state.availableWords = [...dictionary[config.cat]];
+    if (game.sessionWords.length === 0) {
+        game.sessionWords = [...ALIAS_WORDS[config.cat]].sort(() => 0.5 - Math.random());
     }
-    const idx = Math.floor(Math.random() * state.availableWords.length);
-    const word = state.availableWords.splice(idx, 1)[0];
-    document.getElementById('word-display').innerText = word;
+    document.getElementById('word-display').innerText = game.sessionWords.pop();
 }
 
-// Обработка кнопки/свайпа
 function handleWord(isCorrect) {
     const word = document.getElementById('word-display').innerText;
-    state.score += isCorrect ? 1 : -1;
-    state.roundLog.push({ word, isCorrect });
-    document.getElementById('live-score').innerText = state.score;
+    const team = game.teams[game.currentTeamIdx];
     
+    isCorrect ? team.score++ : team.score--;
+    game.roundLog.push({ word, isCorrect });
+    document.getElementById('live-score').innerText = team.score;
+    
+    // Анимация карточки
     const card = document.getElementById('main-card');
     card.style.transition = '0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-    card.style.transform = isCorrect ? 'translateX(250px) rotate(25deg)' : 'translateX(-250px) rotate(-25deg)';
+    card.style.transform = isCorrect ? 'translateX(350px) rotate(30deg)' : 'translateX(-350px) rotate(-30deg)';
     card.style.opacity = '0';
     
     setTimeout(() => {
         card.style.transition = 'none';
-        card.style.transform = 'translateX(0) rotate(0)';
+        card.style.transform = 'none';
         card.style.opacity = '1';
         nextWord();
-    }, 250);
+    }, 300);
 }
 
-// Конец раунда
-function finishGame() {
-    clearInterval(state.timer);
-    state.scores[state.currentTeam] += state.score;
+// 3. Результаты и переключение
+function finishRound() {
+    clearInterval(game.timer);
+    const team = game.teams[game.currentTeamIdx];
+
+    // Проверка на победу
+    if (team.score >= config.goal) {
+        showWin(team.name);
+        return;
+    }
+
     toScreen('screen-results');
     
-    let summary = "СЧЕТ: ";
-    for(let i=1; i<=config.teams; i++) {
-        summary += `К${i} [${state.scores[i]}]   `;
-    }
-    document.getElementById('team-scores-summary').innerText = summary;
+    // Лидерборд
+    document.getElementById('leaderboard').innerHTML = game.teams
+        .map(t => `<div style="display:flex; justify-content:space-between"><span>${t.name}</span> <span>${t.score}</span></div>`)
+        .join('');
 
-    const list = document.getElementById('results-list');
-    list.innerHTML = state.roundLog.map(i => `
-        <div class="word-row">
-            <span>${i.word}</span>
-            <span style="color: ${i.isCorrect ? '#48BB78' : '#F56565'}">${i.isCorrect ? '✓' : '✕'}</span>
-        </div>
-    `).join('');
+    // Лог раунда
+    document.getElementById('results-list').innerHTML = game.roundLog
+        .map(i => `<div class="word-row"><span>${i.word}</span><span>${i.isCorrect ? '✅' : '❌'}</span></div>`)
+        .join('');
 }
 
-// Передача хода следующей команде
-function prepareNextTurn() {
-    state.currentTeam = state.currentTeam >= config.teams ? 1 : state.currentTeam + 1;
+function nextTurn() {
+    game.currentTeamIdx = (game.currentTeamIdx + 1) % game.teams.length;
     toScreen('screen-start');
+    updateUI();
 }
 
-// Выход из игры
+function showWin(name) {
+    toScreen('screen-win');
+    document.getElementById('winner-name').innerText = name.toUpperCase();
+}
+
+function toScreen(id) {
+    document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('game-header').style.visibility = (id === 'screen-game') ? 'visible' : 'hidden';
+}
+
 function confirmExit() {
-    if(confirm("Выйти в меню? Очки этого раунда сгорят!")) {
-        clearInterval(state.timer);
+    if (confirm("Выйти в настройки? Раунд будет сброшен!")) {
+        clearInterval(game.timer);
         toScreen('screen-start');
     }
 }
 
-// ЛОГИКА СВАЙПОВ (для мобильных)
+// 4. Плавные Свайпы
 let startX = 0;
-const gameCard = document.getElementById('main-card');
+const card = document.getElementById('main-card');
 
-gameCard.addEventListener('touchstart', e => { 
+card.addEventListener('touchstart', e => { 
     startX = e.touches[0].clientX; 
-    gameCard.style.transition = 'none'; 
+    card.style.transition = 'none'; 
 }, {passive: true});
 
-gameCard.addEventListener('touchmove', e => {
+card.addEventListener('touchmove', e => {
     let x = e.touches[0].clientX - startX;
     if(Math.abs(x) > 5) {
-        gameCard.style.transform = `translateX(${x}px) rotate(${x/15}deg)`;
+        card.style.transform = `translateX(${x}px) rotate(${x/25}deg)`;
     }
 }, {passive: true});
 
-gameCard.addEventListener('touchend', e => {
+card.addEventListener('touchend', e => {
     let x = e.changedTouches[0].clientX - startX;
-    if (x > 120) {
-        handleWord(true);
-    } else if (x < -120) {
-        handleWord(false);
-    } else {
-        gameCard.style.transition = '0.3s';
-        gameCard.style.transform = 'translateX(0) rotate(0)';
+    if (x > 120) handleWord(true);
+    else if (x < -120) handleWord(false);
+    else {
+        card.style.transition = '0.3s ease-out';
+        card.style.transform = 'none';
     }
 });
+
+// Старт
+initTeams();
