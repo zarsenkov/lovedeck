@@ -1,11 +1,14 @@
 :root {
-    --bg: #FFD600; /* Яркий желтый фон всего сайта */
+    --bg: #FFD600; /* Ядерный желтый */
     --black: #000000;
     --white: #FFFFFF;
-    --card-1: #FF006E; /* Розовый для Alias */
-    --card-2: #00F5FF; /* Голубой для Spy */
-    --card-3: #7000FF; /* Фиолетовый для Danetki */
+    --pink: #FF006E;
+    --cyan: #00F5FF;
+    --purple: #7000FF;
+    --green: #06D6A0;
 }
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
     background: var(--bg);
@@ -14,76 +17,91 @@ body {
     padding: 20px;
 }
 
-.header-neo {
-    text-align: center;
-    padding: 60px 0;
+/* Шторка перехода */
+.black-fade {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--black); z-index: 9999; opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
 }
+.black-fade.active { opacity: 1; pointer-events: all; }
 
-.header-neo h1 {
-    font-size: 64px;
+.neo-wrapper { max-width: 1200px; margin: 0 auto; padding-top: 40px; }
+
+/* HEADER */
+.neo-header { text-align: center; margin-bottom: 50px; }
+.neo-logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: clamp(40px, 8vw, 80px);
     font-weight: 900;
-    text-transform: uppercase;
-    -webkit-text-stroke: 2px var(--black);
     color: var(--white);
-    text-shadow: 8px 8px 0px var(--black);
-    letter-spacing: -2px;
+    -webkit-text-stroke: 3px var(--black);
+    text-shadow: 10px 10px 0px var(--black);
+    margin-bottom: 10px;
 }
+.neo-subtitle { font-weight: 900; letter-spacing: 3px; font-size: 14px; }
 
+/* GRID */
 .neo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
-/* КАРТОЧКА-НАКЛЕЙКА */
+/* CARDS */
 .neo-card {
     background: var(--white);
     border: 4px solid var(--black);
-    border-radius: 24px;
-    padding: 30px;
+    border-radius: 30px;
+    padding: 35px;
     box-shadow: 12px 12px 0px var(--black);
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
     position: relative;
+    overflow: hidden;
 }
 
+/* Эффект прыжка */
 .neo-card:hover {
-    transform: translate(-4px, -4px);
+    transform: translate(-6px, -6px);
     box-shadow: 20px 20px 0px var(--black);
 }
 
 .neo-card:active {
-    transform: translate(8px, 8px);
+    transform: translate(10px, 10px);
     box-shadow: 0px 0px 0px var(--black);
 }
 
-/* Цвета карточек */
-.neo-card.alias { background: var(--card-1); color: white; }
-.neo-card.spy { background: var(--card-2); }
-.neo-card.danetki { background: var(--card-3); color: white; }
+/* Цвета для миров */
+.neo-card.alias { background: var(--pink); color: white; }
+.neo-card.spy { background: var(--cyan); }
+.neo-card.danetki { background: var(--purple); color: white; }
+.neo-card.crocodile { background: var(--green); }
+.neo-card.locked { background: #eee; opacity: 0.7; cursor: not-allowed; }
 
-.neo-icon {
-    font-size: 50px;
-    margin-bottom: 20px;
-    filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.5));
+.neo-icon { font-size: 60px; margin-bottom: 20px; }
+.neo-title { font-family: 'Unbounded', sans-serif; font-size: 28px; margin-bottom: 10px; }
+.neo-desc { font-weight: 600; margin-bottom: 40px; opacity: 0.9; }
+
+.neo-footer {
+    position: absolute; bottom: 20px; left: 35px;
+    font-size: 12px; font-weight: 900; opacity: 0.6;
 }
 
-.neo-title {
-    font-size: 32px;
-    font-weight: 900;
-    margin-bottom: 10px;
+/* БЕЙДЖИ */
+.neo-badge {
+    position: absolute; top: 20px; right: 20px;
+    background: var(--black); color: var(--white);
+    padding: 6px 15px; border-radius: 100px;
+    font-size: 12px; font-weight: 900;
 }
+.neo-badge.lock { background: #666; }
 
-.neo-btn {
-    margin-top: 20px;
-    background: var(--black);
-    color: var(--white);
-    border: none;
-    padding: 12px 24px;
-    font-weight: 900;
-    border-radius: 12px;
-    text-transform: uppercase;
-    cursor: pointer;
+/* Анимация тряски для заблокированных */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(5px); }
+    50% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
 }
+.shake { animation: shake 0.3s ease-in-out; }
