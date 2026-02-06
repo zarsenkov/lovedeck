@@ -3,102 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ALIAS BATTLE PRO</title>
-    <link rel="stylesheet" href="style.css">
+    <title>PARTY GAMES HUB</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F0F4F8;
+            --white: #FFFFFF;
+            --black: #2D3748;
+            --accent: #667EEA;
+            --shadow: 8px 8px 0px #2D3748;
+            --pink: #FED7E2;
+            --yellow: #FEFCBF;
+            --mint: #B2F5EA;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--black);
+            min-height: 100dvh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 0.9;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+            display: block;
+        }
+
+        /* КАРТОЧКИ ИГР */
+        .game-card {
+            background: var(--white);
+            border: 4px solid var(--black);
+            border-radius: 24px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card:active {
+            transform: translate(4px, 4px);
+            box-shadow: 4px 4px 0px var(--black);
+        }
+
+        .game-icon {
+            font-size: 3rem;
+            background: var(--bg);
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            border: 3px solid var(--black);
+        }
+
+        .game-info h2 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .game-info p {
+            font-size: 0.85rem;
+            font-weight: 700;
+            opacity: 0.7;
+        }
+
+        /* Цвета карточек */
+        .alias { background: var(--pink); }
+        .spy { background: var(--yellow); }
+        .mafia { background: var(--mint); }
+
+        .footer {
+            margin-top: auto;
+            padding: 40px 0 20px;
+            font-weight: 800;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.4;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            background: var(--black);
+            color: white;
+            padding: 5px 40px;
+            transform: rotate(45deg);
+            font-size: 0.6rem;
+            font-weight: 900;
+        }
+    </style>
 </head>
 <body>
-    <div class="app-shell">
-        <div id="menu-controls">
-            <div class="home-btn" onclick="location.href='../../index.html'">🏠</div>
-            <div class="rules-btn" onclick="toggleRules(true)">?</div>
-        </div>
 
-        <header class="pop-header" id="game-header">
-            <div class="back-circle" onclick="confirmExit()">⚙️</div>
-            <div class="timer-bubble" id="timer">00:00</div>
-            <div class="score-pill">🔥 <span id="live-score">0</span></div>
-        </header>
-
-        <section class="pop-screen active" id="screen-start">
-            <h1 class="pop-title">AL<span>IAS</span></h1>
-            
-            <p class="section-label">ВРЕМЯ НА РАУНД</p>
-            <div class="chips-group">
-                <div class="pop-chip" onclick="setOpt('time', 30, this)">30 СЕК</div>
-                <div class="pop-chip active" onclick="setOpt('time', 60, this)">60 СЕК</div>
-                <div class="pop-chip" onclick="setOpt('time', 90, this)">90 СЕК</div>
-            </div>
-
-            <p class="section-label">КАТЕГОРИИ</p>
-            <div class="chips-group" id="cat-group">
-                <div class="pop-chip active" data-cat="common" onclick="toggleCat('common', this)">ОБЩЕЕ</div>
-                <div class="pop-chip" data-cat="movies" onclick="toggleCat('movies', this)">КИНО</div>
-                <div class="pop-chip" data-cat="food" onclick="toggleCat('food', this)">ЕДА</div>
-                <div class="pop-chip" data-cat="brands" onclick="toggleCat('brands', this)">БРЕНДЫ</div>
-                <div class="pop-chip" data-cat="adult" onclick="toggleCat('adult', this)">18+</div>
-            </div>
-
-            <button class="btn-pop-main" onclick="initBattle()">СОЗДАТЬ БАТТЛ</button>
-        </section>
-
-        <section class="pop-screen" id="screen-ready">
-            <h2 class="pop-title" style="font-size: 2.5rem;">К БОЮ!</h2>
-            <div class="team-ready-box">
-                <p>ПРИГОТОВИТЬСЯ:</p>
-                <h3 id="ready-team-name">...</h3>
-            </div>
-            <button class="btn-pop-main" onclick="startGame()">ПОГНАЛИ!</button>
-        </section>
-
-        <section class="pop-screen" id="screen-game">
-            <div class="swipe-hint">← ПРОПУСК | УГАДАНО →</div>
-            <div class="card-container">
-                <div class="pop-card word-card" id="main-card">
-                    <h2 id="word-display">...</h2>
-                </div>
-            </div>
-            <div class="game-actions">
-                <button class="btn-pop-main btn-skip" onclick="handleWord(false)">ПРОПУСК</button>
-                <button class="btn-pop-main btn-check" onclick="handleWord(true)">УГАДАНО</button>
-            </div>
-        </section>
-
-        <section class="pop-screen" id="screen-results">
-            <h2 class="pop-title" style="font-size: 2rem;">ПРОВЕРКА</h2>
-            <div class="summary-box">
-                <span id="res-team-name">...</span>: 
-                <span id="res-team-score" style="color:var(--accent)">0</span>
-            </div>
-            <p class="section-label" style="text-align: center;">Нажми на значок, чтобы исправить</p>
-            <div class="pop-list" id="results-list"></div>
-            <button class="btn-pop-main" id="res-continue-btn" onclick="handleResultContinue()">ДАЛЕЕ</button>
-        </section>
-
-        <section class="pop-screen" id="screen-final">
-            <h1 class="pop-title">ИТОГИ</h1>
-            <div class="summary-box" id="final-stats" style="background: var(--mint); padding: 30px; font-size: 1.5rem;"></div>
-            <h2 id="final-winner-name" style="text-align: center; font-weight: 900; margin: 20px 0;"></h2>
-            <button class="btn-pop-main" onclick="location.reload()">В МЕНЮ</button>
-        </section>
-
-        <div class="modal-overlay" id="modal-rules">
-            <div class="modal-content">
-                <h2>ПРАВИЛА</h2>
-                <ul>
-                    <li>Команды ходят по очереди. Названия даются автоматически.</li>
-                    <li>Сначала играет первая команда, затем вторая.</li>
-                    <li>Объясняй слова, не называя однокоренные.</li>
-                    <li>Свайп <b>вправо</b> — угадано (+1).</li>
-                    <li>Свайп <b>влево</b> — пропуск (-1).</li>
-                    <li>Побеждает тот, кто наберет больше за раунд!</li>
-                </ul>
-                <button class="btn-pop-main" onclick="toggleRules(false)" style="padding:15px; font-size:1rem;">ПОНЯЛ!</button>
-            </div>
-        </div>
+    <div class="hero">
+        <h1>PARTY<span>GAMES</span></h1>
     </div>
 
-    <script src="cards.js"></script>
-    <script src="script.js"></script>
+    <div class="container">
+        <a href="games/alias/index.html" class="game-card alias">
+            <div class="game-icon">🗣️</div>
+            <div class="game-info">
+                <h2>Alias Battle</h2>
+                <p>Объясни как можно больше слов своей команде!</p>
+            </div>
+            <div class="badge">HOT</div>
+        </a>
+
+        <a href="games/spy/index.html" class="game-card spy">
+            <div class="game-icon">🕵️‍♂️</div>
+            <div class="game-info">
+                <h2>Найти Шпиона</h2>
+                <p>Все знают локацию, кроме одного. Вычисли предателя!</p>
+            </div>
+        </a>
+
+        <a href="#" class="game-card mafia" onclick="alert('Скоро появится!')">
+            <div class="game-icon">🎭</div>
+            <div class="game-info">
+                <h2>Мафия</h2>
+                <p>Город засыпает... Проверь свою интуицию.</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="footer">
+        Designed for friends & fun
+    </div>
+
 </body>
 </html>
