@@ -12,81 +12,82 @@
     <div class="main-wrapper">
         <section class="page active" id="mainScreen">
             <div class="top-bar">
-                <button class="minimal-btn" onclick="exitToCluster()">ВЫХОД</button>
+                <button class="icon-btn" onclick="exitToCluster()"><i class="fas fa-chevron-left"></i></button>
                 <div class="brand">CROCO</div>
-                <button class="minimal-btn" onclick="showRules()">ПРАВИЛА</button>
+                <button class="icon-btn" onclick="showRules()"><i class="fas fa-info"></i></button>
             </div>
 
-            <div class="setup-scroll">
-                <div class="section-label">КТО ИГРАЕТ?</div>
-                <div class="horizontal-scroll" id="playerList">
-                    <div class="player-bubble">
-                        <input type="text" class="player-input" value="Игрок 1">
-                        <button class="del-p" onclick="removePlayer(this)">×</button>
+            <div class="setup-container">
+                <div class="label-row">ИГРОКИ</div>
+                <div class="players-row">
+                    <div class="players-scroll" id="playerList">
+                        <div class="p-bubble">
+                            <input type="text" class="p-input" value="Игрок 1">
+                            <button class="p-del" onclick="removePlayer(this)">×</button>
+                        </div>
+                        <div class="p-bubble">
+                            <input type="text" class="p-input" value="Игрок 2">
+                            <button class="p-del" onclick="removePlayer(this)">×</button>
+                        </div>
                     </div>
-                    <div class="player-bubble">
-                        <input type="text" class="player-input" value="Игрок 2">
-                        <button class="del-p" onclick="removePlayer(this)">×</button>
-                    </div>
-                    <button class="add-player-circle" onclick="addPlayerField()">+</button>
+                    <button class="p-add" onclick="addPlayerField()"><i class="fas fa-plus"></i></button>
                 </div>
 
-                <div class="section-label">ТЕМЫ</div>
-                <div class="category-list" id="categoriesGrid"></div>
+                <div class="label-row" style="margin-top: 25px;">КАТЕГОРИИ</div>
+                <div class="cat-grid" id="categoriesGrid"></div>
             </div>
 
-            <div class="action-zone">
-                <button class="play-trigger" onclick="startGame()">ИГРАТЬ</button>
-            </div>
+            <button class="start-btn" onclick="startGame()">ИГРАТЬ</button>
         </section>
 
-        <section class="page flex-center" id="transferScreen">
-            <div class="center-focus">
-                <div class="round-indicator">ПРИГОТОВИТЬСЯ</div>
+        <section class="page" id="transferScreen">
+            <div class="center-content">
+                <div class="status">ПЕРЕДАЙТЕ ТЕЛЕФОН</div>
                 <h2 id="currentPlayerName">ИГРОК</h2>
-                <button class="giant-tap-zone" onclick="startRound()">
-                    <div class="pulse-ring"></div>
-                    <span>ПОКАЗАТЬ<br>СЛОВО</span>
+                <button class="action-circle" onclick="startRound()">
+                    <div class="ring"></div>
+                    <i class="fas fa-play"></i>
+                    <span>НАЧАТЬ</span>
                 </button>
-                <button class="back-to-setup" onclick="switchScreen('main')">Настройки</button>
+                <button class="link-btn" onclick="switchScreen('main')">НАСТРОЙКИ</button>
             </div>
         </section>
 
         <section class="page" id="gameScreen">
-            <div class="game-ui">
-                <div id="timer" class="big-timer">60</div>
-                <div id="gamePlayerName" class="p-name">ИГРОК</div>
+            <div class="game-header">
+                <div id="timer" class="timer">60</div>
+                <div id="gamePlayerName" class="player-tag">ИГРОК</div>
             </div>
 
-            <div class="canvas" id="swipeArea">
-                <div class="word-wrap" id="wordCard">
+            <div class="swipe-zone" id="swipeArea">
+                <div class="swipe-hint hint-left">ПАС</div>
+                <div class="swipe-hint hint-right">ОК</div>
+                <div class="card" id="wordCard">
                     <small id="wordCategory">КАТЕГОРИЯ</small>
                     <h2 id="currentWord">СЛОВО</h2>
                 </div>
-                <div class="swipe-label skip">ПАС</div>
-                <div class="swipe-label done">ОК</div>
             </div>
-            
-            <div class="gesture-hint">СВАЙПНИ КАРТОЧКУ: ВЛЕВО — ПАС, ВПРАВО — УГАДАЛ</div>
+            <div class="footer-hint">СВАЙП ВЛЕВО — ПАС / ВПРАВО — УГАДАЛ</div>
         </section>
 
         <section class="page" id="resultsScreen">
-            <div class="results-wrap">
-                <h2 class="finish-title">ЛИДЕРЫ</h2>
-                <div id="leaderboard" class="score-grid"></div>
-                <div class="action-zone">
-                    <button class="play-trigger" onclick="location.reload()">НОВАЯ ИГРА</button>
-                    <button class="minimal-btn" style="margin-top: 20px; width: 100%;" onclick="switchScreen('main')">ИЗМЕНИТЬ НАСТРОЙКИ</button>
-                </div>
+            <div class="results-box">
+                <h2 class="title">ЛИДЕРЫ</h2>
+                <div id="leaderboard" class="list"></div>
+                <button class="start-btn" onclick="location.reload()">ЗАНОВО</button>
             </div>
         </section>
     </div>
 
-    <div id="rulesModal" class="flow-modal">
-        <div class="modal-inner">
+    <div id="rulesModal" class="modal" onclick="closeRules()">
+        <div class="modal-body" onclick="event.stopPropagation()">
             <h3>ПРАВИЛА</h3>
-            <p>1. Объясняй слова жестами.<br>2. Не издавай звуков.<br>3. Не показывай на предметы.</p>
-            <button class="play-trigger sm" onclick="closeRules()">ПОНЯЛ</button>
+            <ul>
+                <li>Объясняй слова только жестами</li>
+                <li>Никаких звуков и слов</li>
+                <li>Не показывай на предметы вокруг</li>
+            </ul>
+            <button class="start-btn" onclick="closeRules()">ПОНЯЛ</button>
         </div>
     </div>
 
