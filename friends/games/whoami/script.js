@@ -1,37 +1,36 @@
-/**
- * Скрипт для игры "Кто я?" (Funky Pop Style)
- */
-
 let categoriesData = {};
 let selectedCategories = [];
 let gamePool = [];
-let score = 0;
-let timer;
-let timeLeft;
-let currentWordIndex = 0;
+let gameState = {
+    players: ['ИГРОК 1', 'ИГРОК 2'],
+    scores: {},
+    currentPlayerIdx: 0,
+    currentRound: 1,
+    maxRounds: 1,
+    timeLeft: 60,
+    timer: null
+};
 
 // 1. Загрузка категорий из JSON
 async function loadCats() {
     try {
         const response = await fetch('categories.json');
         const data = await response.json();
-        // Учитываем, что в файле данные лежат в объекте { categories: { ... } }
         categoriesData = data.categories || data;
         
         const list = document.getElementById('category-list');
-        list.innerHTML = ''; // Очистка
+        list.innerHTML = '';
 
         Object.keys(categoriesData).forEach(catName => {
             const div = document.createElement('div');
             div.className = 'cat-item';
             
-            // Красиво разделяем эмодзи и текст заголовка
             const emojiMatch = catName.match(/[\u{1F300}-\u{1F9FF}]/u);
             const textOnly = catName.replace(/[\u{1F300}-\u{1F9FF}]/u, '').trim();
 
             div.innerHTML = `
-                <div style="font-size: 24px; margin-bottom: 5px;">${emojiMatch ? emojiMatch[0] : '🏷️'}</div>
-                <div style="font-size: 11px; line-height: 1.2; font-weight: 700;">${textOnly}</div>
+                <div style="font-size: 20px; margin-bottom: 4px;">${emojiMatch ? emojiMatch[0] : '🏷️'}</div>
+                <div style="font-size: 10px; line-height: 1.1; font-weight: 800; text-transform: uppercase;">${textOnly}</div>
             `;
 
             div.onclick = () => {
@@ -45,108 +44,126 @@ async function loadCats() {
             list.appendChild(div);
         });
     } catch (e) {
-        console.error("Ошибка загрузки категорий:", e);
-        alert("Не удалось загрузить категории. Проверь файл categories.json");
+        console.error("Ошибка загрузки:", e);
     }
 }
 
-// 2. Инициализация и подготовка пула слов
+// 2. Старт Игры
 function startGame() {
-    if (selectedCategories.length === 0) {
-        alert("Выбери хотя бы одну категорию для расследования!");
-        return;
-    }
+    if (selectedCategories.length === 0) return alert("Выбери категории!");
     
-    // Собираем все слова из выбранных категорий в один массив
+    // Сбор слов
     gamePool = [];
     selectedCategories.forEach(cat => {
         gamePool = [...gamePool, ...categoriesData[cat]];
     });
+    gamePool.sort(() => Math.random() - 0.5);
 
-    // Перемешиваем пул слов (алгоритм Фишера-Йетса)
-    for (let i = gamePool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [gamePool[i], gamePool[j]] = [gamePool[j], gamePool[i]];
-    }
-    
-    score = 0;
-    timeLeft = parseInt(document.getElementById('time-input').value) || 60;
-    
-    toScreen('ready-screen');
-    startCountdown();
+    // Настройки
+    gameState.maxRounds = parseInt(document.getElementById('rounds-input').value);
+    gameState.currentPlayerIdx = 0;
+    gameState.currentRound = 1;
+    gameState.scores = {};
+    gameState.players.forEach(p => gameState.scores[p] = 0);
+
+    prepareRound();
 }
 
-// 3. Обратный отсчет перед началом
-function startCountdown() {
+// 3. Подготовка раунда
+function prepareRound() {
+    const player = gameState.players[gameState.currentPlayerIdx];
+    document.getElementById('player-turn-name').innerText = player;
+    document.getElementById('countdown').innerText = '3';
+    
+    toScreen('ready-screen');
+    
     let count = 3;
-    const el = document.getElementById('countdown');
-    el.innerText = count;
-
     const interval = setInterval(() => {
         count--;
-        if (count <= 0) {
+        if (count === 0) {
             clearInterval(interval);
             beginRound();
         } else {
-            el.innerText = count;
+            document.getElementById('countdown').innerText = count;
         }
     }, 1000);
 }
 
-// 4. Запуск игрового таймера и процесса
+// 4. Активная игра
 function beginRound() {
     toScreen('game-screen');
-    document.getElementById('timer-display').innerText = timeLeft;
+    gameState.timeLeft = parseInt(document.getElementById('time-input').value) || 60;
+    updateTimerDisplay();
     
     renderNextWord();
     
-    timer = setInterval(() => {
-        timeLeft--;
-        document.getElementById('timer-display').innerText = timeLeft;
-        
-        if (timeLeft <= 0) {
-            endGame();
-        }
+    gameState.timer = setInterval(() => {
+        gameState.timeLeft--;
+        updateTimerDisplay();
+        if (gameState.timeLeft <= 0) finishRound();
     }, 1000);
 }
 
-// 5. Показ следующего слова
-function renderNextWord() {
-    if (gamePool.length === 0) {
-        endGame();
-        return;
-    }
-    const word = gamePool.pop();
-    document.getElementById('current-word').innerText = word;
+function updateTimerDisplay() {
+    document.getElementById('timer-display').innerText = gameState.timeLeft;
 }
 
-// 6. Обработка кнопок "Угадал" и "Пропустить"
+function renderNextWord() {
+    if (gamePool.length === 0) return endGame();
+    document.getElementById('current-word').innerText = gamePool.pop();
+}
+
 function nextWord(isCorrect) {
     if (isCorrect) {
-        score++;
-        // Короткая вибрация на успех
-        if (window.navigator.vibrate) window.navigator.vibrate(50);
-    } else {
-        // Двойная вибрация на пропуск
-        if (window.navigator.vibrate) window.navigator.vibrate([50, 50]);
+        const player = gameState.players[gameState.currentPlayerIdx];
+        gameState.scores[player]++;
+        if (window.navigator.vibrate) window.navigator.vibrate(40);
     }
-    
     renderNextWord();
 }
 
-// 7. Финал игры
-function endGame() {
-    clearInterval(timer);
-    document.getElementById('final-score').innerText = score;
-    toScreen('result-screen');
+// 5. Завершение раунда / Смена игрока
+function finishRound() {
+    clearInterval(gameState.timer);
+    
+    gameState.currentPlayerIdx++;
+    if (gameState.currentPlayerIdx >= gameState.players.length) {
+        gameState.currentPlayerIdx = 0;
+        gameState.currentRound++;
+    }
+
+    if (gameState.currentRound > gameState.maxRounds) {
+        endGame();
+    } else {
+        alert("ВРЕМЯ ВЫШЛО! ПЕРЕДАЙ ТЕЛЕФОН.");
+        prepareRound();
+    }
 }
 
-// 8. Вспомогательная функция переключения экранов
+// 6. Итоги
+function endGame() {
+    clearInterval(gameState.timer);
+    toScreen('result-screen');
+    
+    const board = document.getElementById('final-scoreboard');
+    board.innerHTML = "";
+    
+    const results = Object.entries(gameState.scores).sort((a, b) => b[1] - a[1]);
+    
+    results.forEach(([name, score], i) => {
+        const medal = i === 0 ? '🏆' : (i === 1 ? '🥈' : '🥉');
+        board.innerHTML += `
+            <div style="display: flex; justify-content: space-between; padding: 15px; background: var(--bg); border-radius: 12px; margin-bottom: 8px;">
+                <span style="font-weight: 900;">${medal} ${name}</span>
+                <span style="color: var(--accent); font-family: 'Unbounded';">${score}</span>
+            </div>
+        `;
+    });
+}
+
 function toScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const target = document.getElementById(id);
-    if (target) target.classList.add('active');
+    document.getElementById(id).classList.add('active');
 }
 
-// Запуск загрузки при старте страницы
 document.addEventListener('DOMContentLoaded', loadCats);
