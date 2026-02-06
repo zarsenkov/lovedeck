@@ -1,82 +1,97 @@
 :root {
-    --hub-bg: #0F172A;
-    --hub-text: #FFFFFF;
+    --bg: #E3E9F2;
+    --card-bg: #E3E9F2;
+    --text: #4A5568;
+    --accent: #667EEA;
+    /* Тени для эффекта Claymorphism */
+    --outer-shadow: 10px 10px 20px #BABECC, -10px -10px 20px #FFFFFF;
+    --inner-shadow: inset 2px 2px 5px #BABECC, inset -5px -5px 10px #FFFFFF;
 }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    background: var(--hub-bg);
-    color: var(--hub-text);
-    font-family: 'Space Grotesk', sans-serif;
-    padding-bottom: 50px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif; /* Мягкий округлый шрифт */
 }
 
-.hub-header { text-align: center; padding: 60px 0; }
-.hub-title { font-family: 'Unbounded', sans-serif; font-size: clamp(32px, 5vw, 64px); }
-.hub-subtitle { opacity: 0.5; letter-spacing: 2px; font-size: 12px; margin-top: 10px; }
+.container { max-width: 1100px; margin: 0 auto; padding: 60px 20px; }
 
-.hub-grid {
+.soft-header { text-align: center; margin-bottom: 60px; }
+.soft-logo { font-size: 48px; font-weight: 900; letter-spacing: -1px; color: var(--accent); }
+.soft-logo span { color: var(--text); }
+
+/* СЕТКА */
+.soft-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    padding: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
 }
 
-.world-card {
-    height: 400px;
-    border-radius: 24px;
+/* КАРТОЧКА */
+.soft-card {
+    background: var(--card-bg);
+    padding: 40px 30px;
+    border-radius: 40px;
+    box-shadow: var(--outer-shadow);
+    text-align: center;
     position: relative;
-    overflow: hidden;
+    transition: all 0.3s ease;
     cursor: pointer;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
 }
 
-.world-card:hover { transform: scale(1.05) rotate(1deg); }
-
-.world-label {
-    position: absolute; top: 20px; left: 20px;
-    font-size: 10px; font-weight: 800; padding: 4px 12px;
-    border-radius: 100px; z-index: 10;
+.soft-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 15px 15px 30px #BABECC, -15px -15px 30px #FFFFFF;
 }
 
-.world-content {
-    position: absolute; bottom: 40px; left: 0; width: 100%;
-    text-align: center; z-index: 10;
+.soft-card:active {
+    transform: scale(0.98);
+    box-shadow: inset 5px 5px 10px #BABECC, inset -5px -5px 10px #FFFFFF;
 }
 
-/* === МИР 1: NEO-POP (Alias) === */
-.neo-pop { background: #FF006E; border: 4px solid #000; box-shadow: 10px 10px 0 #000; }
-.neo-pop .world-name { font-family: 'Bungee', cursive; font-size: 36px; color: #fff; text-shadow: 4px 4px 0 #000; }
-.neo-pop .world-label { background: #FFBE0B; color: #000; border: 2px solid #000; }
+/* ИКОНКИ */
+.soft-icon-box {
+    width: 80px; height: 80px;
+    margin: 0 auto 25px;
+    background: var(--card-bg);
+    border-radius: 25px;
+    box-shadow: var(--inner-shadow);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: var(--accent);
+}
 
-/* === МИР 2: RETRO VINYL (Danetki) === */
-.retro-vinyl { 
-    background: #E6D5B8; /* Цвет старой бумаги */
-    color: #433422;
-}
-.retro-vinyl .vinyl-texture {
-    position: absolute; width: 100%; height: 100%;
-    background: repeating-radial-gradient(circle at center, #000 0, #000 1px, transparent 2px, transparent 4px);
-    opacity: 0.05;
-}
-.retro-vinyl .world-name { font-family: 'Serif'; font-weight: 900; font-size: 32px; text-transform: uppercase; }
-.retro-vinyl .world-label { background: #433422; color: #E6D5B8; }
-.retro-vinyl .world-icon { font-size: 80px; margin-top: 20px; color: #433422; }
+.soft-icon-box.blue { color: #4299E1; }
+.soft-icon-box.yellow { color: #ECC94B; }
+.soft-icon-box.gray { color: #A0AEC0; }
 
-/* === МИР 3: GLASS TECH (Spy) === */
-.glass-world { 
-    background: linear-gradient(135deg, #6366F1, #A855F7);
-}
-.glass-blur {
-    position: absolute; top: 20%; left: 10%; width: 80%; height: 60%;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.soft-title { font-size: 24px; font-weight: 900; margin-bottom: 10px; }
+.soft-desc { font-size: 14px; font-weight: 700; opacity: 0.7; margin-bottom: 30px; }
+
+/* КНОПКА */
+.soft-btn {
+    width: 100%;
+    padding: 15px;
     border-radius: 20px;
+    border: none;
+    background: var(--card-bg);
+    box-shadow: var(--outer-shadow);
+    font-weight: 900;
+    color: var(--accent);
+    cursor: pointer;
+    transition: 0.2s;
 }
-.glass-world .world-name { font-weight: 700; color: #fff; letter-spacing: 2px; }
-.glass-world .world-label { background: rgba(255, 255, 255, 0.2); color: #fff; }
 
-/* === МИР 4: BRUTALISM (Croc) === */
-.brutal-world { background: #fff; border: 2px solid #000; border-radius: 0; }
-.brutal-world .world-name { font-weight: 900; color: #000; text-transform: uppercase; border-top: 2px solid #000; display: inline-block; padding-top: 5px; }
-.brutal-world .world-label { background: #000; color: #fff; border-radius: 0; }
+.soft-btn:hover { color: var(--text); }
+.soft-btn:active { box-shadow: var(--inner-shadow); }
+
+/* БЕЙДЖ */
+.soft-badge {
+    position: absolute; top: 20px; right: 20px;
+    padding: 5px 12px; border-radius: 12px;
+    font-size: 10px; font-weight: 900;
+    box-shadow: var(--inner-shadow);
+    background: #FED7E2; color: #D53F8C;
+}
