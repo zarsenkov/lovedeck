@@ -21,7 +21,7 @@
 
     <div class="app-container">
         <div id="hub-nav" style="position: absolute; top: 15px; left: 15px; z-index: 10;">
-            <a href="../../index.html" style="text-decoration: none; color: #ff758f; font-size: 11px; font-weight: 900; background: white; padding: 8px 12px; border-radius: 15px;">
+            <a href="../../index.html" style="text-decoration: none; color: #ff758f; font-size: 11px; font-weight: 900; background: white; padding: 8px 12px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
                 <i class="fas fa-th-large"></i> ВСЕ ИГРЫ
             </a>
         </div>
@@ -37,6 +37,10 @@
         </section>
 
         <section id="screen-themes" class="screen">
+            <button onclick="resetNames()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: #ff758f; font-size: 18px; cursor: pointer;">
+                <i class="fas fa-user-edit"></i>
+            </button>
+
             <h2 style="font-family: 'Unbounded'; font-size: 20px; margin: 30px 0 20px; text-align: center;">Выбери режим</h2>
             <div class="themes-grid">
                 <div class="theme-card" onclick="selectTheme('romance')"><i class="fas fa-heart"></i><h3>Романтика</h3></div>
@@ -46,20 +50,23 @@
             </div>
             
             <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
-                <button onclick="showModal('custom')" style="background:none; border: 1px solid #ffccd5; color: #ff758f; padding: 10px 15px; border-radius: 15px; font-size: 12px; font-weight: 700;">+ Свои карты</button>
-                <button onclick="showModal('favs')" style="background:none; border: 1px solid #ffccd5; color: #ff758f; padding: 10px 15px; border-radius: 15px; font-size: 12px; font-weight: 700;">⭐ Избранное</button>
+                <button class="btn-special" onclick="showModal('custom')">+ Свои карты</button>
+                <button class="btn-special" onclick="showModal('favs')">⭐ Избранное</button>
             </div>
 
             <div style="margin-top: auto; padding-bottom: 20px; text-align: center;">
-                <a href="http://lovecouple.ru" target="_blank" style="color: #ff758f; text-decoration: none; font-weight: 800; font-size: 12px; letter-spacing: 1px; opacity: 0.7;">ИГРАТЬ ОНЛАЙН НА LOVECOUPLE.RU</a>
+                <a href="http://lovecouple.ru" target="_blank" class="online-link-white">
+                    🌐 ИГРАТЬ ОНЛАЙН (LoveCouple.ru)
+                </a>
             </div>
         </section>
 
         <section id="screen-game" class="screen">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
                 <button onclick="goToScreen('themes')" style="background:none; border:none; font-size: 24px; color: #ff758f;"><i class="fas fa-times-circle"></i></button>
-                <div id="timer-display" style="font-family: 'Unbounded'; font-weight: 900; color: #ff758f; background: white; padding: 5px 15px; border-radius: 20px; box-shadow: 0 5px 15px rgba(255,117,143,0.1);">01:00</div>
-                <div style="width: 24px;"></div> </div>
+                <div id="timer-display" class="timer-badge-pink">01:00</div>
+                <div style="width: 24px;"></div>
+            </div>
 
             <div class="main-game-card">
                 <div class="card-tag" id="card-type">ЗАДАНИЕ</div>
@@ -69,40 +76,34 @@
                     <strong>Совет:</strong> <span id="detail-tip"></span>
                 </div>
                 
-                <button onclick="toggleFavorite()" id="fav-btn" style="position: absolute; bottom: 25px; right: 25px; background: none; border: none; font-size: 22px; color: #ffccd5; transition: 0.3s;">
+                <button onclick="toggleFavorite()" id="fav-btn" class="fav-btn-star">
                     <i class="far fa-star"></i>
                 </button>
             </div>
 
             <div style="display: grid; grid-template-columns: 65px 1fr 1fr; gap: 10px; margin-top: auto; padding-bottom: 20px;">
                 <button class="timer-btn" onclick="startTimer()"><i class="fas fa-clock"></i></button>
-                <button class="btn-next" onclick="markAsDone()" style="background: #592d33; font-size: 12px; padding: 0;">ВЫПОЛНИЛИ</button>
+                <button class="btn-done" onclick="markAsDone()">ВЫПОЛНИЛИ</button>
                 <button class="btn-next" onclick="nextCard()">ДАЛЕЕ</button>
             </div>
         </section>
     </div>
 
-    <div id="modal-custom" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="font-family:'Unbounded'; color:#ff758f; margin-bottom:15px;">Своя карта</h3>
-            <textarea id="custom-card-input" placeholder="Напиши задание... Используй [Имя1] и [Имя2]" style="width:100%; height:100px; border-radius:15px; padding:10px; border:2px solid #fff0f3; outline:none;"></textarea>
-            <button class="btn-next" style="width:100%; margin-top:10px; padding:15px;" onclick="saveCustomCard()">ДОБАВИТЬ</button>
-            <button onclick="closeModals()" style="margin-top:10px; background:none; border:none; color:#a38a8e;">Закрыть</button>
+    <div id="modal-custom" class="modal-overlay" onclick="closeModals()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="font-family:'Unbounded'; color:#ff758f; margin-bottom:15px; font-size: 16px;">Своя карта</h3>
+            <textarea id="custom-card-input" placeholder="Напиши задание... Используй [Имя1] и [Имя2]" class="modal-textarea"></textarea>
+            <button class="btn-next" style="width:100%; padding:15px; font-size: 14px;" onclick="saveCustomCard()">ДОБАВИТЬ В ИГРУ</button>
         </div>
     </div>
 
-    <div id="modal-favs" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="font-family:'Unbounded'; color:#ff758f; margin-bottom:15px;">⭐ Избранное</h3>
-            <div id="favs-list" style="max-height: 250px; overflow-y: auto; text-align: left; font-size: 14px; color: #592d33;"></div>
-            <button onclick="closeModals()" style="margin-top:20px; width:100%; padding:15px;" class="btn-next">ЗАКРЫТЬ</button>
+    <div id="modal-favs" class="modal-overlay" onclick="closeModals()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="font-family:'Unbounded'; color:#ff758f; margin-bottom:15px; font-size: 16px;">⭐ Избранное</h3>
+            <div id="favs-list" class="favs-scroll-area">Тут пока пусто...</div>
+            <button onclick="closeModals()" class="btn-next" style="width:100%; padding:12px; margin-top:10px;">ЗАКРЫТЬ</button>
         </div>
     </div>
-
-    <style>
-        .modal-overlay { position: fixed; inset: 0; background: rgba(89, 45, 51, 0.4); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: white; padding: 25px; border-radius: 30px; width: 100%; max-width: 350px; text-align: center; }
-    </style>
 
     <script src="cards.js"></script>
     <script src="app.js"></script>
