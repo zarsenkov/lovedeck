@@ -1,58 +1,96 @@
-/* ... (весь предыдущий CSS остается) ... */
+:root {
+    --bg-dark: #0A0E17;
+    --neon-cyan: #00F3FF;
+    --neon-red: #FF0055;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-dim: rgba(255, 255, 255, 0.6);
+}
 
-/* ИКОНКА ПРАВИЛ */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+body { background: var(--bg-dark); color: white; height: 100dvh; overflow: hidden; }
+
+.spy-app {
+    height: 100%; padding: 20px; display: flex; flex-direction: column;
+    max-width: 500px; margin: 0 auto; position: relative;
+}
+
+.back-link { font-size: 12px; font-weight: 900; color: var(--neon-cyan); margin-bottom: 20px; cursor: pointer; text-transform: uppercase; }
+
 .rules-icon {
-    position: absolute; top: 0; right: 0;
-    width: 40px; height: 40px;
-    border: 1px solid var(--neon-cyan);
-    border-radius: 50%;
+    position: absolute; top: 20px; right: 20px; width: 40px; height: 40px;
+    border: 2px solid var(--neon-cyan); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    color: var(--neon-cyan); font-weight: 900; cursor: pointer;
+    color: var(--neon-cyan); font-family: 'Unbounded'; font-weight: 900; cursor: pointer;
 }
 
-/* ИМЕНА ИГРОКОВ */
-.names-container {
-    max-height: 150px; overflow-y: auto;
-    margin: 10px 0; display: flex; flex-direction: column; gap: 8px;
+.screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+.screen.active { display: flex; animation: fadeIn 0.4s ease; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.glitch-title { font-family: 'Unbounded', sans-serif; font-size: 3rem; margin-bottom: 25px; text-align: center; }
+.glitch-title span { color: var(--neon-cyan); text-shadow: 0 0 15px var(--neon-cyan); }
+
+.glass-card {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    backdrop-filter: blur(15px); width: 100%; border-radius: 28px; padding: 20px; margin-bottom: 20px;
 }
-.name-input {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--glass-border);
-    padding: 10px; border-radius: 8px;
-    color: white; outline: none; font-size: 14px;
+
+.setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--glass-border); }
+.setting-row span { font-weight: 800; font-size: 12px; color: var(--text-dim); text-transform: uppercase; }
+
+.counter { display: flex; align-items: center; gap: 15px; }
+.counter button {
+    background: none; border: 2px solid var(--neon-cyan); color: var(--neon-cyan);
+    width: 36px; height: 36px; border-radius: 10px; font-size: 20px; cursor: pointer;
 }
+.counter span { font-family: 'Unbounded'; font-size: 18px; min-width: 25px; text-align: center; }
+
+.names-container { max-height: 140px; overflow-y: auto; margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+.name-input { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 10px; border-radius: 8px; color: white; outline: none; }
 .name-input:focus { border-color: var(--neon-cyan); }
 
-/* ПОИСК ШПИОНА (ВМЕСТО ЛОКАЦИЙ) */
-.search-status {
-    text-align: center; margin-bottom: 40px; position: relative;
-    padding: 20px; border: 1px dashed var(--neon-cyan); border-radius: 20px;
+.neon-btn {
+    width: 100%; background: var(--neon-cyan); color: black; border: none; padding: 20px;
+    border-radius: 18px; font-family: 'Unbounded'; font-weight: 900; cursor: pointer;
 }
-.scanner-line {
-    position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-    background: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan);
-    animation: scan 2s infinite linear;
-}
-@keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+.neon-btn.danger { background: var(--neon-red); color: white; }
+.hidden { display: none !important; }
 
-/* ГОЛОСОВАНИЕ */
-.vote-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;
-}
-.vote-item {
-    background: var(--glass); border: 1px solid var(--glass-border);
-    padding: 15px; border-radius: 12px; text-align: center;
-    font-weight: 700; cursor: pointer;
-}
-.vote-item:active { background: var(--neon-cyan); color: black; }
+/* КАРТОЧКА */
+.status-bar { text-align: center; margin-bottom: 20px; font-weight: 800; }
+.status-bar span { color: var(--neon-cyan); font-family: 'Unbounded'; }
 
-/* МОДАЛКА */
-.modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9); z-index: 1000;
-    display: none; align-items: center; justify-content: center; padding: 20px;
+.spy-card-inner { width: 100%; height: 350px; position: relative; perspective: 1000px; margin-bottom: 20px; }
+.card-side {
+    position: absolute; width: 100%; height: 100%; border-radius: 30px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    backface-visibility: hidden; transition: 0.6s; border: 2px solid var(--glass-border); padding: 20px;
 }
+.front { background: var(--glass); }
+.back { background: var(--neon-cyan); color: black; transform: rotateY(180deg); }
+.spy-card-inner.flipped .front { transform: rotateY(180deg); }
+.spy-card-inner.flipped .back { transform: rotateY(360deg); }
+
+#location-name { font-family: 'Unbounded'; font-size: 2rem; text-align: center; margin-top: 10px; }
+
+/* ТАЙМЕР */
+.timer-circle { position: relative; width: 220px; height: 220px; margin-bottom: 30px; }
+svg { width: 220px; height: 220px; transform: rotate(-90deg); }
+circle { fill: none; stroke: var(--glass-border); stroke-width: 10; }
+#timer-progress { stroke: var(--neon-cyan); stroke-dasharray: 565; stroke-dashoffset: 0; transition: 1s linear; }
+#countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Unbounded'; font-size: 2rem; }
+
+.search-status { width: 100%; text-align: center; padding: 20px; border: 1px dashed var(--neon-cyan); border-radius: 20px; position: relative; margin-bottom: 30px; }
+.scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); animation: scan 2s infinite linear; }
+@keyframes scan { 0%, 100% { top: 0; } 50% { top: 100%; } }
+
+.vote-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-height: 300px; overflow-y: auto; }
+.vote-item { background: var(--glass); padding: 15px; border-radius: 12px; text-align: center; font-weight: 700; border: 1px solid var(--glass-border); }
+
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal.active { display: flex; }
-.modal-content h2 { font-family: 'Unbounded'; color: var(--neon-cyan); margin-bottom: 20px; }
-.modal-content ul { text-align: left; margin-bottom: 20px; list-style: none; }
+.modal-content ul { list-style: none; margin: 20px 0; text-align: left; }
 .modal-content li { margin-bottom: 10px; font-size: 14px; opacity: 0.8; }
