@@ -1,34 +1,33 @@
-let state = {
+let game = {
     score: 0,
     time: 60,
     currentT: 60,
-    words: [],
     history: [],
-    category: 'base',
-    interval: null,
-    startX: 0,
-    currentX: 0
+    words: [],
+    cat: 'base',
+    timer: null,
+    startX: 0
 };
 
-// Переключатель категорий
-document.querySelectorAll('.cat-chip').forEach(btn => {
+// Выбор категории
+document.querySelectorAll('.pop-chip').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.pop-chip').forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active');
-        state.category = e.currentTarget.dataset.cat;
+        game.cat = e.currentTarget.dataset.cat;
     });
 });
 
-function adjustTime(val) {
-    state.time = Math.max(10, Math.min(180, state.time + val));
-    document.getElementById('time-val').textContent = state.time;
+function adjustTime(v) {
+    game.time = Math.max(10, Math.min(180, game.time + v));
+    document.getElementById('time-val').textContent = game.time;
 }
 
 function initGame() {
-    state.words = [...CARDS[state.category]].sort(() => Math.random() - 0.5);
-    state.score = 0;
-    state.currentT = state.time;
-    state.history = [];
+    game.words = [...CARDS[game.cat]].sort(() => Math.random() - 0.5);
+    game.score = 0;
+    game.currentT = game.time;
+    game.history = [];
     
     document.getElementById('score-val').textContent = '0';
     showScreen('screen-play');
@@ -37,88 +36,73 @@ function initGame() {
     initSwipe();
 }
 
-function startTimer() {
-    if (state.interval) clearInterval(state.interval);
-    const timerEl = document.getElementById('game-timer');
-    const bar = document.getElementById('progress-bar');
-    
-    state.interval = setInterval(() => {
-        state.currentT--;
-        timerEl.textContent = state.currentT;
-        bar.style.width = (state.currentT / state.time * 100) + '%';
-        
-        if (state.currentT <= 0) {
-            clearInterval(state.interval);
-            endGame();
-        }
-    }, 1000);
-}
-
-function handleSwipe(dir) {
-    const isOk = dir === 'right';
-    const word = document.getElementById('word-display').textContent;
-    
-    state.history.push({ word, isOk });
-    state.score += isOk ? 1 : -1;
-    document.getElementById('score-val').textContent = state.score;
-    
-    // Мягкий фидбек: подсвечиваем рамку
-    const card = document.getElementById('card');
-    card.style.borderColor = isOk ? 'var(--soft-blue)' : 'var(--soft-red)';
-    card.style.borderWidth = '3px';
-    setTimeout(() => {
-        card.style.borderColor = 'var(--gray)';
-        card.style.borderWidth = '1px';
-    }, 300);
-
-    if ('vibrate' in navigator) navigator.vibrate(isOk ? 20 : 50);
-    nextWord();
-}
-
-function undoLast() {
-    if (state.history.length === 0) return;
-    const last = state.history.pop();
-    state.words.push(document.getElementById('word-display').textContent);
-    document.getElementById('word-display').textContent = last.word;
-    state.score -= last.isOk ? 1 : -1;
-    document.getElementById('score-val').textContent = state.score;
-}
-
-function endGame() {
-    showScreen('screen-results');
-    document.getElementById('res-score').textContent = state.score;
-    const rev = document.getElementById('words-review');
-    rev.innerHTML = state.history.map(i => `
-        <div class="word-item ${i.isOk ? 'correct' : 'wrong'}">
-            <span>${i.word}</span>
-            <span>${i.isOk ? '+1' : '0'}</span>
-        </div>
-    `).join('');
-}
-
 function nextWord() {
-    if (state.words.length === 0) return endGame();
-    document.getElementById('word-display').textContent = state.words.pop();
+    if (game.words.length === 0) return endGame();
+    document.getElementById('word-display').textContent = game.words.pop();
 }
 
-function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+function handleSwipe(isRight) {
+    const word = document.getElementById('word-display').textContent;
+    game.history.push({ word, isRight });
+    game.score += isRight ? 1 : -1;
+    document.getElementById('score-val').textContent = game.score;
+    
+    // Визуальный отклик
+    const card = document.getElementById('card');
+    card.style.background = isRight ? 'var(--mint)' : 'var(--pink)';
+    setTimeout(() => card.style.background = 'white', 200);
+
+    if ('vibrate' in navigator) navigator.vibrate(isRight ? 25 : 50);
+    nextWord();
 }
 
 function initSwipe() {
     const card = document.getElementById('card');
-    card.addEventListener('touchstart', e => { state.startX = e.touches[0].clientX; card.style.transition = 'none'; });
+    card.addEventListener('touchstart', e => { game.startX = e.touches[0].clientX; card.style.transition = 'none'; });
     card.addEventListener('touchmove', e => {
-        state.currentX = e.touches[0].clientX - state.startX;
-        card.style.transform = `translateX(${state.currentX}px) rotate(${state.currentX/20}deg)`;
+        let x = e.touches[0].clientX - game.startX;
+        card.style.transform = `translateX(${x}px) rotate(${x/15}deg)`;
     });
-    card.addEventListener('touchend', () => {
-        card.style.transition = '0.3s';
-        if (Math.abs(state.currentX) > 120) handleSwipe(state.currentX > 0 ? 'right' : 'left');
+    card.addEventListener('touchend', (e) => {
+        card.style.transition = '0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        let x = e.changedTouches[0].clientX - game.startX;
+        if (Math.abs(x) > 100) handleSwipe(x > 0);
         card.style.transform = '';
-        state.currentX = 0;
     });
 }
 
-function goToMenu() { window.location.href = '../../index.html'; }
+function startTimer() {
+    if (game.timer) clearInterval(game.timer);
+    game.timer = setInterval(() => {
+        game.currentT--;
+        document.getElementById('game-timer').textContent = game.currentT;
+        if (game.currentT <= 0) endGame();
+    }, 1000);
+}
+
+function endGame() {
+    clearInterval(game.timer);
+    showScreen('screen-results');
+    document.getElementById('res-score').textContent = game.score;
+    const list = document.getElementById('words-review');
+    list.innerHTML = game.history.map(i => `
+        <div class="word-row" style="border-color: ${i.isRight ? '#B2F5EA' : '#FED7E2'}">
+            <span>${i.word}</span>
+            <span>${i.isRight ? '👍' : '👎'}</span>
+        </div>
+    `).join('');
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function undoLast() {
+    if (game.history.length === 0) return;
+    const last = game.history.pop();
+    game.words.push(document.getElementById('word-display').textContent);
+    document.getElementById('word-display').textContent = last.word;
+    game.score -= last.isRight ? 1 : -1;
+    document.getElementById('score-val').textContent = game.score;
+}
