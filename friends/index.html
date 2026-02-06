@@ -1,20 +1,62 @@
-<header class="header-neo">
-    <h1>LOVECOUPLE</h1>
-</header>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>LOVECOUPLE | NEO-POP PARTY</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Inter:wght@400;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="black-fade"></div>
 
-<main class="neo-grid">
-    <div class="neo-card alias" data-game="alias">
-        <div class="neo-icon">📢</div>
-        <h2 class="neo-title">ALIAS</h2>
-        <p>Кричи, объясняй, побеждай!</p>
-        <button class="neo-btn">GO!</button>
+    <div class="neo-wrapper">
+        <header class="neo-header">
+            <h1 class="neo-logo">LOVECOUPLE</h1>
+            <p class="neo-subtitle">CHOOSE YOUR UNIVERSE</p>
+        </header>
+
+        <main class="neo-grid">
+            <div class="neo-card alias" onclick="loadGame('alias')">
+                <div class="neo-badge">HOT</div>
+                <div class="neo-icon">📣</div>
+                <h2 class="neo-title">ALIAS</h2>
+                <p class="neo-desc">Объясни всё, если сможешь!</p>
+                <div class="neo-footer">4-12 PLAYERS</div>
+            </div>
+
+            <div class="neo-card spy" onclick="loadGame('spy')">
+                <div class="neo-badge">TOP</div>
+                <div class="neo-icon">🕵️</div>
+                <h2 class="neo-title">SPY</h2>
+                <p class="neo-desc">Найди предателя в компании.</p>
+                <div class="neo-footer">3-10 PLAYERS</div>
+            </div>
+
+            <div class="neo-card danetki" onclick="loadGame('danetki')">
+                <div class="neo-icon">💡</div>
+                <h2 class="neo-title">DANETKI</h2>
+                <p class="neo-desc">Раскрой тайну одним вопросом.</p>
+                <div class="neo-footer">2+ PLAYERS</div>
+            </div>
+
+            <div class="neo-card crocodile" onclick="loadGame('crocodile')">
+                <div class="neo-icon">🐊</div>
+                <h2 class="neo-title">CROC</h2>
+                <p class="neo-desc">Покажи шоу без единого слова.</p>
+                <div class="neo-footer">3+ PLAYERS</div>
+            </div>
+
+            <div class="neo-card locked">
+                <div class="neo-badge lock">SOON</div>
+                <div class="neo-icon">☢️</div>
+                <h2 class="neo-title">BUNKER</h2>
+                <p class="neo-desc">Кто достоин выжить?</p>
+                <div class="neo-footer">IN DEV</div>
+            </div>
+        </main>
     </div>
 
-    <div class="neo-card spy" data-game="spy">
-        <div class="neo-icon">🕵️‍♂️</div>
-        <h2 class="neo-title">SPY</h2>
-        <p>Кто здесь лишний?</p>
-        <button class="neo-btn">GO!</button>
-    </div>
-    
-    </main>
+    <script src="script.js"></script>
+</body>
+</html>
