@@ -1,62 +1,145 @@
-:root {
-    --bg: #FFD93D;
-    --card: #FFFFFF;
-    --primary: #6C5CE7;
-    --accent: #FF6B6B;
-    --green: #26DE81;
-    --text: #2D3436;
+let categoriesData = {};
+let selectedCats = [];
+let players = [];
+let scores = {};
+let gamePool = [];
+let currentPlayerIdx = 0;
+let currentScore = 0;
+let timer;
+let timeLeft;
+let wakeLock = null;
+
+// Блокировка засыпания экрана
+async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+        try { wakeLock = await navigator.wakeLock.request('screen'); } 
+        catch (err) { console.error("WakeLock failed:", err); }
+    }
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
-body { background: var(--bg); color: var(--text); height: 100dvh; overflow: hidden; }
+function releaseWakeLock() {
+    if (wakeLock !== null) {
+        wakeLock.release().then(() => wakeLock = null);
+    }
+}
 
-.app-container { height: 100%; padding: 20px; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; }
+// Загрузка данных
+async function init() {
+    try {
+        const res = await fetch('categories.json');
+        const data = await res.json();
+        categoriesData = data.categories || data;
+        const list = document.getElementById('categories-box');
+        Object.keys(categoriesData).forEach(cat => {
+            const div = document.createElement('div');
+            div.className = 'cat-item';
+            div.innerText = cat;
+            div.onclick = () => {
+                div.classList.toggle('selected');
+                selectedCats.includes(cat) ? selectedCats = selectedCats.filter(c => c !== cat) : selectedCats.push(cat);
+            };
+            list.appendChild(div);
+        });
+    } catch (e) { console.error("Load failed:", e); }
+}
 
-/* Правила */
-.rules-btn { position: absolute; top: 15px; right: 15px; width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--text); background: white; font-weight: 900; font-size: 20px; z-index: 10; cursor: pointer; box-shadow: 0 4px 0 var(--text); }
+function toggleRules(show) {
+    document.getElementById('rules-modal').classList.toggle('active', show);
+}
 
-/* Экраны */
-.screen { display: none; flex-direction: column; height: 100%; animation: pop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
-.screen.active { display: flex; }
-@keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+function addPlayer() {
+    const input = document.createElement('input');
+    input.className = 'joy-input';
+    input.placeholder = 'Имя игрока';
+    document.getElementById('player-list').appendChild(input);
+}
 
-/* Лого и Заголовки */
-.logo-area { text-align: center; margin-bottom: 20px; }
-.emoji-float { font-size: 50px; animation: float 3s ease-in-out infinite; }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-.main-title { font-size: 3.5rem; font-weight: 900; line-height: 0.9; }
-.main-title span { color: var(--primary); display: block; }
-.main-title-small { font-size: 2rem; text-align: center; margin-bottom: 20px; color: var(--primary); font-weight: 900; }
+function confirmPlayers() {
+    players = Array.from(document.querySelectorAll('.joy-input')).map(i => i.value.trim()).filter(v => v);
+    if(players.length < 2) return alert("Нужно минимум 2 игрока!");
+    players.forEach(p => scores[p] = 0);
+    showScreen('category-screen');
+}
 
-/* Карточки и Ввод */
-.card-glass { background: var(--card); border-radius: 30px; padding: 20px; flex-grow: 1; box-shadow: 0 12px 0 rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow-y: auto; }
-.joy-input { width: 100%; background: #F1F2F6; border: none; padding: 18px; border-radius: 18px; margin-bottom: 10px; font-size: 16px; font-weight: 700; }
-.add-player-circle { width: 50px; height: 50px; border-radius: 25px; border: none; background: var(--primary); color: white; font-size: 24px; font-weight: 900; align-self: center; margin-top: 5px; box-shadow: 0 4px 0 #4834D4; }
+function startGame() {
+    if(!selectedCats.length) return alert("Выбери тему!");
+    gamePool = [];
+    selectedCats.forEach(c => gamePool = [...gamePool, ...categoriesData[c]]);
+    gamePool.sort(() => Math.random() - 0.5);
+    currentPlayerIdx = 0;
+    preparePlayer();
+}
 
-/* Сетка тем */
-.category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto; padding-bottom: 20px; }
-.cat-item { background: white; border-radius: 20px; padding: 15px; text-align: center; font-weight: 800; font-size: 11px; box-shadow: 0 5px 0 #ddd; cursor: pointer; border: 3px solid transparent; }
-.cat-item.selected { border-color: var(--primary); box-shadow: 0 2px 0 #ddd; transform: translateY(3px); }
+function preparePlayer() {
+    if(currentPlayerIdx >= players.length) return showResults();
+    document.getElementById('next-player-name').innerText = players[currentPlayerIdx];
+    showScreen('transfer-screen');
+}
 
-/* Геймплей */
-.game-top { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.timer-pill, .score-pill { background: white; padding: 10px 20px; border-radius: 50px; font-weight: 900; box-shadow: 0 5px 0 rgba(0,0,0,0.1); }
-.timer-pill { color: var(--accent); font-size: 22px; }
+function startRound() {
+    requestWakeLock(); // ЭКРАН НЕ ПОГАСНЕТ
+    showScreen('game-screen');
+    currentScore = 0;
+    timeLeft = parseInt(document.getElementById('time-select').value);
+    updateUI();
+    nextWord();
+    
+    timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer-display').innerText = timeLeft;
+        if(timeLeft <= 0) {
+            clearInterval(timer);
+            releaseWakeLock(); // РАЗРЕШАЕМ ЭКРАНУ ГАСНУТЬ
+            scores[players[currentPlayerIdx]] += currentScore;
+            currentPlayerIdx++;
+            preparePlayer();
+        }
+    }, 1000);
+}
 
-.main-card-wrap { flex-grow: 1; display: flex; align-items: center; }
-.word-card { background: white; width: 100%; min-height: 220px; border-radius: 35px; border: 6px solid var(--primary); display: flex; align-items: center; justify-content: center; padding: 20px; box-shadow: 0 15px 0 rgba(0,0,0,0.1); }
-#current-word { font-size: 2.5rem; text-align: center; font-weight: 900; text-transform: uppercase; }
+function nextWord() {
+    if(gamePool.length === 0) {
+        clearInterval(timer);
+        showResults();
+        return;
+    }
+    document.getElementById('current-word').innerText = gamePool.pop();
+}
 
-.game-controls { display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-top: 25px; }
-.btn-skip, .btn-win, .primary-btn { border: none; font-weight: 900; cursor: pointer; transition: 0.1s; text-transform: uppercase; }
-.btn-skip { background: var(--accent); color: white; border-radius: 20px; padding: 20px; box-shadow: 0 6px 0 #C0392B; }
-.btn-win { background: var(--green); color: white; border-radius: 20px; padding: 20px; box-shadow: 0 6px 0 #20BF6B; }
-.primary-btn { background: var(--primary); color: white; border-radius: 25px; padding: 22px; font-size: 1.2rem; box-shadow: 0 8px 0 #4834D4; margin-top: 15px; }
-.primary-btn:active, .btn-skip:active, .btn-win:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+function correctWord() {
+    currentScore++;
+    updateUI();
+    nextWord();
+    if(window.navigator.vibrate) window.navigator.vibrate([40, 20, 40]);
+}
 
-/* Модалка */
-.modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; padding:20px; }
-.modal-overlay.active { display: flex; }
-.modal-card { background:white; padding:30px; border-radius:30px; text-align:center; max-width:400px; }
-.rule-item { display:flex; gap:10px; text-align:left; margin-bottom:15px; font-weight:700; font-size:14px; }
-.rule-item span { background:var(--primary); color:white; min-width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; }
+function skipWord() {
+    nextWord();
+    if(window.navigator.vibrate) window.navigator.vibrate(30);
+}
+
+function updateUI() {
+    document.getElementById('score-counter').innerText = currentScore;
+    document.getElementById('timer-display').innerText = timeLeft;
+}
+
+function showResults() {
+    showScreen('result-screen');
+    const board = document.getElementById('final-results');
+    board.innerHTML = `<h3 style="margin-bottom:15px">ИТОГИ:</h3>` + 
+        Object.entries(scores)
+        .sort((a,b) => b[1] - a[1])
+        .map(([name, score], i) => `
+            <div style="display:flex; justify-content:space-between; padding:15px; background:#F1F2F6; border-radius:15px; margin-bottom:10px; font-weight:900">
+                <span>${i===0?'🏆 ':''}${name}</span>
+                <span style="color:var(--primary)">${score}</span>
+            </div>
+        `).join('');
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+init();
