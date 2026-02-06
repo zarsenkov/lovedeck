@@ -2,60 +2,50 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>LoveCouple: Soft World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOVECOUPLE | JOURNAL</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="black-fade"></div>
 
-    <div class="container">
-        <header class="soft-header">
-            <h1 class="soft-logo">LOVE<span>COUPLE</span></h1>
-            <p class="soft-tagline">ИГРАЙТЕ МЯГКО</p>
+    <div class="journal-wrapper">
+        <header class="j-header">
+            <div class="j-logo">LC<span>©</span>2026</div>
+            <div class="j-menu">MENU</div>
         </header>
 
-        <main class="soft-grid">
-            <div class="soft-card available" data-game="alias">
-                <div class="soft-badge">HOT</div>
-                <div class="soft-icon-box">
-                    <i class="fas fa-comments"></i>
-                </div>
-                <h3 class="soft-title">АЛИАС</h3>
-                <p class="soft-desc">Объясняй слова и веселись</p>
-                <button class="soft-btn">ИГРАТЬ</button>
+        <main class="j-list">
+            <div class="j-item available" data-game="alias">
+                <span class="j-num">01</span>
+                <h2 class="j-name">ALIAS</h2>
+                <div class="j-meta"> PARTY GAME / FAST / FUN </div>
+                <div class="j-hover-img" style="background-image: url('alias-bg.jpg');"></div>
             </div>
 
-            <div class="soft-card available" data-game="spy">
-                <div class="soft-icon-box blue">
-                    <i class="fas fa-user-secret"></i>
-                </div>
-                <h3 class="soft-title">ШПИОН</h3>
-                <p class="soft-desc">Найди чужого среди своих</p>
-                <button class="soft-btn">ИГРАТЬ</button>
+            <div class="j-item available" data-game="spy">
+                <span class="j-num">02</span>
+                <h2 class="j-name">SPY</h2>
+                <div class="j-meta"> PSYCHOLOGICAL / STEALTH </div>
             </div>
 
-            <div class="soft-card available" data-game="danetki">
-                <div class="soft-icon-box yellow">
-                    <i class="fas fa-lightbulb"></i>
-                </div>
-                <h3 class="soft-title">ДАНЕТКИ</h3>
-                <p class="soft-desc">Детективные загадки</p>
-                <button class="soft-btn">ИГРАТЬ</button>
+            <div class="j-item available" data-game="danetki">
+                <span class="j-num">03</span>
+                <h2 class="j-name">DANETKI</h2>
+                <div class="j-meta"> LOGIC / DETECTIVE </div>
             </div>
 
-            <div class="soft-card locked" data-game="bunker">
-                <div class="soft-badge lock">СКОРО</div>
-                <div class="soft-icon-box gray">
-                    <i class="fas fa-radiation"></i>
-                </div>
-                <h3 class="soft-title">БУНКЕР</h3>
-                <p class="soft-desc">Выживи в апокалипсисе</p>
-                <button class="soft-btn disabled">ЖДЕМ</button>
+            <div class="j-item locked" data-game="bunker">
+                <span class="j-num">04</span>
+                <h2 class="j-name">BUNKER</h2>
+                <div class="j-meta"> SURVIVAL / SOON </div>
             </div>
         </main>
+
+        <footer class="j-footer">
+            <p>SELECT THE UNIVERSE TO START THE SESSION</p>
+        </footer>
     </div>
 
     <script src="script.js"></script>
