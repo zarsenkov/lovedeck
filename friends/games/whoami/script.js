@@ -9,7 +9,6 @@ let timer = null;
 let timeLeft = 0;
 let wakeLock = null;
 
-// Блокировка засыпания
 async function requestWakeLock() {
     if ('wakeLock' in navigator) {
         try { wakeLock = await navigator.wakeLock.request('screen'); } 
@@ -23,7 +22,6 @@ function releaseWakeLock() {
     }
 }
 
-// Загрузка
 async function init() {
     try {
         const res = await fetch('categories.json');
@@ -43,10 +41,8 @@ async function init() {
     } catch (e) { console.error("Init failed:", e); }
 }
 
-// Навигация "Назад"
 function goBack() {
     const activeScreen = document.querySelector('.screen.active').id;
-    
     if (timer) clearInterval(timer);
     releaseWakeLock();
 
@@ -60,7 +56,7 @@ function goBack() {
         case 'transfer-screen':
         case 'game-screen':
         case 'result-screen':
-            if (confirm("Вернуться в настройки? Текущий прогресс будет потерян.")) {
+            if (confirm("Вернуться в настройки?")) {
                 showScreen('category-screen');
             }
             break;
@@ -86,7 +82,7 @@ function confirmPlayers() {
 }
 
 function startGame() {
-    if(!selectedCats.length) return alert("Выбери хотя бы одну тему!");
+    if(!selectedCats.length) return alert("Выбери тему!");
     gamePool = [];
     selectedCats.forEach(c => gamePool = [...gamePool, ...categoriesData[c]]);
     gamePool.sort(() => Math.random() - 0.5);
@@ -151,7 +147,7 @@ function updateUI() {
 function showResults() {
     showScreen('result-screen');
     const board = document.getElementById('final-results');
-    board.innerHTML = `<h3 style="margin-bottom:15px">ИТОГИ ИГРЫ:</h3>` + 
+    board.innerHTML = `<h3 style="margin-bottom:15px">ИТОГИ:</h3>` + 
         Object.entries(scores)
         .sort((a,b) => b[1] - a[1])
         .map(([name, score], i) => `
