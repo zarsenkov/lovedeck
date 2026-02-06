@@ -3,67 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>КТО Я? // CLASSIC</title>
+    <title>КТО Я? // ВЕЧЕРИНКА</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
         
         <section class="screen active" id="setup-screen">
-            <h1 class="title">ИГРОКИ</h1>
-            <div class="list-container" id="player-list">
-                <input type="text" class="minimal-input" placeholder="Игрок 1" value="Алексей">
-                <input type="text" class="minimal-input" placeholder="Игрок 2" value="Мария">
+            <div class="logo-area">
+                <div class="emoji-float">🎭</div>
+                <h1 class="main-title">КТО<span>Я?</span></h1>
             </div>
-            <button class="add-btn" onclick="addPlayer()">+ ДОБАВИТЬ</button>
-            <button class="primary-btn" onclick="confirmPlayers()">ДАЛЕЕ</button>
+            
+            <div class="card-glass scroll-fix">
+                <p class="section-tag">ИГРОКИ</p>
+                <div id="player-list" class="players-container">
+                    <input type="text" class="joy-input" placeholder="Игрок 1" value="Алексей">
+                    <input type="text" class="joy-input" placeholder="Игрок 2" value="Мария">
+                </div>
+                <button class="add-player-circle" onclick="addPlayer()">+</button>
+            </div>
+            <button class="primary-btn pulse" onclick="confirmPlayers()">ДАЛЕЕ</button>
         </section>
 
         <section class="screen" id="category-screen">
-            <h1 class="title">КАТЕГОРИИ</h1>
-            <div class="settings-bar">
+            <h1 class="main-title-small">ВЫБЕРИ ТЕМУ</h1>
+            <div class="settings-pill">
                 <span>ВРЕМЯ:</span>
                 <select id="time-select">
-                    <option value="60">60 СЕК</option>
-                    <option value="90" selected>90 СЕК</option>
-                    <option value="120">120 СЕК</option>
+                    <option value="60">1 МИН</option>
+                    <option value="90" selected>1.5 МИН</option>
+                    <option value="120">2 МИН</option>
                 </select>
             </div>
             <div class="category-grid" id="categories-box"></div>
-            <button class="primary-btn" onclick="startGame()">НАЧАТЬ ИГРУ</button>
+            <button class="primary-btn" onclick="startGame()">ПОЕХАЛИ!</button>
         </section>
 
         <section class="screen" id="transfer-screen">
-            <div class="center-content">
-                <p class="label">ПЕРЕДАЙТЕ ТЕЛЕФОН</p>
-                <h2 id="next-player-name" class="big-name">---</h2>
+            <div class="transfer-card">
+                <div class="avatar-circle">👤</div>
+                <p>ТВОЯ ОЧЕРЕДЬ!</p>
+                <h2 id="next-player-name">---</h2>
+                <div class="hint">Приготовься приложить телефон ко лбу</div>
                 <button class="primary-btn" onclick="startRound()">Я ГОТОВ</button>
             </div>
         </section>
 
         <section class="screen" id="game-screen">
-            <div class="status-line">
-                <div id="timer-display">90</div>
-                <div id="score-counter">ОЧКИ: 0</div>
+            <div class="game-top">
+                <div class="timer-pill" id="timer-display">90</div>
+                <div class="score-pill">ОЧКИ: <span id="score-counter">0</span></div>
             </div>
             
-            <div class="word-box">
-                <h1 id="current-word">СЛОВО</h1>
+            <div class="main-card-wrap">
+                <div class="word-card">
+                    <div class="card-dots"></div>
+                    <h1 id="current-word">---</h1>
+                </div>
             </div>
 
-            <div class="game-footer">
-                <p class="instruction">Держи телефон у лба, чтобы остальные видели слово</p>
-                <div class="action-buttons">
-                    <button class="skip-btn" onclick="skipWord()">ПРОПУСТИТЬ</button>
-                    <button class="success-btn" onclick="correctWord()">УГАДАЛ!</button>
-                </div>
+            <div class="game-controls">
+                <button class="btn-skip" onclick="skipWord()">ПАС</button>
+                <button class="btn-win" onclick="correctWord()">УГАДАЛ!</button>
             </div>
         </section>
 
         <section class="screen" id="result-screen">
-            <h1 class="title">РЕЗУЛЬТАТЫ</h1>
-            <div id="final-results" class="results-table"></div>
-            <button class="primary-btn" onclick="location.reload()">НОВАЯ ИГРА</button>
+            <h1 class="main-title-small">КТО КРУЧЕ?</h1>
+            <div class="card-glass" id="final-results"></div>
+            <button class="primary-btn" onclick="location.reload()">ЕЩЕ РАЗ</button>
         </section>
 
     </div>
