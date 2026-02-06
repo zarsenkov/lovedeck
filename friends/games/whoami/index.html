@@ -1,42 +1,86 @@
-<section class="screen" id="player-setup-screen">
-    <h2 class="hero-title">КТО <span>ИГРАЕТ?</span></h2>
-    <div class="setup-box">
-        <div id="player-list-inputs">
-            <input type="text" class="player-input" placeholder="Имя игрока 1" value="Игрок 1">
-            <input type="text" class="player-input" placeholder="Имя игрока 2" value="Игрок 2">
-        </div>
-        <button class="btn-text" onclick="addPlayerInput()">+ ДОБАВИТЬ ИГРОКА</button>
-    </div>
-    <button class="primary-btn" onclick="confirmPlayers()">ДАЛЕЕ</button>
-</section>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>КТО Я? | ОЧЕРЕДЬ ДЕТЕКТИВОВ</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        
+        <section class="screen active" id="player-setup-screen">
+            <h1 class="hero-title">КТО <span>ИГРАЕТ?</span></h1>
+            <div class="setup-box">
+                <label class="section-label">ИМЕНА УЧАСТНИКОВ:</label>
+                <div id="player-list-inputs" class="scroll-area">
+                    <input type="text" class="player-input" placeholder="Имя игрока 1" value="Алексей">
+                    <input type="text" class="player-input" placeholder="Имя игрока 2" value="Мария">
+                </div>
+                <button class="btn-add" onclick="addPlayerInput()">+ ДОБАВИТЬ ИГРОКА</button>
+            </div>
+            <button class="primary-btn" onclick="confirmPlayers()">ДАЛЕЕ</button>
+        </section>
 
-<section class="screen" id="transfer-screen">
-    <div class="transfer-card">
-        <div class="icon-spin">🔄</div>
-        <h2 class="ready-title">ВРЕМЯ ВЫШЛО!</h2>
-        <p class="ready-subtitle">ПЕРЕДАЙ ТЕЛЕФОН СЛЕДУЮЩЕМУ:</p>
-        <div class="next-player-badge" id="next-player-name">АЛЕКСЕЙ</div>
-        <button class="primary-btn" onclick="prepareRound()">Я ГОТОВ!</button>
-    </div>
-</section>
+        <section class="screen" id="category-screen">
+            <h2 class="hero-title">ЧТО <span>УГАДАЕМ?</span></h2>
+            <div class="setup-box">
+                <div class="settings-grid">
+                    <div class="input-group">
+                        <label>ТАЙМЕР (СЕК)</label>
+                        <input type="number" id="time-input" value="60">
+                    </div>
+                </div>
+                <label class="section-label">КАТЕГОРИИ:</label>
+                <div class="category-grid" id="category-list"></div>
+            </div>
+            <button class="primary-btn" onclick="startGame()">НАЧАТЬ МАТЧ</button>
+        </section>
 
-<section class="screen" id="game-screen">
-    <div class="game-header-info">
-        <span id="active-guesser">Угадывает: КАТЯ</span>
-        <div id="timer-display">60</div>
-    </div>
-    
-    <div class="word-card">
-        <h2 id="current-word">???</h2>
-    </div>
+        <section class="screen" id="transfer-screen">
+            <div class="transfer-card">
+                <div class="icon-spin">🔄</div>
+                <h2 class="ready-title">ВРЕМЯ ВЫШЛО!</h2>
+                <p class="ready-subtitle">ПЕРЕДАЙ ТЕЛЕФОН СЛЕДУЮЩЕМУ:</p>
+                <div class="next-player-badge" id="next-player-name">---</div>
+                <button class="primary-btn" onclick="prepareCountdown()">Я ГОТОВ!</button>
+            </div>
+        </section>
 
-    <div class="turn-manager">
-        <p class="label">СЕЙЧАС СПРАШИВАЕТ:</p>
-        <div id="current-asker-name" class="asker-badge">НИКТО</div>
-    </div>
+        <section class="screen" id="countdown-screen">
+            <div class="countdown" id="countdown-number">3</div>
+            <p class="ready-subtitle">ПРИЛОЖИ ТЕЛЕФОН КО ЛБУ!</p>
+        </section>
 
-    <div class="game-controls">
-        <button class="skip-btn" onclick="rotateAsker()">❌ НЕТ (СЛЕДУЮЩИЙ)</button>
-        <button class="correct-btn" onclick="nextWord(true)">✅ УГАДАЛ!</button>
+        <section class="screen" id="game-screen">
+            <div class="game-header">
+                <div class="timer" id="timer-display">60</div>
+                <div class="guesser-info">Угадывает: <span id="active-guesser-name">---</span></div>
+            </div>
+            
+            <div class="word-card">
+                <h2 id="current-word">???</h2>
+            </div>
+
+            <div class="turn-manager">
+                <p class="label">СЕЙЧАС СПРАШИВАЕТ:</p>
+                <div id="current-asker-name" class="asker-badge">ЖДЕМ...</div>
+            </div>
+
+            <div class="game-controls">
+                <button class="skip-btn" onclick="handleNo()">❌ НЕТ (СМЕНА ХОДА)</button>
+                <button class="correct-btn" onclick="handleYes()">✅ УГАДАЛ!</button>
+            </div>
+        </section>
+
+        <section class="screen" id="result-screen">
+            <h2 class="hero-title">ИТОГИ <span>ИГРЫ</span></h2>
+            <div class="result-box" id="final-scoreboard"></div>
+            <button class="primary-btn" onclick="location.reload()">НОВЫЙ МАТЧ</button>
+        </section>
+
     </div>
-</section>
+    <script src="script.js"></script>
+</body>
+</html>
