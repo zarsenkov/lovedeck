@@ -25,8 +25,7 @@
                     </div>
                 </div>
 
-                <div id="player-names-list" class="names-container">
-                    </div>
+                <div id="player-names-list" class="names-container"></div>
 
                 <div class="setting-row">
                     <span>ШПИОНЫ</span>
@@ -60,7 +59,7 @@
                 </div>
                 <div class="card-side back">
                     <h2 id="role-text">ЛОКАЦИЯ</h2>
-                    <p id="location-name">ШКОЛА</p>
+                    <p id="location-name">...</p>
                 </div>
             </div>
 
@@ -69,10 +68,7 @@
 
         <section class="screen" id="game-screen">
             <div class="timer-circle">
-                <svg>
-                    <circle cx="110" cy="110" r="90"></circle>
-                    <circle id="timer-progress" cx="110" cy="110" r="90"></circle>
-                </svg>
+                <svg><circle cx="110" cy="110" r="90"></circle><circle id="timer-progress" cx="110" cy="110" r="90"></circle></svg>
                 <div id="countdown">05:00</div>
             </div>
             
@@ -85,9 +81,22 @@
         </section>
 
         <section class="screen" id="vote-screen">
-            <h2 class="glitch-title" style="font-size: 2rem;">ГОЛОСОВАНИЕ</h2>
+            <div class="status-bar">ГОЛОСУЕТ: <br><span id="voter-name-display">...</span></div>
+            <p style="margin-bottom: 20px; opacity: 0.7; text-align: center;">КТО ВЫЗЫВАЕТ ПОДОЗРЕНИЕ?</p>
             <div class="vote-grid" id="vote-list"></div>
-            <button class="neon-btn" onclick="location.reload()" style="margin-top: 25px;">В МЕНЮ</button>
+        </section>
+
+        <section class="screen" id="results-screen">
+            <h1 class="glitch-title">ИТО<span>ГИ</span></h1>
+            <div class="glass-card">
+                <div id="winner-status" class="winner-label">...</div>
+                <div class="result-details">
+                    <p>ШПИОНОМ БЫЛ(И): <span id="true-spies-list" style="color: var(--neon-red);">...</span></p>
+                    <p>ЛОКАЦИЯ: <span id="true-location" style="color: var(--neon-cyan);">...</span></p>
+                </div>
+                <div id="vote-stats" class="vote-stats-box"></div>
+            </div>
+            <button class="neon-btn" onclick="location.reload()">В МЕНЮ</button>
         </section>
 
         <div class="modal" id="rules-modal">
@@ -95,10 +104,9 @@
                 <h2>ИНСТРУКЦИЯ</h2>
                 <ul>
                     <li>Все знают локацию, кроме <b>Шпиона</b>.</li>
-                    <li>Задавайте вопросы, чтобы вычислить шпиона.</li>
-                    <li>Шпион должен понять, где он находится.</li>
-                    <li>Победа игроков: найти шпиона голосованием.</li>
-                    <li>Победа шпиона: угадать локацию.</li>
+                    <li>Игроки ищут шпиона, задавая вопросы.</li>
+                    <li>Шпион пытается угадать локацию.</li>
+                    <li>Голосование: каждый тайно выбирает цель.</li>
                 </ul>
                 <button class="neon-btn" onclick="toggleRules(false)">ПОНЯЛ</button>
             </div>
