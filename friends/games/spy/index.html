@@ -24,7 +24,9 @@
                         <button onclick="changeVal('players', 1)">+</button>
                     </div>
                 </div>
-                <div id="player-names-list" class="names-container"></div>
+
+                <div id="player-names-list" class="names-container">
+                    </div>
 
                 <div class="setting-row">
                     <span>ШПИОНЫ</span>
@@ -49,7 +51,7 @@
         </section>
 
         <section class="screen" id="card-screen">
-            <div class="status-bar">ПЕРЕДАЙТЕ СМАРТФОН: <br><span id="current-player-display">ИГРОК 1</span></div>
+            <div class="status-bar">ПЕРЕДАЙТЕ ТЕЛЕФОН: <br><span id="current-player-display">ИГРОК 1</span></div>
             
             <div class="spy-card-inner" id="main-card" onclick="toggleRoleVisible()">
                 <div class="card-side front">
@@ -67,7 +69,10 @@
 
         <section class="screen" id="game-screen">
             <div class="timer-circle">
-                <svg><circle cx="100" cy="100" r="90"></circle><circle id="timer-progress" cx="100" cy="100" r="90"></circle></svg>
+                <svg>
+                    <circle cx="110" cy="110" r="90"></circle>
+                    <circle id="timer-progress" cx="110" cy="110" r="90"></circle>
+                </svg>
                 <div id="countdown">05:00</div>
             </div>
             
@@ -81,22 +86,21 @@
 
         <section class="screen" id="vote-screen">
             <h2 class="glitch-title" style="font-size: 2rem;">ГОЛОСОВАНИЕ</h2>
-            <p style="margin-bottom: 20px; opacity: 0.7;">КТО ВЫЗЫВАЕТ ПОДОЗРЕНИЕ?</p>
             <div class="vote-grid" id="vote-list"></div>
-            <button class="neon-btn" onclick="location.reload()" style="margin-top: 20px;">В МЕНЮ</button>
+            <button class="neon-btn" onclick="location.reload()" style="margin-top: 25px;">В МЕНЮ</button>
         </section>
 
         <div class="modal" id="rules-modal">
             <div class="modal-content glass-card">
                 <h2>ИНСТРУКЦИЯ</h2>
                 <ul>
-                    <li>Все игроки знают локацию, кроме <b>Шпиона</b>.</li>
-                    <li>Задавайте друг другу вопросы, чтобы вычислить шпиона.</li>
-                    <li>Шпион должен догадаться, где он находится.</li>
-                    <li>Победа игроков: вычислить шпиона голосованием.</li>
-                    <li>Победа шпиона: назвать локацию или дождаться конца времени.</li>
+                    <li>Все знают локацию, кроме <b>Шпиона</b>.</li>
+                    <li>Задавайте вопросы, чтобы вычислить шпиона.</li>
+                    <li>Шпион должен понять, где он находится.</li>
+                    <li>Победа игроков: найти шпиона голосованием.</li>
+                    <li>Победа шпиона: угадать локацию.</li>
                 </ul>
-                <button class="neon-btn" onclick="toggleRules(false)">ПРИНЯТО</button>
+                <button class="neon-btn" onclick="toggleRules(false)">ПОНЯЛ</button>
             </div>
         </div>
     </div>
