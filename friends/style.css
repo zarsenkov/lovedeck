@@ -1,70 +1,89 @@
 :root {
-    --bg: #1a1a2e;
-    --card-w: 260px;
-    --card-h: 380px;
+    --bg: #FFD600; /* Яркий желтый фон всего сайта */
+    --black: #000000;
+    --white: #FFFFFF;
+    --card-1: #FF006E; /* Розовый для Alias */
+    --card-2: #00F5FF; /* Голубой для Spy */
+    --card-3: #7000FF; /* Фиолетовый для Danetki */
 }
 
 body {
     background: var(--bg);
-    color: white;
-    font-family: 'Exo 2', sans-serif;
-    perspective: 1000px; /* Глубина сцены */
-    overflow-x: hidden;
+    font-family: 'Inter', sans-serif;
+    color: var(--black);
+    padding: 20px;
 }
 
-.shelf-wrapper { padding: 60px 20px; text-align: center; }
-.shelf-title { font-size: 40px; font-weight: 900; letter-spacing: 5px; margin-bottom: 60px; opacity: 0.3; }
-
-.shelf-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 50px;
+.header-neo {
+    text-align: center;
+    padding: 60px 0;
 }
 
-/* Контейнер для 3D */
-.card-3d-wrap {
-    width: var(--card-w);
-    height: var(--card-h);
-    transition: transform 0.1s;
+.header-neo h1 {
+    font-size: 64px;
+    font-weight: 900;
+    text-transform: uppercase;
+    -webkit-text-stroke: 2px var(--black);
+    color: var(--white);
+    text-shadow: 8px 8px 0px var(--black);
+    letter-spacing: -2px;
 }
 
-.card-3d {
-    width: 100%; height: 100%;
+.neo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* КАРТОЧКА-НАКЛЕЙКА */
+.neo-card {
+    background: var(--white);
+    border: 4px solid var(--black);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 12px 12px 0px var(--black);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
     position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.card-front {
-    position: absolute; width: 100%; height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 2;
-    backface-visibility: hidden;
-    border: 1px solid rgba(255,255,255,0.1);
+.neo-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 20px 20px 0px var(--black);
 }
 
-.card-content { transform: translateZ(50px); /* Выносит текст "вперед" из карточки */ }
-
-.card-icon { font-size: 60px; margin-bottom: 20px; display: block; }
-.card-name { font-size: 32px; font-weight: 900; }
-.card-tag { font-size: 12px; letter-spacing: 2px; opacity: 0.6; }
-
-/* Динамическая тень под карточкой */
-.card-shadow {
-    position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;
-    background: rgba(0,0,0,0.5);
-    filter: blur(30px);
-    transform: translateZ(-50px);
-    z-index: 1;
+.neo-card:active {
+    transform: translate(8px, 8px);
+    box-shadow: 0px 0px 0px var(--black);
 }
 
-/* Эффект при наведении */
-.card-3d-wrap:hover .card-3d {
-    transform: rotateY(15deg) rotateX(10deg);
+/* Цвета карточек */
+.neo-card.alias { background: var(--card-1); color: white; }
+.neo-card.spy { background: var(--card-2); }
+.neo-card.danetki { background: var(--card-3); color: white; }
+
+.neo-icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+    filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.5));
 }
 
-.spy-bg { background: linear-gradient(135deg, #232526 0%, #414345 100%); }
-.dan-bg { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.neo-title {
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+
+.neo-btn {
+    margin-top: 20px;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    font-weight: 900;
+    border-radius: 12px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
