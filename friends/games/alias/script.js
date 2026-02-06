@@ -4,12 +4,11 @@ let game = {
     currentTeamIdx: 0,
     timer: null,
     timeLeft: 0,
-    roundScore: 0,
-    roundLog: [],
+    roundLog: [], // Сюда сохраняем объекты {word, isCorrect}
     wordsStack: []
 };
 
-// Настройки
+// 1. ИНИЦИАЛИЗАЦИЯ
 function setOpt(key, val, el) {
     config[key] = val;
     el.parentElement.querySelectorAll('.pop-chip').forEach(c => c.classList.remove('active'));
@@ -28,12 +27,11 @@ function toggleCat(cat, el) {
     }
 }
 
-// Запуск баттла
 function initBattle() {
     const names = [...TEAM_NAMES].sort(() => 0.5 - Math.random());
     game.teams = [
-        { name: names[0], score: 0 },
-        { name: names[1], score: 0 }
+        { name: names[0], score: 0, roundLog: [] },
+        { name: names[1], score: 0, roundLog: [] }
     ];
     game.currentTeamIdx = 0;
     prepareTurn();
@@ -45,26 +43,23 @@ function prepareTurn() {
     toScreen('screen-ready');
 }
 
+// 2. ИГРОВОЙ ПРОЦЕСС
 function startGame() {
     game.timeLeft = config.time;
-    game.roundScore = 0;
     game.roundLog = [];
     
-    // Собираем слова
     let allWords = [];
     config.cats.forEach(c => allWords = allWords.concat(ALIAS_WORDS[c]));
     game.wordsStack = allWords.sort(() => 0.5 - Math.random());
 
     document.getElementById('live-score').innerText = '0';
-    document.getElementById('timer').innerText = `00:${game.timeLeft}`;
     toScreen('screen-game');
     nextWord();
 
     game.timer = setInterval(() => {
         game.timeLeft--;
-        const s = game.timeLeft;
-        document.getElementById('timer').innerText = `00:${s < 10 ? '0'+s : s}`;
-        if (game.timeLeft <= 0) endTurn();
+        document.getElementById('timer').innerText = `00:${game.timeLeft < 10 ? '0'+game.timeLeft : game.timeLeft}`;
+        if (game.timeLeft <= 0) showRoundReview();
     }, 1000);
 }
 
@@ -78,9 +73,11 @@ function nextWord() {
 
 function handleWord(isCorrect) {
     const word = document.getElementById('word-display').innerText;
-    game.roundScore += isCorrect ? 1 : -1;
     game.roundLog.push({ word, isCorrect });
-    document.getElementById('live-score').innerText = game.roundScore;
+    
+    // Мгновенный счет на экране
+    let currentTempScore = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
+    document.getElementById('live-score').innerText = currentTempScore;
 
     const card = document.getElementById('main-card');
     card.style.transition = '0.3s ease-out';
@@ -88,46 +85,82 @@ function handleWord(isCorrect) {
     card.style.opacity = '0';
 
     setTimeout(() => {
-        card.style.transition = 'none';
-        card.style.transform = 'none';
-        card.style.opacity = '1';
+        card.style.transition = 'none'; card.style.transform = 'none'; card.style.opacity = '1';
         nextWord();
     }, 200);
 }
 
-function endTurn() {
+// 3. ЭКРАН ПРОВЕРКИ СЛОВ
+function showRoundReview() {
     clearInterval(game.timer);
-    game.teams[game.currentTeamIdx].score = game.roundScore;
+    toScreen('screen-results');
+    
+    const team = game.teams[game.currentTeamIdx];
+    document.getElementById('res-team-name').innerText = team.name;
+    
+    renderReviewList();
+    
+    // Если походил второй игрок, меняем текст кнопки
+    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ПЕРЕДАТЬ ХОД" : "К ИТОГАМ БАТТЛА";
+}
 
+function renderReviewList() {
+    const list = document.getElementById('results-list');
+    list.innerHTML = game.roundLog.map((item, index) => `
+        <div class="word-row">
+            <span>${item.word}</span>
+            <span class="status-icon" onclick="toggleWordStatus(${index})">
+                ${item.isCorrect ? '✅' : '❌'}
+            </span>
+        </div>
+    `).join('');
+    
+    // Считаем итоговый балл
+    let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
+    document.getElementById('res-team-score').innerText = score;
+    game.teams[game.currentTeamIdx].score = score;
+}
+
+function toggleWordStatus(index) {
+    game.roundLog[index].isCorrect = !game.roundLog[index].isCorrect;
+    renderReviewList();
+}
+
+function handleResultContinue() {
     if (game.currentTeamIdx === 0) {
-        // Если это была первая команда, передаем ход второй
         game.currentTeamIdx = 1;
         prepareTurn();
     } else {
-        // Если походили оба — показываем финал
-        showFinalResults();
+        showFinalWinner();
     }
 }
 
-function showFinalResults() {
-    toScreen('screen-results');
+// 4. ФИНАЛ
+function showFinalWinner() {
+    toScreen('screen-results'); // Используем тот же экран, но с финальным оформлением
     const t1 = game.teams[0];
     const t2 = game.teams[1];
     
-    let winnerText = "";
-    if (t1.score > t2.score) winnerText = t1.name;
-    else if (t2.score > t1.score) winnerText = t2.name;
-    else winnerText = "НИЧЬЯ";
+    let winMsg = "";
+    if (t1.score > t2.score) winMsg = `ПОБЕДИЛИ ${t1.name.toUpperCase()}!`;
+    else if (t2.score > t1.score) winMsg = `ПОБЕДИЛИ ${t2.name.toUpperCase()}!`;
+    else winMsg = "НИЧЬЯ! ВОТ ЭТО БИТВА!";
 
-    document.getElementById('winner-title').innerText = winnerText === "НИЧЬЯ" ? "НИЧЬЯ!" : "ПОБЕДА!";
-    document.getElementById('final-score-box').innerHTML = `
-        ${t1.name}: ${t1.score}<br>
-        ${t2.name}: ${t2.score}
+    document.querySelector('#screen-results h2').innerText = "ФИНАЛ";
+    document.getElementById('results-list').innerHTML = `
+        <div class="summary-box" style="background:var(--mint); margin: 20px 0;">
+            ${t1.name}: ${t1.score}<br>
+            ${t2.name}: ${t2.score}
+        </div>
+        <h3 style="text-align:center; font-weight:900;">${winMsg}</h3>
     `;
+    document.getElementById('res-continue-btn').innerText = "НОВЫЙ БАТТЛ";
+    document.getElementById('res-continue-btn').onclick = () => location.reload();
+}
 
-    document.getElementById('results-list').innerHTML = game.roundLog
-        .map(i => `<div class="word-row"><span>${i.word}</span><span>${i.isCorrect ? '✅' : '❌'}</span></div>`)
-        .join('');
+// 5. ВСПОМОГАТЕЛЬНОЕ
+function toggleRules(show) {
+    document.getElementById('modal-rules').classList.toggle('active', show);
 }
 
 function toScreen(id) {
@@ -137,23 +170,22 @@ function toScreen(id) {
 }
 
 function confirmExit() {
-    if (confirm("Вернуться в меню? Текущий баттл будет сброшен.")) {
-        clearInterval(game.timer);
-        location.reload();
-    }
+    if (confirm("Выйти в меню? Прогресс будет потерян.")) location.reload();
 }
 
-// Свайпы
+// Свайпы (без изменений)
 let startX = 0;
 const card = document.getElementById('main-card');
-card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; card.style.transition = 'none'; });
+card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; card.style.transition = 'none'; }, {passive:true});
 card.addEventListener('touchmove', e => {
     let x = e.touches[0].clientX - startX;
     card.style.transform = `translateX(${x}px) rotate(${x/25}deg)`;
-});
+}, {passive:true});
 card.addEventListener('touchend', e => {
     let x = e.changedTouches[0].clientX - startX;
     if (x > 110) handleWord(true);
     else if (x < -110) handleWord(false);
     else { card.style.transition = '0.2s'; card.style.transform = 'none'; }
 });
+
+initBattle(); // Предзагрузка имен
