@@ -9,26 +9,21 @@ const CardsBank = {
     },
     adult: {
         questions: ["Твое самое смелое желание?", "Где бы ты хотел(а) это сделать прямо сейчас?"],
-        actions: ["Сделай массаж плеч [Имя2_кому]", "Страстный поцелуй в течение 30 секунд"]
+        actions: ["Сделай массаж плеч [Имя2_кому]", "Страстный поцелуй"]
     },
     dates: {
-        questions: ["Опиши идеальное свидание за 100 рублей", "Куда бы ты хотел(а) отправиться в это воскресенье?"],
-        actions: ["Запланируйте поход в кино на завтра", "Приготовьте вместе что-то новое"],
-        // ИНТЕГРИРОВАЛИ ИНТЕРЕСНЫЕ МЕСТА СЮДА
+        questions: ["Опиши идеальное свидание за 100 рублей"],
+        actions: ["Запланируйте поход в кино"],
         places: ["Уютная кофейня на крыше", "Парк с лебедями", "Старый книжный магазин"]
     }
 };
 
-let usedCards = new Set();
+window.usedCards = new Set();
 
 function getRandomCard(theme) {
-    // 1. Проверяем свои карты (шанс 25%)
     let customs = JSON.parse(localStorage.getItem('lc_customs') || '[]');
-    if (customs.length > 0 && Math.random() < 0.25) {
-        return customs[Math.floor(Math.random() * customs.length)];
-    }
+    if (customs.length > 0 && Math.random() < 0.2) return customs[Math.floor(Math.random() * customs.length)];
 
-    // 2. Логика для Свиданий (добавляем места)
     let pool = [];
     if (theme === 'dates') {
         pool = [...CardsBank.dates.questions, ...CardsBank.dates.actions, ...CardsBank.dates.places];
@@ -36,30 +31,18 @@ function getRandomCard(theme) {
         pool = [...CardsBank[theme].questions, ...CardsBank[theme].actions];
     }
 
-    // Исключаем уже показанные
-    let available = pool.filter(card => !usedCards.has(typeof card === 'string' ? card : card.text));
+    let available = pool.filter(c => !window.usedCards.has(c));
+    if (available.length === 0) { window.usedCards.clear(); available = pool; }
 
-    // Если всё закончилось — сбрасываем круг
-    if (available.length === 0) {
-        usedCards.clear();
-        available = pool;
+    let raw = available[Math.floor(Math.random() * available.length)];
+    let type = 'действие';
+    let tip = '';
+
+    if (CardsBank[theme].questions?.includes(raw)) type = 'вопрос';
+    if (theme === 'dates' && CardsBank.dates.places.includes(raw)) {
+        type = 'место';
+        tip = 'Отличное место для свидания!';
     }
 
-    let rawCard = available[Math.floor(Math.random() * available.length)];
-    
-    // Форматируем объект карты
-    if (typeof rawCard === 'string') {
-        let type = 'action';
-        let tip = '';
-        if (CardsBank[theme].questions && CardsBank[theme].questions.includes(rawCard)) type = 'question';
-        if (theme === 'dates' && CardsBank.dates.places.includes(rawCard)) {
-            type = 'Место';
-            tip = 'Попробуйте заглянуть сюда на выходных!';
-        }
-        return { text: rawCard, type: type, tip: tip };
-    }
-    return rawCard;
+    return { text: raw, type: type, tip: tip };
 }
-
-window.getRandomCard = getRandomCard;
-window.usedCards = usedCards;
