@@ -1,13 +1,23 @@
 function loadGame(gameId) {
     const fade = document.querySelector('.black-fade');
-    fade.classList.add('active');
+    if(fade) fade.classList.add('active');
     
     setTimeout(() => {
-        // Здесь будет переход в папку с игрой
-        window.location.href = `games/${gameId}/index.html`;
+        let path = "";
+
+        if (gameId === 'couples') {
+            // Ведем в папку lovecoulpe (с твоей опечаткой) и далее в online
+            path = "lovecoulpe/online/index.html";
+        } else {
+            // Для всех остальных игр: alias, crocodile, spy и т.д.
+            path = `${gameId}/index.html`;
+        }
+
+        window.location.href = path;
     }, 400);
 }
 
+// Тряска для закрытых карточек
 document.querySelectorAll('.locked').forEach(card => {
     card.addEventListener('click', () => {
         card.classList.add('shake');
