@@ -9,38 +9,41 @@ let timer;
 let timeLeft;
 
 async function init() {
-    const res = await fetch('categories.json');
-    const data = await res.json();
-    categoriesData = data.categories || data;
-    const list = document.getElementById('categories-box');
-    Object.keys(categoriesData).forEach(cat => {
-        const div = document.createElement('div');
-        div.className = 'cat-item';
-        div.innerText = cat;
-        div.onclick = () => {
-            div.classList.toggle('selected');
-            selectedCats.includes(cat) ? selectedCats = selectedCats.filter(c => c !== cat) : selectedCats.push(cat);
-        };
-        list.appendChild(div);
-    });
+    try {
+        const res = await fetch('categories.json');
+        const data = await res.json();
+        categoriesData = data.categories || data;
+        const list = document.getElementById('categories-box');
+        Object.keys(categoriesData).forEach(cat => {
+            const div = document.createElement('div');
+            div.className = 'cat-item';
+            div.innerHTML = `<div style="font-size:24px">${cat.match(/[\u{1F300}-\u{1F9FF}]/u)?.[0] || '🎲'}</div>${cat.replace(/[\u{1F300}-\u{1F9FF}]/u, '').trim()}`;
+            div.onclick = () => {
+                div.classList.toggle('selected');
+                selectedCats.includes(cat) ? selectedCats = selectedCats.filter(c => c !== cat) : selectedCats.push(cat);
+            };
+            list.appendChild(div);
+        });
+    } catch (e) { console.error(e); }
 }
 
 function addPlayer() {
     const input = document.createElement('input');
-    input.className = 'minimal-input';
+    input.className = 'joy-input';
     input.placeholder = 'Имя игрока';
     document.getElementById('player-list').appendChild(input);
 }
 
 function confirmPlayers() {
-    players = Array.from(document.querySelectorAll('.minimal-input')).map(i => i.value.trim()).filter(v => v);
-    if(players.length < 2) return alert("НУЖНО МИНИМУМ 2 ИГРОКА");
+    players = Array.from(document.querySelectorAll('.joy-input')).map(i => i.value.trim()).filter(v => v);
+    if(players.length < 2) return alert("Нужно минимум 2 игрока");
     players.forEach(p => scores[p] = 0);
     showScreen('category-screen');
 }
 
 function startGame() {
-    if(!selectedCats.length) return alert("ВЫБЕРИТЕ КАТЕГОРИЮ");
+    if(!selectedCats.length) return alert("Выбери хотя бы одну тему!");
+    gamePool = [];
     selectedCats.forEach(c => gamePool = [...gamePool, ...categoriesData[c]]);
     gamePool.sort(() => Math.random() - 0.5);
     currentPlayerIdx = 0;
@@ -57,7 +60,7 @@ function startRound() {
     showScreen('game-screen');
     currentScore = 0;
     timeLeft = parseInt(document.getElementById('time-select').value);
-    updateGameUI();
+    updateUI();
     nextWord();
     
     timer = setInterval(() => {
@@ -83,27 +86,33 @@ function nextWord() {
 
 function correctWord() {
     currentScore++;
-    updateGameUI();
+    updateUI();
     nextWord();
-    if(window.navigator.vibrate) window.navigator.vibrate(50);
+    if(window.navigator.vibrate) window.navigator.vibrate([40, 20, 40]);
 }
 
 function skipWord() {
     nextWord();
+    if(window.navigator.vibrate) window.navigator.vibrate(30);
 }
 
-function updateGameUI() {
-    document.getElementById('score-counter').innerText = `ОЧКИ: ${currentScore}`;
+function updateUI() {
+    document.getElementById('score-counter').innerText = currentScore;
     document.getElementById('timer-display').innerText = timeLeft;
 }
 
 function showResults() {
     showScreen('result-screen');
     const board = document.getElementById('final-results');
-    board.innerHTML = Object.entries(scores)
+    board.innerHTML = `<h3 style="margin-bottom:15px">ФИНАЛЬНЫЙ СЧЕТ:</h3>` + 
+        Object.entries(scores)
         .sort((a,b) => b[1] - a[1])
-        .map(([name, score]) => `<div><span>${name}</span><b>${score}</b></div>`)
-        .join('');
+        .map(([name, score], i) => `
+            <div style="display:flex; justify-content:space-between; padding:15px; background:#F1F2F6; border-radius:15px; margin-bottom:10px; font-weight:900">
+                <span>${i===0?'🏆 ':''}${name}</span>
+                <span style="color:var(--primary)">${score}</span>
+            </div>
+        `).join('');
 }
 
 function showScreen(id) {
