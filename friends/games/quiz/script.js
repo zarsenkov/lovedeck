@@ -17,6 +17,7 @@ let wakeLock = null;
 
 function init() {
     const list = document.getElementById('categories-box');
+    // Берем категории из всех уровней сложности
     const allQs = [...QUIZ_QUESTIONS.easy, ...QUIZ_QUESTIONS.medium, ...QUIZ_QUESTIONS.hard];
     const uniqueCats = [...new Set(allQs.map(q => q.category))];
     
@@ -30,6 +31,24 @@ function init() {
         };
         list.appendChild(div);
     });
+}
+
+// Функция НАЗАД
+function goBack() {
+    const activeScreen = document.querySelector('.screen.active').id;
+    
+    if (timer) clearInterval(timer);
+    if (wakeLock) { wakeLock.release(); wakeLock = null; }
+
+    if (activeScreen === 'setup-screen') {
+        // Назад к списку игр
+        window.location.href = '../../index.html';
+    } else if (activeScreen === 'transfer-screen' || activeScreen === 'game-screen' || activeScreen === 'result-screen') {
+        // Во время игры — назад в настройки
+        if (confirm("Выйти в настройки? Текущий прогресс будет потерян.")) {
+            location.reload(); 
+        }
+    }
 }
 
 function addPlayer() {
@@ -52,7 +71,7 @@ function confirmSetup() {
 function prepareNextPlayer() {
     if(currentPlayerIdx >= players.length) return showFinalResults();
     
-    // Собираем вопросы для игрока (смешиваем сложности, чтобы не было скучно)
+    // Сбор вопросов
     const allAvailable = [...QUIZ_QUESTIONS.easy, ...QUIZ_QUESTIONS.medium]
         .filter(q => selectedCats.includes(q.category));
     currentPool = allAvailable.sort(() => Math.random() - 0.5).slice(0, questionsPerPlayer);
@@ -65,13 +84,14 @@ function prepareNextPlayer() {
 async function startTurn() {
     if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
     showScreen('game-screen');
+    document.getElementById('current-active-player').innerText = `ОТВЕЧАЕТ: ${players[currentPlayerIdx]}`;
     renderQuestion();
 }
 
 function renderQuestion() {
     if(currentQIdx >= currentPool.length) {
         currentPlayerIdx++;
-        if (wakeLock) wakeLock.release();
+        if (wakeLock) { wakeLock.release(); wakeLock = null; }
         return prepareNextPlayer();
     }
 
@@ -102,8 +122,12 @@ function checkAnswer(idx, btn) {
     if(idx === q.correct) {
         btn.classList.add('correct');
         playerScores[players[currentPlayerIdx]] += (10 + Math.floor(timeLeft/2));
+        if(window.navigator.vibrate) window.navigator.vibrate(40);
     } else {
-        if(btn) btn.classList.add('wrong');
+        if(btn) {
+            btn.classList.add('wrong');
+            if(window.navigator.vibrate) window.navigator.vibrate([50, 50]);
+        }
         btns[q.correct].classList.add('correct');
     }
 
@@ -129,17 +153,13 @@ function showFinalResults() {
     const board = document.getElementById('final-results');
     const sorted = Object.entries(playerScores).sort((a,b) => b[1] - a[1]);
     
-    board.innerHTML = `<h2 style="text-align:center; margin-bottom:20px">КТО САМЫЙ УМНЫЙ?</h2>` + 
+    board.innerHTML = `<h3 style="text-align:center; margin-bottom:20px">ИТОГИ БАТТЛА</h3>` + 
         sorted.map(([name, score], i) => `
-            <div style="display:flex; justify-content:space-between; padding:15px; background:#F1F2F6; border-radius:15px; margin-bottom:10px; font-weight:900; border: 2px solid ${i===0?'var(--primary)':'#eee'}">
+            <div style="display:flex; justify-content:space-between; padding:15px; background:#F1F2F6; border-radius:15px; margin-bottom:10px; font-weight:900; border: 2px solid ${i===0?'var(--bg)':'#eee'}">
                 <span>${i===0?'🏆 ':''}${name}</span>
                 <span style="color:var(--bg)">${score}</span>
             </div>
         `).join('');
-}
-
-function goBack() {
-    if(confirm("Выйти в главное меню?")) window.location.href = '../../index.html';
 }
 
 function toggleRules(show) { document.getElementById('rules-modal').classList.toggle('active', show); }
