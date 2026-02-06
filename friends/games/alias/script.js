@@ -74,7 +74,6 @@ function handleWord(isCorrect) {
     const word = document.getElementById('word-display').innerText;
     game.roundLog.push({ word: word, isCorrect: isCorrect });
     
-    // Считаем временный счет для экрана игры
     let tempScore = 0;
     game.roundLog.forEach(i => tempScore += i.isCorrect ? 1 : -1);
     document.getElementById('live-score').innerText = tempScore;
@@ -90,19 +89,19 @@ function handleWord(isCorrect) {
     }, 200);
 }
 
-// --- ПРОВЕРКА СЛОВ (БЕЗБАГОВАЯ ЛОГИКА) ---
+// --- ПРОВЕРКА СЛОВ (ФИКС ДВОЙНОГО КЛИКА) ---
 function showRoundReview() {
     clearInterval(game.timer);
     toScreen('screen-results');
     document.getElementById('res-team-name').innerText = game.teams[game.currentTeamIdx].name;
     renderReviewList();
     
-    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ХОД СЛЕДУЮЩЕЙ КОМАНДЫ" : "УЗНАТЬ КТО ПОБЕДИЛ";
+    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "ХОД СЛЕДУЮЩЕЙ КОМАНДЫ" : "УЗНАТЬ ПОБЕДИТЕЛЯ";
 }
 
 function renderReviewList() {
     const list = document.getElementById('results-list');
-    list.innerHTML = ''; // Полная очистка перед рендером
+    list.innerHTML = ''; 
 
     game.roundLog.forEach((item, index) => {
         const row = document.createElement('div');
@@ -117,26 +116,29 @@ function renderReviewList() {
             <div class="status-icon ${iconClass}">${iconSign}</div>
         `;
         
-        // Навешиваем клик на всю строку или иконку
-        row.onclick = () => toggleWordStatus(index);
+        // Используем touchend для мобилок, click как запасной. 
+        // e.preventDefault() предотвратит дублирование.
+        const toggleHandler = (e) => {
+            e.preventDefault(); 
+            game.roundLog[index].isCorrect = !game.roundLog[index].isCorrect;
+            renderReviewList();
+        };
+
+        row.addEventListener('touchend', toggleHandler);
+        row.addEventListener('click', toggleHandler);
+
         list.appendChild(row);
     });
     
     recalculateScore();
 }
 
-function toggleWordStatus(index) {
-    // Инвертируем статус
-    game.roundLog[index].isCorrect = !game.roundLog[index].isCorrect;
-    // Перерисовываем список
-    renderReviewList();
-}
-
 function recalculateScore() {
     let total = 0;
-    game.roundLog.forEach(item => {
-        total += item.isCorrect ? 1 : -1;
-    });
+    // Считаем массив с нуля — это самый надежный метод
+    for(let i = 0; i < game.roundLog.length; i++) {
+        total += game.roundLog[i].isCorrect ? 1 : -1;
+    }
     
     document.getElementById('res-team-score').innerText = total;
     game.teams[game.currentTeamIdx].score = total;
