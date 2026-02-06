@@ -3,87 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>КТО Я? | MODERN LIGHT</title>
+    <title>КТО Я? // SYSTEM_OVERRIDE</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
         
         <section class="screen active" id="player-setup-screen">
-            <h1 class="hero-title">КТО <span>Я?</span></h1>
-            <div class="glass-card">
-                <label class="section-label">ИМЕНА ДЕТЕКТИВОВ</label>
+            <h1 class="glitch-title">WHO_AM_I?</h1>
+            <div class="system-box">
+                <div class="label-tag">DETECTIVES_LOG</div>
                 <div id="player-list-inputs" class="scroll-area">
-                    <input type="text" class="player-input" placeholder="Игрок 1" value="Алексей">
-                    <input type="text" class="player-input" placeholder="Игрок 2" value="Мария">
+                    <input type="text" class="system-input" placeholder="OBJECT_01" value="Алексей">
+                    <input type="text" class="system-input" placeholder="OBJECT_02" value="Мария">
                 </div>
-                <button class="btn-add-player" onclick="addPlayerInput()">+ Добавить игрока</button>
+                <button class="btn-ghost" onclick="addPlayerInput()">+ ADD_ENTITY</button>
             </div>
-            <button class="primary-btn" onclick="confirmPlayers()">Далее</button>
+            <button class="action-btn" onclick="confirmPlayers()">INITIALIZE_SYSTEM ></button>
         </section>
 
         <section class="screen" id="category-screen">
-            <h2 class="hero-title">ДЕТАЛИ</h2>
-            <div class="glass-card">
+            <h2 class="glitch-title" style="font-size: 1.5rem;">SELECT_DATA</h2>
+            <div class="system-box">
                 <div class="settings-row">
-                    <label>ТАЙМЕР (СЕК)</label>
+                    <label>RUNTIME_SEC:</label>
                     <input type="number" id="time-input" value="60">
                 </div>
-                <label class="section-label" style="margin-top:15px">КАТЕГОРИИ</label>
+                <div class="label-tag">AVAILABLE_MODULES</div>
                 <div class="category-grid" id="category-list"></div>
             </div>
-            <button class="primary-btn" onclick="startGame()">Начать игру</button>
+            <button class="action-btn" onclick="startGame()">EXECUTE_GAME</button>
         </section>
 
         <section class="screen" id="transfer-screen">
-            <div class="alert-card">
-                <div class="transfer-icon">🔄</div>
-                <h2 class="alert-title">СМЕНА ХОДА</h2>
-                <p class="alert-text">Передай телефон игроку:</p>
-                <div class="next-up-badge" id="next-player-name">---</div>
-                <button class="primary-btn" onclick="prepareCountdown()">Я готов!</button>
+            <div class="alert-box">
+                <div class="warning-header">! ATTENTION !</div>
+                <p>TIME_EXPIRED. PASS DEVICE TO:</p>
+                <div class="next-player-display" id="next-player-name">---</div>
+                <button class="action-btn" onclick="prepareCountdown()">I_AM_READY</button>
             </div>
         </section>
 
         <section class="screen" id="countdown-screen">
-            <div class="countdown-circle">
-                <span id="countdown-number">3</span>
-            </div>
-            <p class="alert-text">Приложи ко лбу!</p>
+            <div class="big-counter" id="countdown-number">3</div>
+            <div class="scanline"></div>
         </section>
 
         <section class="screen" id="game-screen">
-            <div class="game-top-bar">
-                <div class="timer-minimal" id="timer-display">60</div>
-                <div class="guesser-tag">Угадывает: <b id="active-guesser-name">---</b></div>
+            <div class="game-header">
+                <div class="timer-box">
+                    <span class="small-label">TIME</span>
+                    <div id="timer-display">60</div>
+                </div>
+                <div class="guesser-box">
+                    <span class="small-label">SUBJECT</span>
+                    <div id="active-guesser-name">---</div>
+                </div>
             </div>
             
-            <div class="word-card-white">
-                <h2 id="current-word">---</h2>
+            <div class="data-stream">
+                <div class="word-wrap">
+                    <span class="bracket">[</span>
+                    <h2 id="current-word">---</h2>
+                    <span class="bracket">]</span>
+                </div>
             </div>
 
-            <div class="asker-panel">
-                <span class="asker-label">СЕЙЧАС СПРАШИВАЕТ</span>
-                <div id="current-asker-name" class="asker-name">---</div>
+            <div class="asker-alert">
+                <div class="label-tag" style="background: var(--accent);">ASKING_NOW</div>
+                <div id="current-asker-name" class="asker-text">---</div>
             </div>
 
-            <div class="game-actions">
-                <button class="btn-no" onclick="handleNo()">
-                    <span class="btn-sub">ОШИБКА</span>
-                    СЛЕДУЮЩИЙ
-                </button>
-                <button class="btn-yes" onclick="handleYes()">
-                    <span class="btn-sub">ВЕРНО</span>
-                    УГАДАЛ!
-                </button>
+            <div class="control-grid">
+                <button class="btn-fail" onclick="handleNo()">FAILED (NO)</button>
+                <button class="btn-success" onclick="handleYes()">SOLVED (YES)</button>
             </div>
         </section>
 
         <section class="screen" id="result-screen">
-            <h2 class="hero-title">РЕЗУЛЬТАТЫ</h2>
-            <div class="glass-card" id="final-scoreboard"></div>
-            <button class="primary-btn" onclick="location.reload()">В начало</button>
+            <h2 class="glitch-title">MISSION_STATS</h2>
+            <div class="system-box" id="final-scoreboard"></div>
+            <button class="action-btn" onclick="location.reload()">REBOOT_SYSTEM</button>
         </section>
 
     </div>
