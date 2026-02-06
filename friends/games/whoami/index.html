@@ -9,18 +9,18 @@
 </head>
 <body>
     <div class="app-container">
-        
+        <button class="rules-btn" onclick="toggleRules(true)">?</button>
+
         <section class="screen active" id="setup-screen">
             <div class="logo-area">
                 <div class="emoji-float">🎭</div>
                 <h1 class="main-title">КТО<span>Я?</span></h1>
             </div>
-            
-            <div class="card-glass scroll-fix">
+            <div class="card-glass">
                 <p class="section-tag">ИГРОКИ</p>
                 <div id="player-list" class="players-container">
-                    <input type="text" class="joy-input" placeholder="Игрок 1" value="Алексей">
-                    <input type="text" class="joy-input" placeholder="Игрок 2" value="Мария">
+                    <input type="text" class="joy-input" placeholder="Имя игрока" value="Алексей">
+                    <input type="text" class="joy-input" placeholder="Имя игрока" value="Мария">
                 </div>
                 <button class="add-player-circle" onclick="addPlayer()">+</button>
             </div>
@@ -28,13 +28,13 @@
         </section>
 
         <section class="screen" id="category-screen">
-            <h1 class="main-title-small">ВЫБЕРИ ТЕМУ</h1>
+            <h1 class="main-title-small">ТЕМЫ</h1>
             <div class="settings-pill">
-                <span>ВРЕМЯ:</span>
+                <span>ТАЙМЕР:</span>
                 <select id="time-select">
-                    <option value="60">1 МИН</option>
-                    <option value="90" selected>1.5 МИН</option>
-                    <option value="120">2 МИН</option>
+                    <option value="60">60 сек</option>
+                    <option value="90" selected>90 сек</option>
+                    <option value="120">120 сек</option>
                 </select>
             </div>
             <div class="category-grid" id="categories-box"></div>
@@ -44,9 +44,9 @@
         <section class="screen" id="transfer-screen">
             <div class="transfer-card">
                 <div class="avatar-circle">👤</div>
-                <p>ТВОЯ ОЧЕРЕДЬ!</p>
-                <h2 id="next-player-name">---</h2>
-                <div class="hint">Приготовься приложить телефон ко лбу</div>
+                <p>ТВОЙ ВЫХОД!</p>
+                <h2 id="next-player-name" class="big-name">---</h2>
+                <div class="hint">Подними телефон ко лбу сразу после старта</div>
                 <button class="primary-btn" onclick="startRound()">Я ГОТОВ</button>
             </div>
         </section>
@@ -54,16 +54,13 @@
         <section class="screen" id="game-screen">
             <div class="game-top">
                 <div class="timer-pill" id="timer-display">90</div>
-                <div class="score-pill">ОЧКИ: <span id="score-counter">0</span></div>
+                <div class="score-pill">СЧЕТ: <span id="score-counter">0</span></div>
             </div>
-            
             <div class="main-card-wrap">
                 <div class="word-card">
-                    <div class="card-dots"></div>
                     <h1 id="current-word">---</h1>
                 </div>
             </div>
-
             <div class="game-controls">
                 <button class="btn-skip" onclick="skipWord()">ПАС</button>
                 <button class="btn-win" onclick="correctWord()">УГАДАЛ!</button>
@@ -71,11 +68,23 @@
         </section>
 
         <section class="screen" id="result-screen">
-            <h1 class="main-title-small">КТО КРУЧЕ?</h1>
+            <h1 class="main-title-small">ФИНАЛ</h1>
             <div class="card-glass" id="final-results"></div>
-            <button class="primary-btn" onclick="location.reload()">ЕЩЕ РАЗ</button>
+            <button class="primary-btn" onclick="location.reload()">ЗАНОВО</button>
         </section>
 
+        <div id="rules-modal" class="modal-overlay" onclick="toggleRules(false)">
+            <div class="modal-card" onclick="event.stopPropagation()">
+                <h2>КАК ИГРАТЬ? 🎮</h2>
+                <div class="rules-list">
+                    <div class="rule-item"><span>1</span> Загадай слово и приложи телефон ко лбу.</div>
+                    <div class="rule-item"><span>2</span> Твои друзья видят слово, а ты — нет.</div>
+                    <div class="rule-item"><span>3</span> Задавай вопросы: «Я человек?», «Я синий?».</div>
+                    <div class="rule-item"><span>4</span> Друзья могут отвечать только ДА или НЕТ.</div>
+                </div>
+                <button class="primary-btn" onclick="toggleRules(false)">ПОНЯЛ!</button>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
