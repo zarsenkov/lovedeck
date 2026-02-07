@@ -1,9 +1,27 @@
 (function() {
-    const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ["polling"] });
-    let myName, myRoom, isMyTurn = false, categoriesData = {}, selectedCats = [], gamePool = [];
-    let timerInterval, offlineTimer;
+    // Укажи здесь свою ссылку на сервер Amvera
+    const socket = io("https://your-app-link.amvera.io", { transports: ["polling"] });
 
-    // Загрузка категорий из корня
+    let myName, myRoom, isMyTurn = false, gamePool = [], timerInterval;
+    let categoriesData = {}, selectedCats = [];
+    let wakeLock = null;
+
+    // --- ФУНКЦИИ БЕЗОПАСНОСТИ ---
+
+    // Предотвращение засыпания экрана (WakeLock)
+    async function activateWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log("WakeLock активен: экран не погаснет");
+            } catch (err) {
+                console.error("WakeLock ошибка:", err);
+            }
+        }
+    }
+
+    // --- ЗАГРУЗКА ДАННЫХ ---
+
     fetch('../categories.json')
         .then(r => r.json())
         .then(data => {
@@ -14,164 +32,178 @@
     function renderCategories() {
         const grid = document.getElementById('categories-grid');
         if(!grid) return;
+        grid.innerHTML = '';
         Object.keys(categoriesData).forEach(cat => {
             const d = document.createElement('div');
             d.className = 'cat-item';
-            d.style = "background:#eee; padding:5px; border-radius:8px; font-size:10px; cursor:pointer; font-weight:bold; text-align:center;";
             d.innerText = cat;
             d.onclick = () => {
                 d.classList.toggle('selected');
-                if(d.classList.contains('selected')) {
-                    selectedCats.push(cat);
-                    d.style.background = "#6C5CE7"; d.style.color = "white";
-                } else {
-                    selectedCats = selectedCats.filter(c => c !== cat);
-                    d.style.background = "#eee"; d.style.color = "black";
-                }
+                if(d.classList.contains('selected')) selectedCats.push(cat);
+                else selectedCats = selectedCats.filter(c => c !== cat);
             };
             grid.appendChild(d);
         });
     }
 
+    // --- ЛОГИКА ЛОББИ ---
+
     window.joinLobby = function() {
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
+        
         if(myName && myRoom) {
-            socket.emit('join-room', { roomId: myRoom, playerName: myName, gameType: 'whoami' });
+            // Активируем WakeLock при клике (требование браузера)
+            activateWakeLock();
+            
+            socket.emit('join-room', { 
+                roomId: myRoom, 
+                playerName: myName, 
+                gameType: 'whoami' 
+            });
             showScreen('lobby-screen');
             document.getElementById('room-display').innerText = myRoom;
         }
-    };
-
-    window.updateRoundsConfig = function() {
-        const r = document.getElementById('rounds-count').value;
-        socket.emit('set-rounds', { roomId: myRoom, rounds: r });
     };
 
     socket.on('update-lobby', (data) => {
         const list = document.getElementById('player-list');
         list.innerHTML = data.players.map(p => `
             <div class="player-chip ${!p.online ? 'is-offline' : ''}">
-                ${p.name} <span style="color:var(--primary)">${p.score}</span>
+                ${p.name} <span>[${p.score}]</span>
             </div>
         `).join('');
         
-        if(data.players[0].id === socket.id && !data.gameStarted) {
+        // Показываем настройки и старт только первому игроку (хосту)
+        if(data.players[0] && data.players[0].id === socket.id && !data.gameStarted) {
             document.getElementById('host-config').style.display = 'block';
             document.getElementById('start-btn').classList.remove('hidden');
         }
     });
 
     window.requestStart = function() {
-        if(selectedCats.length === 0) return alert("Выбери темы!");
+        if(selectedCats.length === 0) return alert("Выбери хотя бы одну тему!");
+        
+        // Собираем пул слов
         gamePool = [];
         selectedCats.forEach(c => gamePool = [...gamePool, ...categoriesData[c]]);
         gamePool.sort(() => Math.random() - 0.5);
+        
         socket.emit('start-game', myRoom);
     };
 
-    socket.on('game-started', syncTurn);
-    socket.on('turn-changed', syncTurn);
+    // --- ИГРОВОЙ ПРОЦЕСС ---
 
-    function syncTurn(data) {
+    socket.on('turn-changed', (data) => {
         showScreen('game-screen');
         isMyTurn = (socket.id === data.activePlayerId);
-        document.getElementById('round-counter').innerText = data.currentRound;
-        document.getElementById('role-banner').innerText = isMyTurn ? "ТЫ УГАДЫВАЕШЬ!" : `ОТВЕЧАЙТЕ: ${data.activePlayerName}`;
         
-        document.getElementById('action-controls').style.display = isMyTurn ? 'grid' : 'none';
-        document.getElementById('observer-msg').style.display = isMyTurn ? 'none' : 'block';
+        document.getElementById('round-counter').innerText = data.currentRound;
+        
+        const controls = document.getElementById('action-controls');
+        const observerMsg = document.getElementById('observer-msg');
+        const wordHint = document.getElementById('word-hint');
 
-        if(isMyTurn) {
+        if (isMyTurn) {
+            // Игрок со смартфоном у лба: кнопок нет, слово размыто
+            controls.style.display = 'none';
+            observerMsg.style.display = 'none';
+            wordHint.classList.remove('hidden');
+            document.getElementById('role-banner').innerText = "ТВОЙ ХОД (ТЕЛЕФОН КО ЛБУ)";
+            
+            // Генерируем первое слово
             pickNewWord();
+        } else {
+            // Друзья: видят кнопки и слово
+            controls.style.display = 'grid';
+            observerMsg.style.display = 'block';
+            wordHint.classList.add('hidden');
+            document.getElementById('role-banner').innerText = `ОБЪЯСНЯЙТЕ: ${data.activePlayerName}`;
         }
+        
         startTimer(90);
-    }
+    });
 
     function pickNewWord() {
-        // Если слова кончились в локальном пуле - берем заново из выбранных тем
         if(gamePool.length === 0) {
+            // Перемешиваем заново если слова кончились
             selectedCats.forEach(c => gamePool = [...gamePool, ...categoriesData[c]]);
             gamePool.sort(() => Math.random() - 0.5);
         }
         const word = gamePool.pop();
-        socket.emit('game-action', { roomId: myRoom, data: { type: 'SYNC_WORD', word: word } });
+        socket.emit('game-action', { 
+            roomId: myRoom, 
+            data: { type: 'SYNC_WORD', word: word } 
+        });
     }
 
     socket.on('game-event', (data) => {
         if(data.type === 'SYNC_WORD') {
             const el = document.getElementById('current-word');
             el.innerText = data.word;
-            el.style.filter = isMyTurn ? "blur(12px)" : "none";
-            document.getElementById('word-hint').classList.toggle('hidden', !isMyTurn);
+            // Размываем слово только для того, кто угадывает
+            el.style.filter = isMyTurn ? "blur(15px)" : "none";
+        }
+        // Если пришел сигнал на смену слова от друзей
+        if(data.type === 'NEXT_WORD_REQ' && isMyTurn) {
+            pickNewWord();
         }
     });
+
+    // Эти кнопки нажимают ДРУЗЬЯ (Обсерверы)
+    window.handleWin = function() {
+        socket.emit('add-point', myRoom); // Сервер добавит +1 к активному игроку
+        socket.emit('game-action', { roomId: myRoom, data: { type: 'NEXT_WORD_REQ' } });
+    };
+
+    window.handleSkip = function() {
+        socket.emit('game-action', { roomId: myRoom, data: { type: 'NEXT_WORD_REQ' } });
+    };
+
+    // --- ТАЙМЕР И ФИНАЛ ---
 
     function startTimer(sec) {
         clearInterval(timerInterval);
         let timeLeft = sec;
         document.getElementById('timer-display').innerText = timeLeft;
+        
         timerInterval = setInterval(() => {
             timeLeft--;
             document.getElementById('timer-display').innerText = timeLeft;
             if(timeLeft <= 0) {
                 clearInterval(timerInterval);
-                if(isMyTurn) socket.emit('switch-turn', myRoom, false);
+                // По истечении времени только активный игрок просит сменить ход
+                if(isMyTurn) socket.emit('switch-turn', myRoom);
             }
         }, 1000);
     }
-
-    window.handleWin = function() { pickNewWord(); socket.emit('game-action', { roomId: myRoom, data: { type: 'POINT_SCORED' } }); };
-    window.handleSkip = function() { pickNewWord(); };
-
-    socket.on('game-event', (data) => {
-        if(data.type === 'POINT_SCORED') {
-            // Визуальный эффект или звук можно тут
-        }
-    });
-
-    // Очки в "Кто я" начисляются за каждое слово. 
-    // Чтобы не перегружать сервер, мы просто шлем 'switch-turn' в конце времени 
-    // с количеством набранных очков, НО сейчас для простоты оставим логику:
-    // 1 угаданное слово = 1 балл.
-    window.handleWin = function() {
-        socket.emit('switch-turn-add-point', myRoom); // Специальное событие для добавления очка без смены хода
-        pickNewWord();
-    };
-
-    socket.on('player-offline', (data) => {
-        document.getElementById('offline-overlay').style.display = 'flex';
-        let t = 60;
-        document.getElementById('wait-timer').innerText = t;
-        clearInterval(offlineTimer);
-        offlineTimer = setInterval(() => {
-            t--;
-            document.getElementById('wait-timer').innerText = t;
-            if(t <= 0) skipOfflinePlayer();
-        }, 1000);
-    });
-
-    window.skipOfflinePlayer = function() {
-        const offlineName = document.getElementById('offline-msg').innerText.split(' ')[0]; // Достаем имя если нужно
-        socket.emit('kick-player', myRoom, myName === offlineName ? "" : "someone"); 
-        // ВАЖНО: сервер должен просто убрать оффлайн игрока
-        document.getElementById('offline-overlay').style.display = 'none';
-        clearInterval(offlineTimer);
-    };
 
     socket.on('game-over', (data) => {
         clearInterval(timerInterval);
         showScreen('result-screen');
         const stats = document.getElementById('final-stats');
-        stats.innerHTML = data.players.sort((a,b)=>b.score-a.score).map(p => `
-            <div style="display:flex; justify-content:space-between; padding:15px; background:#F1F2F6; border-radius:15px; margin-bottom:10px; font-weight:900">
-                <span>${p.name}</span><strong>${p.score}</strong>
-            </div>
-        `).join('');
+        stats.innerHTML = data.players
+            .sort((a,b) => b.score - a.score)
+            .map((p, i) => `
+                <div class="result-row">
+                    <span>${i === 0 ? '🏆' : ''} ${p.name}</span>
+                    <strong>${p.score}</strong>
+                </div>
+            `).join('');
     });
+
+    // --- ВСПОМОГАТЕЛЬНОЕ ---
 
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
+
+    // Если связь пропала и восстановилась - переактивируем WakeLock
+    document.addEventListener('visibilitychange', () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            activateWakeLock();
+        }
+    });
+
 })();
