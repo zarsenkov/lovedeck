@@ -1,64 +1,8 @@
-const socket = io("https://lovecouple-server-zarsenkov.amvera.io", {
-    transports: ["polling"],
-    upgrade: false,
-    reconnection: true,
-    reconnectionAttempts: 5
-});
-
-socket.on("connect", () => {
-    console.log("✅ Ура! Сервер на связи!");
-});
-
-socket.on("connect_error", (err) => {
-    console.log("❌ Ошибка всё еще есть:", err.message);
-});
-
-// Добавь эти обработчики, чтобы видеть статус в консоли
-socket.on('connect', () => console.log('✅ СОЕДИНЕНО!'));
-socket.on('connect_error', (err) => console.log('❌ ОШИБКА:', err.message));
-
-let isOnline = false;
-let myRoom = "";
-
 let players = [];
 let currentPlayerIndex = 0;
 let score = 0;
 let timeLeft = 60;
 let timerId = null;
-
-// ОНЛАЙН: Слушаем сервер (если партнер сменил карту или начал игру)
-socket.on('game-event', (data) => {
-    if (data.type === 'SYNC_CARD') {
-        // 1. Обновляем текст на экране
-        document.getElementById('target-word').innerText = data.word;
-        document.getElementById('target-letter').innerText = data.letter;
-        
-        // 2. Если партнер нажал "Старт", а у нас еще висит меню — переключаем экран
-        if (!document.getElementById('setup-screen').classList.contains('hidden')) {
-            document.getElementById('setup-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-        }
-        console.log("Карточка синхронизирована!");
-    }
-});
-
-function startOnlineMode() {
-    const roomInput = document.getElementById('room-id');
-    const room = roomInput.value.trim(); // Берем текст из поля
-    
-    if (room) {
-        myRoom = room;
-        isOnline = true;
-        socket.emit('join-room', room);
-        
-        // Визуальное подтверждение
-        roomInput.style.borderColor = "#44ff44";
-        roomInput.disabled = true;
-        alert("ВЫ В СЕТИ! Теперь партнер должен ввести этот же код: " + room);
-    } else {
-        alert("Сначала введи код комнаты!");
-    }
-}
 
 function addPlayer() {
     const input = document.getElementById('player-name');
@@ -66,6 +10,7 @@ function addPlayer() {
     if (name) {
         players.push({ name: name, score: 0 });
         const li = document.createElement('li');
+        // Рандомный наклон для стиля зина
         const randomRot = (Math.random() * 4 - 2).toFixed(1);
         li.style.setProperty('--r', randomRot);
         li.innerText = `>> ${name}`;
@@ -95,8 +40,6 @@ function startTurn() {
     
     document.getElementById('active-player-name').innerText = players[currentPlayerIndex].name;
     document.getElementById('timer').innerText = timeLeft;
-    
-    // При старте хода генерируем карту
     updateCard();
     
     clearInterval(timerId);
@@ -107,25 +50,11 @@ function startTurn() {
     }, 1000);
 }
 
-// МОДИФИЦИРОВАННАЯ ФУНКЦИЯ: меняет карту и отправляет её партнеру
 function updateCard() {
     const randomWord = words[Math.floor(Math.random() * words.length)];
     const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
-    
     document.getElementById('target-word').innerText = randomWord;
     document.getElementById('target-letter').innerText = randomLetter;
-
-    // ОНЛАЙН: отправка данных
-    if (isOnline) {
-        socket.emit('game-action', {
-            roomId: myRoom,
-            data: {
-                type: 'SYNC_CARD',
-                word: randomWord,
-                letter: randomLetter
-            }
-        });
-    }
 }
 
 function handleResult(isWin) {
@@ -160,17 +89,3 @@ function showResults() {
 }
 
 document.getElementById('start-game-btn').addEventListener('click', startTurn);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
