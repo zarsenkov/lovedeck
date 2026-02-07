@@ -9,7 +9,11 @@
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
         if (myName && myRoom) {
-            socket.emit('join-room', { roomId: myRoom, playerName: myName });
+socket.emit('join-room', { 
+            roomId: myRoom, 
+            playerName: myName, 
+            gameType: 'zine' 
+        });
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('lobby-screen').classList.remove('hidden');
             document.getElementById('room-display').innerText = myRoom;
