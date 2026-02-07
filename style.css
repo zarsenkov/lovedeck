@@ -13,6 +13,7 @@
     --card-couples: #FFB7B2;
     --card-mafia: #CBD5E0;
     --card-one-letter: #A7FFEB;
+    --card-city: #fbff00;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -74,6 +75,7 @@ body {
 .neo-card.mafia { background: var(--card-mafia); }
 .neo-card.locked { background: var(--card-locked); opacity: 0.8; cursor: not-allowed; }
 .neo-card.one-letter { background: var(--card-one-letter); }
+.neo-card.city-quest { background: var(--card-city); }
 
 .neo-card:hover:not(.locked) {
     transform: translate(-4px, -4px);
