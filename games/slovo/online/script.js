@@ -1,36 +1,48 @@
-const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ["polling"] });
+// Проверка на случай повторного объявления
+if (typeof alphabet === 'undefined') {
+    var alphabet = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+}
 
-let myName = "", myRoom = "", isMyTurn = false;
-let timerId = null;
-const alphabet = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+// Инициализация сокета
+const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { 
+    transports: ["polling"] 
+});
 
-function joinLobby() {
+var myName = "", myRoom = "", isMyTurn = false, timerId = null;
+
+// Делаем функцию глобальной явно
+window.joinLobby = function() {
     myName = document.getElementById('player-name').value.trim();
     myRoom = document.getElementById('room-id').value.trim();
+    
     if (myName && myRoom) {
         socket.emit('join-room', { roomId: myRoom, playerName: myName });
         document.getElementById('setup-screen').classList.add('hidden');
         document.getElementById('lobby-screen').classList.remove('hidden');
         document.getElementById('room-display').innerText = myRoom;
     } else {
-        alert("Заполни имя и код!");
+        alert("Введите имя и код комнаты!");
     }
-}
+};
 
 socket.on('update-lobby', (data) => {
     const list = document.getElementById('online-players-list');
-    list.innerHTML = data.players.map(p => `<li><strong>${p.name}</strong> ${p.id === socket.id ? "(ТЫ)" : ""}</li>`).join('');
+    if (list) {
+        list.innerHTML = data.players.map(p => `<li>• <strong>${p.name}</strong> ${p.id === socket.id ? "(ВЫ)" : ""}</li>`).join('');
+    }
     
-    // Если ты первый в списке, ты — хост
+    // Показываем кнопку старта только первому игроку
+    const startBtn = document.getElementById('start-btn');
+    const waitMsg = document.getElementById('wait-msg');
     if (data.players[0].id === socket.id && !data.gameStarted) {
-        document.getElementById('start-btn').classList.remove('hidden');
-        document.getElementById('wait-msg').classList.add('hidden');
+        if (startBtn) startBtn.classList.remove('hidden');
+        if (waitMsg) waitMsg.classList.add('hidden');
     }
 });
 
-function requestStart() {
+window.requestStart = function() {
     socket.emit('start-game', myRoom);
-}
+};
 
 socket.on('game-started', (data) => syncTurn(data));
 socket.on('turn-changed', (data) => syncTurn(data));
@@ -54,16 +66,17 @@ socket.on('game-event', (data) => {
         
         if (isMyTurn) {
             wordEl.innerText = data.word;
-            wordEl.classList.remove('word-blur');
+            wordEl.style.filter = "none";
         } else {
             wordEl.innerText = "???";
-            wordEl.classList.add('word-blur');
+            wordEl.style.filter = "blur(10px)";
         }
         startTimer();
     }
 });
 
 function generateCard() {
+    if (typeof words === 'undefined') return;
     const randomWord = words[Math.floor(Math.random() * words.length)];
     const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
     socket.emit('game-action', {
@@ -74,26 +87,29 @@ function generateCard() {
 
 function updateUI() {
     const banner = document.getElementById('role-banner');
-    document.getElementById('host-controls').style.display = isMyTurn ? "flex" : "none";
-    document.getElementById('guest-msg').style.display = isMyTurn ? "none" : "block";
-    
+    const hostControls = document.getElementById('host-controls');
+    const guestMsg = document.getElementById('guest-msg');
+
     if (isMyTurn) {
         banner.innerText = "ТВОЙ ХОД: ОБЪЯСНЯЙ";
         banner.style.background = "#ff3e00";
+        hostControls.style.display = "flex";
+        guestMsg.style.display = "none";
     } else {
-        banner.innerText = "СЛУШАЙ И УГАДЫВАЙ";
-        banner.style.background = "#222";
+        banner.innerText = "УГАДЫВАЙТЕ!";
+        banner.style.background = "#000";
+        hostControls.style.display = "none";
+        guestMsg.style.display = "block";
     }
 }
 
-function handleWin() {
-    // Здесь можно добавить socket.emit('add-score') если нужно
+window.handleWin = function() {
     socket.emit('switch-turn', myRoom);
-}
+};
 
-function handleSkip() {
+window.handleSkip = function() {
     socket.emit('switch-turn', myRoom);
-}
+};
 
 function startTimer() {
     clearInterval(timerId);
@@ -102,6 +118,9 @@ function startTimer() {
     timerId = setInterval(() => {
         time--;
         document.getElementById('timer').innerText = time;
-        if (time <= 0) clearInterval(timerId);
+        if (time <= 0) {
+            clearInterval(timerId);
+            if (isMyTurn) socket.emit('switch-turn', myRoom);
+        }
     }, 1000);
 }
