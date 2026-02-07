@@ -1,8 +1,15 @@
+// ВАЖНО: Укажи именно свой адрес Amvera
 const socket = io("https://amvera-zarsenkov-run-lovecouple-server.amvera.io", {
-    path: '/socket.io/',
-    transports: ['polling', 'websocket'],
-    secure: true,
-    rejectUnauthorized: false // Иногда помогает при проблемах с SSL на поддоменах
+    transports: ["websocket", "polling"]
+});
+
+// Добавь эти строки для проверки в консоли браузера
+socket.on("connect", () => {
+    console.log("УРА! Мы подключились к серверу. ID:", socket.id);
+});
+
+socket.on("connect_error", (err) => {
+    console.error("Ошибка подключения:", err.message);
 });
 
 // Добавь эти обработчики, чтобы видеть статус в консоли
@@ -152,6 +159,7 @@ function showResults() {
 }
 
 document.getElementById('start-game-btn').addEventListener('click', startTurn);
+
 
 
 
