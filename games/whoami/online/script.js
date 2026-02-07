@@ -26,7 +26,11 @@
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
         if(myName && myRoom) {
-            socket.emit('join-room', { roomId: myRoom, playerName: myName });
+socket.emit('join-room', { 
+    roomId: myRoom, 
+    playerName: myName, 
+    gameType: 'whoami' // Указываем тип!
+});
             showScreen('lobby-screen');
             document.getElementById('room-display').innerText = myRoom;
         }
