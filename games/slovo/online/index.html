@@ -1,89 +1,64 @@
-<link rel="stylesheet" href="../style.css">
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="../cards.js"></script>
-<script src="script.js"></script> ```
+const express = require('express');
+const http = require('http');
+const { Server } = require("socket.io");
+const cors = require('cors');
 
-#### **script.js (в папке online — "Сетевой мозг")**
-Здесь мы пропишем полноценную логику комнат и ролей. Используй этот код:
+const app = express();
+app.use(cors());
 
-```javascript
-const socket = io("https://lovecouple-server-zarsenkov.amvera.io", {
-    transports: ["polling"]
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+    cors: { origin: "*", methods: ["GET", "POST"] }
 });
 
-let myRoom = "";
-let isMyTurn = false;
-let myScore = 0;
+const rooms = {};
 
-// 1. Подключение к комнате
-function startOnlineMode() {
-    const room = document.getElementById('room-id').value.trim();
-    if (room) {
-        myRoom = room;
-        socket.emit('join-room', room);
-        document.getElementById('setup-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
-    }
-}
-
-// 2. Слушаем сервер
-socket.on('init-state', (data) => {
-    isMyTurn = data.isMyTurn;
-    updateUI();
-});
-
-socket.on('game-event', (data) => {
-    if (data.type === 'SYNC_CARD') {
-        renderCard(data.word, data.letter);
-    }
-});
-
-socket.on('turn-changed', (data) => {
-    isMyTurn = (data.activePlayer === socket.id);
-    updateUI();
-});
-
-// 3. Логика игры
-function updateCard() {
-    if (!isMyTurn) return;
-
-    const randomWord = words[Math.floor(Math.random() * words.length)];
-    const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
-
-    socket.emit('game-action', {
-        roomId: myRoom,
-        data: { type: 'SYNC_CARD', word: randomWord, letter: randomLetter }
+io.on('connection', (socket) => {
+    socket.on('join-room', (roomId) => {
+        socket.join(roomId);
+        
+        if (!rooms[roomId]) {
+            rooms[roomId] = {
+                activePlayer: socket.id,
+                currentWord: null,
+                currentLetter: null
+            };
+        }
+        
+        // Отправляем игроку инфо: он ведущий или угадывающий
+        socket.emit('init-state', {
+            isMyTurn: rooms[roomId].activePlayer === socket.id,
+            currentWord: rooms[roomId].currentWord,
+            currentLetter: rooms[roomId].currentLetter
+        });
     });
-}
 
-function renderCard(word, letter) {
-    document.getElementById('target-letter').innerText = letter;
-    const wordDisplay = document.getElementById('target-word');
-    
-    if (isMyTurn) {
-        wordDisplay.innerText = word;
-        wordDisplay.style.filter = "none";
-    } else {
-        wordDisplay.innerText = "???"; // Угадывающий не видит слово
-        wordDisplay.style.filter = "blur(5px)";
-    }
-}
+    socket.on('game-action', ({ roomId, data }) => {
+        if (data.type === 'SYNC_CARD') {
+            rooms[roomId].currentWord = data.word;
+            rooms[roomId].currentLetter = data.letter;
+        }
+        io.to(roomId).emit('game-event', data);
+    });
 
-function updateUI() {
-    const controls = document.querySelector('.controls');
-    const playerStatus = document.getElementById('active-player-name');
-    
-    if (isMyTurn) {
-        controls.style.display = "flex";
-        playerStatus.innerText = "ТВОЙ ХОД: ОБЪЯСНЯЙ";
-    } else {
-        controls.style.display = "none";
-        playerStatus.innerText = "ХОД ПАРТНЕРА: УГАДЫВАЙ";
-    }
-}
+    socket.on('switch-turn', (roomId) => {
+        const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+        if (clients.length > 1) {
+            const room = rooms[roomId];
+            const currentIndex = clients.indexOf(room.activePlayer);
+            const nextIndex = (currentIndex + 1) % clients.length;
+            room.activePlayer = clients[nextIndex];
+            
+            io.to(roomId).emit('turn-changed', {
+                activePlayer: room.activePlayer
+            });
+        }
+    });
 
-// При нажатии "Угадали"
-function handleResult(isWin) {
-    if (!isMyTurn) return;
-    socket.emit('switch-turn', myRoom); // Передаем ход после каждого слова или по кнопке
-}
+    socket.on('disconnect', () => {
+        // Логика очистки комнат при желании
+    });
+});
+
+app.get('/', (req, res) => res.send('Server is LIVE on port 80'));
+httpServer.listen(80, '0.0.0.0');
