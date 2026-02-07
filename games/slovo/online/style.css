@@ -1,0 +1,117 @@
+:root {
+    --bg-paper: #e4e0d9;
+    --ink: #1a1a1a;
+    --accent-marker: #ff3e00;
+}
+
+/* Копируем базу из основного стиля, но адаптируем под онлайн */
+body {
+    background-color: #222;
+    background-image: radial-gradient(#333 10%, transparent 10%);
+    background-size: 20px 20px;
+    color: var(--ink);
+    font-family: "Courier New", Courier, monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.app-container {
+    background: var(--bg-paper);
+    width: 90%;
+    max-width: 420px;
+    padding: 40px 20px;
+    box-shadow: 15px 15px 0px #000;
+    position: relative;
+    border: 2px solid var(--ink);
+}
+
+.screen.hidden { display: none; }
+
+h1 { text-align: center; text-decoration: underline; margin-bottom: 30px; }
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 2px solid var(--ink);
+    background: #fff;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.btn-zinc {
+    width: 100%;
+    padding: 15px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+    text-transform: uppercase;
+}
+
+.btn-zinc:hover { opacity: 0.9; }
+
+.rules-box {
+    border: 2px dashed var(--ink);
+    padding: 15px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Стили лобби */
+#online-players-list {
+    list-style: none;
+    padding: 0;
+}
+#online-players-list li {
+    padding: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Игровая карта */
+.game-card {
+    background: #fff;
+    border: 1px solid var(--ink);
+    padding: 30px 10px;
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.letter-tag {
+    position: absolute;
+    top: -15px;
+    left: 10px;
+    background: var(--ink);
+    color: #fff;
+    padding: 5px 10px;
+}
+
+.word-display {
+    font-size: 2rem;
+    font-weight: 900;
+    margin: 20px 0;
+}
+
+#timer {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-align: center;
+    color: var(--accent-marker);
+}
+
+.zine-back-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 0.8rem;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: bold;
+}
