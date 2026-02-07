@@ -27,14 +27,21 @@ socket.on('game-event', (data) => {
     }
 });
 
-// ОНЛАЙН: Функция для включения режима (вызывается кнопкой из HTML)
 function startOnlineMode() {
-    const room = prompt("Придумайте код комнаты (например, 777):");
+    const roomInput = document.getElementById('room-id');
+    const room = roomInput.value.trim(); // Берем текст из поля
+    
     if (room) {
         myRoom = room;
         isOnline = true;
         socket.emit('join-room', room);
-        alert("Онлайн режим включен! Введите этот же код на втором устройстве.");
+        
+        // Визуальное подтверждение
+        roomInput.style.borderColor = "#44ff44";
+        roomInput.disabled = true;
+        alert("ВЫ В СЕТИ! Теперь партнер должен ввести этот же код: " + room);
+    } else {
+        alert("Сначала введи код комнаты!");
     }
 }
 
@@ -138,6 +145,7 @@ function showResults() {
 }
 
 document.getElementById('start-game-btn').addEventListener('click', startTurn);
+
 
 
 
