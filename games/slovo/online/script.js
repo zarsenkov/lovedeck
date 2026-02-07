@@ -1,42 +1,26 @@
 (function() {
-    const ALPHABET_ONLINE = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
-    
-    // Подключение к серверу
-    const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { 
-        transports: ["polling"],
-        reconnection: true
-    });
+    const ALPHABET = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+    const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ["polling"] });
 
     let myName = "", myRoom = "", isMyTurn = false, timerId = null;
-    let gameActive = false; 
+    let gameActive = false;
 
-    // Функция для ГАРАНТИРОВАННОГО скрытия плашки
+    // --- СИСТЕМНЫЕ ФУНКЦИИ ---
     window.closeOverlay = function() {
-        const overlay = document.getElementById('offline-overlay');
-        if (overlay) {
-            overlay.style.setProperty('display', 'none', 'important');
-        }
+        document.getElementById('offline-overlay').style.display = 'none';
     };
 
-    // 1. Инициализация (сразу прячем оверлей при загрузке страницы)
-    document.addEventListener('DOMContentLoaded', window.closeOverlay);
-
-    // 2. Логика входа
     window.joinLobby = function() {
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
-        
         if (myName && myRoom) {
             socket.emit('join-room', { roomId: myRoom, playerName: myName });
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('lobby-screen').classList.remove('hidden');
             document.getElementById('room-display').innerText = myRoom;
-        } else {
-            alert("Введите имя и код комнаты!");
         }
     };
 
-    // Настройка раундов (только хост)
     window.updateRoundsConfig = function() {
         const r = document.getElementById('rounds-count').value;
         socket.emit('set-rounds', { roomId: myRoom, rounds: r });
@@ -46,78 +30,46 @@
         socket.emit('start-game', myRoom);
     };
 
-    // 3. Работа с Socket.io
+    // --- ОБРАБОТКА СОБЫТИЙ ---
     socket.on('update-lobby', (data) => {
-        // Синхронизируем флаг активности игры с сервером
-        gameActive = data.gameStarted; 
-
+        gameActive = data.gameStarted;
         const list = document.getElementById('online-players-list');
         if (list) {
             list.innerHTML = data.players.map(p => `
-                <li style="${!p.online ? 'color: #ff3e00; text-decoration: line-through;' : ''}">
-                    • <strong>${p.name}</strong> ${!p.online ? "[OFFLINE]" : ""}
+                <li style="${!p.online ? 'opacity:0.5; text-decoration:line-through' : ''}">
+                    • ${p.name} ${p.id === socket.id ? "(ВЫ)" : ""}
                 </li>
             `).join('');
         }
 
-        // Прячем оверлей, если:
-        // 1. Игра еще не началась
-        // 2. Или все игроки в сети
-        const anyoneOffline = data.players.some(p => !p.online);
-        if (!gameActive || !anyoneOffline) {
-            window.closeOverlay();
-        }
-
-        // Показываем кнопку старта только первому игроку (хосту)
         const startBtn = document.getElementById('start-btn');
         if (data.players[0] && data.players[0].id === socket.id && !gameActive) {
             startBtn.classList.remove('hidden');
         }
+
+        if (!gameActive || data.players.every(p => p.online)) window.closeOverlay();
     });
 
     socket.on('player-offline', (data) => {
-        // Показываем плашку ТОЛЬКО если игра уже в процессе
         if (gameActive) {
-            const overlay = document.getElementById('offline-overlay');
-            const msg = document.getElementById('offline-msg');
-            if (overlay) {
-                overlay.style.setProperty('display', 'flex', 'important');
-                if (msg) msg.innerText = `${data.name} ВЫШЕЛ`;
-            }
+            document.getElementById('offline-msg').innerText = `${data.name} ВЫШЕЛ`;
+            document.getElementById('offline-overlay').style.display = 'flex';
         }
     });
 
-    socket.on('game-started', (data) => {
-        gameActive = true;
-        syncTurn(data);
-    });
+    socket.on('game-started', syncTurn);
+    socket.on('turn-changed', syncTurn);
 
-    socket.on('turn-changed', (data) => {
-        gameActive = true;
-        syncTurn(data);
-    });
-
-    socket.on('game-over', () => {
-        gameActive = false;
-        window.closeOverlay();
-        alert("ФИНАЛ ИГРЫ! Все круги пройдены.");
-        location.reload();
-    });
-
-    // 4. Игровой процесс
     function syncTurn(data) {
+        gameActive = true;
         document.getElementById('lobby-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
         window.closeOverlay();
-        
+
         isMyTurn = (socket.id === data.activePlayerId);
-        
-        const banner = document.getElementById('role-banner');
-        banner.innerText = `КРУГ ${data.currentRound}/${data.maxRounds} | ВЕЩАЕТ: ${data.activePlayerName}`;
-        
-        const activeNameInfo = document.getElementById('active-player-info');
-        if (activeNameInfo) activeNameInfo.innerText = data.activePlayerName;
-        
+        document.getElementById('role-banner').innerText = `КРУГ ${data.currentRound}/${data.maxRounds} | ХОД: ${data.activePlayerName}`;
+        document.getElementById('active-player-info').innerText = data.activePlayerName;
+
         updateUI();
         if (isMyTurn) generateCard();
     }
@@ -130,20 +82,22 @@
             if (isMyTurn) {
                 wordEl.innerText = data.word;
                 wordEl.style.filter = "none";
+                wordEl.style.opacity = "1";
                 letterEl.innerText = data.letter;
             } else {
                 wordEl.innerText = "???";
-                wordEl.style.filter = "blur(10px)";
+                wordEl.style.filter = "blur(8px)";
                 letterEl.innerText = "?";
             }
             startTimer();
         }
     });
 
+    // --- ИГРОВАЯ ЛОГИКА ---
     function generateCard() {
         if (typeof words === 'undefined') return;
         const randomWord = words[Math.floor(Math.random() * words.length)];
-        const randomLetter = ALPHABET_ONLINE[Math.floor(Math.random() * ALPHABET_ONLINE.length)];
+        const randomLetter = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
         socket.emit('game-action', {
             roomId: myRoom,
             data: { type: 'SYNC_CARD', word: randomWord, letter: randomLetter }
@@ -151,19 +105,9 @@
     }
 
     function updateUI() {
-        const hostControls = document.getElementById('host-controls');
-        const guestMsg = document.getElementById('guest-msg');
-        const banner = document.getElementById('role-banner');
-
-        if (isMyTurn) {
-            banner.style.background = "#ff3e00";
-            hostControls.style.display = "flex";
-            guestMsg.style.display = "none";
-        } else {
-            banner.style.background = "#000";
-            hostControls.style.display = "none";
-            guestMsg.style.display = "block";
-        }
+        document.getElementById('host-controls').style.display = isMyTurn ? "flex" : "none";
+        document.getElementById('guest-msg').style.display = isMyTurn ? "none" : "block";
+        document.getElementById('role-banner').style.background = isMyTurn ? "#ff3e00" : "#000";
     }
 
     window.handleWin = function() { socket.emit('switch-turn', myRoom); };
@@ -172,11 +116,10 @@
     function startTimer() {
         clearInterval(timerId);
         let time = 60;
-        const timerEl = document.getElementById('timer');
-        timerEl.innerText = time;
+        document.getElementById('timer').innerText = time;
         timerId = setInterval(() => {
             time--;
-            timerEl.innerText = time;
+            document.getElementById('timer').innerText = time;
             if (time <= 0) {
                 clearInterval(timerId);
                 if (isMyTurn) window.handleSkip();
