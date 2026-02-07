@@ -1,7 +1,6 @@
 // --- ОНЛАЙН: ПОДКЛЮЧЕНИЕ К AMVERA ---
 const socket = io("https://amvera-zarsenkov-run-lovecouple-server.amvera.io", {
-    transports: ["websocket"], // Используем только сокеты (это стабильнее)
-    rejectUnauthorized: false  // Игнорируем ошибку сертификата Amvera
+    transports: ["websocket"]
 }); 
 let isOnline = false;
 let myRoom = "";
@@ -139,5 +138,6 @@ function showResults() {
 }
 
 document.getElementById('start-game-btn').addEventListener('click', startTurn);
+
 
 
