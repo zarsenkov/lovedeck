@@ -24,10 +24,7 @@ body {
     position: relative;
 }
 
-.screen { display: block; }
 .hidden { display: none !important; }
-
-h1, h2 { text-align: center; margin-top: 0; }
 
 .btn-zinc {
     background: var(--ink);
@@ -40,14 +37,6 @@ h1, h2 { text-align: center; margin-top: 0; }
     margin-top: 10px;
 }
 
-input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-sizing: border-box;
-    border: 1px solid var(--ink);
-}
-
 .rules-box {
     border: 1px dashed var(--ink);
     padding: 10px;
@@ -55,73 +44,62 @@ input {
     background: rgba(255,255,255,0.5);
 }
 
-/* ИГРОВАЯ КАРТОЧКА */
 #role-banner {
-    background: #000;
-    color: #fff;
-    padding: 8px;
-    text-align: center;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
+    background: #000; color: #fff;
+    padding: 8px; text-align: center; margin-bottom: 15px;
 }
 
 #timer {
-    font-size: 3rem;
-    text-align: center;
-    font-weight: 900;
-    color: var(--accent);
+    font-size: 3rem; text-align: center; font-weight: 900; color: var(--accent);
 }
 
+/* КАРТОЧКА */
 .game-card {
     background: #fff;
     border: 2px solid var(--ink);
-    padding: 40px 10px;
+    padding: 50px 10px;
     text-align: center;
     margin: 20px 0;
     position: relative;
+    min-height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .letter-tag {
     position: absolute;
-    top: -12px;
-    left: 10px;
+    top: -12px; left: 10px;
     background: var(--accent);
     color: #fff;
-    padding: 2px 8px;
+    padding: 2px 10px;
     font-weight: bold;
+    z-index: 5;
 }
 
 .word-display {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--ink);
-    display: block; /* Гарантируем видимость */
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--ink) !important;
+    text-transform: uppercase;
+    word-break: break-word;
 }
 
 /* ОВЕРЛЕЙ */
 #offline-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85);
-    z-index: 9999;
-    display: none; /* Управляется через JS */
-    justify-content: center;
-    align-items: center;
-    color: #fff;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); z-index: 9999;
+    display: none; justify-content: center; align-items: center;
 }
 
 .overlay-content {
-    background: var(--bg-paper);
-    color: var(--ink);
-    padding: 20px;
-    border: 3px solid var(--accent);
-    text-align: center;
+    background: var(--bg-paper); padding: 20px; border: 3px solid var(--accent);
 }
 
-.zine-back-button {
-    text-decoration: none;
-    color: var(--ink);
-    font-size: 0.8rem;
-    display: block;
-    margin-bottom: 10px;
+/* ТАБЛИЦА РЕЗУЛЬТАТОВ */
+.res-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ink);
 }
