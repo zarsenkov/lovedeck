@@ -1,64 +1,51 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require("socket.io");
-const cors = require('cors');
-
-const app = express();
-app.use(cors());
-
-const httpServer = http.createServer(app);
-const io = new Server(httpServer, {
-    cors: { origin: "*", methods: ["GET", "POST"] }
-});
-
-const rooms = {};
-
-io.on('connection', (socket) => {
-    socket.on('join-room', (roomId) => {
-        socket.join(roomId);
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZINE: ONLINE</title>
+    <link rel="stylesheet" href="../style.css"> <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <a href="../" class="zine-back-button">← В ОФФЛАЙН</a>
         
-        if (!rooms[roomId]) {
-            rooms[roomId] = {
-                activePlayer: socket.id,
-                currentWord: null,
-                currentLetter: null
-            };
-        }
-        
-        // Отправляем игроку инфо: он ведущий или угадывающий
-        socket.emit('init-state', {
-            isMyTurn: rooms[roomId].activePlayer === socket.id,
-            currentWord: rooms[roomId].currentWord,
-            currentLetter: rooms[roomId].currentLetter
-        });
-    });
-
-    socket.on('game-action', ({ roomId, data }) => {
-        if (data.type === 'SYNC_CARD') {
-            rooms[roomId].currentWord = data.word;
-            rooms[roomId].currentLetter = data.letter;
-        }
-        io.to(roomId).emit('game-event', data);
-    });
-
-    socket.on('switch-turn', (roomId) => {
-        const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
-        if (clients.length > 1) {
-            const room = rooms[roomId];
-            const currentIndex = clients.indexOf(room.activePlayer);
-            const nextIndex = (currentIndex + 1) % clients.length;
-            room.activePlayer = clients[nextIndex];
+        <div id="setup-screen" class="screen">
+            <h1>ZINE_ONLINE</h1>
+            <div class="rules-box">
+                Введите одинаковый код с партнером.<br>
+                Первый зашедший — объясняет.<br>
+                Второй — угадывает.
+            </div>
             
-            io.to(roomId).emit('turn-changed', {
-                activePlayer: room.activePlayer
-            });
-        }
-    });
+            <div class="input-section" style="flex-direction: column; gap: 10px;">
+                <input type="text" id="room-id" placeholder="КОД КОМНАТЫ">
+                <button onclick="startOnlineMode()" class="btn-zinc">ПОДКЛЮЧИТЬСЯ</button>
+            </div>
+        </div>
 
-    socket.on('disconnect', () => {
-        // Логика очистки комнат при желании
-    });
-});
+        <div id="game-screen" class="screen hidden">
+            <div id="role-banner" style="background:#000; color:#fff; text-align:center; padding:8px; font-weight:bold; margin-bottom:15px; text-transform:uppercase;">
+                Синхронизация...
+            </div>
+            <div id="timer">60</div>
+            
+            <div class="game-card">
+                <div class="letter-tag">БУКВА: <span id="target-letter">?</span></div>
+                <div class="word-display" id="target-word">---</div>
+            </div>
 
-app.get('/', (req, res) => res.send('Server is LIVE on port 80'));
-httpServer.listen(80, '0.0.0.0');
+            <div class="controls" id="host-controls" style="display:none; flex-direction:column; gap:10px;">
+                <button onclick="handleOnlineResult(true)" class="btn-zinc" style="background:#44ff44; color:#000;">УГАДАЛИ!</button>
+                <button onclick="handleOnlineResult(false)" class="btn-zinc">ПРОПУСТИТЬ / СМЕНА ХОДА</button>
+            </div>
+
+            <div id="guest-msg" style="display:none; text-align:center; font-style:italic; margin-top:20px; color:#666;">
+                Вы угадываете. Не подглядывайте!
+            </div>
+        </div>
+    </div>
+
+    <script src="../cards.js"></script> <script src="script.js"></script>
+</body>
+</html>
