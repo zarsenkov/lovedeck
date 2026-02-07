@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZINE: ONE LETTER</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="setup-screen" class="screen">
+            <h1>ZINE_GAME</h1>
+            <div class="rules-box">
+                <strong>МАНУФЕСТ:</strong><br>
+                1. Получаешь слово и букву.<br>
+                2. Объясняешь ТОЛЬКО на эту букву.<br>
+                3. У тебя 60 секунд.
+            </div>
+            
+            <div class="input-section">
+                <input type="text" id="player-name" placeholder="КТО ТЫ?">
+                <button onclick="addPlayer()" class="btn-zinc">ЗАПИСАТЬ</button>
+            </div>
+            <ul id="players-list"></ul>
+            <button id="start-game-btn" class="btn-zinc" style="display:none; width: 100%; margin-top: 10px; background: #000;">ПУСК РАУНДА</button>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <div id="timer">60</div>
+            <div style="font-size: 0.8rem;">ВЕЩАЕТ: <span id="active-player-name"></span></div>
+            
+            <div class="game-card">
+                <div class="letter-tag">БУКВА: <span id="target-letter">?</span></div>
+                <div class="word-display" id="target-word">---</div>
+            </div>
+
+            <div class="controls" style="display:flex; flex-direction:column; gap:10px;">
+                <button onclick="handleResult(true)" class="btn-zinc" style="background:#44ff44; color:#000;">УГАДАЛИ (+1)</button>
+                <button onclick="handleResult(false)" class="btn-zinc">ПРОПУСТИТЬ</button>
+                <button onclick="backToSetup()" style="background:none; border:none; text-decoration:underline; cursor:pointer; margin-top:10px;">Назад в меню</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="screen hidden">
+            <h1>ФИНАЛ</h1>
+            <div id="final-stats"></div>
+            <button onclick="location.reload()" class="btn-zinc" style="margin-top:20px;">ПЕРЕЗАГРУЗКА</button>
+        </div>
+    </div>
+    <script src="cards.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
