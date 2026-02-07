@@ -3,76 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZINE ONLINE</title>
+    <title>ZINE: ONE LETTER</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <a href="../" class="btn-zinc" style="display: inline-block; width: auto; padding: 5px 10px; margin-bottom: 20px; font-size: 0.7rem; text-decoration: none; background: #555;">← В ОФФЛАЙН</a>
-
+        <a href="https://lovecouple.ru" class="zine-back-button">← НА ГЛАВНУЮ</a>
         <div id="setup-screen" class="screen">
-            <h1 class="glitch">ZINE_ON</h1>
-            <div class="rules-box" style="text-align: center; border-style: solid; margin-bottom: 20px;">
-                ОНЛАЙН ВЕРСИЯ
-            </div>
-            <input type="text" id="player-name" placeholder="НИК">
-            <input type="text" id="room-id" placeholder="КОМНАТА">
-            <button onclick="joinLobby()" class="btn-zinc">ВОЙТИ</button>
-        </div>
-
-        <div id="lobby-screen" class="screen hidden">
-            <h2>ЛОББИ: <span id="room-display"></span></h2>
+<div style="margin-bottom: 20px; border: 2px dashed #000; padding: 10px;">
+    <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 0.9rem;">ХОТИТЕ ИГРАТЬ ПО СЕТИ?</p>
+    <a href="online/" class="btn-zinc" style="display: block; text-align: center; background: #ff3e00; color: white; text-decoration: none;">
+        🌐 ПЕРЕЙТИ В ОНЛАЙН
+    </a>
+</div>
+            <h1>ZINE_GAME</h1>
             <div class="rules-box">
-                КРУГОВ: <input type="number" id="rounds-count" value="5" min="1" max="10" onchange="updateRoundsConfig()" style="width: 50px; margin: 0; padding: 2px;">
+                <strong>МАНУФЕСТ:</strong><br>
+                1. Получаешь слово и букву.<br>
+                2. Объясняешь ТОЛЬКО на эту букву.<br>
+                3. У тебя 60 секунд.
             </div>
-            <div class="rules-box">
-                <strong>ИГРОКИ:</strong>
-                <ul id="online-players-list" style="padding-left: 20px; margin: 10px 0;"></ul>
+            
+            <div class="input-section">
+                <input type="text" id="player-name" placeholder="КТО ТЫ?">
+                <button onclick="addPlayer()" class="btn-zinc">ЗАПИСАТЬ</button>
             </div>
-            <button id="start-btn" onclick="requestStart()" class="btn-zinc hidden" style="background:var(--accent)">НАЧАТЬ ИГРУ</button>
+            <ul id="players-list"></ul>
+            <button id="start-game-btn" class="btn-zinc" style="display:none; width: 100%; margin-top: 10px; background: #000;">ПУСК РАУНДА</button>
         </div>
 
         <div id="game-screen" class="screen hidden">
-            <div id="role-banner"></div>
             <div id="timer">60</div>
+            <div style="font-size: 0.8rem;">ВЕЩАЕТ: <span id="active-player-name"></span></div>
             
             <div class="game-card">
-                <div class="letter-tag">БУКВЫ: <span id="target-letters">? ? ?</span></div>
-                <div id="target-word" class="word-display">---</div>
+                <div class="letter-tag">БУКВА: <span id="target-letter">?</span></div>
+                <div class="word-display" id="target-word">---</div>
             </div>
 
-            <div id="host-controls" class="controls" style="display:none; gap: 10px; flex-direction: column;">
-                <button onclick="handleWin()" class="btn-zinc" style="background:#44ff44; color:#000; border: 2px solid #000;">УГАДАЛИ! (+1)</button>
-                <button onclick="handleSkip()" class="btn-zinc" style="background:#ccc; color:#000;">ПРОПУСТИТЬ</button>
-            </div>
-
-            <div id="guest-msg" class="rules-box" style="display:none; text-align:center;">
-                <p>Внимательно слушайте ведущего!</p>
-                <p style="font-size: 0.8rem; opacity: 0.7;">Попробуйте угадать слово и буквы</p>
+            <div class="controls" style="display:flex; flex-direction:column; gap:10px;">
+                <button onclick="handleResult(true)" class="btn-zinc" style="background:#44ff44; color:#000;">УГАДАЛИ (+1)</button>
+                <button onclick="handleResult(false)" class="btn-zinc">ПРОПУСТИТЬ</button>
+                <button onclick="backToSetup()" style="background:none; border:none; text-decoration:underline; cursor:pointer; margin-top:10px;">Назад в меню</button>
             </div>
         </div>
 
         <div id="result-screen" class="screen hidden">
-            <h1 style="color: var(--accent);">ФИНАЛ</h1>
-            <div class="rules-box">
-                <div id="final-stats"></div>
-            </div>
-            <button onclick="location.reload()" class="btn-zinc">ИГРАТЬ ЕЩЕ РАЗ</button>
+            <h1>ФИНАЛ</h1>
+            <div id="final-stats"></div>
+            <button onclick="location.reload()" class="btn-zinc" style="margin-top:20px;">ПЕРЕЗАГРУЗКА</button>
         </div>
     </div>
-
-    <div id="offline-overlay" style="display:none;">
-        <div class="overlay-content">
-            <h2 id="offline-msg" style="margin-top:0;">КТО-ТО ВЫШЕЛ</h2>
-            <p>Ждем возвращения:</p>
-            <div id="wait-timer">60</div>
-            <button onclick="skipOfflinePlayer()" class="btn-zinc" style="background: var(--accent);">ПРОДОЛЖИТЬ БЕЗ НЕГО</button>
-        </div>
-    </div>
-
-    <script src="../cards.js"></script>
+    <script src="cards.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
+
 
