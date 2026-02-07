@@ -1,8 +1,41 @@
+// --- ОНЛАЙН: ПОДКЛЮЧЕНИЕ К AMVERA ---
+// Замени ссылку ниже на ту, что во вкладке "Домены" в Amvera!
+const socket = io("https://твой-адрес.amvera.io"); 
+let isOnline = false;
+let myRoom = "";
+
 let players = [];
 let currentPlayerIndex = 0;
 let score = 0;
 let timeLeft = 60;
 let timerId = null;
+
+// ОНЛАЙН: Слушаем сервер (если партнер сменил карту или начал игру)
+socket.on('game-event', (data) => {
+    if (data.type === 'SYNC_CARD') {
+        // 1. Обновляем текст на экране
+        document.getElementById('target-word').innerText = data.word;
+        document.getElementById('target-letter').innerText = data.letter;
+        
+        // 2. Если партнер нажал "Старт", а у нас еще висит меню — переключаем экран
+        if (!document.getElementById('setup-screen').classList.contains('hidden')) {
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+        }
+        console.log("Карточка синхронизирована!");
+    }
+});
+
+// ОНЛАЙН: Функция для включения режима (вызывается кнопкой из HTML)
+function startOnlineMode() {
+    const room = prompt("Придумайте код комнаты (например, 777):");
+    if (room) {
+        myRoom = room;
+        isOnline = true;
+        socket.emit('join-room', room);
+        alert("Онлайн режим включен! Введите этот же код на втором устройстве.");
+    }
+}
 
 function addPlayer() {
     const input = document.getElementById('player-name');
@@ -10,7 +43,6 @@ function addPlayer() {
     if (name) {
         players.push({ name: name, score: 0 });
         const li = document.createElement('li');
-        // Рандомный наклон для стиля зина
         const randomRot = (Math.random() * 4 - 2).toFixed(1);
         li.style.setProperty('--r', randomRot);
         li.innerText = `>> ${name}`;
@@ -40,6 +72,8 @@ function startTurn() {
     
     document.getElementById('active-player-name').innerText = players[currentPlayerIndex].name;
     document.getElementById('timer').innerText = timeLeft;
+    
+    // При старте хода генерируем карту
     updateCard();
     
     clearInterval(timerId);
@@ -50,11 +84,25 @@ function startTurn() {
     }, 1000);
 }
 
+// МОДИФИЦИРОВАННАЯ ФУНКЦИЯ: меняет карту и отправляет её партнеру
 function updateCard() {
     const randomWord = words[Math.floor(Math.random() * words.length)];
     const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+    
     document.getElementById('target-word').innerText = randomWord;
     document.getElementById('target-letter').innerText = randomLetter;
+
+    // ОНЛАЙН: отправка данных
+    if (isOnline) {
+        socket.emit('game-action', {
+            roomId: myRoom,
+            data: {
+                type: 'SYNC_CARD',
+                word: randomWord,
+                letter: randomLetter
+            }
+        });
+    }
 }
 
 function handleResult(isWin) {
