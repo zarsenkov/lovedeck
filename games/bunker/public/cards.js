@@ -178,3 +178,5 @@ export const GAME_CARDS = {
     "Склад инструментов: всё от молотка до ЧПУ-станка"
   ]
 };
+if (typeof module !== 'undefined') { module.exports = { GAME_CARDS }; }
+
