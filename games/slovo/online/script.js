@@ -1,33 +1,42 @@
 (function() {
     const ALPHABET_ONLINE = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+    
+    // Подключение к серверу
     const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { 
         transports: ["polling"],
         reconnection: true
     });
 
     let myName = "", myRoom = "", isMyTurn = false, timerId = null;
-    let gameActive = false; // Строгий флаг состояния игры
+    let gameActive = false; 
 
-    // 1. Принудительная очистка при старте
+    // Функция для ГАРАНТИРОВАННОГО скрытия плашки
     window.closeOverlay = function() {
         const overlay = document.getElementById('offline-overlay');
-        if (overlay) overlay.classList.add('hidden');
+        if (overlay) {
+            overlay.style.setProperty('display', 'none', 'important');
+        }
     };
 
-    // Прячем всё сразу при загрузке скрипта
-    window.closeOverlay();
+    // 1. Инициализация (сразу прячем оверлей при загрузке страницы)
+    document.addEventListener('DOMContentLoaded', window.closeOverlay);
 
+    // 2. Логика входа
     window.joinLobby = function() {
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
+        
         if (myName && myRoom) {
             socket.emit('join-room', { roomId: myRoom, playerName: myName });
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('lobby-screen').classList.remove('hidden');
             document.getElementById('room-display').innerText = myRoom;
+        } else {
+            alert("Введите имя и код комнаты!");
         }
     };
 
+    // Настройка раундов (только хост)
     window.updateRoundsConfig = function() {
         const r = document.getElementById('rounds-count').value;
         socket.emit('set-rounds', { roomId: myRoom, rounds: r });
@@ -37,32 +46,44 @@
         socket.emit('start-game', myRoom);
     };
 
-    // 2. Логика Socket.io
+    // 3. Работа с Socket.io
     socket.on('update-lobby', (data) => {
-        // Синхронизируем статус игры с сервером
+        // Синхронизируем флаг активности игры с сервером
         gameActive = data.gameStarted; 
 
         const list = document.getElementById('online-players-list');
         if (list) {
             list.innerHTML = data.players.map(p => `
-                <li style="${!p.online ? 'color: red; opacity: 0.5;' : ''}">
+                <li style="${!p.online ? 'color: #ff3e00; text-decoration: line-through;' : ''}">
                     • <strong>${p.name}</strong> ${!p.online ? "[OFFLINE]" : ""}
                 </li>
             `).join('');
         }
 
-        // Если все в сети ИЛИ игра еще не начата — плашка НЕ ДОЛЖНА висеть
+        // Прячем оверлей, если:
+        // 1. Игра еще не началась
+        // 2. Или все игроки в сети
         const anyoneOffline = data.players.some(p => !p.online);
         if (!gameActive || !anyoneOffline) {
             window.closeOverlay();
         }
+
+        // Показываем кнопку старта только первому игроку (хосту)
+        const startBtn = document.getElementById('start-btn');
+        if (data.players[0] && data.players[0].id === socket.id && !gameActive) {
+            startBtn.classList.remove('hidden');
+        }
     });
 
     socket.on('player-offline', (data) => {
-        // Показываем плашку только если раунд в процессе
+        // Показываем плашку ТОЛЬКО если игра уже в процессе
         if (gameActive) {
-            document.getElementById('offline-msg').innerText = `${data.name} ВЫШЕЛ`;
-            document.getElementById('offline-overlay').classList.remove('hidden');
+            const overlay = document.getElementById('offline-overlay');
+            const msg = document.getElementById('offline-msg');
+            if (overlay) {
+                overlay.style.setProperty('display', 'flex', 'important');
+                if (msg) msg.innerText = `${data.name} ВЫШЕЛ`;
+            }
         }
     });
 
@@ -79,27 +100,33 @@
     socket.on('game-over', () => {
         gameActive = false;
         window.closeOverlay();
-        alert("ФИНАЛ ИГРЫ!");
+        alert("ФИНАЛ ИГРЫ! Все круги пройдены.");
         location.reload();
     });
 
+    // 4. Игровой процесс
     function syncTurn(data) {
         document.getElementById('lobby-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
-        window.closeOverlay(); // Убираем плашку при смене хода
+        window.closeOverlay();
         
         isMyTurn = (socket.id === data.activePlayerId);
-        document.getElementById('role-banner').innerText = `КРУГ ${data.currentRound}/${data.maxRounds} | ВЕЩАЕТ: ${data.activePlayerName}`;
+        
+        const banner = document.getElementById('role-banner');
+        banner.innerText = `КРУГ ${data.currentRound}/${data.maxRounds} | ВЕЩАЕТ: ${data.activePlayerName}`;
+        
+        const activeNameInfo = document.getElementById('active-player-info');
+        if (activeNameInfo) activeNameInfo.innerText = data.activePlayerName;
         
         updateUI();
         if (isMyTurn) generateCard();
     }
 
-    // 3. Остальные функции
     socket.on('game-event', (data) => {
         if (data.type === 'SYNC_CARD') {
             const wordEl = document.getElementById('target-word');
             const letterEl = document.getElementById('target-letter');
+            
             if (isMyTurn) {
                 wordEl.innerText = data.word;
                 wordEl.style.filter = "none";
@@ -124,10 +151,19 @@
     }
 
     function updateUI() {
-        const isHost = isMyTurn;
-        document.getElementById('host-controls').style.display = isHost ? "flex" : "none";
-        document.getElementById('guest-msg').style.display = isHost ? "none" : "block";
-        document.getElementById('role-banner').style.background = isHost ? "#ff3e00" : "#000";
+        const hostControls = document.getElementById('host-controls');
+        const guestMsg = document.getElementById('guest-msg');
+        const banner = document.getElementById('role-banner');
+
+        if (isMyTurn) {
+            banner.style.background = "#ff3e00";
+            hostControls.style.display = "flex";
+            guestMsg.style.display = "none";
+        } else {
+            banner.style.background = "#000";
+            hostControls.style.display = "none";
+            guestMsg.style.display = "block";
+        }
     }
 
     window.handleWin = function() { socket.emit('switch-turn', myRoom); };
@@ -136,10 +172,11 @@
     function startTimer() {
         clearInterval(timerId);
         let time = 60;
-        document.getElementById('timer').innerText = time;
+        const timerEl = document.getElementById('timer');
+        timerEl.innerText = time;
         timerId = setInterval(() => {
             time--;
-            document.getElementById('timer').innerText = time;
+            timerEl.innerText = time;
             if (time <= 0) {
                 clearInterval(timerId);
                 if (isMyTurn) window.handleSkip();
