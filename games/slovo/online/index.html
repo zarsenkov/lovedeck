@@ -3,66 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZINE: ONLINE PARTY</title>
+    <title>ZINE ONLINE</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <a href="../" class="zine-back-button">← В ОФФЛАЙН</a>
-        
         <div id="setup-screen" class="screen">
-            <h1>ZINE_ONLINE</h1>
-            <div class="input-section">
-                <input type="text" id="player-name" placeholder="ТВОЙ НИК">
-                <input type="text" id="room-id" placeholder="КОД КОМНАТЫ">
-                <button onclick="window.joinLobby()" class="btn-zinc">ВОЙТИ В ЛОББИ</button>
-            </div>
+            <h1 class="glitch">ZINE_ON</h1>
+            <input type="text" id="player-name" placeholder="НИК">
+            <input type="text" id="room-id" placeholder="КОМНАТА">
+            <button onclick="joinLobby()" class="btn-zinc">ВОЙТИ</button>
         </div>
 
         <div id="lobby-screen" class="screen hidden">
-            <h2>КОМНАТА: <span id="room-display"></span></h2>
+            <h2>ЛОББИ: <span id="room-display"></span></h2>
             <div class="rules-box">
-                КРУГОВ: <input type="number" id="rounds-count" value="5" min="1" max="20" onchange="window.updateRoundsConfig()">
+                КРУГОВ: <input type="number" id="rounds-count" value="5" min="1" max="10" onchange="updateRoundsConfig()">
             </div>
             <div class="rules-box">
                 <strong>ИГРОКИ:</strong>
                 <ul id="online-players-list"></ul>
             </div>
-            <button id="start-btn" onclick="window.requestStart()" class="btn-zinc hidden">НАЧАТЬ ИГРУ</button>
+            <button id="start-btn" onclick="requestStart()" class="btn-zinc hidden" style="background:var(--accent)">СТАРТ</button>
         </div>
 
         <div id="game-screen" class="screen hidden">
-            <div id="role-banner">ОЖИДАНИЕ...</div>
+            <div id="role-banner"></div>
             <div id="timer">60</div>
-            
             <div class="game-card">
-                <div class="letter-tag">БУКВА: <span id="target-letter">?</span></div>
+                <div class="letter-tag">БУКВЫ: <span id="target-letters">? ? ?</span></div>
                 <div id="target-word" class="word-display">---</div>
             </div>
-
             <div id="host-controls" class="controls" style="display:none;">
-                <button onclick="window.handleWin()" class="btn-zinc" style="background:#44ff44; color: black;">УГАДАЛИ!</button>
-                <button onclick="window.handleSkip()" class="btn-zinc">ПРОПУСТИТЬ</button>
+                <button onclick="handleWin()" class="btn-zinc" style="background:#44ff44; color:#000">УГАДАЛИ!</button>
+                <button onclick="handleSkip()" class="btn-zinc">ПРОПУСТИТЬ</button>
             </div>
-
-            <div id="guest-msg" class="rules-box" style="display:none; text-align: center;">
-                Слушайте <strong id="active-player-info">...</strong><br>
-                Угадывайте букву и слово!
+            <div id="guest-msg" class="rules-box" style="display:none; text-align:center;">
+                Угадывайте слово!
             </div>
         </div>
 
         <div id="result-screen" class="screen hidden">
             <h1>ФИНАЛ</h1>
-            <div id="final-stats" class="rules-box"></div>
+            <div id="final-stats"></div>
             <button onclick="location.reload()" class="btn-zinc">В МЕНЮ</button>
         </div>
     </div>
 
     <div id="offline-overlay" style="display:none;">
         <div class="overlay-content">
-            <h2 id="offline-msg">СВЯЗЬ ПОТЕРЯНА</h2>
-            <button onclick="window.closeOverlay()" class="btn-zinc">ИГРАТЬ БЕЗ НЕГО</button>
+            <h2 id="offline-msg">КТО-ТО ВЫШЕЛ</h2>
+            <div id="wait-timer">60</div>
+            <button onclick="skipOfflinePlayer()" class="btn-zinc">ИГРАТЬ БЕЗ НЕГО</button>
         </div>
     </div>
 
