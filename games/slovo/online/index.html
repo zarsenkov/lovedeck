@@ -42,14 +42,20 @@
             </div>
 
             <div id="host-controls" class="controls" style="display:none;">
-                <button onclick="window.handleWin()" class="btn-zinc" style="background:#44ff44;">УГАДАЛИ!</button>
+                <button onclick="window.handleWin()" class="btn-zinc" style="background:#44ff44; color: black;">УГАДАЛИ!</button>
                 <button onclick="window.handleSkip()" class="btn-zinc">ПРОПУСТИТЬ</button>
             </div>
 
-            <div id="guest-msg" class="rules-box" style="display:none; margin-top:20px;">
+            <div id="guest-msg" class="rules-box" style="display:none; text-align: center;">
                 Слушайте <strong id="active-player-info">...</strong><br>
                 Угадывайте букву и слово!
             </div>
+        </div>
+
+        <div id="result-screen" class="screen hidden">
+            <h1>ФИНАЛ</h1>
+            <div id="final-stats" class="rules-box"></div>
+            <button onclick="location.reload()" class="btn-zinc">В МЕНЮ</button>
         </div>
     </div>
 
