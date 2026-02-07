@@ -1,0 +1,177 @@
+/* Базовые настройки брутализма */
+:root {
+  --bg-color: #1a1a1a;
+  --text-color: #ccff00; /* Радиоактивный зеленый */
+  --accent-color: #ffcc00; /* Предупреждающий желтый */
+  --danger-color: #ff3e3e;
+  --border-width: 2px;
+  --font-main: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0 !important; /* Никаких скруглений */
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-main);
+  overflow-x: hidden;
+  line-height: 1.4;
+}
+
+/* Эффект ЭЛТ-монитора (CRT Scanlines) */
+body::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+              linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 9999;
+  pointer-events: none;
+  background-size: 100% 2px, 3px 100%;
+}
+
+/* Сетка интерфейса */
+.app-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Заголовки */
+h1, h2, h3 {
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  border-bottom: var(--border-width) solid var(--text-color);
+  display: inline-block;
+  padding-right: 20px;
+}
+
+/* Поля ввода и кнопки */
+input[type="text"] {
+  background: transparent;
+  border: var(--border-width) solid var(--text-color);
+  color: var(--text-color);
+  padding: 12px;
+  font-family: var(--font-main);
+  width: 100%;
+  margin-bottom: 20px;
+  outline: none;
+}
+
+button {
+  background: var(--text-color);
+  color: #000;
+  border: none;
+  padding: 15px 25px;
+  font-family: var(--font-main);
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 6px 6px 0px #000;
+  transition: all 0.1s;
+  margin: 10px 0;
+}
+
+button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px #000;
+  background: var(--accent-color);
+}
+
+button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #000;
+}
+
+/* Игровые карточки */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.card {
+  border: var(--border-width) solid var(--text-color);
+  padding: 15px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: rgba(204, 255, 0, 0.05);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.card.hidden {
+  background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 10px, #1a1a1a 10px, #1a1a1a 20px);
+}
+
+.card-label {
+  font-size: 10px;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.card-text {
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
+/* Лобби и чат */
+.terminal-block {
+  border: var(--border-width) solid var(--text-color);
+  padding: 15px;
+  margin-bottom: 20px;
+  background: #000;
+}
+
+.chat-box {
+  height: 200px;
+  overflow-y: auto;
+  border-bottom: 1px solid #333;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 12px;
+}
+
+/* Анимация катастрофы */
+@keyframes flicker {
+  0% { opacity: 1; }
+  5% { opacity: 0.8; }
+  10% { opacity: 1; }
+  15% { opacity: 0.9; }
+  25% { opacity: 0.3; }
+  30% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.disaster-alert {
+  color: var(--danger-color);
+  border: 4px solid var(--danger-color);
+  padding: 20px;
+  animation: flicker 0.5s infinite;
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* Скрыть ненужные экраны */
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* Mobile optimization */
+@media (max-width: 600px) {
+  .card-grid { grid-template-columns: 1fr 1fr; }
+  h1 { font-size: 20px; }
+}
