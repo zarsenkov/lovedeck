@@ -5,7 +5,6 @@
     let myName = "", myRoom = "", isMyTurn = false, timerId = null;
     let gameActive = false;
 
-    // --- СИСТЕМНЫЕ ФУНКЦИИ ---
     window.closeOverlay = function() {
         document.getElementById('offline-overlay').style.display = 'none';
     };
@@ -22,31 +21,22 @@
     };
 
     window.updateRoundsConfig = function() {
-        const r = document.getElementById('rounds-count').value;
-        socket.emit('set-rounds', { roomId: myRoom, rounds: r });
+        socket.emit('set-rounds', { roomId: myRoom, rounds: document.getElementById('rounds-count').value });
     };
 
     window.requestStart = function() {
         socket.emit('start-game', myRoom);
     };
 
-    // --- ОБРАБОТКА СОБЫТИЙ ---
     socket.on('update-lobby', (data) => {
         gameActive = data.gameStarted;
         const list = document.getElementById('online-players-list');
         if (list) {
-            list.innerHTML = data.players.map(p => `
-                <li style="${!p.online ? 'opacity:0.5; text-decoration:line-through' : ''}">
-                    • ${p.name} ${p.id === socket.id ? "(ВЫ)" : ""}
-                </li>
-            `).join('');
+            list.innerHTML = data.players.map(p => `<li>• ${p.name} [${p.score || 0}]</li>`).join('');
         }
-
-        const startBtn = document.getElementById('start-btn');
         if (data.players[0] && data.players[0].id === socket.id && !gameActive) {
-            startBtn.classList.remove('hidden');
+            document.getElementById('start-btn').classList.remove('hidden');
         }
-
         if (!gameActive || data.players.every(p => p.online)) window.closeOverlay();
     });
 
@@ -63,6 +53,7 @@
     function syncTurn(data) {
         gameActive = true;
         document.getElementById('lobby-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
         window.closeOverlay();
 
@@ -86,14 +77,14 @@
                 letterEl.innerText = data.letter;
             } else {
                 wordEl.innerText = "???";
-                wordEl.style.filter = "blur(8px)";
+                wordEl.style.filter = "blur(10px)";
+                wordEl.style.opacity = "0.3";
                 letterEl.innerText = "?";
             }
             startTimer();
         }
     });
 
-    // --- ИГРОВАЯ ЛОГИКА ---
     function generateCard() {
         if (typeof words === 'undefined') return;
         const randomWord = words[Math.floor(Math.random() * words.length)];
@@ -126,4 +117,19 @@
             }
         }, 1000);
     }
+
+    socket.on('game-over', (data) => {
+        gameActive = false;
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        
+        const stats = document.getElementById('final-stats');
+        const sorted = [...data.players].sort((a,b) => b.score - a.score);
+        stats.innerHTML = sorted.map(p => `
+            <div class="res-item">
+                <span>${p.name}</span>
+                <strong>${p.score || 0} очков</strong>
+            </div>
+        `).join('');
+    });
 })();
