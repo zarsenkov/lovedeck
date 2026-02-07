@@ -148,4 +148,26 @@ input {
 .res-item {
     border-bottom: 2px solid var(--ink);
     padding: 10px 0;
+
+}
+.zine-back-button {
+    position: absolute;
+    top: -45px; /* Кнопка «парит» над основным блоком */
+    left: 0;
+    background: var(--ink); /* Черный цвет из твоих переменных */
+    color: var(--bg-paper); /* Цвет бумаги */
+    padding: 8px 15px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: 1px solid var(--ink);
+    transform: rotate(-2deg); /* Панк-наклон */
+    box-shadow: 4px 4px 0px var(--tape-color); /* Желтая тень как скотч */
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.zine-back-button:hover {
+    transform: rotate(0deg) scale(1.05);
+    background: var(--accent-marker); /* Оранжевый при наведении */
 }
