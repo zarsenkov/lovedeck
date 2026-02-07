@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZINE: ONLINE</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
@@ -13,26 +13,40 @@
         
         <div id="setup-screen" class="screen">
             <h1>ZINE_ONLINE</h1>
-            <div class="input-section" style="flex-direction: column; gap: 10px;">
+            <div class="input-section">
+                <input type="text" id="player-name" placeholder="ВАШЕ ИМЯ">
                 <input type="text" id="room-id" placeholder="КОД КОМНАТЫ">
-                <button onclick="startOnlineMode()" class="btn-zinc">ВОЙТИ В ИГРУ</button>
+                <button onclick="joinLobby()" class="btn-zinc">ВОЙТИ В ЛОББИ</button>
             </div>
         </div>
 
+        <div id="lobby-screen" class="screen hidden">
+            <h1>ЛОББИ: <span id="room-display"></span></h1>
+            <div class="rules-box">
+                <strong>ИГРОКИ:</strong>
+                <ul id="online-players-list"></ul>
+            </div>
+            <p id="wait-msg" style="text-align:center;">Ожидаем запуска...</p>
+            <button id="start-btn" onclick="requestStart()" class="btn-zinc hidden" style="background:var(--accent-marker)">НАЧАТЬ ИГРУ</button>
+        </div>
+
         <div id="game-screen" class="screen hidden">
-            <div id="role-banner" style="background:#000; color:#fff; text-align:center; padding:8px; font-weight:bold; margin-bottom:15px;">
-                ПОДКЛЮЧЕНИЕ...
+            <div id="role-banner" style="background:#000; color:#fff; text-align:center; padding:8px; font-weight:bold; margin-bottom:15px; text-transform:uppercase;">
+                ПОДГОТОВКА...
             </div>
             <div id="timer">60</div>
+            
             <div class="game-card">
                 <div class="letter-tag">БУКВА: <span id="target-letter">?</span></div>
                 <div class="word-display" id="target-word">---</div>
             </div>
+
             <div class="controls" id="host-controls" style="display:none; flex-direction:column; gap:10px;">
-                <button onclick="handleOnlineResult()" class="btn-zinc" style="background:#44ff44; color:#000;">УГАДАЛИ / СЛЕДУЮЩИЙ</button>
+                <button onclick="handleOnlineAction()" class="btn-zinc" style="background:#44ff44; color:#000;">УГАДАЛИ / СЛЕДУЮЩИЙ</button>
             </div>
+
             <div id="guest-msg" style="display:none; text-align:center; font-style:italic; margin-top:20px; color:#666;">
-                Ждите, партнер объясняет...
+                <span id="active-player-info">Игрок</span> объясняет...
             </div>
         </div>
     </div>
