@@ -32,10 +32,10 @@
     <button id="start-btn" onclick="requestStart()" class="btn-zinc hidden">НАЧАТЬ</button>
 </div>
 
-<div id="offline-overlay" class="hidden" style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); color:white; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:1000;">
-    <h2 id="offline-msg">Игрок вышел...</h2>
-    <p>Ждем 60 сек или...</p>
-    <button onclick="closeOverlay()" class="btn-zinc" style="width: auto; background: var(--accent-marker);">ИГРАТЬ БЕЗ НЕГО</button>
+<div id="offline-overlay" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); color:white; flex-direction:column; justify-content:center; align-items:center; z-index:1000;">
+    <h2 id="offline-msg">СВЯЗЬ ПОТЕРЯНА</h2>
+    <p style="margin-bottom: 20px;">Ждем игрока или продолжаем без него</p>
+    <button onclick="closeOverlay()" class="btn-zinc" style="width: auto; background: #ff3e00; color: white; padding: 10px 20px;">ИГРАТЬ БЕЗ НЕГО</button>
 </div>
 
         <div id="game-screen" class="screen hidden">
