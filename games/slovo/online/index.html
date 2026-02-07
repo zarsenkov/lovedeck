@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZINE: ONLINE</title>
-    <link rel="stylesheet" href="../style.css"> <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet" href="../style.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -12,40 +13,31 @@
         
         <div id="setup-screen" class="screen">
             <h1>ZINE_ONLINE</h1>
-            <div class="rules-box">
-                Введите одинаковый код с партнером.<br>
-                Первый зашедший — объясняет.<br>
-                Второй — угадывает.
-            </div>
-            
             <div class="input-section" style="flex-direction: column; gap: 10px;">
                 <input type="text" id="room-id" placeholder="КОД КОМНАТЫ">
-                <button onclick="startOnlineMode()" class="btn-zinc">ПОДКЛЮЧИТЬСЯ</button>
+                <button onclick="startOnlineMode()" class="btn-zinc">ВОЙТИ В ИГРУ</button>
             </div>
         </div>
 
         <div id="game-screen" class="screen hidden">
-            <div id="role-banner" style="background:#000; color:#fff; text-align:center; padding:8px; font-weight:bold; margin-bottom:15px; text-transform:uppercase;">
-                Синхронизация...
+            <div id="role-banner" style="background:#000; color:#fff; text-align:center; padding:8px; font-weight:bold; margin-bottom:15px;">
+                ПОДКЛЮЧЕНИЕ...
             </div>
             <div id="timer">60</div>
-            
             <div class="game-card">
                 <div class="letter-tag">БУКВА: <span id="target-letter">?</span></div>
                 <div class="word-display" id="target-word">---</div>
             </div>
-
             <div class="controls" id="host-controls" style="display:none; flex-direction:column; gap:10px;">
-                <button onclick="handleOnlineResult(true)" class="btn-zinc" style="background:#44ff44; color:#000;">УГАДАЛИ!</button>
-                <button onclick="handleOnlineResult(false)" class="btn-zinc">ПРОПУСТИТЬ / СМЕНА ХОДА</button>
+                <button onclick="handleOnlineResult()" class="btn-zinc" style="background:#44ff44; color:#000;">УГАДАЛИ / СЛЕДУЮЩИЙ</button>
             </div>
-
             <div id="guest-msg" style="display:none; text-align:center; font-style:italic; margin-top:20px; color:#666;">
-                Вы угадываете. Не подглядывайте!
+                Ждите, партнер объясняет...
             </div>
         </div>
     </div>
 
-    <script src="../cards.js"></script> <script src="script.js"></script>
+    <script src="../cards.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
