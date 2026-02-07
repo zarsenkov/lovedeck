@@ -20,15 +20,23 @@
             </div>
         </div>
 
-        <div id="lobby-screen" class="screen hidden">
-            <h2 style="text-align:center">ЛОББИ: <span id="room-display"></span></h2>
-            <div class="rules-box">
-                <strong>КТО В ИГРЕ:</strong>
-                <ul id="online-players-list" style="list-style:none; padding:10px 0;"></ul>
-            </div>
-            <button id="start-btn" onclick="requestStart()" class="btn-zinc hidden" style="background:#ff3e00">ЗАПУСТИТЬ ИГРУ</button>
-            <p id="wait-msg" style="text-align:center; font-size:0.8rem; margin-top:10px;">Ждем хоста...</p>
-        </div>
+<div id="lobby-screen" class="screen hidden">
+    <h2>КОМНАТА: <span id="room-display"></span></h2>
+    <div id="round-setup" class="rules-box">
+        КРУГОВ: <input type="number" id="rounds-count" value="5" min="1" max="20" style="width: 50px;" onchange="updateRoundsConfig()">
+    </div>
+    <div class="rules-box">
+        <strong>ИГРОКИ:</strong>
+        <ul id="online-players-list"></ul>
+    </div>
+    <button id="start-btn" onclick="requestStart()" class="btn-zinc hidden">НАЧАТЬ</button>
+</div>
+
+<div id="offline-overlay" class="hidden" style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); color:white; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:1000;">
+    <h2 id="offline-msg">Игрок вышел...</h2>
+    <p>Ждем 60 сек или...</p>
+    <button onclick="closeOverlay()" class="btn-zinc" style="width: auto; background: var(--accent-marker);">ИГРАТЬ БЕЗ НЕГО</button>
+</div>
 
         <div id="game-screen" class="screen hidden">
             <div id="role-banner" style="background:#000; color:#fff; text-align:center; padding:8px; font-weight:bold; margin-bottom:15px; text-transform:uppercase;"></div>
