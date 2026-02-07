@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>КТО Я? // ОНЛАЙН</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <button class="nav-btn back-btn" onclick="window.location.href='../index.html'">←</button>
+
+        <section id="setup-screen" class="screen active">
+            <h1 class="main-title">КТО<span>Я?_ON</span></h1>
+            <div class="card-glass">
+                <input type="text" id="player-name" class="joy-input" placeholder="ТВОЕ ИМЯ">
+                <input type="text" id="room-id" class="joy-input" placeholder="КОД КОМНАТЫ">
+                <button onclick="joinLobby()" class="primary-btn">ВОЙТИ</button>
+            </div>
+        </section>
+
+        <section id="lobby-screen" class="screen">
+            <h2 class="main-title-small">ЛОББИ: <span id="room-display"></span></h2>
+            <div class="card-glass">
+                <div class="timer-simple">
+                    КРУГОВ: <input type="number" id="rounds-count" value="3" min="1" max="10">
+                </div>
+                <div class="players-list-box">
+                    <strong>ИГРОКИ:</strong>
+                    <ul id="player-list"></ul>
+                </div>
+                <div id="host-controls" style="display:none; margin-top:10px;">
+                    <p style="font-size:10px; margin-bottom:5px;">ВЫБЕРИ ТЕМЫ:</p>
+                    <div id="categories-grid" class="category-grid"></div>
+                </div>
+            </div>
+            <button id="start-btn" class="primary-btn hidden" onclick="requestStart()">НАЧАТЬ</button>
+        </section>
+
+        <section id="game-screen" class="screen">
+            <div class="game-top">
+                <div id="timer-display" class="timer-pill">90</div>
+                <div class="score-pill">КРУГ: <span id="round-counter">1</span></div>
+            </div>
+            <div id="role-banner">КТО-ТО ИГРАЕТ...</div>
+            <div class="main-card-wrap">
+                <div class="word-card">
+                    <h1 id="current-word">---</h1>
+                </div>
+            </div>
+            <div id="action-controls" class="game-controls" style="display:none;">
+                <button class="btn-skip" onclick="handleSkip()">ПАС</button>
+                <button class="btn-win" onclick="handleWin()">УГАДАЛ!</button>
+            </div>
+            <div id="observer-msg" class="rules-box" style="display:none; text-align:center;">
+                ОБЪЯСНЯЙТЕ СЛОВО!
+            </div>
+        </section>
+
+        <section id="result-screen" class="screen">
+            <h1 class="main-title-small">ИТОГИ</h1>
+            <div class="card-glass" id="final-stats"></div>
+            <button class="primary-btn" onclick="location.reload()">В МЕНЮ</button>
+        </section>
+    </div>
+
+    <div id="offline-overlay" class="modal-overlay">
+        <div class="modal-card">
+            <h2 id="offline-msg">ИГРОК ВЫШЕЛ</h2>
+            <div id="wait-timer" style="font-size:40px; color:var(--accent); font-weight:900;">60</div>
+            <button class="primary-btn" onclick="skipOfflinePlayer()">ИГРАТЬ БЕЗ НЕГО</button>
+        </div>
+    </div>
+
+    <script src="../categories.json"></script> <script src="script.js"></script>
+</body>
+</html>
