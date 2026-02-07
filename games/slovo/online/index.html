@@ -14,42 +14,36 @@
         <div id="setup-screen" class="screen">
             <h1>ZINE_ONLINE</h1>
             <div class="input-section">
-                <input type="text" id="player-name" placeholder="ТВОЙ НИК (напр. Глеб)">
+                <input type="text" id="player-name" placeholder="ТВОЙ НИК">
                 <input type="text" id="room-id" placeholder="КОД КОМНАТЫ">
-                <button onclick="joinLobby()" class="btn-zinc">ВОЙТИ В ЛОББИ</button>
+                <button onclick="window.joinLobby && joinLobby()" class="btn-zinc">ВОЙТИ В ЛОББИ</button>
             </div>
         </div>
 
         <div id="lobby-screen" class="screen hidden">
-            <h2 style="text-align:center">КОМНАТА: <span id="room-display"></span></h2>
+            <h2 style="text-align:center">ЛОББИ: <span id="room-display"></span></h2>
             <div class="rules-box">
                 <strong>КТО В ИГРЕ:</strong>
                 <ul id="online-players-list" style="list-style:none; padding:10px 0;"></ul>
             </div>
-            <p id="wait-msg" style="text-align:center; font-size:0.8rem">Ждем хоста, чтобы начать...</p>
             <button id="start-btn" onclick="requestStart()" class="btn-zinc hidden" style="background:#ff3e00">ЗАПУСТИТЬ ИГРУ</button>
+            <p id="wait-msg" style="text-align:center; font-size:0.8rem; margin-top:10px;">Ждем хоста...</p>
         </div>
 
         <div id="game-screen" class="screen hidden">
-            <div id="role-banner" style="background:#000; color:#fff; text-align:center; padding:8px; font-weight:bold; margin-bottom:15px;">
-                ГОТОВИМ КАРТУ...
-            </div>
-            
+            <div id="role-banner" style="background:#000; color:#fff; text-align:center; padding:8px; font-weight:bold; margin-bottom:15px; text-transform:uppercase;"></div>
             <div id="timer">60</div>
-            
             <div class="game-card">
                 <div class="letter-tag">БУКВА: <span id="target-letter">?</span></div>
                 <div class="word-display" id="target-word">---</div>
             </div>
-
             <div class="controls" id="host-controls" style="display:none; flex-direction:column; gap:10px;">
                 <button onclick="handleWin()" class="btn-zinc" style="background:#44ff44; color:#000;">УГАДАЛИ! (+1)</button>
-                <button onclick="handleSkip()" class="btn-zinc">ПРОПУСТИТЬ / СЛЕДУЮЩИЙ</button>
+                <button onclick="handleSkip()" class="btn-zinc">ПРОПУСТИТЬ ХОД</button>
             </div>
-
             <div id="guest-msg" style="display:none; text-align:center; margin-top:20px;">
                 <div class="rules-box">
-                    Слушайте <strong id="active-player-info">...</strong> в Дискорде!<br>
+                    Слушайте <strong id="active-player-info">...</strong> в Discord!<br>
                     Угадывайте слово на букву <span id="guest-letter">?</span>
                 </div>
             </div>
