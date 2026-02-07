@@ -2,12 +2,8 @@
     const ALPHABET = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
     const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ["polling"] });
 
-    let myName = "", myRoom = "", isMyTurn = false, timerId = null;
-    let gameActive = false;
-
-    window.closeOverlay = function() {
-        document.getElementById('offline-overlay').style.display = 'none';
-    };
+    let myName = "", myRoom = "", isMyTurn = false, timerId = null, offlineTimerId = null;
+    let gameActive = false, offlinePlayerName = "";
 
     window.joinLobby = function() {
         myName = document.getElementById('player-name').value.trim();
@@ -24,28 +20,54 @@
         socket.emit('set-rounds', { roomId: myRoom, rounds: document.getElementById('rounds-count').value });
     };
 
-    window.requestStart = function() {
-        socket.emit('start-game', myRoom);
-    };
+    window.requestStart = function() { socket.emit('start-game', myRoom); };
+    window.handleWin = function() { socket.emit('switch-turn', myRoom, true); };
+    window.handleSkip = function() { socket.emit('switch-turn', myRoom, false); };
 
     socket.on('update-lobby', (data) => {
         gameActive = data.gameStarted;
         const list = document.getElementById('online-players-list');
-        if (list) {
-            list.innerHTML = data.players.map(p => `<li>• ${p.name} [${p.score || 0}]</li>`).join('');
-        }
-        if (data.players[0] && data.players[0].id === socket.id && !gameActive) {
+        list.innerHTML = data.players.map(p => `<li>• ${p.name} [${p.score}] ${!p.online ? '⚠️' : ''}</li>`).join('');
+        
+        if (data.players[0]?.id === socket.id && !gameActive) {
             document.getElementById('start-btn').classList.remove('hidden');
         }
-        if (!gameActive || data.players.every(p => p.online)) window.closeOverlay();
+        if (data.players.every(p => p.online)) hideOverlay();
     });
 
     socket.on('player-offline', (data) => {
         if (gameActive) {
-            document.getElementById('offline-msg').innerText = `${data.name} ВЫШЕЛ`;
-            document.getElementById('offline-overlay').style.display = 'flex';
+            offlinePlayerName = data.name;
+            showOfflineOverlay();
         }
     });
+
+    socket.on('hide-overlay', hideOverlay);
+
+    function showOfflineOverlay() {
+        document.getElementById('offline-overlay').style.display = 'flex';
+        let timeLeft = 60;
+        document.getElementById('wait-timer').innerText = timeLeft;
+        clearInterval(offlineTimerId);
+        offlineTimerId = setInterval(() => {
+            timeLeft--;
+            document.getElementById('wait-timer').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(offlineTimerId);
+                skipOfflinePlayer();
+            }
+        }, 1000);
+    }
+
+    window.skipOfflinePlayer = function() {
+        socket.emit('kick-player', myRoom, offlinePlayerName);
+        hideOverlay();
+    };
+
+    function hideOverlay() {
+        document.getElementById('offline-overlay').style.display = 'none';
+        clearInterval(offlineTimerId);
+    }
 
     socket.on('game-started', syncTurn);
     socket.on('turn-changed', syncTurn);
@@ -53,56 +75,39 @@
     function syncTurn(data) {
         gameActive = true;
         document.getElementById('lobby-screen').classList.add('hidden');
-        document.getElementById('result-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
-        window.closeOverlay();
+        hideOverlay();
 
         isMyTurn = (socket.id === data.activePlayerId);
-        document.getElementById('role-banner').innerText = `КРУГ ${data.currentRound}/${data.maxRounds} | ХОД: ${data.activePlayerName}`;
-        document.getElementById('active-player-info').innerText = data.activePlayerName;
-
-        updateUI();
+        document.getElementById('role-banner').innerText = `КРУГ ${data.currentRound}/${data.maxRounds} | ВЕДУЩИЙ: ${data.activePlayerName}`;
+        
+        document.getElementById('host-controls').style.display = isMyTurn ? "flex" : "none";
+        document.getElementById('guest-msg').style.display = isMyTurn ? "none" : "block";
+        
         if (isMyTurn) generateCard();
     }
 
     socket.on('game-event', (data) => {
-        if (data.type === 'SYNC_CARD') {
-            const wordEl = document.getElementById('target-word');
-            const letterEl = document.getElementById('target-letter');
-            
-            if (isMyTurn) {
-                wordEl.innerText = data.word;
-                wordEl.style.filter = "none";
-                wordEl.style.opacity = "1";
-                letterEl.innerText = data.letter;
-            } else {
-                wordEl.innerText = "???";
-                wordEl.style.filter = "blur(10px)";
-                wordEl.style.opacity = "0.3";
-                letterEl.innerText = "?";
-            }
-            startTimer();
+        const wordEl = document.getElementById('target-word');
+        const lettersEl = document.getElementById('target-letters');
+        if (isMyTurn) {
+            wordEl.innerText = data.word;
+            wordEl.style.filter = "none";
+            lettersEl.innerText = data.letters.join(' ');
+        } else {
+            wordEl.innerText = "???";
+            wordEl.style.filter = "blur(8px)";
+            lettersEl.innerText = "? ? ?";
         }
+        startTimer();
     });
 
     function generateCard() {
-        if (typeof words === 'undefined') return;
-        const randomWord = words[Math.floor(Math.random() * words.length)];
-        const randomLetter = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
-        socket.emit('game-action', {
-            roomId: myRoom,
-            data: { type: 'SYNC_CARD', word: randomWord, letter: randomLetter }
-        });
+        const letters = [];
+        for(let i=0; i<3; i++) letters.push(ALPHABET[Math.floor(Math.random()*ALPHABET.length)]);
+        const word = words[Math.floor(Math.random()*words.length)];
+        socket.emit('game-action', { roomId: myRoom, data: { type: 'SYNC_CARD', word, letters } });
     }
-
-    function updateUI() {
-        document.getElementById('host-controls').style.display = isMyTurn ? "flex" : "none";
-        document.getElementById('guest-msg').style.display = isMyTurn ? "none" : "block";
-        document.getElementById('role-banner').style.background = isMyTurn ? "#ff3e00" : "#000";
-    }
-
-    window.handleWin = function() { socket.emit('switch-turn', myRoom); };
-    window.handleSkip = function() { socket.emit('switch-turn', myRoom); };
 
     function startTimer() {
         clearInterval(timerId);
@@ -111,10 +116,7 @@
         timerId = setInterval(() => {
             time--;
             document.getElementById('timer').innerText = time;
-            if (time <= 0) {
-                clearInterval(timerId);
-                if (isMyTurn) window.handleSkip();
-            }
+            if (time <= 0 && isMyTurn) handleSkip();
         }, 1000);
     }
 
@@ -122,14 +124,11 @@
         gameActive = false;
         document.getElementById('game-screen').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
-        
-        const stats = document.getElementById('final-stats');
-        const sorted = [...data.players].sort((a,b) => b.score - a.score);
-        stats.innerHTML = sorted.map(p => `
-            <div class="res-item">
-                <span>${p.name}</span>
-                <strong>${p.score || 0} очков</strong>
-            </div>
-        `).join('');
+        const sorted = data.players.sort((a,b) => b.score - a.score);
+        document.getElementById('final-stats').innerHTML = sorted.map(p => 
+            `<div style="display:flex; justify-content:space-between; margin:5px 0;">
+                <span>${p.name}</span><strong>${p.score}</strong>
+            </div>`
+        ).join('');
     });
 })();
