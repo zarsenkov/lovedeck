@@ -1,0 +1,89 @@
+<link rel="stylesheet" href="../style.css">
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="../cards.js"></script>
+<script src="script.js"></script> ```
+
+#### **script.js (в папке online — "Сетевой мозг")**
+Здесь мы пропишем полноценную логику комнат и ролей. Используй этот код:
+
+```javascript
+const socket = io("https://lovecouple-server-zarsenkov.amvera.io", {
+    transports: ["polling"]
+});
+
+let myRoom = "";
+let isMyTurn = false;
+let myScore = 0;
+
+// 1. Подключение к комнате
+function startOnlineMode() {
+    const room = document.getElementById('room-id').value.trim();
+    if (room) {
+        myRoom = room;
+        socket.emit('join-room', room);
+        document.getElementById('setup-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+    }
+}
+
+// 2. Слушаем сервер
+socket.on('init-state', (data) => {
+    isMyTurn = data.isMyTurn;
+    updateUI();
+});
+
+socket.on('game-event', (data) => {
+    if (data.type === 'SYNC_CARD') {
+        renderCard(data.word, data.letter);
+    }
+});
+
+socket.on('turn-changed', (data) => {
+    isMyTurn = (data.activePlayer === socket.id);
+    updateUI();
+});
+
+// 3. Логика игры
+function updateCard() {
+    if (!isMyTurn) return;
+
+    const randomWord = words[Math.floor(Math.random() * words.length)];
+    const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+
+    socket.emit('game-action', {
+        roomId: myRoom,
+        data: { type: 'SYNC_CARD', word: randomWord, letter: randomLetter }
+    });
+}
+
+function renderCard(word, letter) {
+    document.getElementById('target-letter').innerText = letter;
+    const wordDisplay = document.getElementById('target-word');
+    
+    if (isMyTurn) {
+        wordDisplay.innerText = word;
+        wordDisplay.style.filter = "none";
+    } else {
+        wordDisplay.innerText = "???"; // Угадывающий не видит слово
+        wordDisplay.style.filter = "blur(5px)";
+    }
+}
+
+function updateUI() {
+    const controls = document.querySelector('.controls');
+    const playerStatus = document.getElementById('active-player-name');
+    
+    if (isMyTurn) {
+        controls.style.display = "flex";
+        playerStatus.innerText = "ТВОЙ ХОД: ОБЪЯСНЯЙ";
+    } else {
+        controls.style.display = "none";
+        playerStatus.innerText = "ХОД ПАРТНЕРА: УГАДЫВАЙ";
+    }
+}
+
+// При нажатии "Угадали"
+function handleResult(isWin) {
+    if (!isMyTurn) return;
+    socket.emit('switch-turn', myRoom); // Передаем ход после каждого слова или по кнопке
+}
