@@ -1,3 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alias Online - LoveCouple</title>
+    <link rel="stylesheet" href="../style.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        /* Стили для командных боксов в лобби */
+        .team-box { transition: all 0.3s ease; background: rgba(255,255,255,0.1); }
+        .active-team { transform: scale(1.02); background: rgba(255,255,255,0.2); }
+        /* Стили для свайпов */
+        #main-card { touch-action: none; user-select: none; position: relative; }
+        .game-actions { display: flex; justify-content: space-between; width: 100%; gap: 15px; margin-top: 20px; }
+        .btn-check { background: var(--mint) !important; flex: 1; }
+        .btn-skip { background: var(--purple) !important; flex: 1; }
+        /* Управление раундами */
+        #rounds-range { width: 100%; margin: 10px 0; accent-color: var(--purple); }
+    </style>
+</head>
 <body>
     <div class="app-shell">
         <div id="menu-controls">
@@ -15,7 +36,7 @@
             <h1 class="pop-title">AL<span>IAS</span> ON</h1>
             <div class="card-glass shadow-box">
                 <input type="text" id="player-name" class="joy-input" placeholder="Твоё имя">
-                <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
+                <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты (для входа)">
                 <div class="btn-group">
                     <button class="btn-pop-main" onclick="createOnlineGame()">СОЗДАТЬ</button>
                     <button class="btn-pop-main btn-secondary" onclick="joinOnlineGame()">ВОЙТИ</button>
@@ -26,41 +47,64 @@
         <section class="pop-screen" id="screen-lobby">
             <h2 class="pop-title">ЛОББИ</h2>
             <div class="summary-box">
-                <p>ROOM ID: <span id="display-room-id">----</span></p>
+                <p>ROOM ID: <span id="display-room-id" style="font-weight: bold; color: var(--purple);">----</span></p>
             </div>
             
-            <div id="host-settings" style="display:none; margin: 15px 0;">
-                <p class="section-label">РАУНДОВ: <span id="round-val">3</span></p>
+            <div id="host-settings" style="display:none; margin: 20px 0;">
+                <p class="section-label">КОЛИЧЕСТВО РАУНДОВ: <span id="round-val">3</span></p>
                 <input type="range" id="rounds-range" min="1" max="10" value="3" oninput="updateRoundsDisplay(this.value)">
                 
-                <p class="section-label">ВРЕМЯ: <span id="time-val">60</span>с</p>
-                <div class="chips-group">
-                    <div class="pop-chip active" onclick="setOnlineTime(60, this)">60</div>
-                    <div class="pop-chip" onclick="setOnlineTime(90, this)">90</div>
+                <p class="section-label" style="margin-top: 15px;">ВРЕМЯ НА ХОД</p>
+                <div class="chips-group" style="display: flex; justify-content: center; gap: 10px;">
+                    <div class="pop-chip active" onclick="setOnlineTime(60, this)">60с</div>
+                    <div class="pop-chip" onclick="setOnlineTime(90, this)">90с</div>
                 </div>
             </div>
 
             <div id="player-list" class="pop-list"></div>
-            <button id="start-btn-online" class="btn-pop-main" style="display:none;" onclick="requestStart()">СТАРТ</button>
+
+            <div id="lobby-footer" style="margin-top: 20px;">
+                <button id="start-btn-online" class="btn-pop-main" style="display:none;" onclick="requestStart()">СТАРТ</button>
+                <p id="wait-msg" style="font-size: 0.8rem; opacity: 0.7;">Ожидаем, когда хост запустит игру...</p>
+            </div>
         </section>
 
         <section class="pop-screen" id="screen-game">
             <div class="card-container">
                 <div class="pop-card word-card" id="main-card">
-                    <h2 id="word-display">ЗАГРУЗКА...</h2>
+                    <h2 id="word-display">ПРИГОТОВЬТЕСЬ...</h2>
                 </div>
             </div>
             
-            <div class="game-actions" id="game-controls">
+            <div class="game-actions" id="game-controls" style="display: none;">
                 <button class="btn-pop-main btn-skip" onclick="handleOnlineWord(false)">ПРОПУСК</button>
                 <button class="btn-pop-main btn-check" onclick="handleOnlineWord(true)">УГАДАНО</button>
             </div>
         </section>
 
         <section class="pop-screen" id="screen-results">
-            <h2 class="pop-title">ИТОГИ</h2>
-            <div id="final-results-list" class="summary-box"></div>
-            <button class="btn-pop-main" onclick="location.reload()">В МЕНЮ</button>
+            <h2 class="pop-title">ФИНАЛ</h2>
+            <div class="summary-box" id="final-results-list">
+                </div>
+            <button class="btn-pop-main" onclick="location.reload()" style="margin-top: 20px;">В ГЛАВНОЕ МЕНЮ</button>
         </section>
     </div>
-    </body>
+
+    <div class="modal-overlay" id="modal-online-rules" style="display: none;">
+        <div class="modal-card">
+            <h3>ПРАВИЛА ONLINE</h3>
+            <ul style="text-align: left; font-size: 0.9rem; line-height: 1.4;">
+                <li>Команды распределяются автоматически.</li>
+                <li>Объясняющий видит слово и кнопки управления.</li>
+                <li>Его команда видит только слово (можете угадывать голосом).</li>
+                <li>Противники не видят слово до конца хода.</li>
+                <li>Свайп вправо — угадано, влево — пропуск.</li>
+            </ul>
+            <button class="btn-pop-main" onclick="toggleOnlineRules(false)">ПОНЯТНО</button>
+        </div>
+    </div>
+
+    <script src="cards.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
