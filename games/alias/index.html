@@ -23,7 +23,15 @@
         <section class="pop-screen active" id="screen-start">
             <h1 class="pop-title">AL<span>IAS</span></h1>
             
-            <p class="section-label">ВРЕМЯ НА РАУНД</p>
+            <div style="margin-bottom: 30px;">
+                <button class="btn-pop-main" 
+                        onclick="location.href='online/index.html'" 
+                        style="background: var(--purple); border-bottom: 6px solid #b794f4;">
+                    🌐 ИГРАТЬ ОНЛАЙН
+                </button>
+            </div>
+
+            <p class="section-label">ВРЕМЯ НА РАУНД (ОФФЛАЙН)</p>
             <div class="chips-group">
                 <div class="pop-chip" onclick="setOpt('time', 30, this)">30 СЕК</div>
                 <div class="pop-chip active" onclick="setOpt('time', 60, this)">60 СЕК</div>
