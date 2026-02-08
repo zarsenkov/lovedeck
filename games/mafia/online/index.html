@@ -3,40 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MAFIA ONLINE | PRO</title>
-    <link rel="stylesheet" href="style.css">
+    <title>MAFIA ONLINE | NOIR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="noir-overlay"></div>
-    
-    <div class="app-container">
-        <section class="page active" id="authScreen">
-            <div class="center-content">
-                <div class="brand">MAFIA ONLINE</div>
-                <div style="width: 100%; margin: 20px 0;">
-                    <input type="text" id="playerName" class="name-input" placeholder="Твое имя" style="width: 100%; margin-bottom: 10px;">
-                    <input type="text" id="roomId" class="name-input" placeholder="ID Комнаты" style="width: 100%;">
-                </div>
-                <button class="action-btn red" onclick="joinGame()">ПРИСОЕДИНИТЬСЯ</button>
-            </div>
-        </section>
 
-        <section class="page" id="lobbyScreen">
-            <header class="top-bar">
-                <div class="brand" id="displayRoomId">КОМНАТА: -</div>
-            </header>
-            <div class="setup-scroll">
-                <div class="label-row">ИГРОКИ В ЛОББИ:</div>
-                <div id="playerList" class="names-grid"></div>
-            </div>
-            <button id="startBtn" class="action-btn red" style="display:none; margin-top: auto;" onclick="sendStart()">НАЧАТЬ ИГРУ</button>
-        </section>
+    <!-- Кнопка выхода -->
+    <div class="back-btn" onclick="handleBack()"><i class="fas fa-arrow-left"></i></div>
+
+    <!-- ФОНОВЫЕ ЭФФЕКТЫ -->
+    <div class="grain"></div>
+
+    <!-- ЭКРАН 1: ВХОД -->
+    <div id="screen-login" class="screen active">
+        <div class="stamp">TOP SECRET</div>
+        <h1 class="main-title">MAFIA</h1>
+        <p class="subtitle">PROJECT NOIR</p>
+        
+        <div class="input-block">
+            <input type="text" id="username" placeholder="ВАШЕ ИМЯ" maxlength="12">
+            <button class="btn" onclick="createRoom()">СОЗДАТЬ ДЕЛО</button>
+            <div class="divider">ИЛИ ВСТУПИТЬ</div>
+            <input type="text" id="room-input" placeholder="КОД ДЕЛА" style="text-transform: uppercase;">
+            <button class="btn btn-red" onclick="joinRoom()">ВСТУПИТЬ</button>
+        </div>
     </div>
 
+    <!-- ЭКРАН 2: ЛОББИ -->
+    <div id="screen-lobby" class="screen">
+        <div class="paper-header" onclick="copyCode()">
+            <span>ДЕЛО №</span>
+            <span id="room-id-display">-----</span>
+            <i class="fas fa-copy"></i>
+        </div>
+        
+        <div class="player-list-container">
+            <h3>СПИСОК ПОДОЗРЕВАЕМЫХ:</h3>
+            <div id="player-list"></div>
+        </div>
+
+        <button id="start-btn" class="btn btn-red" onclick="startGame()" style="display: none;">НАЧАТЬ ОБЛАВУ</button>
+        <p id="wait-msg" class="pulse">Ждем комиссара...</p>
+    </div>
+
+    <!-- ЭКРАН 3: РАСКРЫТИЕ РОЛИ -->
+    <div id="screen-reveal" class="screen">
+        <div class="folder">
+            <div class="photo-area">
+                <i class="fas fa-user-secret"></i>
+            </div>
+            <h2 id="role-display">...</h2>
+            <p id="role-desc">Ваша задача будет ясна после начала...</p>
+        </div>
+        <div class="night-transition">ГОРОД ЗАСЫПАЕТ...</div>
+    </div>
+
+    <!-- ЭКРАН 4: ИГРОВОЕ ПОЛЕ (НОЧЬ/ДЕНЬ) -->
+    <div id="screen-game" class="screen">
+        <div id="phase-header" class="phase-header">НОЧЬ</div>
+        <div class="game-info">
+            <span id="game-instruction">Выберите цель:</span>
+        </div>
+        
+        <div id="player-grid" class="player-grid"></div>
+        
+        <div id="dead-overlay" class="dead-msg hidden">ВЫ МЕРТВЫ И НЕ МОЖЕТЕ ГОВОРИТЬ</div>
+    </div>
+
+    <!-- ЭКРАН 5: ФИНАЛ -->
+    <div id="screen-results" class="screen">
+        <div class="blood-splatter"></div>
+        <h1 id="winner-text">ПОБЕДА</h1>
+        <div id="final-stats"></div>
+        <button class="btn" onclick="location.reload()">В МЕНЮ</button>
+    </div>
+
+    <!-- ОВЕРЛЕЙ НОЧИ ДЛЯ МИРНЫХ -->
+    <div id="night-overlay" class="night-overlay">
+        <div class="moon"></div>
+        <h2>ВЫ СПИТЕ...</h2>
+        <p>На улицах города происходят темные дела</p>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
