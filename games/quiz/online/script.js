@@ -1,5 +1,6 @@
 // Конфигурация
-const socket = io(); // В Amvera будет работать автоматически
+const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
+
 const TRANSLATIONS = {
     general: "ОБЩЕЕ", science: "НАУКА", history: "ИСТОРИЯ", 
     culture: "КУЛЬТУРА", sport: "СПОРТ", geography: "ГЕОГРАФИЯ", 
