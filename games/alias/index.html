@@ -21,16 +21,18 @@
         </header>
 
         <section class="pop-screen active" id="screen-start">
-            <h1 class="pop-title">AL<span>IAS</span></h1>
             
-            <div style="margin-bottom: 30px;">
+            // Кнопка перемещена в самый верх над заголовком
+            <div style="margin-top: 10px; margin-bottom: 20px;">
                 <button class="btn-pop-main" 
                         onclick="location.href='online/index.html'" 
-                        style="background: var(--purple); border-bottom: 6px solid #b794f4;">
+                        style="background: var(--purple); border-bottom: 6px solid #b794f4; padding: 15px; font-size: 1rem;">
                     🌐 ИГРАТЬ ОНЛАЙН
                 </button>
             </div>
 
+            <h1 class="pop-title">AL<span>IAS</span></h1>
+            
             <p class="section-label">ВРЕМЯ НА РАУНД (ОФФЛАЙН)</p>
             <div class="chips-group">
                 <div class="pop-chip" onclick="setOpt('time', 30, this)">30 СЕК</div>
@@ -47,6 +49,7 @@
                 <div class="pop-chip" data-cat="adult" onclick="toggleCat('adult', this)">18+</div>
             </div>
 
+            // Кнопка для локального режима
             <button class="btn-pop-main" onclick="initBattle()">СОЗДАТЬ БАТТЛ</button>
         </section>
 
