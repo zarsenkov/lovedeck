@@ -3,41 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alias Online</title>
+    <title>Alias Online Pop</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
-    <section class="screen active" id="screen-auth">
-        <h1 style="text-align: center; margin-top: 50px;">ALIAS<span>ON</span></h1>
-        <div class="btn-group">
-            <input type="text" id="player-name" class="joy-input" placeholder="Твое имя">
-            <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
-            <button class="btn-main" onclick="createOnlineGame()">СОЗДАТЬ</button>
-            <button class="btn-main btn-secondary" onclick="joinOnlineGame()">ВОЙТИ</button>
+    <div class="app-shell">
+        <div class="nav-btns">
+            <div class="home-btn" onclick="location.href='../index.html'">🏠</div>
+            <div class="rules-btn" onclick="toggleModal(true)">?</div>
         </div>
-    </section>
 
-    <section class="screen" id="screen-lobby">
-        <h2 style="text-align: center;">ID: <span id="display-room-id">----</span></h2>
-        <div id="player-list"></div>
-        <div style="margin-top: auto;">
-            <button id="start-btn-online" class="btn-main hidden" onclick="requestStart()">СТАРТ</button>
-            <p id="wait-msg" style="text-align: center;">Ждем хоста...</p>
+        <div class="game-header hidden" id="live-header">
+            <div class="timer-bubble" id="timer">00:00</div>
+            <div class="score-pill">🔥 <span id="live-score">0</span></div>
         </div>
-    </section>
 
-    <section class="screen" id="screen-game">
-        <div id="timer" style="text-align: center; font-weight: bold;">00:00</div>
-        <div class="word-card" id="main-card">
-            <h2 id="word-display" style="font-size: 2.5rem;">...</h2>
-        </div>
-        <div class="game-footer hidden" id="game-controls">
-            <button class="btn-action btn-skip" onclick="handleOnlineWord(false)">ПРОПУСК</button>
-            <button class="btn-action btn-check" onclick="handleOnlineWord(true)">УГАДАНО</button>
-        </div>
-    </section>
+        <section class="screen active" id="screen-auth">
+            <h1 class="pop-title">ALIAS<span>ON</span></h1>
+            <input type="text" id="player-name" class="joy-input" placeholder="ТВОЕ ИМЯ">
+            <input type="text" id="room-id" class="joy-input" placeholder="ID КОМНАТЫ">
+            <button class="btn-pop-main" onclick="createGame()">СОЗДАТЬ</button>
+            <button class="btn-pop-main" style="background:var(--purple)" onclick="joinGame()">ВОЙТИ</button>
+        </section>
 
+        <section class="screen" id="screen-lobby">
+            <p class="section-label">КОМНАТА: <span id="display-id">0000</span></p>
+            <div id="player-list"></div>
+            <button id="start-btn" class="btn-pop-main hidden" onclick="requestStart()">ПОГНАЛИ!</button>
+        </section>
+
+        <section class="screen" id="screen-game">
+            <div class="word-card" id="main-card">
+                <h2 id="word-display">ЖДЕМ...</h2>
+            </div>
+            <div class="game-actions hidden" id="controls">
+                <button class="btn-skip" onclick="sendAction(false)">ПРОПУСК</button>
+                <button class="btn-check" onclick="sendAction(true)">УГАДАНО</button>
+            </div>
+        </section>
+    </div>
+    
     <script src="cards.js"></script>
     <script src="script.js"></script>
 </body>
