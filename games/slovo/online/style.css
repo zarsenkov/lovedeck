@@ -1,244 +1,57 @@
-:root {
-    --bg: #FFD93D;
-    --card: #FFFFFF;
-    --primary: #6C5CE7;
-    --accent: #FF6B6B;
-    --green: #26DE81;
-    --text: #2D3436;
+/* Дополнительные стили к основному файлу */
+#player-list {
+    list-style: none;
+    margin-top: 15px;
 }
 
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-    font-family: 'Montserrat', sans-serif; 
-    -webkit-tap-highlight-color: transparent; 
-}
-
-body { 
-    background: var(--bg); 
-    color: var(--text); 
-    height: 100dvh; 
-    overflow: hidden; 
-}
-
-.app-container { 
-    height: 100%; 
-    padding: 20px; 
-    display: flex; 
-    flex-direction: column; 
-    max-width: 480px; 
-    margin: 0 auto; 
-    position: relative; 
-}
-
-/* Экраны */
-.screen { display: none; flex-direction: column; height: 100%; }
-.screen.active { display: flex; }
-
-/* Заголовки и текст */
-.main-title { 
-    font-size: 3rem; 
-    font-weight: 900; 
-    line-height: 0.9; 
-    margin-bottom: 20px; 
-    text-align: center; 
-    text-transform: uppercase;
-}
-.main-title span { color: var(--primary); display: block; }
-
-h2 { text-align: center; margin-bottom: 15px; font-weight: 900; }
-
-/* Карточки и блоки */
-.card-glass { 
-    background: var(--card); 
-    border-radius: 30px; 
-    padding: 25px; 
-    box-shadow: 0 12px 0 rgba(0,0,0,0.1); 
-    flex-grow: 1; 
-    overflow-y: auto; 
-    margin-bottom: 20px; 
-}
-
-.rules-box {
-    background: rgba(255,255,255,0.5);
-    border: 3px solid var(--text);
-    padding: 15px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-}
-
-/* Инпуты и Кнопки */
-.joy-input { 
-    width: 100%; 
-    background: #F1F2F6; 
-    border: 3px solid transparent; 
-    padding: 18px; 
-    border-radius: 20px; 
-    margin-bottom: 12px; 
-    font-weight: 800; 
-    font-size: 1.1rem; 
-    transition: 0.3s; 
-}
-.joy-input:focus { border-color: var(--primary); outline: none; background: white; }
-
-.primary-btn { 
-    background: var(--primary); 
-    color: white; 
-    border: none; 
-    padding: 20px; 
-    border-radius: 25px; 
-    font-weight: 900; 
-    font-size: 1.2rem; 
-    box-shadow: 0 8px 0 #4834D4; 
-    cursor: pointer; 
-    width: 100%; 
-    text-transform: uppercase;
-}
-.primary-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #4834D4; }
-
-.hidden { display: none !important; }
-
-/* Стили игрового экрана */
-#role-banner { font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
-
-.timer-pill { 
-    background: white; 
-    padding: 10px 25px; 
-    border-radius: 25px; 
-    font-weight: 900; 
-    border: 4px solid var(--text); 
-    display: inline-block;
-    min-width: 100px;
-}
-
-.word-card-main { 
-    background: white; 
-    min-height: 220px; 
-    border-radius: 40px; 
-    border: 8px solid var(--primary); 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    text-align: center; 
-    padding: 20px; 
-    box-shadow: 0 15px 0 rgba(0,0,0,0.1);
-    margin: 15px 0;
-}
-
-#current-word { 
-    font-size: 2.5rem; 
-    font-weight: 900; 
-    word-break: break-word;
-    line-height: 1.1;
-}
-
-.letter-tag {
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-    color: var(--text);
-    opacity: 0.7;
+#player-list li {
+    background: #f1f2f6;
+    margin-bottom: 8px;
+    padding: 12px;
+    border-radius: 15px;
     font-weight: 800;
+    display: flex;
+    justify-content: space-between;
 }
 
-/* Кнопки управления в игре */
-.game-controls { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 15px; 
-    margin-top: auto; 
-}
-
-.btn-skip { 
-    background: var(--accent); 
-    color: white; 
-    border: none; 
-    padding: 20px; 
-    border-radius: 20px; 
-    font-weight: 900; 
-    box-shadow: 0 6px 0 #E84118; 
-    font-size: 1.1rem;
-}
-.btn-win { 
-    background: var(--green); 
-    color: white; 
-    border: none; 
-    padding: 20px; 
-    border-radius: 20px; 
-    font-weight: 900; 
-    box-shadow: 0 6px 0 #20BF6B; 
-    font-size: 1.1rem;
-}
-
-.btn-skip:active, .btn-win:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.2); }
-
-/* Оверлей вылета */
-#offline-overlay {
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    background: rgba(0,0,0,0.9); 
-    z-index: 1000; 
-    color: #fff; 
-    display: none; 
-    align-items: center; 
-    justify-content: center; 
-    text-align: center;
-    padding: 20px;
-}
-
-#offline-overlay h2 { color: var(--accent); font-size: 2rem; }
-
-/* Кнопка Назад */
-.nav-btn.back-btn {
-    position: absolute; 
-    top: 15px; 
-    left: 15px; 
-    width: 45px; 
-    height: 45px; 
-    border-radius: 50%; 
-    background: #fff; 
-    border: 3px solid #000;
-    font-size: 1.3rem; 
+.setting-item {
+    margin-bottom: 15px;
     font-weight: 900;
-    cursor: pointer; 
-    z-index: 100;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 2000;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    padding: 20px;
 }
 
-.nav-btn.back-btn:active { transform: translateY(2px); box-shadow: none; }
+.modal-content {
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
 
-/* Список игроков */
-#player-list li {
-    background: #f8f9fa;
-    margin-bottom: 8px;
-    padding: 12px 15px;
+.winner-btn {
+    width: 100%;
+    padding: 15px;
+    margin-top: 10px;
     border-radius: 15px;
-    font-weight: 700;
-    display: flex;
-    justify-content: space-between;
-    border: 2px solid #eee;
+    border: 3px solid var(--text);
+    background: white;
+    font-weight: 800;
+    cursor: pointer;
 }
 
-/* Анимация Glitch для заголовка */
-.glitch { position: relative; }
-.glitch::before {
-    content: attr(data-text);
-    position: absolute;
-    left: -2px;
-    text-shadow: 2px 0 var(--accent);
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim 5s infinite linear alternate-reverse;
-}
+.winner-btn:active { background: var(--green); color: white; }
 
-@keyframes glitch-anim {
-    0% { clip: rect(31px, 9999px, 94px, 0); }
-    20% { clip: rect(62px, 9999px, 42px, 0); }
-    /* ... остальные кадры ... */
-    100% { clip: rect(10px, 9999px, 85px, 0); }
+.back-btn {
+    position: absolute; top: 20px; left: 20px;
+    width: 45px; height: 45px; border-radius: 50%;
+    background: white; border: 3px solid black;
+    font-size: 1.5rem; font-weight: 900; z-index: 100;
 }
