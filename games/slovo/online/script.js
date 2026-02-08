@@ -165,13 +165,17 @@
             sorted.map(p => `<p>${p.name}: ${p.score}</p>`).join('');
     });
 
-    socket.on('player-offline', (data) => {
+socket.on('player-offline', (data) => {
+    // Показываем оверлей только если мы уже в игре (на экране игры)
+    const gameScreen = document.getElementById('game-screen');
+    if (gameScreen && gameScreen.classList.contains('active')) {
         const overlay = document.getElementById('offline-overlay');
-        if(overlay) {
+        if (overlay) {
             overlay.style.display = 'flex';
             document.getElementById('offline-msg').innerText = `${data.name} ВЫЛЕТЕЛ`;
         }
-    });
+    }
+});
 
     socket.on('hide-overlay', () => {
         const overlay = document.getElementById('offline-overlay');
