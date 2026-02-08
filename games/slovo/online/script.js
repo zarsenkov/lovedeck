@@ -10,30 +10,32 @@
 
 // ИСПРАВЛЕННАЯ ФУНКЦИЯ: берет данные из ваших переменных words и alphabet
 function getCard() {
-        let word = "СЛОВО"; // Запасное слово
+        let word = "СЛОВО"; 
         let lets = "? ? ?";
 
-        // Проверяем наличие слов в глобальной видимости
-        // Мы ищем именно window.words, так как в твоем cards.js: const words = [...]
-        const source = window.words || words; 
-
-        if (source && source.length > 0) {
-            const randomIndex = Math.floor(Math.random() * source.length);
-            word = source[randomIndex];
-            console.log("Слово успешно выбрано:", word);
+        // Проверяем, загрузился ли массив из cards.js
+        // window.words — это то, что лежит в твоем файле
+        if (typeof window.words !== 'undefined' && window.words.length > 0) {
+            const randomIndex = Math.floor(Math.random() * window.words.length);
+            word = window.words[randomIndex];
+            console.log("Ура! Слово найдено:", word);
         } else {
-            console.error("МАССИВ СЛОВ НЕ НАЙДЕН! Проверь cards.js");
-            word = "НЕТ СЛОВ";
+            // Если мы здесь, значит script.js не видит переменную из cards.js
+            console.error("ОШИБКА: Массив words не найден. Проверь путь в HTML!");
+            word = "НЕТ СЛОВ"; 
         }
 
-        // Генерация букв из твоего алфавита
-        const alphaSource = window.alphabet || "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
-        const alphaArray = alphaSource.split("");
-        const randomLetters = [];
-        for (let i = 0; i < 3; i++) {
-            randomLetters.push(alphaArray[Math.floor(Math.random() * alphaArray.length)]);
+        // Генерация букв из алфавита в cards.js
+        if (typeof window.alphabet !== 'undefined') {
+            const alphaArray = window.alphabet.split("");
+            const randomLetters = [];
+            for (let i = 0; i < 3; i++) {
+                randomLetters.push(alphaArray[Math.floor(Math.random() * alphaArray.length)]);
+            }
+            lets = randomLetters.join(" ");
+        } else {
+            lets = "А Б В";
         }
-        lets = randomLetters.join(" ");
 
         return { 
             word: word.toUpperCase(), 
