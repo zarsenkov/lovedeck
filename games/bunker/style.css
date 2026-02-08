@@ -1,205 +1,98 @@
-/* Переменные для быстрой настройки цветовой схемы */
-:root {
-    --bg-color: #0d0d0d;
-    --main-green: #00ff41; /* Классический терминал */
-    --main-yellow: #ffcc00; /* Военное предупреждение */
-    --alert-red: #ff3333;
-    --dark-gray: #1a1a1a;
-    --border-style: 2px solid var(--main-green);
-    --font-mono: 'Courier New', Courier, monospace;
-}
-
-// Сброс базовых стилей
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    -webkit-tap-highlight-color: transparent;
-}
-
 body {
-    background-color: var(--bg-color);
-    color: var(--main-green);
-    font-family: var(--font-mono);
-    overflow: hidden;
-    height: 100vh;
-}
-
-/* Эффект ЭЛТ-монитора (сканирующие линии и мерцание) */
-.crt-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    background-size: 100% 2px, 3px 100%;
-    z-index: 1000;
-    pointer-events: none;
-}
-
-.scanline {
-    width: 100%;
-    height: 100px;
-    z-index: 1001;
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 255, 65, 0.1) 50%, rgba(0, 0, 0, 0) 100%);
-    opacity: 0.1;
-    position: absolute;
-    bottom: 100%;
-    animation: scanline 8s linear infinite;
-    pointer-events: none;
-}
-
-@keyframes scanline {
-    0% { bottom: 100%; }
-    100% { bottom: -100%; }
-}
-
-/* Основной контейнер терминала */
-.terminal-container {
-    height: 100%;
-    padding: 20px;
+    background-color: #1a1a1d;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
-    flex-direction: column;
-    border: 5px solid #222;
-    position: relative;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
 }
 
-/* Стилизация экранов */
+.container {
+    width: 90%;
+    max-width: 500px;
+    background-color: #2c2c30;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
 .screen {
     display: none;
-    flex-direction: column;
-    height: 100%;
-    animation: fadeIn 0.3s ease-out;
 }
 
 .screen.active {
-    display: flex;
+    display: block;
+    animation: fadeIn 0.5s;
 }
+
+h1 { color: #e74c3c; margin-bottom: 20px; }
+h2 { margin-bottom: 15px; }
+
+input {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #3a3a40;
+    border: 1px solid #555;
+    color: white;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    transition: background 0.3s;
+}
+
+button:hover { background-color: #c0392b; }
+button.start-btn { background-color: #27ae60; margin-top: 15px; }
+button.start-btn:hover { background-color: #219150; }
+button.skip-btn { background-color: #7f8c8d; }
+
+.hidden { display: none; }
+
+.targets-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.target-btn {
+    background-color: #34495e;
+    padding: 15px;
+}
+.target-btn:hover { background-color: #4b6584; }
+
+.log-box {
+    background: #222;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: left;
+    min-height: 50px;
+    border-left: 4px solid #e74c3c;
+}
+
+/* Роли цвета */
+.role-mafia { color: #e74c3c; font-weight: bold; }
+.role-doctor { color: #2ecc71; font-weight: bold; }
+.role-sheriff { color: #3498db; font-weight: bold; }
+.role-citizen { color: #95a5a6; font-weight: bold; }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Заголовки и текст */
-.terminal-title {
-    text-align: center;
-    background: var(--main-green);
-    color: black;
-    padding: 10px;
-    margin-bottom: 20px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.alert-text {
-    color: var(--main-yellow);
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-/* Поля ввода и кнопки (без закруглений) */
-input[type="text"], input[type="number"] {
-    background: transparent;
-    border: 1px solid var(--main-green);
-    color: var(--main-green);
-    padding: 10px;
-    font-family: var(--font-mono);
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-.btn-primary, .btn-secondary {
-    background: transparent;
-    border: var(--border-style);
-    color: var(--main-green);
-    padding: 15px;
-    cursor: pointer;
-    font-family: var(--font-mono);
-    font-weight: bold;
-    text-transform: uppercase;
-    transition: all 0.2s;
-}
-
-.btn-primary:active {
-    background: var(--main-green);
-    color: black;
-}
-
-/* Стили досье персонажа */
-.dossier {
-    border: 2px solid var(--main-green);
-    padding: 15px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.role-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-top: 20px;
-    overflow-y: auto;
-}
-
-.card {
-    border: 1px solid var(--main-green);
-    padding: 8px;
-    background: rgba(0, 255, 65, 0.05);
-}
-
-.card-label {
-    font-size: 0.7em;
-    color: var(--main-yellow);
-    text-transform: uppercase;
-    margin-bottom: 4px;
-}
-
-/* Полосатые предупреждения */
-.warning-stripes {
-    height: 20px;
-    background: repeating-linear-gradient(
-        45deg,
-        #000,
-        #000 10px,
-        var(--main-yellow) 10px,
-        var(--main-yellow) 20px
-    );
-    margin: 10px 0;
-}
-
-/* Игровое поле со списком игроков */
-.players-grid {
-    flex-grow: 1;
-    overflow-y: auto;
-    margin: 15px 0;
-}
-
-.player-row {
-    border-bottom: 1px solid #333;
-    padding: 10px 5px;
-}
-
-.player-row.excluded {
-    text-decoration: line-through;
-    opacity: 0.5;
-    color: var(--alert-red);
-}
-
-/* Эффект печати (Stamp) */
-.stamp {
-    border: 4px solid var(--alert-red);
-    color: var(--alert-red);
-    padding: 10px;
-    font-size: 2em;
-    font-weight: bold;
-    transform: rotate(-15deg);
-    display: inline-block;
-    margin: 20px;
-}
-
-/* Мобильная адаптация */
-@media (max-width: 480px) {
-    .terminal-container { padding: 10px; }
-    .btn-primary { padding: 20px; } /* Крупнее для пальцев */
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
