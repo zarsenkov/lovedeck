@@ -1,121 +1,109 @@
-/* Переменные для стиля "Бумажное дело" */
 :root {
-    --paper-color: #e8dcc4; /* Цвет старой бумаги */
-    --ink-black: #2b2b2b;   /* Цвет чернил */
-    --stamp-red: #b22222;   /* Цвет оттиска */
-    --folder-brown: #c3a683;
-    --font-typewriter: 'Courier New', Courier, monospace;
+    --bg: #121212;
+    --paper: #e0e0e0;
+    --red: #8b0000;
+    --black: #000000;
 }
 
-// Базовые настройки страницы
 body {
-    background-color: #1a1a1a; /* Темный фон вокруг "папки" */
-    background-image: radial-gradient(#333 1px, transparent 1px);
-    background-size: 20px 20px;
-    color: var(--ink-black);
-    font-family: var(--font-typewriter);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-// Главный контейнер в виде папки
-.terminal-container {
-    width: 95%;
-    max-width: 500px;
-    height: 90vh;
-    background-color: var(--paper-color);
-    box-shadow: 10px 10px 0px rgba(0,0,0,0.5), 0px 0px 20px rgba(0,0,0,0.2);
-    padding: 30px 20px;
-    border: 1px solid #d1c1a1;
-    position: relative;
+    margin: 0;
+    font-family: 'Special Elite', cursive;
+    background: var(--bg);
+    color: var(--paper);
+    height: 100dvh;
     overflow: hidden;
-    transform: rotate(-1deg); /* Легкий наклон для реализма */
 }
 
-// Текстура бумаги (шум)
-.terminal-container::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: url('https://www.transparenttextures.com/patterns/parchment.png');
-    opacity: 0.5;
-    pointer-events: none;
+/* Эффект старой пленки */
+.grain {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: url('https://www.transparenttextures.com/patterns/stardust.png');
+    opacity: 0.1; pointer-events: none; z-index: 9999;
 }
 
-// Заголовки как на печатной машинке
-.terminal-title {
-    text-align: center;
-    border-bottom: 2px solid var(--ink-black);
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    font-size: 1.4rem;
-    font-weight: bold;
-    text-transform: uppercase;
+.back-btn {
+    position: fixed; top: 20px; left: 20px; z-index: 1000;
+    width: 40px; height: 40px; background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 5px; cursor: pointer; border: 1px solid var(--paper);
 }
 
-// Кнопки - имитация ярлыков или печатей
-.btn-primary, .btn-secondary {
-    background: transparent;
-    border: 2px solid var(--ink-black);
-    color: var(--ink-black);
-    padding: 12px;
-    font-family: var(--font-typewriter);
-    font-weight: bold;
-    text-transform: uppercase;
-    cursor: pointer;
-    position: relative;
-    transition: transform 0.1s;
+.screen {
+    display: none; width: 100%; height: 100%;
+    padding: 20px; box-sizing: border-box;
+    flex-direction: column; align-items: center; justify-content: center;
+}
+.screen.active { display: flex; animation: fadeIn 0.5s ease; }
+
+.main-title { font-size: 4rem; color: var(--red); margin: 0; text-shadow: 4px 4px 0px var(--black); }
+.subtitle { letter-spacing: 8px; font-size: 0.8rem; margin-bottom: 30px; }
+
+.input-block { width: 100%; max-width: 300px; }
+input {
+    width: 100%; background: transparent; border: 2px solid var(--paper);
+    padding: 15px; color: var(--paper); font-family: inherit;
+    font-size: 1.1rem; border-radius: 4px; box-sizing: border-box;
+    margin-bottom: 15px; text-align: center;
 }
 
-.btn-primary:active {
-    transform: scale(0.95);
-    background: rgba(0,0,0,0.1);
+.btn {
+    width: 100%; padding: 15px; border: none; font-family: inherit;
+    font-size: 1rem; font-weight: bold; cursor: pointer;
+    background: var(--paper); color: black; border-radius: 4px;
+    text-transform: uppercase; transition: 0.2s;
+}
+.btn-red { background: var(--red); color: white; }
+.btn:active { transform: scale(0.95); }
+
+.divider { text-align: center; margin: 15px 0; font-size: 0.7rem; opacity: 0.5; }
+
+/* Лобби */
+.paper-header {
+    background: var(--paper); color: black; padding: 10px 20px;
+    transform: rotate(-1deg); box-shadow: 5px 5px 0 var(--red);
+    font-size: 1.5rem; display: flex; gap: 10px; cursor: pointer;
 }
 
-// Досье игрока
-.dossier {
-    border: 1px solid rgba(0,0,0,0.2);
-    padding: 10px;
-    background: rgba(255,255,255,0.3);
+.player-list-container {
+    width: 100%; max-width: 320px; margin: 30px 0;
+    border-left: 2px solid var(--red); padding-left: 15px;
 }
 
-.card {
-    border-bottom: 1px dashed var(--ink-black);
-    padding: 10px 0;
+/* Карточка роли */
+.folder {
+    background: var(--paper); color: black; width: 260px; height: 380px;
+    padding: 20px; border-radius: 5px; transform: rotate(1deg);
+    display: flex; flex-direction: column; align-items: center;
+    box-shadow: 15px 15px 0 rgba(0,0,0,0.5);
 }
-
-.card-label {
-    font-size: 0.8rem;
-    color: #666;
-    text-decoration: underline;
+.photo-area {
+    width: 150px; height: 150px; background: #ccc;
+    margin: 20px 0; display: flex; align-items: center;
+    justify-content: center; font-size: 4rem; border: 4px solid #333;
 }
+#role-display { color: var(--red); font-size: 2.2rem; margin: 10px 0; text-transform: uppercase; }
 
-.card-value {
-    font-size: 1.1rem;
-    font-weight: bold;
+/* Игра */
+.phase-header { font-size: 2rem; border-bottom: 2px solid var(--red); width: 100%; text-align: center; padding-bottom: 10px; }
+.player-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+    width: 100%; max-width: 400px; margin-top: 30px;
 }
-
-// Красная печать "ОТКАЗАНО"
-.stamp {
-    position: absolute;
-    border: 5px solid var(--stamp-red);
-    color: var(--stamp-red);
-    padding: 10px 20px;
-    font-size: 2rem;
-    font-weight: bolder;
-    text-transform: uppercase;
-    opacity: 0;
-    transform: scale(3) rotate(-30deg);
-    pointer-events: none;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.player-card {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--paper);
+    padding: 15px; text-align: center; border-radius: 4px;
+    cursor: pointer; position: relative;
 }
+.player-card.dead { opacity: 0.3; text-decoration: line-through; pointer-events: none; background: #300; }
 
-.stamp.visible {
-    opacity: 0.8;
-    transform: scale(1) rotate(-15deg);
+.night-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--black); z-index: 2000; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
 }
+.night-overlay.active { display: flex; }
+.moon { width: 80px; height: 80px; background: white; border-radius: 50%; box-shadow: 0 0 40px #fff; margin-bottom: 20px; }
 
-// Скрываем ЭЛТ-эффекты из прошлого стиля
-.crt-overlay, .scanline { display: none; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.pulse { animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
