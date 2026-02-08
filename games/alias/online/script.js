@@ -1,94 +1,164 @@
-// // Подключение
-const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
-let currentRoomId = "";
-let iAmSwiper = false;
-let startX = 0;
+const socket = io();
 
-// // Смена экранов
-function toScreen(id) {
+// Состояние клиента
+let myId = null;
+let currentRoomId = null;
+let myRole = null; // 'explainer', 'judge', 'guesser'
+
+// --- НАВИГАЦИЯ ---
+function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 }
 
-// // Вход
-function joinGame(isCreate) {
-    const name = document.getElementById('player-name').value;
-    const rInput = document.getElementById('room-input').value;
-    if(!name) return alert("Имя!");
-    currentRoomId = isCreate ? Math.floor(1000 + Math.random()*9000).toString() : rInput;
-    socket.emit('alias-join', { roomId: currentRoomId, playerName: name });
+// --- СОБЫТИЯ ВХОДА ---
+function createRoom() {
+    const name = document.getElementById('username').value;
+    if (!name) return alert('ВВЕДИ ИМЯ!');
+    socket.emit('create_room', name);
 }
 
-// // Лобби
-socket.on('alias-update-lobby', data => {
-    toScreen('screen-lobby');
-    document.getElementById('room-id-display').innerText = data.roomId;
-    const me = data.players.find(p => p.id === socket.id);
-    if(me?.isHost) document.getElementById('host-ui').classList.remove('hidden');
-    document.getElementById('lobby-teams').innerHTML = data.players.map(p => `<div>${p.name} (Т-${p.team})</div>`).join('');
+function joinRoom() {
+    const name = document.getElementById('username').value;
+    const code = document.getElementById('room-code-input').value.toUpperCase();
+    if (!name || !code) return alert('ЗАПОЛНИ ВСЕ ПОЛЯ!');
+    socket.emit('join_room', { roomId: code, playerName: name });
+}
+
+// --- SOCKET LISTENERS ---
+
+socket.on('connect', () => {
+    myId = socket.id;
 });
 
-// // КНОПКА НАЧАТЬ ИГРУ
-function requestStart() {
-    const words = [...ALIAS_WORDS.common].sort(() => 0.5 - Math.random());
-    const t = document.getElementById('set-timer').value;
-    const r = document.getElementById('set-rounds').value;
-    socket.emit('alias-start', { roomId: currentRoomId, words, timer: t, maxRounds: r });
-}
+socket.on('room_created', (roomId) => {
+    currentRoomId = roomId;
+    document.getElementById('lobby-code').innerText = roomId;
+    showScreen('screen-lobby');
+    document.getElementById('start-btn').style.display = 'block'; // Хост видит кнопку старт
+});
 
-// // Игровой процесс
-socket.on('alias-new-turn', data => {
-    toScreen('screen-game');
-    const card = document.getElementById('word-card');
-    iAmSwiper = (data.swiperId === socket.id);
+socket.on('update_lobby', (room) => {
+    currentRoomId = room.id;
+    if (room.state === 'lobby') showScreen('screen-lobby');
     
-    document.getElementById('game-btns').classList.toggle('hidden', !iAmSwiper);
-    card.style.transform = "translateX(0) rotate(0)";
+    document.getElementById('lobby-code').innerText = room.id;
+    const list = document.getElementById('player-list');
+    list.innerHTML = room.players.map(p => `<li>${p.name} <span style="background:black; color:white; padding:2px 5px;">${p.score}</span></li>`).join('');
 
-    if (data.activePlayerId === socket.id) {
-        document.getElementById('word-text').innerText = data.word;
-        document.getElementById('role-text').innerText = "ОБЪЯСНЯЙ!";
-    } else if (iAmSwiper) {
-        document.getElementById('word-text').innerText = "СЛУШАЙ И СВАЙПАЙ";
-        document.getElementById('role-text').innerText = "ТЫ СУДЬЯ";
-    } else {
-        document.getElementById('word-text').innerText = "СМОТРИ";
-        document.getElementById('role-text').innerText = "Ход противника";
+    // Скрываем/показываем кнопку старта (только для первого игрока - хоста)
+    if (room.players[0].id !== myId) {
+        document.getElementById('start-btn').style.display = 'none';
+        document.getElementById('wait-msg').style.display = 'block';
     }
 });
 
-// // СВАЙПЫ
-const card = document.getElementById('word-card');
-card.addEventListener('touchstart', e => { 
-    if(!iAmSwiper) return;
-    startX = e.touches[0].clientX; 
-    card.style.transition = 'none';
-}, {passive: true});
+socket.on('round_start', ({ explainerId, judgeId }) => {
+    showScreen('screen-game');
+    const roleBadge = document.getElementById('my-role');
+    const wordCard = document.getElementById('word-card');
+    const controls = document.getElementById('judge-controls');
+    const instruction = document.getElementById('instruction-text');
 
-card.addEventListener('touchmove', e => {
-    if(!iAmSwiper) return;
-    let x = e.touches[0].clientX - startX;
-    card.style.transform = `translateX(${x}px) rotate(${x/25}deg)`;
-}, {passive: true});
+    // Сброс UI
+    controls.classList.add('hidden');
+    instruction.innerText = "";
+    document.getElementById('current-word').innerText = "...";
 
-card.addEventListener('touchend', e => {
-    if(!iAmSwiper) return;
-    let x = e.changedTouches[0].clientX - startX;
-    if (Math.abs(x) > 100) {
-        socket.emit('alias-action', { roomId: currentRoomId, isCorrect: x > 0 });
+    // Определение роли
+    if (myId === explainerId) {
+        myRole = 'explainer';
+        roleBadge.innerText = 'ОБЪЯСНЯЮЩИЙ';
+        roleBadge.style.background = '#3333ff';
+        instruction.innerText = "Объясняй слова!";
+    } else if (myId === judgeId) {
+        myRole = 'judge';
+        roleBadge.innerText = 'СУДЬЯ';
+        roleBadge.style.background = '#ff3333';
+        controls.classList.remove('hidden'); // Показываем кнопки
+        instruction.innerText = "Свайпай или жми кнопки!";
+        initSwipe(wordCard); // Включаем свайпы
     } else {
-        card.style.transition = '0.3s';
-        card.style.transform = 'translateX(0) rotate(0)';
+        myRole = 'guesser';
+        roleBadge.innerText = 'УГАДЫВАЮЩИЙ';
+        roleBadge.style.background = '#33ff33';
+        instruction.innerText = "Слушай и угадывай!";
+        document.getElementById('current-word').innerText = "СКРЫТО";
     }
 });
 
-// // Кнопки
-function handleAction(isOk) {
-    if(iAmSwiper) socket.emit('alias-action', { roomId: currentRoomId, isCorrect: isOk });
+socket.on('new_word', (word) => {
+    if (myRole === 'explainer' || myRole === 'judge') {
+        document.getElementById('current-word').innerText = word;
+        // Анимация появления
+        const card = document.getElementById('word-card');
+        card.style.transform = 'scale(1.05)';
+        setTimeout(() => card.style.transform = 'scale(1)', 100);
+    } else {
+        document.getElementById('current-word').innerText = "???";
+    }
+});
+
+socket.on('timer_update', (time) => {
+    document.getElementById('timer').innerText = time;
+    if (time <= 10) document.getElementById('timer').style.color = 'red';
+    else document.getElementById('timer').style.color = 'white';
+});
+
+socket.on('round_end', () => {
+    alert('Время вышло!');
+    showScreen('screen-lobby'); // Возврат в лобби
+});
+
+socket.on('error_msg', (msg) => alert(msg));
+
+// --- ACTIONS & SWIPES ---
+
+function startGame() {
+    socket.emit('start_game', currentRoomId);
 }
 
-// // Таймер и Очки
-socket.on('alias-timer-tick', d => { document.getElementById('timer-val').innerText = `00:${d.timeLeft < 10 ? '0'+d.timeLeft : d.timeLeft}`; });
-socket.on('alias-update-score', d => { document.getElementById('score-val').innerText = d.score; });
-socket.on('alias-prep-screen', d => { toScreen('screen-prep'); document.getElementById('prep-player-name').innerText = d.playerName; });
-socket.on('alias-game-over', d => { toScreen('screen-results'); });
+function sendAction(action) {
+    if (myRole !== 'judge') return;
+    socket.emit('word_action', { roomId: currentRoomId, action });
+}
+
+// Логика свайпа (для мобильных)
+function initSwipe(element) {
+    let startX = 0;
+    
+    element.ontouchstart = (e) => {
+        startX = e.touches[0].clientX;
+    };
+
+    element.ontouchend = (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const diff = endX - startX;
+
+        if (Math.abs(diff) > 50) { // Если свайп достаточно длинный
+            if (diff > 0) {
+                // Вправо -> Угадано
+                sendAction('guessed');
+                animateSwipe('right');
+            } else {
+                // Влево -> Пропуск
+                sendAction('skip');
+                animateSwipe('left');
+            }
+        }
+    };
+}
+
+function animateSwipe(dir) {
+    const card = document.getElementById('word-card');
+    const deg = dir === 'right' ? 20 : -20;
+    const x = dir === 'right' ? 100 : -100;
+    
+    card.style.transition = '0.3s';
+    card.style.transform = `translateX(${x}px) rotate(${deg}deg)`;
+    
+    setTimeout(() => {
+        card.style.transition = '0s';
+        card.style.transform = 'translateX(0) rotate(0)';
+    }, 300);
+}
