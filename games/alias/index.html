@@ -2,84 +2,110 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alias Online</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ALIAS BATTLE PRO</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-shell">
-        <div id="top-nav">
-            <div class="nav-btn" onclick="location.href='../index.html'">🏠</div>
-            <div class="nav-btn" id="rules-icon" onclick="toggleOnlineRules(true)">?</div>
+        <div id="menu-controls">
+            <div class="home-btn" onclick="location.href='../../index.html'">🏠</div>
+            <div class="rules-btn" onclick="toggleRules(true)">?</div>
         </div>
 
-        <header id="game-header" class="hidden">
-            <div id="timer">00:00</div>
-            <div>🔥 <span id="live-score">0</span></div>
+        <header class="pop-header" id="game-header">
+            <div class="back-circle" onclick="confirmExit()">⚙️</div>
+            <div class="timer-bubble" id="timer">00:00</div>
+            <div class="score-pill">🔥 <span id="live-score">0</span></div>
         </header>
 
-        <section class="screen active" id="screen-auth">
-            <h1 class="main-logo">ALIAS<span>ON</span></h1>
-            <div class="glass-card">
-                <input type="text" id="player-name" class="joy-input" placeholder="Твое имя">
-                <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
-                <div class="btn-group">
-                    <button class="btn-main" onclick="createOnlineGame()">СОЗДАТЬ ИГРУ</button>
-                    <button class="btn-sub" onclick="joinOnlineGame()">ПРИСОЕДИНИТЬСЯ</button>
-                </div>
+        <section class="pop-screen active" id="screen-start">
+
+<div style="margin-top: 10px; margin-bottom: 20px; display: flex; justify-content: center; width: 100%;">
+    <button class="btn-pop-main" 
+            onclick="location.href='online/index.html'" 
+            style="background: var(--purple); border-bottom: 6px solid #b794f4; padding: 15px 30px; font-size: 1rem; width: auto;">
+        🌐 ИГРАТЬ ОНЛАЙН
+    </button>
+</div>
+
+
+            <h1 class="pop-title">AL<span>IAS</span></h1>
+
+            <p class="section-label">ВРЕМЯ НА РАУНД (ОФФЛАЙН)</p>
+            <div class="chips-group">
+                <div class="pop-chip" onclick="setOpt('time', 30, this)">30 СЕК</div>
+                <div class="pop-chip active" onclick="setOpt('time', 60, this)">60 СЕК</div>
+                <div class="pop-chip" onclick="setOpt('time', 90, this)">90 СЕК</div>
             </div>
+
+            <p class="section-label">КАТЕГОРИИ</p>
+            <div class="chips-group" id="cat-group">
+                <div class="pop-chip active" data-cat="common" onclick="toggleCat('common', this)">ОБЩЕЕ</div>
+                <div class="pop-chip" data-cat="movies" onclick="toggleCat('movies', this)">КИНО</div>
+                <div class="pop-chip" data-cat="food" onclick="toggleCat('food', this)">ЕДА</div>
+                <div class="pop-chip" data-cat="brands" onclick="toggleCat('brands', this)">БРЕНДЫ</div>
+                <div class="pop-chip" data-cat="adult" onclick="toggleCat('adult', this)">18+</div>
+            </div>
+
+
+            <button class="btn-pop-main" onclick="initBattle()">СОЗДАТЬ БАТТЛ</button>
         </section>
 
-        <section class="screen" id="screen-lobby">
-            <h2 class="room-title">КОМНАТА: <span id="display-room-id">----</span></h2>
-            
-            <div id="host-settings" class="glass-card hidden">
-                <div class="setting-row">
-                    <span>Раундов: <b id="round-val">3</b></span>
-                    <input type="range" id="rounds-range" min="1" max="10" value="3" oninput="updateRoundsDisplay(this.value)">
-                </div>
-                <div class="setting-row">
-                    <span>Время:</span>
-                    <div class="chip-group">
-                        <button class="chip" onclick="setOnlineTime(60, this)">60с</button>
-                        <button class="chip" onclick="setOnlineTime(90, this)">90с</button>
-                    </div>
-                </div>
+        <section class="pop-screen" id="screen-ready">
+            <h2 class="pop-title" style="font-size: 2.5rem;">К БОЮ!</h2>
+            <div class="team-ready-box">
+                <p>ПРИГОТОВИТЬСЯ:</p>
+                <h3 id="ready-team-name">...</h3>
             </div>
-
-            <div id="player-list"></div>
-
-            <div class="lobby-footer">
-                <button id="start-btn-online" class="btn-main hidden" onclick="requestStart()">ЗАПУСТИТЬ ИГРУ</button>
-                <p id="wait-msg">Ожидаем хоста...</p>
-            </div>
+            <button class="btn-pop-main" onclick="startGame()">ПОГНАЛИ!</button>
         </section>
 
-        <section class="screen" id="screen-game">
-            <div class="card-zone">
-                <div class="word-card" id="main-card">
+        <section class="pop-screen" id="screen-game">
+            <div class="swipe-hint">← ПРОПУСК | УГАДАНО →</div>
+            <div class="card-container">
+                <div class="pop-card word-card" id="main-card">
                     <h2 id="word-display">...</h2>
                 </div>
             </div>
-            <div class="game-footer hidden" id="game-controls">
-                <button class="btn-action btn-skip" onclick="handleOnlineWord(false)">ПРОПУСК</button>
-                <button class="btn-action btn-check" onclick="handleOnlineWord(true)">УГАДАНО</button>
+            <div class="game-actions">
+                <button class="btn-pop-main btn-skip" onclick="handleWord(false)">ПРОПУСК</button>
+                <button class="btn-pop-main btn-check" onclick="handleWord(true)">УГАДАНО</button>
             </div>
         </section>
 
-        <section class="screen" id="screen-results">
-            <h2 class="main-logo">ИТОГИ</h2>
-            <div id="final-results-list" class="glass-card"></div>
-            <button class="btn-main" onclick="location.reload()">В МЕНЮ</button>
+        <section class="pop-screen" id="screen-results">
+            <h2 class="pop-title" style="font-size: 2rem;">ПРОВЕРКА</h2>
+            <div class="summary-box">
+                <span id="res-team-name">...</span>: 
+                <span id="res-team-score" style="color:var(--accent)">0</span>
+            </div>
+            <p class="section-label" style="text-align: center;">Нажми на значок, чтобы исправить</p>
+            <div class="pop-list" id="results-list"></div>
+            <button class="btn-pop-main" id="res-continue-btn" onclick="handleResultContinue()">ДАЛЕЕ</button>
         </section>
-    </div>
 
-    <div class="modal" id="modal-online-rules">
-        <div class="glass-card">
-            <h3>Правила</h3>
-            <p>Объясняй слова своей команде. Свайп вправо — ок, влево — пас.</p>
-            <button class="btn-main" onclick="toggleOnlineRules(false)">ПОНЯТНО</button>
+        <section class="pop-screen" id="screen-final">
+            <h1 class="pop-title">ИТОГИ</h1>
+            <div class="summary-box" id="final-stats" style="background: var(--mint); padding: 30px; font-size: 1.5rem;"></div>
+            <h2 id="final-winner-name" style="text-align: center; font-weight: 900; margin: 20px 0;"></h2>
+            <button class="btn-pop-main" onclick="location.reload()">В МЕНЮ</button>
+        </section>
+
+        <div class="modal-overlay" id="modal-rules">
+            <div class="modal-content">
+                <h2>ПРАВИЛА</h2>
+                <ul>
+                    <li>Команды ходят по очереди. Названия даются автоматически.</li>
+                    <li>Сначала играет первая команда, затем вторая.</li>
+                    <li>Объясняй слова, не называя однокоренные.</li>
+                    <li>Свайп <b>вправо</b> — угадано (+1).</li>
+                    <li>Свайп <b>влево</b> — пропуск (-1).</li>
+                    <li>Побеждает тот, кто наберет больше за раунд!</li>
+                </ul>
+                <button class="btn-pop-main" onclick="toggleRules(false)" style="padding:15px; font-size:1rem;">ПОНЯЛ!</button>
+            </div>
         </div>
     </div>
 
