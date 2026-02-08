@@ -14,9 +14,9 @@
             <div class="nav-btn" id="rules-icon" onclick="toggleOnlineRules(true)">?</div>
         </div>
 
-        <header id="game-header" class="hidden" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div id="timer" style="font-weight: bold; font-size: 1.2rem; background: #fff; padding: 5px 15px; border-radius: 20px;">00:00</div>
-            <div style="background: #fff; padding: 5px 15px; border-radius: 20px;">🔥 <span id="live-score">0</span></div>
+        <header id="game-header" class="hidden">
+            <div id="timer">00:00</div>
+            <div>🔥 <span id="live-score">0</span></div>
         </header>
 
         <section class="screen active" id="screen-auth">
@@ -32,34 +32,34 @@
         </section>
 
         <section class="screen" id="screen-lobby">
-            <h2 style="text-align: center; margin-bottom: 5px;">КОМНАТА: <span id="display-room-id">----</span></h2>
+            <h2 class="room-title">КОМНАТА: <span id="display-room-id">----</span></h2>
             
-            <div id="host-settings" class="glass-card hidden" style="margin-bottom: 20px;">
-                <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+            <div id="host-settings" class="glass-card hidden">
+                <div class="setting-row">
                     <span>Раундов: <b id="round-val">3</b></span>
                     <input type="range" id="rounds-range" min="1" max="10" value="3" oninput="updateRoundsDisplay(this.value)">
                 </div>
-                <div style="display:flex; justify-content: space-between; align-items: center;">
+                <div class="setting-row">
                     <span>Время:</span>
-                    <div style="display:flex; gap: 8px;">
-                        <button class="chip" onclick="setOnlineTime(60, this)" style="padding: 5px 12px; border-radius: 12px; border: 1px solid #ddd; background: #fff;">60с</button>
-                        <button class="chip" onclick="setOnlineTime(90, this)" style="padding: 5px 12px; border-radius: 12px; border: 1px solid #ddd; background: #fff;">90с</button>
+                    <div class="chip-group">
+                        <button class="chip" onclick="setOnlineTime(60, this)">60с</button>
+                        <button class="chip" onclick="setOnlineTime(90, this)">90с</button>
                     </div>
                 </div>
             </div>
 
             <div id="player-list"></div>
 
-            <div style="margin-top: auto; padding-bottom: 20px;">
+            <div class="lobby-footer">
                 <button id="start-btn-online" class="btn-main hidden" onclick="requestStart()">ЗАПУСТИТЬ ИГРУ</button>
-                <p id="wait-msg" style="text-align: center; opacity: 0.6;">Ожидаем хоста...</p>
+                <p id="wait-msg">Ожидаем хоста...</p>
             </div>
         </section>
 
         <section class="screen" id="screen-game">
             <div class="card-zone">
-                <div class="word-card shadow-box" id="main-card">
-                    <h2 id="word-display" style="font-size: 2.2rem;">...</h2>
+                <div class="word-card" id="main-card">
+                    <h2 id="word-display">...</h2>
                 </div>
             </div>
             <div class="game-footer hidden" id="game-controls">
@@ -71,14 +71,14 @@
         <section class="screen" id="screen-results">
             <h2 class="main-logo">ИТОГИ</h2>
             <div id="final-results-list" class="glass-card"></div>
-            <button class="btn-main" onclick="location.reload()" style="margin-top: 20px;">В МЕНЮ</button>
+            <button class="btn-main" onclick="location.reload()">В МЕНЮ</button>
         </section>
     </div>
 
-    <div class="modal" id="modal-online-rules" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:20px; z-index:100;">
-        <div class="glass-card" style="background:#fff; text-align:center;">
+    <div class="modal" id="modal-online-rules">
+        <div class="glass-card">
             <h3>Правила</h3>
-            <p style="font-size: 0.9rem; opacity: 0.8;">Объясняй слова своей команде. Свайп вправо — угадано (+1), влево — пропуск (-1).</p>
+            <p>Объясняй слова своей команде. Свайп вправо — ок, влево — пас.</p>
             <button class="btn-main" onclick="toggleOnlineRules(false)">ПОНЯТНО</button>
         </div>
     </div>
