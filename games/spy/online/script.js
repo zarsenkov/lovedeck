@@ -1,5 +1,5 @@
 // Подключение к твоему серверу Amvera
-const socket = io('https://твой-сервер.amvera.io'); 
+const socket = io('https://lovecouple-server-zarsenkov.amvera.io'); 
 
 // Состояние текущего игрока и комнаты
 let myData = {
