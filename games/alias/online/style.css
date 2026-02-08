@@ -1,4 +1,4 @@
-/* // Базовые переменные проекта */
+/* // Переменные */
 :root {
     --purple: #a259ff;
     --mint: #27ae60;
@@ -7,102 +7,49 @@
     --glass: rgba(255, 255, 255, 0.7);
 }
 
+/* // Базовые настройки */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; font-family: sans-serif; background: var(--bg); height: 100vh; overflow: hidden; }
 
-body {
-    margin: 0; font-family: 'Segoe UI', sans-serif;
-    background: var(--bg); color: var(--black);
-    height: 100vh; overflow: hidden;
+/* // ГЛАВНОЕ: Логика переключения экранов */
+.screen {
+    display: none; /* // Прячем все экраны */
+    flex-direction: column;
+    height: 100%;
 }
-
-.app-shell {
-    max-width: 500px; margin: 0 auto; height: 100%;
-    display: flex; flex-direction: column; padding: 20px;
+.screen.active {
+    display: flex; /* // Показываем только активный */
 }
+.hidden { display: none !important; }
 
-/* // Навигация (Домик и Правила) */
-#top-nav { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.nav-btn { 
-    width: 45px; height: 45px; background: white; 
-    border-radius: 50%; display: flex; align-items: center; 
-    justify-content: center; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    cursor: pointer;
-}
-
-/* // Эффект стекла для карточек */
-.glass-card {
-    background: var(--glass);
-    backdrop-filter: blur(10px);
-    border-radius: 30px;
-    padding: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-}
-
-/* // --- ТВОЙ СТИЛЬ ИНПУТОВ --- */
+/* // ТВОЙ СТИЛЬ ИНПУТОВ (из style 25.css) */
 .joy-input {
     width: 100%; padding: 16px 20px; margin-bottom: 15px;
     border: 2px solid rgba(0, 0, 0, 0.05); border-radius: 20px;
-    background: rgba(255, 255, 255, 0.7); color: var(--black);
-    font-size: 1rem; font-weight: 500; font-family: inherit;
-    outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--glass); color: var(--black);
+    font-size: 1rem; font-weight: 500; outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(5px);
 }
-
 .joy-input:focus {
-    border-color: var(--purple); background: #ffffff;
+    border-color: var(--purple); background: #fff;
     box-shadow: 0 8px 20px rgba(162, 89, 255, 0.15);
     transform: translateY(-2px);
 }
 
-/* // --- ТВОЙ СТИЛЬ КНОПОК --- */
-.btn-main {
-    background: var(--purple); color: white; border: none;
-    padding: 18px; border-radius: 20px; font-weight: bold;
-    font-size: 16px; width: 100%; cursor: pointer;
-    box-shadow: 0 4px 15px rgba(162,89,255,0.3); transition: 0.3s;
-}
+/* // Стили карточек и кнопок */
+.glass-card { background: var(--glass); border-radius: 30px; padding: 25px; backdrop-filter: blur(10px); }
+.btn-main { background: var(--purple); color: #fff; border: none; padding: 18px; border-radius: 20px; font-weight: bold; width: 100%; cursor: pointer; }
+.btn-sub { background: #fff; color: var(--purple); border: 2px solid var(--purple); padding: 16px; border-radius: 20px; font-weight: bold; width: 100%; margin-top: 10px; cursor: pointer; }
 
-.btn-sub {
-    background: white !important; border: 2px solid var(--purple) !important;
-    color: var(--purple) !important; padding: 16px; border-radius: 20px;
-    font-weight: bold; width: 100%; margin-top: 10px; cursor: pointer;
-    box-shadow: 0 4px 10px rgba(162, 89, 255, 0.1) !important; transition: 0.3s;
-}
-
-.btn-sub:active { transform: scale(0.98); background: var(--purple) !important; color: white !important; }
-
-/* // --- ЛОББИ И КОМАНДЫ (ТВОЙ ТЕАМ-BOX) --- */
-.team-box {
-    margin-bottom: 15px; padding: 20px; border-radius: 20px;
-    background: rgba(255, 255, 255, 0.5); border: 2px solid transparent;
-    transition: all 0.3s ease;
-}
-
-.team-box h4 {
-    margin: 0 0 8px 0; text-transform: uppercase;
-    letter-spacing: 1px; font-size: 0.75rem; opacity: 0.6;
-}
-
-/* // --- ИГРОВОЙ ЭКРАН --- */
-.card-zone { flex: 1; display: flex; align-items: center; justify-content: center; perspective: 1000px; }
-
-.word-card {
-    width: 100%; aspect-ratio: 3/4; background: white;
-    border-radius: 35px; display: flex; align-items: center;
-    justify-content: center; text-align: center; padding: 30px;
-    box-shadow: 0 15px 45px rgba(0,0,0,0.08); 
-    touch-action: none; user-select: none; /* // Фикс для свайпов */
-}
-
+/* // Игровые элементы */
+#game-header { display: flex; justify-content: space-between; padding: 10px 0; }
+.word-card { flex: 1; background: #fff; border-radius: 35px; display: flex; align-items: center; justify-content: center; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 4px solid transparent; touch-action: none; }
 .game-footer { display: flex; gap: 15px; padding-bottom: 20px; }
-.btn-action { flex: 1; padding: 22px; border: none; border-radius: 22px; color: white; font-weight: bold; font-size: 14px; cursor: pointer; }
-
+.btn-action { flex: 1; padding: 20px; border: none; border-radius: 20px; color: #fff; font-weight: bold; cursor: pointer; }
 .btn-skip { background: var(--purple) !important; }
 .btn-check { background: var(--mint) !important; }
 
-/* // Утилиты */
-.screen { display: none; flex-direction: column; height: 100%; }
-.screen.active { display: flex; }
-.hidden { display: none !important; }
-.main-logo { text-align: center; font-size: 2.5rem; margin: 40px 0; letter-spacing: -1px; }
-.main-logo span { color: var(--purple); }
+/* // Лобби (Твой стиль team-box) */
+.team-box { background: rgba(255,255,255,0.5); padding: 15px; border-radius: 20px; margin-bottom: 10px; }
+.team-box h4 { margin: 0 0 5px 0; font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; }
