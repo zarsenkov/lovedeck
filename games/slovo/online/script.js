@@ -1,5 +1,5 @@
 (function() {
-    // Подключение к серверу
+    // 1. ПОДКЛЮЧЕНИЕ
     const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { 
         transports: ["polling", "websocket"] 
     });
@@ -7,22 +7,51 @@
     let myName, myRoom, isMyTurn = false, timerInterval;
     let wakeLock = null;
 
-    // Массив слов (можно вынести в отдельный cards.js или загружать через fetch)
-    const wordsPool = ["ЯБЛОКО", "КОТ", "ТЕЛЕФОН", "СОЛНЦЕ", "ПИЦЦА", "КОСМОС", "ТАНК", "МУЗЫКА", "КИНО", "ИТАЛИЯ"];
+    // 2. РАБОТА С КАРТОЧКАМИ (из cards.js)
+    function getNewData() {
+        try {
+            let word = "ОШИБКА";
+            let letters = "? ? ?";
 
-    // Функция против засыпания экрана
+            // Если cards.js — это массив объектов {word, letters}
+            if (window.cards && Array.isArray(window.cards)) {
+                const card = window.cards[Math.floor(Math.random() * window.cards.length)];
+                word = card.word || card;
+                letters = card.letters || "";
+            } 
+            // Если CATEGORIES (как в ZINE)
+            else if (window.CATEGORIES) {
+                const cats = Object.keys(window.CATEGORIES);
+                const randomCat = cats[Math.floor(Math.random() * cats.length)];
+                const words = window.CATEGORIES[randomCat];
+                word = words[Math.floor(Math.random() * words.length)];
+                // Генерация случайной буквы для ZINE, если её нет в базе
+                letters = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ"[Math.floor(Math.random() * 27)];
+            }
+            return { word: word.toUpperCase(), letters: letters.toUpperCase() };
+        } catch (e) {
+            console.error("Ошибка при получении данных из cards.js:", e);
+            return { word: "СЛОВО", letters: "!" };
+        }
+    }
+
+    // 3. СЕРВИСНЫЕ ФУНКЦИИ
     async function requestWakeLock() {
         if ('wakeLock' in navigator) {
             try {
                 wakeLock = await navigator.wakeLock.request('screen');
                 console.log("WakeLock активен");
-            } catch (err) {
-                console.error("Ошибка WakeLock:", err);
-            }
+            } catch (err) {}
         }
     }
 
-    // 1. ВХОД В ЛОББИ
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById(id);
+        if(target) target.classList.add('active');
+    }
+
+    // 4. ЛОББИ И ВХОД
     window.joinLobby = function() {
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
@@ -33,43 +62,41 @@
             showScreen('lobby-screen');
             document.getElementById('room-display').innerText = myRoom;
         } else {
-            alert("Введите имя и номер комнаты!");
+            alert("Заполни имя и комнату!");
         }
     };
 
-    // Обновление списка игроков
     socket.on('update-lobby', (data) => {
         const list = document.getElementById('player-list');
         list.innerHTML = data.players.map(p => 
             `<li>${p.name}: <b>${p.score}</b> ${p.online ? '🌐' : '🔴'}</li>`
         ).join('');
 
-        // Показываем кнопку старта только первому игроку (хосту)
+        const startBtn = document.getElementById('start-btn');
         if(data.players[0] && data.players[0].id === socket.id) {
-            document.getElementById('start-btn').classList.remove('hidden');
-            document.getElementById('start-btn').style.display = 'block';
+            startBtn.style.display = 'block';
+            startBtn.classList.remove('hidden');
         }
     });
 
-    // 2. СТАРТ ИГРЫ
     window.requestStart = function() {
         socket.emit('start-game', myRoom);
     };
 
+    // 5. ИГРОВОЙ ПРОЦЕСС
     socket.on('turn-changed', (data) => {
         showScreen('game-screen');
         isMyTurn = (socket.id === data.activePlayerId);
         
-        // Настройка интерфейса в зависимости от роли
         const actionControls = document.getElementById('action-controls');
         const observerMsg = document.getElementById('observer-msg');
         const roleBanner = document.getElementById('role-banner');
 
         if (isMyTurn) {
-            roleBanner.innerText = "ВАШ ХОД: ОТГАДЫВАЙТЕ!";
+            roleBanner.innerHTML = `<span style="color:red">ТВОЙ ХОД!</span> ДЕРЖИ ТЕЛЕФОН У ЛБА`;
             actionControls.style.display = 'none';
             observerMsg.style.display = 'block';
-            nextWord(); // Угадывающий запрашивает первое слово
+            nextWord(); // Угадывающий запрашивает слово для всех
         } else {
             roleBanner.innerText = `ОБЪЯСНЯЕТ: ${data.activePlayerName}`;
             actionControls.style.display = 'flex';
@@ -79,21 +106,24 @@
         startTimer(90);
     });
 
-    // 3. ЛОГИКА СЛОВ
     function nextWord() {
-        const randomWord = wordsPool[Math.floor(Math.random() * wordsPool.length)];
+        const data = getNewData();
         socket.emit('game-action', { 
             roomId: myRoom, 
-            data: { type: 'SYNC_WORD', word: randomWord } 
+            data: { type: 'SYNC_GAME', word: data.word, letters: data.letters } 
         });
     }
 
     socket.on('game-event', (data) => {
-        if(data.type === 'SYNC_WORD') {
-            const el = document.getElementById('current-word');
-            el.innerText = data.word;
-            // Блюрим слово для угадывающего
-            el.style.filter = isMyTurn ? "blur(15px)" : "none";
+        if(data.type === 'SYNC_GAME') {
+            const wordEl = document.getElementById('current-word');
+            const lettersEl = document.getElementById('target-letters');
+            
+            wordEl.innerText = data.word;
+            if(lettersEl) lettersEl.innerText = data.letters;
+            
+            // Блюр только для угадывающего
+            wordEl.style.filter = isMyTurn ? "blur(15px)" : "none";
         }
         
         if(data.type === 'NEXT_WORD_REQ' && isMyTurn) {
@@ -101,7 +131,7 @@
         }
     });
 
-    // 4. КНОПКИ ДЛЯ ДРУЗЕЙ (ОБСЕРВЕРОВ)
+    // Кнопки друзей
     window.handleWin = function() {
         socket.emit('add-point', myRoom);
         socket.emit('game-action', { roomId: myRoom, data: { type: 'NEXT_WORD_REQ' } });
@@ -111,7 +141,7 @@
         socket.emit('game-action', { roomId: myRoom, data: { type: 'NEXT_WORD_REQ' } });
     };
 
-    // 5. ТАЙМЕР И СЛУЖЕБНЫЕ ФУНКЦИИ
+    // 6. ТАЙМЕР И ФИНАЛ
     function startTimer(sec) {
         clearInterval(timerInterval);
         let timeLeft = sec;
@@ -127,29 +157,25 @@
         }, 1000);
     }
 
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        const target = document.getElementById(id);
-        if(target) target.classList.add('active');
-    }
-
-    // Обработка завершения игры
     socket.on('game-over', (data) => {
         showScreen('result-screen');
         const stats = document.getElementById('final-stats');
-        const winner = [...data.players].sort((a,b) => b.score - a.score)[0];
-        stats.innerHTML = `<h3>Победил: ${winner.name}!</h3>` + 
-            data.players.map(p => `<p>${p.name}: ${p.score}</p>`).join('');
+        const sorted = [...data.players].sort((a,b) => b.score - a.score);
+        stats.innerHTML = `<h2>ПОБЕДИЛ: ${sorted[0].name}!</h2>` + 
+            sorted.map(p => `<p>${p.name}: ${p.score}</p>`).join('');
     });
 
-    // Обработка вылета игрока
     socket.on('player-offline', (data) => {
-        document.getElementById('offline-overlay').style.display = 'flex';
-        document.getElementById('offline-msg').innerText = `${data.name} ОТКЛЮЧИЛСЯ`;
+        const overlay = document.getElementById('offline-overlay');
+        if(overlay) {
+            overlay.style.display = 'flex';
+            document.getElementById('offline-msg').innerText = `${data.name} ВЫЛЕТЕЛ`;
+        }
     });
 
     socket.on('hide-overlay', () => {
-        document.getElementById('offline-overlay').style.display = 'none';
+        const overlay = document.getElementById('offline-overlay');
+        if(overlay) overlay.style.display = 'none';
     });
 
 })();
