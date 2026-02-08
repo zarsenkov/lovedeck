@@ -1,98 +1,75 @@
-// Инициализация сокета
-const socket = io();
+// Подключаемся к серверу (адрес подставится автоматически, если клиент на том же домене, 
+// либо укажи адрес своего Amvera сервера)
+const socket = io('https://lovecouple-server-zarsenkov.amvera.io'); 
 
-// Глобальное состояние онлайн-игры
-let onlineState = {
+let myData = {
     roomId: '',
-    playerName: '',
-    isHost: false,
-    spyCount: 1
+    name: '',
+    isHost: false
 };
 
-// Функция переключения экранов
-function toScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-
-// Функция входа в игру
+// Функция: Попытка входа в комнату
 function joinGame() {
-    const name = document.getElementById('player-name').value.trim();
-    const room = document.getElementById('room-id').value.trim();
+    const nameInput = document.getElementById('player-name').value.trim();
+    const roomInput = document.getElementById('room-id').value.trim();
 
-    if (name.length < 2 || room.length < 4) {
-        alert("Введите корректное имя и ID комнаты (4 цифры)");
-        return;
-    }
-
-    onlineState.playerName = name;
-    onlineState.roomId = room;
-
-    // Отправляем запрос на сервер с префиксом spy-
-    socket.emit('spy-join', { roomId: room, playerName: name });
-}
-
-// Функция изменения настроек (только для хоста)
-function changeOnlineVal(type, delta) {
-    if (type === 'spies') {
-        onlineState.spyCount = Math.max(1, onlineState.spyCount + delta);
-        document.getElementById('online-spy-count').innerText = onlineState.spyCount;
+    if (nameInput && roomInput.length === 4) {
+        myData.name = nameInput;
+        myData.roomId = roomInput;
+        // Отправляем запрос на сервер
+        socket.emit('spy-join', { roomId: roomInput, playerName: nameInput });
+    } else {
+        alert("Введите имя и 4-значный ID комнаты");
     }
 }
 
-// Функция запуска игры хостом
+// Функция: Запуск (только для хоста)
 function startOnlineGame() {
     socket.emit('spy-start', {
-        roomId: onlineState.roomId,
+        roomId: myData.roomId,
         settings: {
-            spyCount: onlineState.spyCount,
-            locations: LOCATIONS // Используем массив из основного script.js
+            spyCount: parseInt(document.getElementById('online-spy-count').innerText),
+            locations: LOCATIONS // Массив из основного script.js
         }
     });
 }
 
-// --- ОБРАБОТКА СОБЫТИЙ СЕРВЕРА ---
+// --- СЛУШАТЕЛИ СОБЫТИЙ ---
 
-// Обновление списка игроков в лобби
-socket.on('spy-update-lobby', ({ players, gameStarted }) => {
+// Обновление списка игроков
+socket.on('spy-update-lobby', ({ players }) => {
     toScreen('lobby-screen');
-    document.getElementById('display-room-id').innerText = onlineState.roomId;
-    
     const list = document.getElementById('online-players-list');
-    list.innerHTML = players.map(p => `
-        <div class="name-tag ${p.name === onlineState.playerName ? 'me' : ''}">
-            ${p.name} ${p.isHost ? '👑' : ''}
-        </div>
-    `).join('');
+    list.innerHTML = '';
 
-    // Проверяем, является ли текущий игрок хостом
-    const me = players.find(p => p.id === socket.id);
-    if (me && me.isHost) {
-        onlineState.isHost = true;
-        document.getElementById('host-controls').style.display = 'block';
-        document.getElementById('wait-message').style.display = 'none';
-    }
+    players.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'name-tag';
+        if (p.id === socket.id) {
+            div.classList.add('me');
+            if (p.isHost) myData.isHost = true;
+        }
+        div.innerText = `${p.isHost ? '👑 ' : ''}${p.name}`;
+        list.appendChild(div);
+    });
+
+    // Показываем кнопку старта только хосту
+    document.getElementById('host-controls').style.display = myData.isHost ? 'block' : 'none';
+    document.getElementById('wait-message').style.display = myData.isHost ? 'none' : 'block';
 });
 
-// Получение роли от сервера (индивидуально)
-socket.on('spy-your-role', ({ role, location }) => {
+// Получение роли
+socket.on('spy-your-role', ({ role, location, isSpy }) => {
     toScreen('role-screen');
-    const roleEl = document.getElementById('role-text');
-    const locEl = document.getElementById('location-text');
+    const roleText = document.getElementById('role-text');
+    const locText = document.getElementById('location-text');
 
-    roleEl.innerText = role;
+    roleText.innerText = role;
+    locText.innerText = isSpy ? "УЗНАЙТЕ МЕСТОПОЛОЖЕНИЕ" : `ЛОКАЦИЯ: ${location}`;
     
-    // Если игрок — шпион, скрываем локацию (или пишем "Неизвестно")
-    if (role === "ШПИОН") {
-        locEl.innerText = "ВЫ ДОЛЖНЫ УЗНАТЬ ГДЕ ВЫ";
-        roleEl.style.color = "var(--neon-red)";
-    } else {
-        locEl.innerText = "ЛОКАЦИЯ: " + location;
-        roleEl.style.color = "var(--neon-cyan)";
-    }
+    // Меняем цвет текста для шпиона
+    roleText.style.color = isSpy ? "var(--neon-red)" : "var(--neon-cyan)";
 });
 
-// Ошибка при входе
-socket.on('spy-error', (msg) => {
-    alert(msg);
-});
+// Обработка ошибок
+socket.on('spy-error', (msg) => alert(msg));
