@@ -1,0 +1,368 @@
+/* --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ --- */
+:root {
+    --bg: #080808;         [span_0](start_span)/* Основной фон[span_0](end_span) */
+    --card: #121212;       [span_1](start_span)/* Фон карточек[span_1](end_span) */
+    --red: #ff0033;        [span_2](start_span)/* Акцентный красный[span_2](end_span) */
+    --text: #ffffff;       [span_3](start_span)/* Цвет текста[span_3](end_span) */
+    --muted: #666;         [span_4](start_span)/* Приглушенный текст[span_4](end_span) */
+}
+
+/* --- СБРОС СТИЛЕЙ И БАЗА --- */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Unbounded', sans-serif; [span_5](start_span)/*[span_5](end_span) */
+}
+
+body { 
+    background: var(--bg); 
+    color: var(--text); 
+    height: 100dvh; 
+    overflow: hidden; 
+    position: fixed; 
+    width: 100%; [span_6](start_span)/*[span_6](end_span) */
+}
+
+/* Нуарный градиент поверх всего экрана */
+.noir-overlay { 
+    position: fixed; 
+    inset: 0; 
+    background: radial-gradient(circle at center, transparent, rgba(0,0,0,0.9)); 
+    pointer-events: none; 
+    z-index: 10; [span_7](start_span)/*[span_7](end_span) */
+}
+
+/* --- КОНТЕЙНЕРЫ И СТРАНИЦЫ --- */
+.app-container { 
+    position: relative; 
+    z-index: 15; 
+    height: 100%; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; [span_8](start_span)/*[span_8](end_span) */
+}
+
+.page { 
+    display: none; 
+    height: 100%; 
+    flex-direction: column; [span_9](start_span)/*[span_9](end_span) */
+}
+
+/* Активная страница с анимацией появления */
+.page.active { 
+    display: flex; 
+    animation: fadeIn 0.4s ease; [span_10](start_span)/*[span_10](end_span) */
+}
+
+@keyframes fadeIn { 
+    from { opacity: 0; } 
+    to { opacity: 1; [span_11](start_span)} /*[span_11](end_span) */
+}
+
+/* --- ВЕРХНЯЯ ПАНЕЛЬ --- */
+.top-bar { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px; [span_12](start_span)/*[span_12](end_span) */
+}
+
+.brand { 
+    font-weight: 900; 
+    letter-spacing: 2px; 
+    color: var(--red); 
+    font-size: 16px; [span_13](start_span)/*[span_13](end_span) */
+}
+
+.icon-btn { 
+    background: var(--card); 
+    border: 1px solid #333; 
+    color: white; 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; [span_14](start_span)/*[span_14](end_span) */
+}
+
+/* --- ФОРМЫ И СПИСКИ --- */
+.setup-scroll { 
+    flex: 1; 
+    overflow-y: auto; [span_15](start_span)/*[span_15](end_span) */
+}
+
+.label-row { 
+    font-size: 10px; 
+    color: var(--muted); 
+    margin: 15px 0 10px; 
+    font-weight: 700; 
+    text-transform: uppercase; [span_16](start_span)/*[span_16](end_span) */
+}
+
+.names-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 8px; [span_17](start_span)/*[span_17](end_span) */
+}
+
+.name-input { 
+    background: #111; 
+    border: 1px solid #333; 
+    color: #fff; 
+    padding: 12px; 
+    border-radius: 12px; 
+    font-size: 11px; 
+    outline: none; [span_18](start_span)/*[span_18](end_span) */
+}
+
+.name-input:focus { 
+    border-color: var(--red); [span_19](start_span)/*[span_19](end_span) */
+}
+
+/* --- СЕТКА РОЛЕЙ --- */
+.roles-toggle-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px; [span_20](start_span)/*[span_20](end_span) */
+}
+
+.role-check { 
+    background: var(--card); 
+    border: 1px solid #222; 
+    padding: 12px; 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    font-size: 11px; [span_21](start_span)/*[span_21](end_span) */
+}
+
+.role-check input { 
+    accent-color: var(--red); 
+    width: 18px; 
+    height: 18px; [span_22](start_span)/*[span_22](end_span) */
+}
+
+.roles-preview { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 5px; 
+    margin-top: 15px; [span_23](start_span)/*[span_23](end_span) */
+}
+
+.p-tag { 
+    font-size: 8px; 
+    padding: 4px 8px; 
+    background: #1a1a1a; 
+    border-radius: 5px; 
+    color: #888; 
+    border: 1px solid #333; [span_24](start_span)/*[span_24](end_span) */
+}
+
+/* --- КНОПКИ ДЕЙСТВИЙ --- */
+.action-btn { 
+    background: #fff; 
+    color: #000; 
+    border: none; 
+    padding: 20px; 
+    border-radius: 20px; 
+    font-weight: 900; 
+    font-size: 14px; 
+    width: 100%; 
+    margin-top: 10px; 
+    cursor: pointer; [span_25](start_span)/*[span_25](end_span) */
+}
+
+.action-btn.red { 
+    background: var(--red); 
+    color: #fff; [span_26](start_span)/*[span_26](end_span) */
+}
+
+/* --- КАРТА ИГРОКА --- */
+.card-area { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; [span_27](start_span)/*[span_27](end_span) */
+}
+
+.player-num { 
+    font-size: 24px; 
+    font-weight: 900; 
+    margin-bottom: 20px; 
+    color: var(--red); [span_28](start_span)/*[span_28](end_span) */
+}
+
+.flip-card { 
+    width: 280px; 
+    height: 400px; 
+    perspective: 1000px; [span_29](start_span)/*[span_29](end_span) */
+}
+
+.card-inner { 
+    position: relative; 
+    width: 100%; 
+    height: 100%; 
+    transition: transform 0.6s; 
+    transform-style: preserve-3d; [span_30](start_span)/*[span_30](end_span) */
+}
+
+.card-inner.is-flipped { 
+    transform: rotateY(180deg); [span_31](start_span)/*[span_31](end_span) */
+}
+
+.card-front, .card-back { 
+    position: absolute; 
+    width: 100%; 
+    height: 100%; 
+    backface-visibility: hidden; 
+    border-radius: 35px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 30px; 
+    border: 2px solid #222; [span_32](start_span)/*[span_32](end_span) */
+}
+
+.card-front { 
+    background: var(--card); 
+    border: 2px dashed #444; [span_33](start_span)/*[span_33](end_span) */
+}
+
+.card-back { 
+    background: #151515; 
+    transform: rotateY(180deg); 
+    border-color: var(--red); 
+    text-align: center; [span_34](start_span)/*[span_34](end_span) */
+}
+
+.role-icon { 
+    font-size: 60px; 
+    color: var(--red); 
+    margin-bottom: 20px; [span_35](start_span)/*[span_35](end_span) */
+}
+
+/* --- НОЧНОЙ ЭКРАН --- */
+.night-scroll { 
+    flex: 1; 
+    overflow-y: auto; [span_36](start_span)/*[span_36](end_span) */
+}
+
+.night-step { 
+    background: var(--card); 
+    padding: 15px; 
+    border-radius: 20px; 
+    border: 1px solid #222; 
+    margin-bottom: 12px; [span_37](start_span)/*[span_37](end_span) */
+}
+
+.script-hint { 
+    display: block; 
+    font-size: 10px; 
+    font-style: italic; 
+    color: #666; 
+    margin-bottom: 8px; 
+    line-height: 1.4; [span_38](start_span)/*[span_38](end_span) */
+}
+
+.night-step p { 
+    font-size: 11px; 
+    font-weight: 900; 
+    color: var(--red); 
+    margin-bottom: 10px; [span_39](start_span)/*[span_39](end_span) */
+}
+
+.night-step select { 
+    width: 100%; 
+    background: #000; 
+    color: #fff; 
+    border: 1px solid #333; 
+    padding: 12px; 
+    border-radius: 12px; [span_40](start_span)/*[span_40](end_span) */
+}
+
+/* --- ДНЕВНОЙ ЭКРАН --- */
+.timer-box { 
+    font-size: 50px; 
+    font-weight: 900; 
+    color: var(--red); 
+    text-align: center; [span_41](start_span)/*[span_41](end_span) */
+}
+
+.voting-grid { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+    overflow-y: auto; 
+    flex: 1; [span_42](start_span)/*[span_42](end_span) */
+}
+
+.vote-card { 
+    background: var(--card); 
+    padding: 15px; 
+    border-radius: 18px; 
+    border: 1px solid #222; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; [span_43](start_span)/*[span_43](end_span) */
+}
+
+.vote-card.selected { 
+    border-color: var(--red); 
+    background: rgba(255,0,51,0.1); [span_44](start_span)/*[span_44](end_span) */
+}
+
+.vote-card.dead { 
+    opacity: 0.3; [span_45](start_span)/*[span_45](end_span) */
+}
+
+/* --- МОДАЛЬНОЕ ОКНО --- */
+.modal-overlay { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0,0,0,0.9); 
+    z-index: 100; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    backdrop-filter: blur(8px); 
+    transition: all 0.3s ease; [span_46](start_span)/*[span_46](end_span) */
+}
+
+.modal-card { 
+    background: #111; 
+    border: 2px solid var(--red); 
+    box-shadow: 0 0 30px rgba(255, 0, 51, 0.3); 
+    padding: 30px; 
+    text-align: center; 
+    max-width: 80%; 
+    border-radius: 20px; 
+    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); [span_47](start_span)/*[span_47](end_span) */
+}
+
+@keyframes modalPop { 
+    from { transform: scale(0.8); opacity: 0; } 
+    to { transform: scale(1); opacity: 1; [span_48](start_span)} /*[span_48](end_span) */
+}
+
+#modalText b { 
+    color: var(--red); 
+    text-transform: uppercase; [span_49](start_span)/*[span_49](end_span) */
+}
+
+/* --- ДОПОЛНИТЕЛЬНЫЕ УТИЛИТЫ --- */
+.center-content { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; [span_50](start_span)/*[span_50](end_span) */
+}
+
+.giant-icon { 
+    font-size: 80px; 
+    color: var(--red); 
+    margin-bottom: 20px; [span_51](start_span)/*[span_51](end_span) */
+}
