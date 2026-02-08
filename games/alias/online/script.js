@@ -1,4 +1,4 @@
-const socket = io();
+const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
 
 // Состояние клиента
 let myId = null;
