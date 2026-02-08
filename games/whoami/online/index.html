@@ -9,9 +9,12 @@
 </head>
 <body>
     <div class="app-container">
+        
         <section class="screen active" id="join-screen">
-            <button class="back-btn" onclick="leaveRoom()">← ВЫЙТИ</button>
+            <button class="back-btn" onclick="window.location.href='/index.html'">← МЕНЮ</button>
+            
             <h1 class="main-title">КТО<span>Я?</span></h1>
+            
             <div class="card-glass">
                 <input type="text" id="player-name" class="joy-input" placeholder="Твое имя">
                 <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
@@ -20,36 +23,42 @@
         </section>
 
         <section class="screen" id="lobby-screen">
+            <button class="back-btn" onclick="leaveRoom()">← ВЫЙТИ</button>
+            
             <h2 id="room-display">КОМНАТА: ---</h2>
+            
             <div class="card-glass">
                 <p class="section-tag">ИГРОКИ</p>
                 <ul id="players-list"></ul>
             </div>
+
             <div class="settings-box card-glass" style="margin-bottom: 15px; padding: 10px;">
-    <div style="display: flex; justify-content: space-between; gap: 10px;">
-        <label style="font-size: 12px; font-weight: 800;">РАУНДОВ: 
-            <input type="number" id="rounds-count" value="3" min="1" max="10" style="width: 40px;">
-        </label>
-        <label style="font-size: 12px; font-weight: 800;">ВРЕМЯ (С): 
-            <input type="number" id="turn-time" value="90" min="10" max="300" style="width: 50px;">
-        </label>
-    </div>
-</div>
+                <div style="display: flex; justify-content: space-between; gap: 10px;">
+                    <label style="font-size: 10px; font-weight: 800; color: #666;">РАУНДОВ
+                        <input type="number" id="rounds-count" value="3" min="1" max="10" style="width: 100%; display: block; margin-top: 5px;">
+                    </label>
+                    <label style="font-size: 10px; font-weight: 800; color: #666;">ВРЕМЯ (С)
+                        <input type="number" id="turn-time" value="90" min="10" max="300" style="width: 100%; display: block; margin-top: 5px;">
+                    </label>
+                </div>
+            </div>
             
             <div id="host-controls" style="display: none;">
                 <p class="section-tag">КАТЕГОРИИ</p>
                 <div id="categories-box" class="categories-grid"></div>
                 <button class="primary-btn" onclick="startGame()">ПОЕХАЛИ!</button>
             </div>
+            
             <p id="wait-msg">Ждем хоста...</p>
         </section>
 
         <section class="screen" id="game-screen">
-            <button class="exit-btn-game" onclick="leaveRoom()" style="position: absolute; top: 10px; right: 10px; background: #ff4757; color: white; border: none; border-radius: 5px; padding: 5px 10px; font-size: 10px; z-index: 100;">ВЫЙТИ</button>
+            <button class="exit-btn-game" onclick="leaveRoom()" style="position: absolute; top: 10px; right: 10px; background: #ff4757; color: white; border: none; border-radius: 5px; padding: 5px 10px; font-size: 10px; z-index: 100; font-weight: 800; cursor: pointer;">ВЫЙТИ</button>
+            
             <div class="game-header">
                 <div class="timer-box">⏱ <span id="timer">0</span></div>
                 <div id="active-player-name" class="active-badge">---</div>
-                <div class="round-counter" style="font-weight: 900; font-size: 14px;">РАУНД: <span id="current-round">1</span>/<span id="total-rounds">3</span></div>
+                <div class="round-counter" style="font-weight: 900; font-size: 12px; margin-top: 5px; color: #444;">РАУНД: <span id="current-round">1</span>/<span id="total-rounds">3</span></div>
             </div>
             
             <div class="card-main">
