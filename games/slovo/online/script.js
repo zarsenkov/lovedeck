@@ -1,10 +1,11 @@
 (function() {
     const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ["polling", "websocket"] });
     let myName, myRoom, isMyTurn = false, timerInterval, allPlayers = [];
-    let wakeLock = null;
 
-    async function lockScreen() {
-        if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} }
+    // Функция переключения экранов
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
 
     function getCard() {
@@ -22,7 +23,6 @@
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
         if(myName && myRoom) {
-            lockScreen();
             socket.emit('join-room', { roomId: myRoom, playerName: myName });
             showScreen('lobby-screen');
             document.getElementById('room-display').innerText = `КОМНАТА: ${myRoom}`;
@@ -32,8 +32,9 @@
     socket.on('update-lobby', (data) => {
         allPlayers = data.players;
         const list = document.getElementById('players-list');
-        list.innerHTML = data.players.map(p => `<li>${p.name} <b>${p.score}</b></li>`).join('');
-        if(data.players[0].id === socket.id) {
+        list.innerHTML = data.players.map(p => `<li>${p.name}: ${p.score}</li>`).join('');
+        
+        if(data.players[0].id === socket.id && !data.gameStarted) {
             document.getElementById('host-controls').style.display = 'block';
             document.getElementById('start-btn').classList.remove('hidden');
         }
@@ -50,9 +51,11 @@
     socket.on('turn-changed', (data) => {
         showScreen('game-screen');
         isMyTurn = (socket.id === data.activePlayerId);
+        
         document.getElementById('host-actions').style.display = isMyTurn ? 'flex' : 'none';
         document.getElementById('guest-msg').style.display = isMyTurn ? 'none' : 'block';
-        document.getElementById('role-banner').innerText = isMyTurn ? "ТВОЙ ХОД (ОБЪЯСНЯЙ)" : `ОБЪЯСНЯЕТ: ${data.activePlayerName}`;
+        document.getElementById('role-banner').innerText = isMyTurn ? "ТВОЙ ХОД (ОБЪЯСНЯЙ)" : `ВЕДЕТ: ${data.activePlayerName}`;
+        
         if(isMyTurn) sendNewWord();
         startTimer(data.timer);
     });
@@ -72,8 +75,8 @@
     window.showScoreModal = function() {
         const container = document.getElementById('winner-buttons');
         container.innerHTML = allPlayers.filter(p => p.id !== socket.id)
-            .map(p => `<button class="btn-zinc" style="width:100%; margin-bottom:5px;" onclick="givePoint('${p.name}')">${p.name}</button>`).join('');
-        document.getElementById('score-modal').classList.remove('hidden');
+            .map(p => `<button class="btn-zinc" style="margin-bottom:5px;" onclick="givePoint('${p.name}')">${p.name}</button>`).join('');
+        document.getElementById('score-modal').style.display = 'flex';
     };
 
     window.givePoint = function(name) {
@@ -82,7 +85,7 @@
         socket.emit('switch-turn', myRoom);
     };
 
-    window.closeModal = () => document.getElementById('score-modal').classList.add('hidden');
+    window.closeModal = () => document.getElementById('score-modal').style.display = 'none';
     window.handleSkip = () => socket.emit('switch-turn', myRoom);
 
     function startTimer(sec) {
@@ -100,9 +103,4 @@
         const sorted = [...data.players].sort((a,b) => b.score - a.score);
         document.getElementById('final-stats').innerHTML = sorted.map(p => `<p>${p.name}: ${p.score}</p>`).join('');
     });
-
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-    }
 })();
