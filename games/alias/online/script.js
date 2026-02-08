@@ -1,50 +1,44 @@
-// Устанавливаем соединение с сервером
+// Устанавливаем соединение с сервером Amvera
 const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
 
-// Состояние игры
-let currentRoom = "";   // ID текущей комнаты
-let isHost = false;     // Является ли пользователь хостом
+// Состояние текущей сессии
+let currentRoom = "";   // ID комнаты
+let isHost = false;     // Флаг хоста
 
 // --- ФУНКЦИИ ОТПРАВКИ ---
 
-// Функция создания игры (ID генерируется автоматически)
+// Создание игры: генерируем ID и шлем серверу
 function createOnlineGame() {
-    // Получаем только имя
     const name = document.getElementById('player-name').value;
     if (!name) return alert("Введите имя!");
     
-    // Генерируем 4-значный номер
+    // Генерируем временный ID для создания
     const roomId = Math.floor(1000 + Math.random() * 9000).toString();
     
-    // Запоминаем ID комнаты локально
-    currentRoom = roomId;
-    
-    // Отправляем серверу
+    // Отправляем запрос. Сервер вернет подтверждение в alias-update-lobby
     socket.emit('alias-join', { roomId, playerName: name });
 }
 
-// Функция входа (имя и ID комнаты обязательны)
+// Вход в игру: используем введенный ID
 function joinOnlineGame() {
     const name = document.getElementById('player-name').value;
     const room = document.getElementById('room-id').value;
     
-    if (!name || !room) return alert("Введите имя и ID комнаты!");
-    
-    // Запоминаем ID комнаты, в которую входим
-    currentRoom = room;
+    if (!name || !room) return alert("Нужно имя и ID комнаты!");
     
     socket.emit('alias-join', { playerName: name, roomId: room });
 }
 
-// Функция нажатия "Старт" (только для хоста)
+// Запуск игры хостом
 function requestStart() {
-    // Проверяем, что комната установлена
-    if (!currentRoom) return alert("Ошибка: комната не определена");
+    // Проверяем наличие комнаты и слов
+    if (!currentRoom) return alert("Ошибка: ID комнаты не найден!");
+    if (!ALIAS_WORDS || !ALIAS_WORDS.common) return alert("Ошибка: База слов не загружена!");
 
-    // Берем слова из cards.js (категория common)
+    // Перемешиваем слова (общая категория)
     const words = [...ALIAS_WORDS.common].sort(() => 0.5 - Math.random());
     
-    // Отправляем команду серверу
+    // Отправляем команду старта
     socket.emit('alias-start', { 
         roomId: currentRoom, 
         words: words, 
@@ -54,39 +48,43 @@ function requestStart() {
 
 // --- ОБРАБОТКА ОТВЕТОВ СЕРВЕРА ---
 
+// Обновление лобби (вызывается при входе и каждом новом игроке)
 socket.on('alias-update-lobby', (data) => {
-    // Переходим в лобби
-    toScreen('screen-lobby');
-    
-    // ВАЖНО: Обновляем ROOM ID в интерфейсе
-    document.getElementById('display-room-id').innerText = currentRoom;
-
-    // Проверяем статус хоста по списку игроков от сервера
-    const me = data.players.find(p => p.id === socket.id);
-    if (me) {
-        isHost = me.isHost;
+    // Сохраняем актуальный roomId, который подтвердил сервер
+    if (data.roomId) {
+        currentRoom = data.roomId;
+    } else if (!currentRoom) {
+        // Если сервер не прислал roomId в объекте, попробуем взять из инпута (для вошедших)
+        currentRoom = document.getElementById('room-id').value;
     }
 
-    // Обновляем список игроков и кнопки
+    toScreen('screen-lobby');
+    
+    // Обновляем текст в HTML
+    document.getElementById('display-room-id').innerText = currentRoom;
+
+    // Проверяем, являемся ли мы хостом
+    const me = data.players.find(p => p.id === socket.id);
+    if (me) isHost = me.isHost;
+
     updatePlayers(data.players);
 });
 
-// Когда игра начинается
+// Начало игры / Новое слово
 socket.on('alias-new-turn', (data) => {
-    // Показываем игровой экран
     toScreen('screen-game');
-    
-    // Устанавливаем слово
     document.getElementById('word-display').innerText = data.word;
     
-    // Если сейчас не мой ход — блокируем управление
     const isMyTurn = data.activePlayerId === socket.id;
     const cardElement = document.getElementById('main-card');
+    
+    // Блокировка для тех, кто не объясняет
     cardElement.style.pointerEvents = isMyTurn ? 'auto' : 'none';
     cardElement.style.opacity = isMyTurn ? '1' : '0.7';
-    
-    // Убираем/показываем кнопки Угадано/Пропуск
     document.getElementById('game-controls').style.display = isMyTurn ? 'flex' : 'none';
+    
+    // Показываем шапку с таймером
+    document.getElementById('game-header').style.visibility = 'visible';
 });
 
 // Обновление счета
@@ -96,6 +94,7 @@ socket.on('alias-update-score', (data) => {
 
 // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
+// Отрисовка списка игроков
 function updatePlayers(players) {
     const list = document.getElementById('player-list');
     list.innerHTML = players.map(p => `
@@ -105,32 +104,19 @@ function updatePlayers(players) {
         </div>
     `).join('');
 
-    // Управление видимостью кнопки Старт и сообщения ожидания
-    const startBtn = document.getElementById('start-btn-online');
-    const waitMsg = document.getElementById('wait-msg');
-
-    if (isHost) {
-        startBtn.style.display = 'block';
-        waitMsg.style.display = 'none';
-    } else {
-        startBtn.style.display = 'none';
-        waitMsg.style.display = 'block';
-    }
+    // Показываем кнопку только хосту
+    document.getElementById('start-btn-online').style.display = isHost ? 'block' : 'none';
+    document.getElementById('wait-msg').style.display = isHost ? 'none' : 'block';
 }
 
 function toScreen(id) {
     document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
-    const screen = document.getElementById(id);
-    if (screen) screen.classList.add('active');
+    document.getElementById(id).classList.add('active');
 }
 
 function handleOnlineWord(isCorrect) {
-    socket.emit('alias-action', { 
-        roomId: currentRoom, 
-        isCorrect: isCorrect 
-    });
+    socket.emit('alias-action', { roomId: currentRoom, isCorrect: isCorrect });
     
-    // Анимация карточки
     const card = document.getElementById('main-card');
     card.style.transition = '0.3s ease-out';
     card.style.transform = isCorrect ? 'translateX(350px) rotate(30deg)' : 'translateX(-350px) rotate(-30deg)';
