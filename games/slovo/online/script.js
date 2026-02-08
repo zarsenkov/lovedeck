@@ -5,40 +5,35 @@
 
     let myName, myRoom, isMyTurn = false, timerInterval;
     let wakeLock = null;
+    let allPlayers = [];
 
-    // Работа с карточками
+    // 1. Блокировка экрана
+    async function requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+        }
+    }
+
+    // 2. Получение данных (слово + 3 буквы)
     function getNewData() {
         try {
-            let word = "СЛОВО", letters = "? ? ?";
+            let word = "СЛОВО", letters = "";
             if (window.cards && Array.isArray(window.cards)) {
                 const card = window.cards[Math.floor(Math.random() * window.cards.length)];
                 word = card.word || card;
-                letters = card.letters || "";
-            } else if (window.CATEGORIES) {
-                const cats = Object.keys(window.CATEGORIES);
-                const words = window.CATEGORIES[cats[Math.floor(Math.random() * cats.length)]];
-                word = words[Math.floor(Math.random() * words.length)];
-                letters = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ"[Math.floor(Math.random() * 27)];
             }
-            return { word: word.toUpperCase(), letters: letters.toUpperCase() };
-        } catch (e) { return { word: "ОШИБКА", letters: "!" }; }
+            // Генерируем 3 случайные буквы
+            const alphabet = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+            for(let i=0; i<3; i++) letters += alphabet[Math.floor(Math.random() * alphabet.length)] + " ";
+            return { word: word.toUpperCase(), letters: letters.trim() };
+        } catch (e) { return { word: "ОШИБКА", letters: "А Б В" }; }
     }
 
-    async function requestWakeLock() {
-        if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
-    }
-
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        const target = document.getElementById(id);
-        if(target) target.classList.add('active');
-    }
-
+    // 3. Вход
     window.joinLobby = function() {
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
         if(myName && myRoom) {
-            document.getElementById('offline-overlay').style.display = 'none';
             requestWakeLock();
             socket.emit('join-room', { roomId: myRoom, playerName: myName });
             showScreen('lobby-screen');
@@ -46,60 +41,89 @@
         }
     };
 
+    // 4. Лобби
     socket.on('update-lobby', (data) => {
+        allPlayers = data.players;
         const list = document.getElementById('player-list');
-        list.innerHTML = data.players.map(p => `<li>${p.name}: <b>${p.score}</b> ${p.online ? '🌐' : '🔴'}</li>`).join('');
-        const startBtn = document.getElementById('start-btn');
-        if(data.players[0] && data.players[0].id === socket.id && !data.gameStarted) {
-            startBtn.style.display = 'block';
-            startBtn.classList.remove('hidden');
-        } else {
-            startBtn.style.display = 'none';
+        list.innerHTML = data.players.map(p => `<li>${p.name} <span>${p.score} pts</span></li>`).join('');
+        
+        // Если я первый в списке — я хост
+        if(data.players[0].id === socket.id) {
+            document.getElementById('host-controls').style.display = 'block';
+            document.getElementById('start-btn').classList.remove('hidden');
         }
     });
 
-    window.requestStart = function() { socket.emit('start-game', myRoom); };
+    window.requestStart = function() {
+        const r = document.getElementById('rounds-count').value;
+        const t = document.getElementById('timer-val').value;
+        socket.emit('start-game', { roomId: myRoom, maxRounds: r, timer: t });
+    };
 
+    // 5. Игровой процесс
     socket.on('turn-changed', (data) => {
         showScreen('game-screen');
         isMyTurn = (socket.id === data.activePlayerId);
-        document.getElementById('action-controls').style.display = isMyTurn ? 'none' : 'grid';
-        document.getElementById('observer-msg').style.display = isMyTurn ? 'block' : 'none';
+        
+        document.getElementById('host-action-controls').style.display = isMyTurn ? 'grid' : 'none';
+        document.getElementById('guest-msg').style.display = isMyTurn ? 'none' : 'block';
         document.getElementById('role-banner').innerText = isMyTurn ? "ТВОЙ ХОД" : `ОБЪЯСНЯЕТ: ${data.activePlayerName}`;
+        
         if (isMyTurn) nextWord();
-        startTimer(90);
+        startTimer(data.timer || 60);
     });
 
     function nextWord() {
         const d = getNewData();
-        socket.emit('game-action', { roomId: myRoom, data: { type: 'SYNC_GAME', word: d.word, letters: d.letters } });
+        socket.emit('game-action', { 
+            roomId: myRoom, 
+            data: { type: 'SYNC_GAME', word: d.word, letters: d.letters } 
+        });
     }
 
     socket.on('game-event', (data) => {
         if(data.type === 'SYNC_GAME') {
             const wordEl = document.getElementById('current-word');
-            wordEl.innerText = data.word;
-            document.getElementById('target-letters').innerText = data.letters;
-            wordEl.style.filter = isMyTurn ? "blur(15px)" : "none";
+            const lettersEl = document.getElementById('target-letters');
+            
+            lettersEl.innerText = data.letters;
+            // ГОСТИ ВИДЯТ ТОЛЬКО БУКВЫ, ВЕДУЩИЙ ВИДИТ СЛОВО
+            wordEl.innerText = isMyTurn ? data.word : "???";
         }
-        if(data.type === 'NEXT_WORD_REQ' && isMyTurn) nextWord();
     });
 
-    window.handleWin = function() {
-        socket.emit('add-point', myRoom);
-        socket.emit('game-action', { roomId: myRoom, data: { type: 'NEXT_WORD_REQ' } });
-    };
+    // 6. Управление баллами
+    window.showScoreModal = function() {
+        const modal = document.getElementById('score-modal');
+        const container = document.getElementById('potential-winners');
+        modal.style.display = 'flex';
+        
+        // Список всех игроков кроме меня
+        container.innerHTML = allPlayers
+            .filter(p => p.id !== socket.id)
+            .map(p => `<button class="winner-btn" onclick="givePoint('${p.name}')">${p.name}</button>`)
+            .join('');
+    }
+
+    window.givePoint = function(targetName) {
+        socket.emit('add-point-to', { roomId: myRoom, targetName: targetName });
+        closeModal();
+        socket.emit('switch-turn', myRoom); // Передаем ход после успеха
+    }
+
+    window.closeModal = function() { document.getElementById('score-modal').style.display = 'none'; }
 
     window.handleSkip = function() {
-        socket.emit('game-action', { roomId: myRoom, data: { type: 'NEXT_WORD_REQ' } });
-    };
+        socket.emit('switch-turn', myRoom); // Просто передаем ход
+    }
 
     function startTimer(sec) {
         clearInterval(timerInterval);
         let timeLeft = sec;
+        const display = document.getElementById('timer-display');
         timerInterval = setInterval(() => {
             timeLeft--;
-            document.getElementById('timer-display').innerText = timeLeft;
+            display.innerText = timeLeft;
             if(timeLeft <= 0) {
                 clearInterval(timerInterval);
                 if(isMyTurn) socket.emit('switch-turn', myRoom);
@@ -107,21 +131,18 @@
         }, 1000);
     }
 
-    socket.on('player-offline', (data) => {
-        const gameActive = document.getElementById('game-screen').classList.contains('active');
-        if (gameActive) {
-            const overlay = document.getElementById('offline-overlay');
-            overlay.style.display = 'flex';
-            document.getElementById('offline-msg').innerText = `${data.name} ВЫЛЕТЕЛ`;
-        }
-    });
-
-    socket.on('hide-overlay', () => { document.getElementById('offline-overlay').style.display = 'none'; });
-
     socket.on('game-over', (data) => {
         showScreen('result-screen');
         const sorted = [...data.players].sort((a,b) => b.score - a.score);
-        document.getElementById('final-stats').innerHTML = `<h2>${sorted[0].name} ПОБЕДИЛ!</h2>` + 
-            sorted.map(p => `<p>${p.name}: ${p.score}</p>`).join('');
+        document.getElementById('final-stats').innerHTML = sorted.map(p => 
+            `<div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:900;">
+                <span>${p.name}</span><span>${p.score}</span>
+            </div>`
+        ).join('');
     });
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
 })();
