@@ -7,26 +7,11 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 </head>
-    <div id="menu-controls">
-    <div class="rules-btn" onclick="toggleOnlineRules(true)">?</div> </div>
-
-<div class="modal-overlay" id="modal-online-rules" style="display: none;">
-    <div class="modal-content">
-        <h2>КАК ИГРАТЬ ONLINE</h2>
-        <ul style="text-align: left; font-size: 0.9rem; line-height: 1.4;">
-            <li><b>1. Создание:</b> Хост создает комнату и диктует 4-значный <b>ROOM ID</b> друзьям.</li>
-            <li><b>2. Вход:</b> Игроки вводят имя, ID комнаты и ждут в Лобби.</li>
-            <li><b>3. Очередь:</b> Игроки ходят строго по очереди (сверху вниз по списку).</li>
-            <li><b>4. Роль:</b> Если на экране появилось слово — <b>ты объясняешь!</b> Остальные видят только надпись "Игрок объясняет...".</li>
-            <li><b>5. Очки:</b> Угадал — жми "УГАДАНО" (+1), не знаешь — "ПРОПУСК" (-1).</li>
-        </ul>
-        <button class="btn-pop-main" onclick="toggleOnlineRules(false)" style="padding:10px; margin-top:15px;">ПОНЯТНО</button>
-    </div>
-</div>
 <body>
     <div class="app-shell">
         <div id="menu-controls">
             <div class="home-btn" onclick="location.href='../index.html'">🏠</div>
+            <div class="rules-btn" onclick="toggleOnlineRules(true)">?</div>
         </div>
 
         <header class="pop-header" id="game-header" style="visibility: hidden;">
@@ -37,11 +22,9 @@
 
         <section class="pop-screen active" id="screen-auth">
             <h1 class="pop-title">AL<span>IAS</span> ON</h1>
-            
             <div class="card-glass shadow-box">
                 <input type="text" id="player-name" class="joy-input" placeholder="Твоё имя">
                 <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
-                
                 <div class="btn-group">
                     <button class="btn-pop-main" onclick="createOnlineGame()">СОЗДАТЬ</button>
                     <button class="btn-pop-main btn-secondary" onclick="joinOnlineGame()">ВОЙТИ</button>
@@ -54,10 +37,7 @@
             <div class="summary-box">
                 <p>ROOM ID: <span id="display-room-id">----</span></p>
             </div>
-            
-            <div id="player-list" class="pop-list">
-                </div>
-            
+            <div id="player-list" class="pop-list"></div>
             <button id="start-btn-online" class="btn-pop-main" style="display:none;" onclick="requestStart()">СТАРТ</button>
             <p id="wait-msg" class="status-text">Ждем хоста...</p>
         </section>
@@ -69,7 +49,6 @@
                     <h2 id="word-display">ЗАГРУЗКА...</h2>
                 </div>
             </div>
-            
             <div class="game-actions" id="game-controls">
                 <button class="btn-pop-main btn-skip" onclick="handleOnlineWord(false)">ПРОПУСК</button>
                 <button class="btn-pop-main btn-check" onclick="handleOnlineWord(true)">УГАДАНО</button>
@@ -77,8 +56,22 @@
         </section>
     </div>
 
+    <div class="modal-overlay" id="modal-online-rules" style="display: none;">
+        <div class="modal-content">
+            <h2>КАК ИГРАТЬ ONLINE</h2>
+            <ul style="text-align: left; font-size: 0.9rem; line-height: 1.4;">
+                <li><b>1. Создание:</b> Хост создает комнату и дает ID друзьям.</li>
+                <li><b>2. Вход:</b> Вводи имя и ID комнаты.</li>
+                <li><b>3. Очередь:</b> Все ходят по списку из лобби.</li>
+                <li><b>4. Роль:</b> Видишь слово? <b>Объясняй его!</b></li>
+                <li><b>5. Кнопки:</b> "УГАДАНО" (+1), "ПРОПУСК" (-1).</li>
+            </ul>
+            <button class="btn-pop-main" onclick="toggleOnlineRules(false)" style="padding:10px; margin-top:15px;">ПОНЯТНО</button>
+        </div>
+    </div>
+
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="../cards.js"></script>
+    <script src="cards.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
