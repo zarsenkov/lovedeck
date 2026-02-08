@@ -4,30 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>КТО Я? // ОНЛАЙН</title>
-    
     <link rel="stylesheet" href="style.css">
-    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
         
         <section class="screen active" id="join-screen">
-            <button class="back-btn" onclick="window.location.href='/index.html'">← МЕНЮ</button>
-            
             <h1 class="main-title">КТО<span>Я?</span></h1>
             
             <div class="card-glass">
                 <input type="text" id="player-name" class="joy-input" placeholder="Твое имя">
                 <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
                 <button class="primary-btn" onclick="joinGame()">ВОЙТИ</button>
+                <button class="back-btn-menu" onclick="window.location.href='/index.html'">← В ГЛАВНОЕ МЕНЮ</button>
             </div>
         </section>
 
         <section class="screen" id="lobby-screen">
-            <button class="back-btn" onclick="leaveRoom()">← ВЫЙТИ</button>
-            
-            <h2 id="room-display">КОМНАТА: ---</h2>
+            <div class="room-header-row">
+                <h2 id="room-display">КОМНАТА: ---</h2>
+                <button class="exit-mini-btn" onclick="leaveRoom()">ВЫЙТИ</button>
+            </div>
             
             <div class="card-glass">
                 <p class="section-tag">ИГРОКИ</p>
@@ -35,21 +33,19 @@
             </div>
 
             <div id="host-controls" style="display: none;">
-                
-                <div class="settings-box card-glass" style="margin-bottom: 15px; padding: 10px;">
-                    <div style="display: flex; justify-content: space-between; gap: 10px;">
-                        <label style="font-size: 10px; font-weight: 800; color: #666;">РАУНДОВ
-                            <input type="number" id="rounds-count" value="3" min="1" max="10" style="width: 100%; display: block; margin-top: 5px;">
-                        </label>
-                        <label style="font-size: 10px; font-weight: 800; color: #666;">ВРЕМЯ (С)
-                            <input type="number" id="turn-time" value="90" min="10" max="300" style="width: 100%; display: block; margin-top: 5px;">
-                        </label>
+                <div class="custom-settings-grid">
+                    <div class="setting-item">
+                        <span>РАУНДОВ</span>
+                        <input type="number" id="rounds-count" value="3" min="1" max="10">
+                    </div>
+                    <div class="setting-item">
+                        <span>ВРЕМЯ (С)</span>
+                        <input type="number" id="turn-time" value="90" min="10" max="300">
                     </div>
                 </div>
 
                 <p class="section-tag">КАТЕГОРИИ</p>
                 <div id="categories-box" class="categories-grid"></div>
-                
                 <button class="primary-btn" onclick="startGame()">ПОЕХАЛИ!</button>
             </div>
             
@@ -57,12 +53,12 @@
         </section>
 
         <section class="screen" id="game-screen">
-            <button class="exit-btn-game" onclick="leaveRoom()" style="position: absolute; top: 10px; right: 10px; background: #ff4757; color: white; border: none; border-radius: 5px; padding: 5px 10px; font-size: 10px; z-index: 1000; font-weight: 800; cursor: pointer;">ВЫЙТИ</button>
+            <button class="game-exit-link" onclick="leaveRoom()">ВЫЙТИ ИЗ ИГРЫ</button>
             
             <div class="game-header">
                 <div class="timer-box">⏱ <span id="timer">0</span></div>
                 <div id="active-player-name" class="active-badge">---</div>
-                <div class="round-counter" style="font-weight: 900; font-size: 12px; margin-top: 5px; color: #444;">РАУНД: <span id="current-round">1</span>/<span id="total-rounds">3</span></div>
+                <div class="round-counter">РАУНД: <span id="current-round">1</span>/<span id="total-rounds">3</span></div>
             </div>
             
             <div class="card-main">
@@ -77,14 +73,15 @@
         </section>
 
         <section class="screen" id="result-screen">
-            <h1 class="main-title-small">ФИНАЛ</h1>
-            <div id="final-stats" class="card-glass"></div>
-            <button class="primary-btn" onclick="location.reload()">В МЕНЮ</button>
+            <div class="final-container">
+                <h1 class="main-title-small">ФИНАЛ</h1>
+                <div id="final-stats" class="card-glass"></div>
+                <button class="primary-btn" onclick="location.reload()">В МЕНЮ</button>
+            </div>
         </section>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    
     <script src="script.js"></script>
 </body>
 </html>
