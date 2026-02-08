@@ -10,32 +10,31 @@
 
 // ИСПРАВЛЕННАЯ ФУНКЦИЯ: берет данные из ваших переменных words и alphabet
 function getCard() {
-        let word = "СЛОВО"; 
-        let lets = "? ? ?";
+        // Проверяем все возможные варианты названий
+        const source = window.words || window.cards; 
 
-        // Проверяем, загрузился ли массив из cards.js
-        // window.words — это то, что лежит в твоем файле
-        if (typeof window.words !== 'undefined' && window.words.length > 0) {
-            const randomIndex = Math.floor(Math.random() * window.words.length);
-            word = window.words[randomIndex];
-            console.log("Ура! Слово найдено:", word);
-        } else {
-            // Если мы здесь, значит script.js не видит переменную из cards.js
-            console.error("ОШИБКА: Массив words не найден. Проверь путь в HTML!");
-            word = "НЕТ СЛОВ"; 
-        }
-
-        // Генерация букв из алфавита в cards.js
-        if (typeof window.alphabet !== 'undefined') {
-            const alphaArray = window.alphabet.split("");
-            const randomLetters = [];
+        if (source && source.length > 0) {
+            const randomIndex = Math.floor(Math.random() * source.length);
+            const word = source[randomIndex];
+            
+            // Если в cards.js алфавит не определен, используем стандарт
+            const alphaSource = window.alphabet || "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+            const alphaArray = alphaSource.split("");
+            let lets = [];
             for (let i = 0; i < 3; i++) {
-                randomLetters.push(alphaArray[Math.floor(Math.random() * alphaArray.length)]);
+                lets.push(alphaArray[Math.floor(Math.random() * alphaArray.length)]);
             }
-            lets = randomLetters.join(" ");
+
+            return { 
+                word: word.toUpperCase(), 
+                letters: lets.join(" ").toUpperCase() 
+            };
         } else {
-            lets = "А Б В";
+            // Если мы здесь - файл реально не подгрузился
+            console.error("КРИТИЧЕСКАЯ ОШИБКА: Слова не найдены в window.words");
+            return { word: "ОШИБКА ПУТИ", letters: "4 0 4" };
         }
+    }
 
         return { 
             word: word.toUpperCase(), 
