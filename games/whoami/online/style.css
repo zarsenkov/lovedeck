@@ -1,321 +1,218 @@
-/* --- ПЕРЕМЕННЫЕ ЦВЕТОВ (Цветовая палитра игры) --- */
 :root {
-    --bg: #FFD93D;      /* Основной желтый фон всей страницы */
-    --primary: #6C5CE7; /* Фиолетовый цвет для главных кнопок и акцентов */
-    --accent: #FF6B6B;  /* Красный цвет для кнопки "ПАС" */
-    --green: #26DE81;   /* Зеленый цвет для кнопки "УГАДАЛ" */
-    --text: #2D3436;    /* Темно-серый цвет для основного текста и рамок */
+    --bg: #FFD93D;
+    --primary: #6C5CE7;
+    --accent: #FF6B6B;
+    --green: #26DE81;
+    --text: #2D3436;
 }
 
-/* --- ОБЩИЕ СТИЛИ (Базовые настройки всех элементов) --- */
-* { 
-    box-sizing: border-box;         /* Включает отступы и границы в общую ширину элемента */
-    font-family: 'Montserrat', sans-serif; /* Устанавливает шрифт Montserrat для всего проекта */
-}
+* { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+body { background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; }
 
-body { 
-    background: var(--bg);          /* Применяет желтый фон из переменных */
-    color: var(--text);             /* Применяет темный цвет текста */
-    margin: 0;                      /* Убирает стандартные отступы браузера по краям */
-    display: flex;                  /* Включает гибкую верстку */
-    justify-content: center;        /* Центрирует контент по горизонтали */
-}
+.app-container { width: 100%; max-width: 400px; padding: 20px; height: 100vh; position: relative; }
 
-/* --- КОНТЕЙНЕР ПРИЛОЖЕНИЯ --- */
-.app-container { 
-    width: 100%;                    /* Растягивается на всю ширину */
-    max-width: 400px;               /* Ограничивает ширину под размер смартфона */
-    padding: 20px;                  /* Внутренние отступы от краев */
-    height: 100vh;                  /* Занимает всю высоту экрана */
-    position: relative;             /* База для позиционирования абсолютных элементов (кнопок выхода) */
-}
+.screen { display: none; flex-direction: column; height: 100%; }
+.screen.active { display: flex; }
 
-/* --- УПРАВЛЕНИЕ ЭКРАНАМИ --- */
-.screen { 
-    display: none;                  /* По умолчанию все экраны скрыты */
-    flex-direction: column;         /* Элементы внутри экрана выстраиваются в колонку */
-    height: 100%;                   /* Экран занимает всю высоту контейнера */
-}
+.card-glass { background: rgba(255,255,255,0.9); border-radius: 25px; padding: 20px; box-shadow: 0 10px 0 rgba(0,0,0,0.1); margin-bottom: 20px; }
 
-.screen.active { 
-    display: flex;                  /* Только активный экран становится видимым */
-}
+.joy-input { width: 100%; padding: 15px; border-radius: 15px; border: 3px solid var(--text); font-size: 1rem; font-weight: 800; margin-bottom: 10px; }
 
-/* --- СТЕКЛЯННЫЕ КАРТОЧКИ (Эффект Glassmorphism) --- */
-.card-glass { 
-    background: rgba(255,255,255,0.9); /* Почти белый полупрозрачный фон */
-    border-radius: 25px;            /* Сильное скругление углов */
-    padding: 20px;                  /* Внутренние отступы внутри карточки */
-    box-shadow: 0 10px 0 rgba(0,0,0,0.1); /* "Толстая" тень снизу для эффекта объема */
-    margin-bottom: 20px;            /* Отступ до следующего элемента */
-}
+.primary-btn { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 20px; font-weight: 900; font-size: 1.1rem; cursor: pointer; box-shadow: 0 6px 0 #4834D4; width: 100%; }
 
-/* --- ПОЛЯ ВВОДА (Инпуты) --- */
-.joy-input { 
-    width: 100%;                    /* На всю ширину карточки */
-    padding: 15px;                  /* Высота поля ввода */
-    border-radius: 15px;            /* Скругление */
-    border: 3px solid var(--text);  /* Жирная темная рамка */
-    font-size: 1rem;                /* Размер текста */
-    font-weight: 800;               /* Жирный текст */
-    margin-bottom: 10px;            /* Отступ между инпутами */
-}
+.categories-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; padding: 5px; }
+.cat-item { background: white; border: 2px solid var(--text); padding: 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; cursor: pointer; text-align: center; }
+.cat-item.selected { background: var(--primary); color: white; border-color: var(--primary); }
 
-/* --- ГЛАВНАЯ КНОПКА (ВОЙТИ / ПОЕХАЛИ) --- */
-.primary-btn { 
-    background: var(--primary);     /* Фиолетовый фон */
-    color: white;                   /* Белый текст */
-    border: none;                   /* Без рамки */
-    padding: 18px;                  /* Внутренние отступы */
-    border-radius: 20px;            /* Скругление */
-    font-weight: 900;               /* Максимальная жирность */
-    font-size: 1.1rem;              /* Крупный размер */
-    cursor: pointer;                /* Указатель мыши */
-    box-shadow: 0 6px 0 #4834D4;    /* Темно-фиолетовая "ступенька" снизу кнопки */
-    width: 100%;                    /* На всю ширину */
-}
+.card-main { background: white; flex-grow: 1; border-radius: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 4px solid var(--text); padding: 20px; }
+#current-word { font-size: 2.5rem; margin-bottom: 10px; line-height: 1; }
 
-/* --- СЕТКА КАТЕГОРИЙ В ЛОББИ --- */
-.categories-grid { 
-    display: grid;                  /* Включает сетку */
-    grid-template-columns: 1fr 1fr; /* Делит сетку на 2 равные колонки */
-    gap: 10px;                      /* Отступы между кнопками категорий */
-    margin-bottom: 20px;            /* Отступ снизу */
-    max-height: 200px;              /* Ограничение высоты списка */
-    overflow-y: auto;               /* Скролл, если категорий слишком много */
-    padding: 5px; 
-}
+.game-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+.btn-skip { background: var(--accent); color: white; border: none; padding: 20px; border-radius: 15px; font-weight: 900; box-shadow: 0 6px 0 #C0392B; }
+.btn-win { background: var(--green); color: white; border: none; padding: 20px; border-radius: 15px; font-weight: 900; box-shadow: 0 6px 0 #20BF6B; }
 
-/* --- ЭЛЕМЕНТ КАТЕГОРИИ --- */
-.cat-item { 
-    background: white;              /* Белый фон */
-    border: 2px solid var(--text);  /* Темная рамка */
-    padding: 10px;                  /* Внутренние отступы */
-    border-radius: 12px;            /* Скругление */
-    font-size: 0.8rem;              /* Мелкий текст для категорий */
-    font-weight: 800;               /* Жирный текст */
-    cursor: pointer;                /* Указатель */
-    text-align: center;             /* Текст по центру */
-}
-
-.cat-item.selected { 
-    background: var(--primary);     /* Меняет цвет на фиолетовый при выборе */
-    color: white;                   /* Белый текст */
-    border-color: var(--primary);   /* Рамка тоже становится фиолетовой */
-}
-
-/* --- ИГРОВАЯ КАРТОЧКА (Центр игры) --- */
-.card-main { 
-    background: white;              /* Белый фон карточки */
-    flex-grow: 1;                   /* Растягивается, занимая всё свободное место */
-    border-radius: 30px;            /* Сильное скругление */
-    display: flex; 
-    flex-direction: column;         /* Выравнивает содержимое в колонку */
-    align-items: center;            /* Центрирует по горизонтали */
-    justify-content: center;        /* Центрирует по вертикали */
-    text-align: center;             /* Текст по центру */
-    border: 4px solid var(--text);  /* Очень жирная рамка */
-    padding: 20px; 
-}
-
-/* --- СТИЛЬ ТЕКУЩЕГО СЛОВА --- */
-#current-word { 
-    font-size: 2.5rem;              /* Очень крупный текст для слова */
-    margin-bottom: 10px;            /* Отступ до инструкции */
-    line-height: 1;                 /* Минимальное расстояние между строками */
-}
-
-/* --- КНОПКИ УПРАВЛЕНИЯ В ИГРЕ --- */
-.game-controls { 
-    display: grid;                  /* Сетка для кнопок Пас и Угадал */
-    grid-template-columns: 1fr 1fr; /* Две равные колонки */
-    gap: 15px;                      /* Промежуток между кнопками */
-    margin-top: 20px; 
-}
-
-/* Кнопка "ПАС" */
-.btn-skip { 
-    background: var(--accent);      /* Красный фон */
-    color: white; 
-    border: none; 
-    padding: 20px; 
-    border-radius: 15px; 
-    font-weight: 900; 
-    box-shadow: 0 6px 0 #C0392B;    /* Темно-красная тень снизу */
-}
-
-/* Кнопка "УГАДАЛ" */
-.btn-win { 
-    background: var(--green);       /* Зеленый фон */
-    color: white; 
-    border: none; 
-    padding: 20px; 
-    border-radius: 15px; 
-    font-weight: 900; 
-    box-shadow: 0 6px 0 #20BF6B;    /* Темно-зеленая тень снизу */
-}
-
-/* --- ШАПКА ИГРЫ (Таймер и Имя) --- */
-.timer-box { font-size: 1.5rem; font-weight: 900; } /* Размер цифр таймера */
-
-.active-badge { 
-    background: var(--text);        /* Темная подложка */
-    color: white;                   /* Белый текст */
-    padding: 5px 15px;              /* Внутренние отступы */
-    border-radius: 20px;            /* Овальная форма */
-    font-weight: 800; 
-}
-
-.game-header { 
-    display: flex; 
-    justify-content: space-between; /* Таймер слева, Игрок справа */
-    align-items: center; 
-    margin-bottom: 15px; 
-}
-
-/* --- ВСПОМОГАТЕЛЬНЫЕ КНОПКИ ВЫХОДА --- */
+.timer-box { font-size: 1.5rem; font-weight: 900; }
+.active-badge { background: var(--text); color: white; padding: 5px 15px; border-radius: 20px; font-weight: 800; }
+.game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .back-btn {
-    position: absolute;             /* Закреплена в углу экрана */
-    top: 15px; left: 15px; 
-    background: rgba(0, 0, 0, 0.2); /* Полупрозрачная черная подложка */
-    border: none; 
-    color: white; 
-    padding: 8px 15px; 
-    border-radius: 10px; 
-    font-weight: 800; 
-    cursor: pointer; 
-    z-index: 10;                    /* Поверх остальных слоев */
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    z-index: 10;
 }
 
-.back-btn:hover { background: rgba(0, 0, 0, 0.4); } /* Темнеет при наведении */
-
+.back-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+}
 .exit-btn {
     position: absolute;
-    top: 10px; right: 10px; 
-    background: #ff4757;            /* Красный фон */
-    color: white; border: none; 
-    padding: 5px 10px; 
-    border-radius: 5px; 
-    font-size: 12px; 
+    top: 10px;
+    right: 10px;
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
     z-index: 100;
 }
 
-/* --- СТАРЫЕ СТИЛИ НАСТРОЕК (для совместимости) --- */
-.settings-row { display: flex; gap: 10px; margin-bottom: 15px; }
-.settings-row label { font-size: 12px; display: flex; flex-direction: column; font-weight: bold; }
-.settings-row input { padding: 5px; border-radius: 5px; border: 1px solid #ccc; }
+.settings-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
 
-/* --- ФИНАЛЬНАЯ ТАБЛИЦА РЕЗУЛЬТАТОВ --- */
+.settings-row label {
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+}
+
+.settings-row input {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
 .result-row {
     display: flex;
-    justify-content: space-between; /* Имя слева, очки справа */
+    justify-content: space-between;
     padding: 10px;
-    border-bottom: 1px solid #eee;  /* Тонкая линия разделения */
+    border-bottom: 1px solid #eee;
 }
 
 .winner {
-    background: #fff3cd;            /* Золотистый фон для победителя */
+    background: #fff3cd;
     font-weight: bold;
     border-radius: 10px;
 }
-
-/* --- НОВАЯ КНОПКА "В ГЛАВНОЕ МЕНЮ" (под "Войти") --- */
+/* Стили для кнопки возврата в главное меню */
 .back-btn-menu {
-    background: rgba(255, 255, 255, 0.4); /* Полупрозрачный фон */
-    border: 1px solid rgba(0, 0, 0, 0.1); 
-    color: #000000;                       /* Черный текст */
-    font-size: 11px; font-weight: 900; 
-    margin-top: 20px; 
-    padding: 12px 15px; 
-    border-radius: 12px; 
-    cursor: pointer; 
-    text-transform: uppercase; 
-    letter-spacing: 1px; 
-    transition: all 0.3s ease;            /* Плавное изменение при наведении */
-    width: 100%;                          /* Кнопка на всю ширину инпута */
+    background: rgba(255, 255, 255, 0.4); /* Полупрозрачный белый фон кнопки */
+    border: 1px solid rgba(0, 0, 0, 0.1); /* Едва заметная темная рамка */
+    color: #000000;                       /* ЧЕРНЫЙ цвет текста */
+    font-size: 11px;                      /* Размер шрифта */
+    font-weight: 900;                     /* Максимальная жирность текста */
+    margin-top: 20px;                     /* Отступ сверху от кнопки ВОЙТИ */
+    padding: 12px 15px;                   /* Внутренние отступы (высота кнопки) */
+    border-radius: 12px;                  /* Скругление углов под стиль карточек */
+    cursor: pointer;                      /* Указатель пальца при наведении */
+    text-transform: uppercase;            /* Все буквы заглавные */
+    letter-spacing: 1px;                  /* Расстояние между буквами */
+    transition: all 0.3s ease;            /* Плавная анимация при наведении */
+    width: 100%;                          /* Кнопка на всю ширину контейнера */
 }
 
+/* Эффект при наведении на кнопку */
 .back-btn-menu:hover {
-    background: rgba(255, 255, 255, 0.6); 
-    transform: translateY(-2px);          /* Подпрыгивает при наведении */
+    background: rgba(255, 255, 255, 0.6); /* Фон становится чуть плотнее */
+    transform: translateY(-2px);          /* Кнопка слегка приподнимается */
 }
 
-/* --- СТРОКА КОМНАТА + ВЫЙТИ В ЛОББИ --- */
+/* ПУНКТ 3: Строка Комната + Выйти в лобби */
 .room-header-row {
     display: flex;
-    justify-content: center;        /* Центрирует всю строку по горизонтали */
-    align-items: center; 
-    gap: 15px;                      /* Расстояние между текстом комнаты и кнопкой */
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
     margin-bottom: 20px;
 }
 
 .exit-mini-btn {
-    background: #ff4757;            /* Красный фон */
-    color: white; border: none; 
-    padding: 5px 12px; border-radius: 8px; 
-    font-size: 10px; font-weight: 900; 
-    cursor: pointer; 
-    box-shadow: 0 4px 0 #c0392b;    /* Эффект 3D кнопки */
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #c0392b;
 }
 
-/* --- КРАСИВОЕ ОФОРМЛЕНИЕ НАСТРОЕК (РАУНДЫ / ВРЕМЯ) --- */
+/* ПУНКТ 2: Красивое оформление настроек */
 .custom-settings-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Две колонки для раундов и времени */
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
     margin-bottom: 20px;
 }
 
 .setting-item {
-    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный фон */
-    backdrop-filter: blur(10px);    /* Эффект размытия под блоком */
-    border: 1px solid rgba(255, 255, 255, 0.2); 
-    padding: 10px; border-radius: 15px; 
-    display: flex; 
-    flex-direction: column;         /* Название сверху, инпут снизу */
-    align-items: center; 
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .setting-item span {
-    font-size: 9px; font-weight: 900; 
-    color: #ff9f43;                 /* Оранжевый заголовок настройки */
+    font-size: 9px;
+    font-weight: 900;
+    color: #ff9f43;
     margin-bottom: 5px;
 }
 
 .setting-item input {
-    background: none; border: none; 
-    color: white;                   /* Белые цифры в настройках */
-    font-family: 'Montserrat', sans-serif; 
-    font-size: 18px; font-weight: 900; 
-    text-align: center; width: 100%;
+    background: none;
+    border: none;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    text-align: center;
+    width: 100%;
 }
 
-/* --- КНОПКА "ВЫЙТИ ИЗ ИГРЫ" ВНУТРИ ИГРОВОГО ЭКРАНА --- */
+/* Стили для кнопки выхода во время самого игрового процесса */
 .game-exit-link {
-    position: absolute; 
-    bottom: 40px;                   /* Смещена вверх от самого низа экрана */
-    left: 50%; transform: translateX(-50%); /* Точное центрирование */
-    background: rgba(0, 0, 0, 0.05); /* Едва заметный темный фон */
-    border: none; padding: 8px 15px; border-radius: 20px; 
-    color: #000000;                 /* Жирный черный текст */
-    font-weight: 900; font-size: 12px; 
-    text-transform: uppercase; 
-    letter-spacing: 1px; text-decoration: none; 
-    cursor: pointer; z-index: 1000; 
-    transition: 0.3s; opacity: 0.6; /* Сделана прозрачной, чтобы не отвлекать */
+    position: absolute;       /* Фиксируем положение относительно экрана */
+    bottom: 80px;             /* ПУНКТ: Сделали повыше (было 20px) */
+    left: 50%;                /* Центрируем по горизонтали */
+    transform: translateX(-50%); /* Точное выравнивание по центру */
+    background: rgba(0, 0, 0, 0.05); /* Легкая темная подложка для формы */
+    border: none;             /* Без рамок */
+    padding: 8px 15px;        /* Внутренние отступы */
+    border-radius: 20px;      /* Скругленные края */
+    
+    /* ПУНКТ: Настройки текста (Чернее, Жирнее, Больше) */
+    color: #000000;           /* Сделали максимально черным */
+    font-weight: 900;         /* Сделали максимально жирным (Extra Bold) */
+    font-size: 12px;          /* Увеличили размер шрифта */
+    text-transform: uppercase; /* Все буквы заглавные */
+    letter-spacing: 1px;      /* Расстояние между буквами для стиля */
+    text-decoration: none;    /* Убрали подчеркивание, чтобы выглядело как кнопка */
+    
+    cursor: pointer;          /* Указатель при наведении */
+    z-index: 1000;            /* Поверх всех игровых элементов */
+    transition: 0.3s;         /* Плавность при нажатии */
+    opacity: 0.6;             /* Небольшая прозрачность, чтобы не отвлекать от слов */
 }
 
+/* Эффект при наведении или нажатии */
 .game-exit-link:hover {
-    opacity: 1;                     /* Становится яркой при наведении */
-    background: rgba(0, 0, 0, 0.1); 
+    opacity: 1;               /* Становится полностью черной при наведении */
+    background: rgba(0, 0, 0, 0.1); /* Фон становится чуть темнее */
 }
 
-/* --- ЦЕНТРИРОВАНИЕ ФИНАЛА --- */
+/* ПУНКТ 5: Центрирование финала */
 .final-container {
-    display: flex; 
-    flex-direction: column; 
-    justify-content: center;        /* Центрирует содержимое экрана по вертикали */
-    align-items: center;            /* Центрирует по горизонтали */
-    height: 100%;                   /* Занимает всё пространство */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
     text-align: center;
 }
