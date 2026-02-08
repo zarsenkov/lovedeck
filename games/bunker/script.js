@@ -1,307 +1,242 @@
-/**
- * ОБЪЕКТ СОСТОЯНИЯ ИГРЫ
- * Хранит текущие данные сессии, список игроков и текущую фазу.
- */
-const GameState = {
-    players: [],
-    currentPlayerIndex: 0,
-    currentRound: 0,
-    apocalypse: "",
-    isGameOver: false,
-    
-    // Порядок раскрытия характеристик по раундам
-    rounds: [
-        { id: 'profession', label: 'ПРОФЕССИЯ' },
-        { id: 'health', label: 'СОСТОЯНИЕ ЗДОРОВЬЯ' },
-        { id: 'hobby', label: 'ХОББИ' },
-        { id: 'inventory', label: 'ИНВЕНТАРЬ' },
-        { id: 'traits', label: 'ЧЕРТА ХАРАКТЕРА' },
-        { id: 'secrets', label: 'ДОП. ИНФОРМАЦИЯ' }
-    ]
-};
+let players = [];
+let roles = ['mafia', 'doctor', 'sheriff', 'citizen'];
+let currentPhase = 'setup'; // setup, reveal, night, day
+let turnIndex = 0;
+let nightActions = { mafia: null, doctor: null, sheriff: null };
 
-/**
- * КЛАСС ИГРОКА
- * Создает структуру данных для каждого участника.
- */
-class Player {
-    constructor(id, name) {
-        this.id = id;
-        this.name = name;
-        this.isExcluded = false;
-        this.votes = 0;
-        
-        // Рандомное распределение характеристик из cards.js
-        this.data = {
-            profession: this.getRandom(CARDS.professions),
-            health: this.getRandom(CARDS.health),
-            hobbies: this.getRandom(CARDS.hobbies),
-            inventory: this.getRandom(CARDS.inventory),
-            traits: this.getRandom(CARDS.traits),
-            secrets: this.getRandom(CARDS.secrets)
-        };
-        
-        // Статус видимости характеристик для общего стола
-        this.revealed = {
-            profession: false,
-            health: false,
-            hobbies: false,
-            inventory: false,
-            traits: false,
-            secrets: false
-        };
-    }
+// --- НАСТРОЙКА ---
 
-    // Вспомогательная функция для получения случайного элемента
-    getRandom(array) {
-        return array[Math.floor(Math.random() * array.length)];
-    }
+function addPlayerInput() {
+    const container = document.getElementById('players-input-list');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `Имя игрока ${container.children.length + 1}`;
+    container.appendChild(input);
 }
 
-/**
- * ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
- * Устанавливает обработчики событий и запускает бут-скрин.
- */
-document.addEventListener('DOMContentLoaded', () => {
-    runBootSequence();
-    setupEventListeners();
-    generatePlayerInputs(6); // По умолчанию 6 игроков
-});
+function startGame() {
+    const inputs = document.querySelectorAll('#players-input-list input');
+    const names = Array.from(inputs).map(i => i.value.trim()).filter(n => n);
 
-// Функция имитации загрузки терминала
-function runBootSequence() {
-    const logs = [
-        "> INITIALIZING KERNEL...",
-        "> LOADING BIOMETRIC DATA...",
-        "> CONNECTING TO VAULT_13...",
-        "> ACCESS GRANTED."
-    ];
-    let i = 0;
-    const logContainer = document.getElementById('boot-logs');
+    if (names.length < 4) {
+        alert('Нужно минимум 4 игрока!');
+        return;
+    }
+
+    // Генерация ролей
+    let availableRoles = ['mafia']; // Обязательно одна мафия
+    if (names.length >= 5) availableRoles.push('doctor');
+    if (names.length >= 6) availableRoles.push('sheriff');
+    if (names.length >= 7) availableRoles.push('mafia'); // Вторая мафия для больших компаний
     
-    const interval = setInterval(() => {
-        if (i < logs.length) {
-            const p = document.createElement('p');
-            p.textContent = logs[i];
-            logContainer.appendChild(p);
-            i++;
-        } else {
-            clearInterval(interval);
-            setTimeout(() => switchScreen('setup-screen'), 1000);
+    // Заполняем остаток мирными жителями
+    while (availableRoles.length < names.length) {
+        availableRoles.push('citizen');
+    }
+
+    // Перемешиваем
+    availableRoles.sort(() => Math.random() - 0.5);
+
+    players = names.map((name, i) => ({
+        id: i,
+        name: name,
+        role: availableRoles[i],
+        isAlive: true
+    }));
+
+    turnIndex = 0;
+    switchScreen('role-reveal-screen');
+    showNextReveal();
+}
+
+// --- РАЗДАЧА РОЛЕЙ ---
+
+function showNextReveal() {
+    if (turnIndex >= players.length) {
+        startNight();
+        return;
+    }
+    document.getElementById('reveal-name').innerText = players[turnIndex].name;
+    document.getElementById('role-info').classList.add('hidden');
+    document.getElementById('show-role-btn').style.display = 'block';
+}
+
+function revealRole() {
+    const player = players[turnIndex];
+    const title = document.getElementById('role-title');
+    const desc = document.getElementById('role-desc');
+
+    title.innerText = getRoleName(player.role).toUpperCase();
+    title.className = `role-${player.role}`;
+    
+    if (player.role === 'mafia') desc.innerText = 'Ваша цель: убить всех мирных. Ночью вы выбираете жертву.';
+    else if (player.role === 'doctor') desc.innerText = 'Ваша цель: спасать людей. Ночью вы можете вылечить одного игрока.';
+    else if (player.role === 'sheriff') desc.innerText = 'Ваша цель: найти мафию. Ночью вы проверяете одного игрока.';
+    else desc.innerText = 'Ваша цель: вычислить мафию днем и выжить.';
+
+    document.getElementById('role-info').classList.remove('hidden');
+    document.getElementById('show-role-btn').style.display = 'none';
+}
+
+function nextRole() {
+    turnIndex++;
+    showNextReveal();
+}
+
+// --- НОЧЬ ---
+
+function startNight() {
+    currentPhase = 'night';
+    nightActions = { mafia: null, doctor: null, sheriff: null };
+    turnIndex = 0; // Используем как этап ночи (0: Мафия, 1: Доктор, 2: Шериф)
+    processNightTurn();
+}
+
+function processNightTurn() {
+    // Пропускаем этапы, если роль мертва или не существует
+    const rolesOrder = ['mafia', 'doctor', 'sheriff'];
+    
+    // Ищем следующую активную роль
+    while (turnIndex < rolesOrder.length) {
+        const currentRole = rolesOrder[turnIndex];
+        const rolePlayer = players.find(p => p.role === currentRole && p.isAlive);
+        
+        if (rolePlayer) {
+            setupNightAction(currentRole, rolePlayer);
+            return;
         }
-    }, 600);
+        turnIndex++;
+    }
+
+    // Если все походили -> День
+    calculateNightResults();
 }
 
-// Переключение между экранами
+function setupNightAction(role, player) {
+    switchScreen('night-screen');
+    const title = document.getElementById('night-phase-title');
+    const grid = document.getElementById('night-targets');
+    grid.innerHTML = '';
+
+    if (role === 'mafia') title.innerText = 'Мафия выбирает жертву';
+    if (role === 'doctor') title.innerText = 'Доктор выбирает кого лечить';
+    if (role === 'sheriff') title.innerText = 'Шериф выбирает кого проверить';
+
+    players.forEach(p => {
+        if (!p.isAlive) return;
+        
+        const btn = document.createElement('button');
+        btn.className = 'target-btn';
+        btn.innerText = p.name;
+        btn.onclick = () => {
+            if (role === 'sheriff') {
+                alert(`${p.name} - это ${p.role === 'mafia' ? 'МАФИЯ!' : 'Мирный.'}`);
+            }
+            nightActions[role] = p.id;
+            // Переход хода ночи (простая реализация: просто следующий этап)
+            // В реальной игре нужно передавать устройство, тут для скорости просто меняем экран
+            alert('Принято. Передайте устройство следующему (или ведущему).');
+            turnIndex++;
+            processNightTurn();
+        };
+        grid.appendChild(btn);
+    });
+}
+
+function calculateNightResults() {
+    let message = '';
+    const victimId = nightActions.mafia;
+    const healedId = nightActions.doctor;
+
+    if (victimId !== null) {
+        if (victimId === healedId) {
+            message = 'Ночью мафия пыталась убить кого-то, но Доктор спас его!';
+        } else {
+            const victim = players.find(p => p.id === victimId);
+            victim.isAlive = false;
+            message = `Ночью был убит: ${victim.name}.`;
+        }
+    } else {
+        message = 'Этой ночью никто не умер.';
+    }
+
+    startDay(message);
+}
+
+// --- ДЕНЬ ---
+
+function startDay(msg) {
+    checkWinCondition();
+    if (currentPhase === 'gameover') return;
+
+    currentPhase = 'day';
+    switchScreen('day-screen');
+    document.getElementById('day-log').innerText = msg;
+    
+    const grid = document.getElementById('voting-targets');
+    grid.innerHTML = '';
+
+    players.forEach(p => {
+        if (!p.isAlive) return;
+        const btn = document.createElement('button');
+        btn.className = 'target-btn';
+        btn.innerText = `Голосовать против: ${p.name}`;
+        btn.onclick = () => executeVote(p.id);
+        grid.appendChild(btn);
+    });
+}
+
+function executeVote(id) {
+    if (!confirm('Вы уверены, что хотите казнить этого игрока?')) return;
+    
+    const player = players.find(p => p.id === id);
+    player.isAlive = false;
+    alert(`${player.name} был казнен. Он был: ${getRoleName(player.role)}.`);
+    
+    if (!checkWinCondition()) {
+        startNight();
+    }
+}
+
+function skipVoting() {
+    alert('Голосование пропущено.');
+    startNight();
+}
+
+// --- УТИЛИТЫ ---
+
+function checkWinCondition() {
+    const mafiaCount = players.filter(p => p.role === 'mafia' && p.isAlive).length;
+    const civilianCount = players.filter(p => p.role !== 'mafia' && p.isAlive).length;
+
+    if (mafiaCount === 0) {
+        endGame('Мирные жители');
+        return true;
+    }
+    if (mafiaCount >= civilianCount) {
+        endGame('Мафия');
+        return true;
+    }
+    return false;
+}
+
+function endGame(winner) {
+    currentPhase = 'gameover';
+    switchScreen('game-over-screen');
+    document.getElementById('winner-text').innerText = `Победили: ${winner}!`;
+}
+
 function switchScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
 }
 
-// Генерация полей для имен игроков
-function generatePlayerInputs(count) {
-    const container = document.getElementById('player-names-container');
-    container.innerHTML = '';
-    for (let i = 1; i <= count; i++) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = `Игрок ${i}`;
-        input.value = `Выживший ${i}`;
-        input.className = 'player-name-input';
-        container.appendChild(input);
-    }
-}
-
-/**
- * ЛОГИКА СТАРТА ИГРЫ
- * Создает игроков, генерирует апокалипсис и запускает фазу раздачи.
- */
-function startGame() {
-    const nameInputs = document.querySelectorAll('.player-name-input');
-    GameState.players = Array.from(nameInputs).map((input, index) => new Player(index + 1, input.value));
-    GameState.apocalypse = CARDS.apocalypses[Math.floor(Math.random() * CARDS.apocalypses.length)];
-    
-    GameState.currentPlayerIndex = 0;
-    startPassSequence();
-}
-
-/**
- * ФАЗА ПЕРЕДАЧИ ТЕЛЕФОНА
- * Показывает экран "Передай телефон следующему".
- */
-function startPassSequence() {
-    if (GameState.currentPlayerIndex < GameState.players.length) {
-        const player = GameState.players[GameState.currentPlayerIndex];
-        document.getElementById('target-player-name').textContent = player.name;
-        switchScreen('pass-screen');
-    } else {
-        // Все посмотрели роли, начинаем игру
-        startMainGame();
-    }
-}
-
-/**
- * ОТОБРАЖЕНИЕ РОЛИ (ПРИВАТНО)
- * Рендерит карточки характеристик для конкретного игрока.
- */
-function showRole() {
-    const player = GameState.players[GameState.currentPlayerIndex];
-    document.getElementById('player-id').textContent = player.id;
-    const grid = document.getElementById('player-role-data');
-    grid.innerHTML = '';
-
-    // Маппинг заголовков для UI
-    const labels = {
-        profession: "Профессия", health: "Здоровье", hobbies: "Хобби",
-        inventory: "Инвентарь", traits: "Характер", secrets: "Особая карта"
+function getRoleName(role) {
+    const names = {
+        'mafia': 'Мафия',
+        'doctor': 'Доктор',
+        'sheriff': 'Шериф',
+        'citizen': 'Мирный житель'
     };
-
-    for (let key in player.data) {
-        const card = document.getElementById('card-template').content.cloneNode(true);
-        card.querySelector('.card-label').textContent = labels[key];
-        card.querySelector('.card-value').textContent = player.data[key];
-        grid.appendChild(card);
-    }
-    switchScreen('role-screen');
-}
-
-/**
- * ОСНОВНОЙ ИГРОВОЙ ЦИКЛ
- * Отображает общую таблицу и управляет раундами.
- */
-function startMainGame() {
-    switchScreen('game-screen');
-    document.getElementById('apocalypse-info').textContent = "КАТАСТРОФА: " + GameState.apocalypse;
-    updateGameTable();
-}
-
-function updateGameTable() {
-    const container = document.getElementById('players-table');
-    container.innerHTML = '';
-    
-    // Обновляем счетчик живых
-    const alive = GameState.players.filter(p => !p.isExcluded).length;
-    document.getElementById('alive-count').textContent = `В ЖИВЫХ: ${alive}`;
-
-    GameState.players.forEach(player => {
-        const row = document.createElement('div');
-        row.className = `player-row ${player.isExcluded ? 'excluded' : ''}`;
-        
-        // Формируем строку открытых данных
-        let revealedData = [];
-        for (let key in player.revealed) {
-            if (player.revealed[key]) {
-                revealedData.push(player.data[key]);
-            }
-        }
-
-        row.innerHTML = `
-            <strong>${player.name}</strong><br>
-            <small>${revealedData.join(' | ') || 'Данные засекречены'}</small>
-        `;
-        container.appendChild(row);
-    });
-}
-
-/**
- * УПРАВЛЕНИЕ РАУНДАМИ
- * Автоматически раскрывает характеристики всем игрокам при нажатии кнопки.
- */
-function nextPhase() {
-    if (GameState.currentRound < GameState.rounds.length) {
-        const traitToReveal = GameState.rounds[GameState.currentRound].id;
-        
-        // Раскрываем эту характеристику у всех живых игроков
-        GameState.players.forEach(p => {
-            if (!p.isExcluded) p.revealed[traitToReveal] = true;
-        });
-
-        GameState.currentRound++;
-        
-        if (GameState.currentRound < GameState.rounds.length) {
-            document.getElementById('current-round-title').textContent = 
-                `РАУНД ${GameState.currentRound + 1}: ${GameState.rounds[GameState.currentRound].label}`;
-        } else {
-            document.getElementById('next-phase-btn').textContent = "ПЕРЕЙТИ К ГОЛОСОВАНИЮ";
-        }
-        updateGameTable();
-    } else {
-        startVoting();
-    }
-}
-
-/**
- * СИСТЕМА ГОЛОСОВАНИЯ
- */
-function startVoting() {
-    switchScreen('voting-screen');
-    const list = document.getElementById('voting-list');
-    list.innerHTML = '';
-
-    GameState.players.filter(p => !p.isExcluded).forEach(player => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-secondary';
-        btn.textContent = `ИСКЛЮЧИТЬ: ${player.name}`;
-        btn.onclick = () => castVote(player.id);
-        list.appendChild(btn);
-    });
-}
-
-function castVote(playerId) {
-    const player = GameState.players.find(p => p.id === playerId);
-    player.isExcluded = true;
-    
-    // Проверяем, сколько осталось
-    const alive = GameState.players.filter(p => !p.isExcluded);
-    
-    if (alive.length <= Math.ceil(GameState.players.length / 2)) {
-        showFinalResults();
-    } else {
-        // Возвращаемся в игру для следующего раунда обсуждения
-        // (Или можно сделать еще один круг голосования)
-        startMainGame();
-    }
-}
-
-/**
- * ФИНАЛ
- */
-function showFinalResults() {
-    switchScreen('results-screen');
-    const winnersList = document.getElementById('winners-list');
-    winnersList.innerHTML = '<h3>СПИСОК ПРИНЯТЫХ В БУНКЕР:</h3>';
-    
-    GameState.players.filter(p => !p.isExcluded).forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'player-row';
-        div.innerHTML = `<strong>${p.name}</strong> - ${p.data.profession}`;
-        winnersList.appendChild(div);
-    });
-
-    document.getElementById('final-stamp').textContent = "ОДОБРЕНО";
-}
-
-/**
- * ОБРАБОТЧИКИ СОБЫТИЙ (EVENT LISTENERS)
- */
-function setupEventListeners() {
-    // Изменение кол-ва игроков
-    document.getElementById('player-count').addEventListener('change', (e) => {
-        generatePlayerInputs(e.target.value);
-    });
-
-    // Кнопка Старт
-    document.getElementById('start-game-btn').addEventListener('click', startGame);
-
-    // Кнопка Показать роль
-    document.getElementById('show-role-btn').addEventListener('click', showRole);
-
-    // Кнопка Подтвердить просмотр (переход к след. игроку)
-    document.getElementById('confirm-role-btn').addEventListener('click', () => {
-        GameState.currentPlayerIndex++;
-        startPassSequence();
-    });
-
-    // Кнопка следующей фазы
-    document.getElementById('next-phase-btn').addEventListener('click', nextPhase);
+    return names[role];
 }
