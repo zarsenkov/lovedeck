@@ -9,58 +9,58 @@
 </head>
 <body>
     <div class="app-shell">
-        <div class="nav-btns">
-            <div class="home-btn" onclick="location.href='index.html'">🏠</div>
-            <div class="rules-btn" id="room-number">?</div>
-        </div>
-
         <section class="screen active" id="screen-auth">
             <h1 class="pop-title">ALIAS<span>ON</span></h1>
             <input type="text" id="player-name" class="joy-input" placeholder="ТВОЕ ИМЯ">
-            <input type="text" id="join-room-id" class="joy-input" placeholder="№ КОМНАТЫ (ЕСЛИ ЕСТЬ)">
-            <button class="btn-pop-main" onclick="auth(true)">СОЗДАТЬ ИГРУ</button>
-            <button class="btn-pop-main" style="background:var(--purple)" onclick="auth(false)">ВОЙТИ К ДРУГУ</button>
+            <input type="text" id="room-input" class="joy-input" placeholder="№ КОМНАТЫ">
+            <button class="btn-pop-main" onclick="joinGame(true)">СОЗДАТЬ</button>
+            <button class="btn-pop-main" style="background:var(--purple)" onclick="joinGame(false)">ВОЙТИ</button>
         </section>
 
         <section class="screen" id="screen-lobby">
-            <div id="team-list"></div>
+            <h2 style="text-align:center; margin-bottom: 15px;">ROOM: <span id="room-id-display">0000</span></h2>
+            <div id="lobby-teams"></div>
             
-            <div id="host-controls" class="hidden">
-                <div class="game-header">
-                    <input type="number" id="setup-timer" class="joy-input" value="60" style="width:48%">
-                    <input type="number" id="setup-rounds" class="joy-input" value="3" style="width:48%">
+            <div id="host-ui" class="hidden">
+                <div style="display:flex; gap:10px">
+                    <input type="number" id="set-timer" class="joy-input" value="60">
+                    <input type="number" id="set-rounds" class="joy-input" value="3">
                 </div>
-                <button class="btn-pop-main" onclick="startGame()">НАЧАТЬ ИГРУ</button>
+                <button class="btn-pop-main" onclick="requestStart()">НАЧАТЬ ИГРУ</button>
             </div>
-            <p id="wait-msg" style="text-align:center; font-weight:800; margin-top:20px;">ЖДЕМ ХОСТА...</p>
+            <p id="client-msg" style="text-align:center; font-weight:800;">ЖДЕМ ХОСТА...</p>
         </section>
 
         <section class="screen" id="screen-prep">
-            <div class="team-ready-box">
-                <h4 id="prep-team">КОМАНДА</h4>
-                <h2 id="prep-player">ИГРОК</h2>
-                <p>ОБЪЯСНЯЕТ СЛОВА!</p>
+            <div class="team-ready-box" style="margin-top:auto; margin-bottom:auto; text-align:center;">
+                <h4 id="prep-team-name">КОМАНДА</h4>
+                <h1 id="prep-player-name">ИГРОК</h1>
+                <p>ГОТОВИТСЯ ОБЪЯСНЯТЬ</p>
             </div>
         </section>
 
         <section class="screen" id="screen-game">
             <div class="game-header">
-                <div class="timer-bubble" id="timer">01:00</div>
-                <div class="score-pill">🔥 <span id="current-points">0</span></div>
+                <div class="timer-bubble" id="timer-val">00:00</div>
+                <div class="score-pill">🔥 <span id="score-val">0</span></div>
             </div>
-            <div class="word-card" id="main-card">
-                <h2 id="word-display">ПРИГОТОВЬТЕСЬ</h2>
+            <div class="word-card" id="word-card">
+                <h2 id="word-text">...</h2>
             </div>
-            <p id="swipe-info" style="text-align:center; font-weight:800; margin-top:20px; opacity:0.5"></p>
+            <div class="game-controls hidden" id="game-btns">
+                <button class="btn-game btn-err" onclick="handleAction(false)">ПРОПУСК</button>
+                <button class="btn-game btn-ok" onclick="handleAction(true)">УГАДАНО</button>
+            </div>
+            <p id="role-text" style="text-align:center; font-weight:800; opacity:0.6; margin-bottom:10px;"></p>
         </section>
 
         <section class="screen" id="screen-results">
-            <h1 class="pop-title">ФИНАЛ</h1>
-            <div id="final-results"></div>
+            <h1 class="pop-title">ИТОГИ</h1>
+            <div id="results-list"></div>
             <button class="btn-pop-main" onclick="location.reload()">В МЕНЮ</button>
         </section>
     </div>
-    
+
     <script src="cards.js"></script>
     <script src="script.js"></script>
 </body>
