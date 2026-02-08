@@ -50,19 +50,29 @@ socket.on('whoami-update-lobby', (data) => {
 });
 
 function startGame() {
-    if(selectedCats.length === 0) return alert("Выбери хоть одну категорию!");
+    if(selectedCats.length === 0) return alert("Выбери хотя бы одну категорию!");
+    
+    const rounds = document.getElementById('rounds-count').value;
+    const timer = document.getElementById('turn-time').value;
     
     let pool = [];
     selectedCats.forEach(cat => pool.push(...categoriesData[cat]));
-    pool = pool.sort(() => Math.random() - 0.5); // Перемешиваем
+    pool = pool.sort(() => Math.random() - 0.5);
 
-    socket.emit('whoami-start', { roomId: myRoom, words: pool, timer: 90 });
+    socket.emit('whoami-start', { 
+        roomId: myRoom, 
+        words: pool, 
+        timer: parseInt(timer), 
+        rounds: parseInt(rounds) 
+    });
 }
 
 socket.on('whoami-new-turn', (data) => {
     showScreen('game-screen');
     isMyTurn = (socket.id === data.activePlayerId);
-    
+
+    document.getElementById('current-round').innerText = data.round;
+    document.getElementById('total-rounds').innerText = data.totalRounds;
     document.getElementById('active-player-name').innerText = data.activePlayerName;
     const wordEl = document.getElementById('current-word');
     const instrEl = document.getElementById('instruction');
@@ -104,25 +114,27 @@ function startTimer(sec) {
 }
 
 function leaveRoom() {
-    if (confirm("Вы точно хотите выйти? Прогресс будет потерян.")) {
-        // 1. Отправляем сигнал серверу
+    if (confirm("Вы точно хотите выйти в меню? Прогресс игры будет потерян.")) {
         socket.emit('whoami-leave', myRoom);
-        
-        // 2. Останавливаем таймер, если он шел
-        clearInterval(window.t);
-        
-        // 3. Возвращаемся на экран входа
+        clearInterval(window.gameTimer); // Используем твое имя интервала
         showScreen('join-screen');
-        
-        // 4. Очищаем данные комнаты локально
         myRoom = null;
         document.getElementById('room-id').value = "";
     }
 }
 
 socket.on('whoami-game-over', (data) => {
+    clearInterval(window.gameTimer);
     showScreen('result-screen');
     const stats = document.getElementById('final-stats');
-    stats.innerHTML = data.players.sort((a,b) => b.score - a.score)
-        .map(p => `<div>${p.name}: ${p.score}</div>`).join('');
+    
+    // Сортировка: победитель сверху
+    const sortedPlayers = data.players.sort((a, b) => b.score - a.score);
+    
+    stats.innerHTML = sortedPlayers.map((p, index) => `
+        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; ${index === 0 ? 'background: #fff3cd; border-radius: 10px;' : ''}">
+            <span>${index + 1}. <b>${p.name}</b></span>
+            <span>${p.score} очков</span>
+        </div>
+    `).join('');
 });
