@@ -1,25 +1,68 @@
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
-<section class="pop-screen active" id="screen-auth">
-    <h1 class="pop-title">AL<span>IAS</span> ON</h1>
-    
-    <div class="card-glass">
-        <input type="text" id="player-name" class="joy-input" placeholder="Твоё имя">
-        <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты (для входа)">
-        
-        <button class="btn-pop-main" onclick="createOnlineGame()">СОЗДАТЬ ИГРУ</button>
-        <button class="btn-pop-main btn-secondary" onclick="joinOnlineGame()">ВОЙТИ В ИГРУ</button>
-    </div>
-</section>
-
-<section class="pop-screen" id="screen-lobby">
-    <h2 class="pop-title">ЛОББИ</h2>
-    <div class="summary-box">
-        <p>ID КОМНАТЫ: <span id="display-room-id" style="color: var(--accent);">----</span></p>
-    </div>
-    
-    <div id="player-list" class="pop-list">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ALIAS ONLINE</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-shell">
+        <div id="menu-controls">
+            <div class="home-btn" onclick="location.href='../index.html'">🏠</div>
         </div>
-    
-    <button id="start-btn-online" class="btn-pop-main" style="display:none;" onclick="requestStart()">СТАРТ</button>
-</section>
+
+        <header class="pop-header" id="game-header" style="visibility: hidden;">
+            <div class="back-circle" onclick="location.reload()">⚙️</div>
+            <div class="timer-bubble" id="timer">00:00</div>
+            <div class="score-pill">🔥 <span id="live-score">0</span></div>
+        </header>
+
+        <section class="pop-screen active" id="screen-auth">
+            <h1 class="pop-title">AL<span>IAS</span> ON</h1>
+            
+            <div class="card-glass shadow-box">
+                <input type="text" id="player-name" class="joy-input" placeholder="Твоё имя">
+                <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
+                
+                <div class="btn-group">
+                    <button class="btn-pop-main" onclick="createOnlineGame()">СОЗДАТЬ</button>
+                    <button class="btn-pop-main btn-secondary" onclick="joinOnlineGame()">ВОЙТИ</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="pop-screen" id="screen-lobby">
+            <h2 class="pop-title">ЛОББИ</h2>
+            <div class="summary-box">
+                <p>ROOM ID: <span id="display-room-id">----</span></p>
+            </div>
+            
+            <div id="player-list" class="pop-list">
+                </div>
+            
+            <button id="start-btn-online" class="btn-pop-main" style="display:none;" onclick="requestStart()">СТАРТ</button>
+            <p id="wait-msg" class="status-text">Ждем хоста...</p>
+        </section>
+
+        <section class="pop-screen" id="screen-game">
+            <div class="swipe-hint">← ПРОПУСК | УГАДАНО →</div>
+            <div class="card-container">
+                <div class="pop-card word-card" id="main-card">
+                    <h2 id="word-display">ЗАГРУЗКА...</h2>
+                </div>
+            </div>
+            
+            <div class="game-actions" id="game-controls">
+                <button class="btn-pop-main btn-skip" onclick="handleOnlineWord(false)">ПРОПУСК</button>
+                <button class="btn-pop-main btn-check" onclick="handleOnlineWord(true)">УГАДАНО</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="../cards.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
