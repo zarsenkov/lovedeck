@@ -124,4 +124,4 @@
         document.getElementById('final-stats').innerHTML = `<h2>${sorted[0].name} ПОБЕДИЛ!</h2>` + 
             sorted.map(p => `<p>${p.name}: ${p.score}</p>`).join('');
     });
-})();;
+})();
