@@ -95,3 +95,104 @@ body { background: var(--bg); color: var(--text); margin: 0; display: flex; just
     font-weight: bold;
     border-radius: 10px;
 }
+/* ПУНКТ 1: Стиль кнопки под "Войти" */
+.back-btn-menu {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    font-weight: 800;
+    margin-top: 15px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+.back-btn-menu:hover {
+    color: #fff;
+}
+
+/* ПУНКТ 3: Строка Комната + Выйти в лобби */
+.room-header-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.exit-mini-btn {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #c0392b;
+}
+
+/* ПУНКТ 2: Красивое оформление настроек */
+.custom-settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.setting-item {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.setting-item span {
+    font-size: 9px;
+    font-weight: 900;
+    color: #ff9f43;
+    margin-bottom: 5px;
+}
+
+.setting-item input {
+    background: none;
+    border: none;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    text-align: center;
+    width: 100%;
+}
+
+/* ПУНКТ 4: Кнопка выйти в игре (снизу или аккуратно сверху) */
+.game-exit-link {
+    position: absolute;
+    bottom: 20px; /* Переместил вниз, чтобы не мешала таймеру */
+    left: 50%;
+    transform: translateX(-50%);
+    background: none;
+    border: none;
+    color: rgba(0,0,0,0.3);
+    font-weight: 800;
+    font-size: 10px;
+    text-decoration: underline;
+    cursor: pointer;
+    z-index: 100;
+}
+
+/* ПУНКТ 5: Центрирование финала */
+.final-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    text-align: center;
+}
