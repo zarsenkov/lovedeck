@@ -1,72 +1,69 @@
-// // Подключаем сокеты
+// // Подключение к серверу Amvera
 const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
-let currentRoom = "";
+let room = "";
 
-// // ФУНКЦИЯ: Скрывает все экраны и показывает один нужный
+// // Функция смены экранов (как pop-screen.active в оригинале)
 function toScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 }
 
-// // ФУНКЦИЯ: Создать комнату
-function createOnlineGame() {
+// // Создание игры
+function createGame() {
     const n = document.getElementById('player-name').value;
-    if(!n) return alert("Имя!");
+    if(!n) return;
     const id = Math.floor(1000 + Math.random()*9000).toString();
     socket.emit('alias-join', { roomId: id, playerName: n });
 }
 
-// // ФУНКЦИЯ: Войти в комнату
-function joinOnlineGame() {
+// // Вход в игру
+function joinGame() {
     const n = document.getElementById('player-name').value;
     const r = document.getElementById('room-id').value;
-    if(!n || !r) return alert("Заполни!");
+    if(!n || !r) return;
     socket.emit('alias-join', { roomId: r, playerName: n });
 }
 
-// // СОБЫТИЕ: Сервер обновил лобби
+// // Обновление лобби (используем твой стиль team-ready-box)
 socket.on('alias-update-lobby', data => {
-    toScreen('screen-lobby'); // // ПЕРЕКЛЮЧАЕМ ЭКРАН
-    currentRoom = data.roomId;
-    document.getElementById('display-room-id').innerText = currentRoom;
+    toScreen('screen-lobby');
+    room = data.roomId;
+    document.getElementById('display-id').innerText = room;
     
-    // // Отрисовка списка команд через твои .team-box
     const list = document.getElementById('player-list');
     list.innerHTML = `
-        <div class="team-box"><h4>КОМАНДА 1</h4>${data.players.filter(p=>p.team===1).map(p=>p.name).join(', ')}</div>
-        <div class="team-box"><h4>КОМАНДА 2</h4>${data.players.filter(p=>p.team===2).map(p=>p.name).join(', ')}</div>
+        <div class="team-ready-box"><h4>КОМАНДА 1</h4>${data.players.filter(p=>p.team===1).map(p=>p.name).join(', ')}</div>
+        <div class="team-ready-box" style="border-color:var(--accent)"><h4>КОМАНДА 2</h4>${data.players.filter(p=>p.team===2).map(p=>p.name).join(', ')}</div>
     `;
 
-    // // Если ты хост — покажи кнопку старта
     const me = data.players.find(p => p.id === socket.id);
-    if(me?.isHost) {
-        document.getElementById('start-btn-online').classList.remove('hidden');
-        document.getElementById('wait-msg').classList.add('hidden');
-    }
+    if(me?.isHost) document.getElementById('start-btn').classList.remove('hidden');
 });
 
-// // ФУНКЦИЯ: Старт (для хоста)
+// // Запуск раунда
 function requestStart() {
     const words = [...ALIAS_WORDS.common].sort(()=>0.5-Math.random());
-    socket.emit('alias-start', { roomId: currentRoom, words, timer: 60, maxRounds: 3 });
+    socket.emit('alias-start', { roomId: room, words, timer: 60, maxRounds: 3 });
 }
 
-// // СОБЫТИЕ: Новое слово / начало хода
+// // Получение слова (экран игры)
 socket.on('alias-new-turn', data => {
-    toScreen('screen-game'); // // ПЕРЕКЛЮЧАЕМ ЭКРАН
+    toScreen('screen-game');
+    document.getElementById('live-header').classList.remove('hidden');
     document.getElementById('word-display').innerText = data.word;
     
-    // // Показываем кнопки управления только тому, кто сейчас объясняет
+    // // Кнопки видит только тот, кто объясняет
     const isMe = data.activePlayerId === socket.id;
-    document.getElementById('game-controls').classList.toggle('hidden', !isMe);
+    document.getElementById('controls').classList.toggle('hidden', !isMe);
 });
 
-// // ФУНКЦИЯ: Нажатие УГАДАНО / ПРОПУСК
-function handleOnlineWord(isCorrect) {
-    socket.emit('alias-action', { roomId: currentRoom, isCorrect });
+// // Действие (Угадал/Пропустил)
+function sendAction(ok) {
+    socket.emit('alias-action', { roomId: room, isCorrect: ok });
 }
 
-// // СОБЫТИЕ: Таймер
+// // Таймер
 socket.on('alias-timer-tick', data => {
-    document.getElementById('timer').innerText = `00:${data.timeLeft < 10 ? '0'+data.timeLeft : data.timeLeft}`;
+    const t = data.timeLeft;
+    document.getElementById('timer').innerText = `00:${t < 10 ? '0'+t : t}`;
 });
