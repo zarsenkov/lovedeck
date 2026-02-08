@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BUNKER | TERMINAL v1.0.4</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    <div class="scanline"></div>
+
+    <div id="app" class="terminal-container">
+        <section id="boot-screen" class="screen active">
+            <div class="glitch-text" data-text="SYSTEM INITIALIZATION">SYSTEM INITIALIZATION</div>
+            <div id="boot-logs" class="boot-logs"></div>
+            <div class="loading-bar"><div class="progress"></div></div>
+        </section>
+
+        <section id="setup-screen" class="screen">
+            <h1 class="terminal-title">BUNKER_SYSTEM_v1.0</h1>
+            <div class="setup-form">
+                <div class="input-group">
+                    <label>КОЛИЧЕСТВО ВЫЖИВШИХ:</label>
+                    <input type="number" id="player-count" min="4" max="12" value="6">
+                </div>
+                <div id="player-names-container" class="names-list">
+                    </div>
+                <button id="start-game-btn" class="btn-primary">ИНИЦИИРОВАТЬ РАСПРЕДЕЛЕНИЕ</button>
+            </div>
+        </section>
+
+        <section id="pass-screen" class="screen">
+            <div class="warning-stripes"></div>
+            <div class="pass-content">
+                <h2 class="alert-text">ВНИМАНИЕ! СТРОГО КОНФИДЕНЦИАЛЬНО</h2>
+                <p>ПЕРЕДАЙТЕ ТЕРМИНАЛ ИГРОКУ:</p>
+                <div id="target-player-name" class="player-highlight"></div>
+                <button id="show-role-btn" class="btn-primary">ПРОСМОТРЕТЬ ДОСЬЕ</button>
+            </div>
+            <div class="warning-stripes"></div>
+        </section>
+
+        <section id="role-screen" class="screen">
+            <div class="dossier">
+                <div class="dossier-header">ЛИЧНОЕ ДЕЛО №<span id="player-id"></span></div>
+                <div id="player-role-data" class="role-grid">
+                    </div>
+                <div class="dossier-footer">
+                    <button id="confirm-role-btn" class="btn-secondary">ПОНЯЛ, ПЕРЕДАТЬ ДАЛЬШЕ</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="game-screen" class="screen">
+            <div class="status-bar">
+                <div id="current-round-title">РАУНД 1: ПРОФЕССИИ</div>
+                <div id="alive-count">ЖИВЫХ: 0</div>
+            </div>
+            
+            <div id="apocalypse-info" class="apocalypse-banner">
+                </div>
+
+            <div id="players-table" class="players-grid">
+                </div>
+
+            <div class="controls">
+                <button id="next-phase-btn" class="btn-primary">СЛЕДУЮЩИЙ ЭТАП</button>
+            </div>
+        </section>
+
+        <section id="voting-screen" class="screen">
+            <h2 class="terminal-title">ПРОТОКОЛ ИСКЛЮЧЕНИЯ</h2>
+            <p class="sub-text">ВЫБЕРИТЕ ТОГО, КТО НЕ ПОПАДЕТ В БУНКЕР</p>
+            <div id="voting-list" class="voting-grid">
+                </div>
+            <div id="voting-results" class="results-area hidden">
+                </div>
+        </section>
+
+        <section id="results-screen" class="screen">
+            <div class="stamp-container">
+                <div id="final-stamp" class="stamp"></div>
+            </div>
+            <h2 id="final-status-text">ГРУППА СФОРМИРОВАНА</h2>
+            <div id="winners-list" class="winners-grid"></div>
+            <button onclick="location.reload()" class="btn-secondary">НОВЫЙ ЦИКЛ</button>
+        </section>
+    </div>
+
+    <template id="card-template">
+        <div class="card">
+            <div class="card-label"></div>
+            <div class="card-value"></div>
+        </div>
+    </template>
+
+    <script src="cards.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
