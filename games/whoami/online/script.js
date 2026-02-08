@@ -1,189 +1,104 @@
-// --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
-// Подключаемся к серверу через Socket.io
-const socket = io("https://lovecouple-server-zarsenkov.amvera.io"); 
-let myName, myRoom; 
-let isMyTurn = false;      // Флаг: мой ли сейчас ход угадывать
-let categoriesData = {};   // Сюда загрузим все слова из JSON
-let selectedCats = [];     // Выбранные категории для игры
+const SERVER_URL = "https://lovecouple-server-zarsenkov.amvera.io";
+const socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
 
-// --- ЗАГРУЗКА ДАННЫХ ---
-// Получаем слова из файла при загрузке страницы
-fetch('categories.json')
-    .then(r => r.json())
-    .then(data => {
-        categoriesData = data.categories || data;
-        const box = document.getElementById('categories-box');
-        
-        // Создаем кнопки для каждой категории в лобби
-        Object.keys(categoriesData).forEach(cat => {
-            const btn = document.createElement('div');
-            btn.className = 'cat-item';
-            btn.innerText = cat;
-            
-            // Логика выбора категорий по клику
-            btn.onclick = () => {
-                btn.classList.toggle('selected');
-                if(selectedCats.includes(cat)) {
-                    selectedCats = selectedCats.filter(c => c !== cat);
-                } else {
-                    selectedCats.push(cat);
-                }
-            };
-            box.appendChild(btn);
-        });
-    });
+let myId, currentRoomId, wakeLock = null;
 
-// --- ФУНКЦИЯ: Переключение экранов ---
-// Скрывает все секции и показывает ту, чей ID передан
+// Анти-сон
+async function requestWakeLock() {
+    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+}
+
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    
+    const badge = document.getElementById('room-id-badge');
+    if (id === 'screen-login') badge.classList.add('hidden');
+    else badge.classList.remove('hidden');
 }
 
-// --- ФУНКЦИЯ: Вход в игру ---
-// Собирает имя и ID комнаты, отправляет серверу
-function joinGame() {
-    myName = document.getElementById('player-name').value.trim();
-    myRoom = document.getElementById('room-id').value.trim();
-    
-    if(myName && myRoom) {
-        socket.emit('whoami-join', { roomId: myRoom, playerName: myName });
-        showScreen('lobby-screen');
-        document.getElementById('room-display').innerText = "КОМНАТА: " + myRoom;
+function handleBack() {
+    if (document.getElementById('screen-login').classList.contains('active')) {
+        window.location.href = "https://lovecouple.ru";
     } else {
-        alert("Введите имя и ID комнаты!");
+        if (confirm("Выйти из игры?")) window.location.reload();
     }
 }
 
-// --- СОБЫТИЕ: Обновление списка игроков ---
-// Вызывается сервером, когда кто-то заходит или выходит
-socket.on('whoami-update-lobby', (data) => {
-    const list = document.getElementById('players-list');
-    // Обновляем список имен и очков в лобби
-    list.innerHTML = data.players.map(p => `<li>${p.name} — ${p.score} очков</li>`).join('');
-    
-    // Если текущий игрок первый в списке — он хост, показываем настройки
-    if(data.players[0] && data.players[0].id === socket.id) {
-        document.getElementById('host-controls').style.display = 'block';
-        document.getElementById('wait-msg').style.display = 'none';
-    } else {
-        document.getElementById('host-controls').style.display = 'none';
-        document.getElementById('wait-msg').style.display = 'block';
-    }
+function copyCode() {
+    const code = document.getElementById('room-id-badge').innerText.split(' ')[0];
+    navigator.clipboard.writeText(code);
+    alert("Код скопирован!");
+}
+
+// --- ЛОББИ ---
+function createRoom() {
+    const name = document.getElementById('username').value.trim();
+    if (!name) return alert("Введите имя");
+    requestWakeLock();
+    socket.emit('whoami_create', { playerName: name });
+}
+
+function joinRoom() {
+    const name = document.getElementById('username').value.trim();
+    const code = document.getElementById('room-input').value.trim().toUpperCase();
+    if (!name || !code) return alert("Введите данные");
+    requestWakeLock();
+    socket.emit('whoami_join', { roomId: code, playerName: name });
+}
+
+function startNaming() {
+    socket.emit('whoami_start_naming', currentRoomId);
+}
+
+function setCharacter() {
+    const char = document.getElementById('character-input').value.trim();
+    if (!char) return alert("Введите персонажа!");
+    socket.emit('whoami_set_character', { roomId: currentRoomId, character: char });
+    document.getElementById('screen-naming').innerHTML = "<div class='glass-card'><h2>Принято!</h2><p>Ждем остальных...</p></div>";
+}
+
+// --- ОТВЕТЫ СЕРВЕРА ---
+socket.on('whoami_created', (data) => {
+    currentRoomId = data.roomId;
+    document.getElementById('room-id-badge').innerHTML = `${currentRoomId} <i class="far fa-copy"></i>`;
+    showScreen('screen-lobby');
 });
 
-// --- ФУНКЦИЯ: Запуск игры (только для хоста) ---
-// Собирает настройки и отправляет серверу команду начать
-function startGame() {
-    if(selectedCats.length === 0) return alert("Выбери хотя бы одну категорию!");
-    
-    const rounds = document.getElementById('rounds-count').value;
-    const timer = document.getElementById('turn-time').value;
-    
-    // Собираем все слова из выбранных категорий в один массив
-    let pool = [];
-    selectedCats.forEach(cat => pool.push(...categoriesData[cat]));
-    // Перемешиваем массив слов
-    pool = pool.sort(() => Math.random() - 0.5); 
-
-    socket.emit('whoami-start', { 
-        roomId: myRoom, 
-        words: pool, 
-        timer: parseInt(timer), 
-        rounds: parseInt(rounds) 
-    });
-}
-
-// --- СОБЫТИЕ: Новый ход или новое слово ---
-// Основная логика отображения слова и управления таймером
-socket.on('whoami-new-turn', (data) => {
-    showScreen('game-screen'); // Переключаемся на экран игры
-    
-    // Обновляем счетчик раундов
-    document.getElementById('current-round').innerText = data.round;
-    document.getElementById('total-rounds').innerText = data.totalRounds;
-    
-    // Проверяем: угадываю я или кто-то другой
-    isMyTurn = (socket.id === data.activePlayerId);
-    document.getElementById('active-player-name').innerText = data.activePlayerName;
-    
-    const wordEl = document.getElementById('current-word');
-    const instrEl = document.getElementById('instruction');
-    const controls = document.getElementById('action-buttons');
-
-    if(isMyTurn) {
-        // Если мой ход: я не должен видеть слово
-        wordEl.innerText = "ПРИЛОЖИ КО ЛБУ";
-        instrEl.innerText = "Ты угадываешь! Слушай друзей.";
-        controls.style.display = 'none'; // Скрываем кнопки управления
-    } else {
-        // Если ход другого: я вижу слово и объясняю
-        wordEl.innerText = data.word;
-        instrEl.innerText = "Объясняй игроку " + data.activePlayerName;
-        controls.style.display = 'grid'; // Показываем кнопки "Пас" и "Угадал"
-    }
-    
-    // Запускаем таймер только если ход перешел к НОВОМУ игроку
-    if (data.isNewPlayer) {
-        startTimer(data.timer);
-    }
-});
-
-// --- ФУНКЦИЯ: Отправка результата (Угадал/Пас) ---
-function sendAction(isCorrect) {
-    socket.emit('whoami-action', { roomId: myRoom, isCorrect: isCorrect });
-}
-
-// --- ФУНКЦИЯ: Работа таймера ---
-// Отсчитывает время назад и по нулям отправляет событие таймаута
-function startTimer(sec) {
-    let timeLeft = sec;
-    const el = document.getElementById('timer');
-    
-    // Очищаем старый интервал, если он был
-    if (window.gameTimer) clearInterval(window.gameTimer);
-    
-    window.gameTimer = setInterval(() => {
-        timeLeft--;
-        el.innerText = timeLeft;
-        
-        if(timeLeft <= 0) {
-            clearInterval(window.gameTimer);
-            // Только угадывающий отправляет сигнал о конце времени
-            if(isMyTurn) {
-                socket.emit('whoami-timeout', myRoom);
-            }
-        }
-    }, 1000);
-}
-
-// --- ФУНКЦИЯ: Выход из комнаты ---
-// Сбрасывает состояние и возвращает в меню
-function leaveRoom() {
-    if (myRoom) {
-        if (confirm("Вы точно хотите выйти? Прогресс будет потерян.")) {
-            socket.emit('whoami-leave', myRoom); // Уведомляем сервер
-            if (window.gameTimer) clearInterval(window.gameTimer); // Стоп таймер
-            myRoom = null;
-            showScreen('join-screen'); // Назад к вводу имени
-        }
-    }
-}
-
-// --- СОБЫТИЕ: Конец игры ---
-// Показывает финальную таблицу очков
-socket.on('whoami-game-over', (data) => {
-    if (window.gameTimer) clearInterval(window.gameTimer);
-    showScreen('result-screen');
-    
-    const stats = document.getElementById('final-stats');
-    // Сортируем игроков: у кого больше очков — тот выше
-    const sorted = data.players.sort((a, b) => b.score - a.score);
-    
-    stats.innerHTML = sorted.map((p, index) => `
-        <div class="result-row" style="${index === 0 ? 'background: #fff3cd;' : ''}">
-            <span>${index + 1}. <b>${p.name}</b></span>
-            <span>${p.score} очков</span>
+socket.on('whoami_update', (room) => {
+    const list = document.getElementById('player-list');
+    list.innerHTML = room.players.map(p => `
+        <div class="user-item">
+            <span>${p.name}</span>
+            <span>${p.character ? '✅' : '⏳'}</span>
         </div>
     `).join('');
+
+    const isHost = room.players[0].id === socket.id;
+    document.getElementById('start-btn').classList.toggle('hidden', !isHost || room.players.length < 2);
+    document.getElementById('wait-msg').classList.toggle('hidden', isHost && room.players.length >= 2);
 });
+
+socket.on('whoami_naming_phase', (room) => {
+    showScreen('screen-naming');
+    const me = room.players.find(p => p.id === socket.id);
+    const target = room.players.find(p => p.id === me.assignedTo);
+    document.getElementById('target-name').innerText = target.name;
+});
+
+socket.on('whoami_game_start', (room) => {
+    showScreen('screen-game');
+    const grid = document.getElementById('game-grid');
+    // Показываем всех, кроме себя
+    grid.innerHTML = room.players.map(p => {
+        if (p.id === socket.id) return '';
+        return `
+            <div class="player-sticker">
+                <span>${p.name}</span>
+                <b>${p.character}</b>
+            </div>
+        `;
+    }).join('');
+});
+
+socket.on('error_msg', (m) => alert(m));
