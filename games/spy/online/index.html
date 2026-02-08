@@ -22,7 +22,7 @@
         </section>
 
         <section class="screen" id="screen-lobby">
-            <h2 class="screen-title">КОМНАТА: <span id="display-room-id" class="neon-text">0000</span></h2>
+            <h2 class="screen-title">КОМНАТА: <span id="display-room-id" class="neon-text">....</span></h2>
             <div class="glass-card">
                 <div class="players-grid" id="lobby-players"></div>
                 <div id="host-panel" class="hidden">
@@ -34,37 +34,40 @@
 
         <section class="screen" id="screen-role">
             <div class="role-card-box" id="role-card" onclick="this.classList.toggle('flipped')">
-                <div class="card-side front">НАЖМИ ЧТОБЫ УЗНАТЬ РОЛЬ</div>
+                <div class="card-side front">
+                    <div class="fingerprint"></div>
+                    <p>НАЖМИ ЧТОБЫ УЗНАТЬ РОЛЬ</p>
+                </div>
                 <div class="card-side back">
                     <h2 id="my-role-name">...</h2>
                     <p id="my-location-name">...</p>
                 </div>
             </div>
             <button class="neon-btn" id="ready-btn" onclick="confirmReady()">Я ОЗНАКОМИЛСЯ</button>
-            <p class="sub-text" id="ready-count">Ожидание игроков: 0/0</p>
+            <p class="sub-text" id="ready-count" style="margin-top:15px">Ожидание игроков: 0/0</p>
         </section>
 
         <section class="screen" id="screen-game">
-            <div class="timer-box">
+            <div class="timer-circle-online">
                 <div id="game-timer">05:00</div>
-                <p>ОБСУЖДАЙТЕ В DISCORD</p>
             </div>
-            <div class="glass-card mini">
-                <p id="reminder-loc">ЛОКАЦИЯ: ???</p>
+            <div class="glass-card" style="margin-top:20px; text-align:center">
+                <p id="reminder-loc" style="color: var(--neon-cyan); font-weight:bold">ЛОКАЦИЯ: ???</p>
+                <p class="sub-text">ОБСУЖДАЙТЕ В DISCORD</p>
             </div>
         </section>
 
         <section class="screen" id="screen-vote">
             <h2 class="screen-title">КТО ШПИОН?</h2>
-            <div class="players-grid" id="vote-grid"></div>
+            <div class="vote-grid" id="vote-grid"></div>
         </section>
 
         <section class="screen" id="screen-results">
             <h1 class="glitch-title">ИТО<span>ГИ</span></h1>
             <div class="glass-card">
-                <h2 id="winner-text" class="winner-msg">...</h2>
-                <p>ЛОКАЦИЯ: <span id="res-location" class="neon-text">...</span></p>
-                <div id="vote-results-list"></div>
+                <div id="winner-status" class="winner-label" style="color: black;">...</div>
+                <p>ЛОКАЦИЯ: <span id="res-location" style="color:var(--neon-cyan)">...</span></p>
+                <div id="vote-results-list" class="vote-stats-box"></div>
             </div>
             <button class="neon-btn" onclick="location.reload()">В МЕНЮ</button>
         </section>
