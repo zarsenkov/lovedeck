@@ -2,41 +2,43 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SPY NEON ONLINE</title>
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div class="spy-app">
+        // Кнопка выхода в главное меню
         <div class="back-link" onclick="location.href='../index.html'">← ВЫЙТИ</div>
 
         <section class="screen active" id="screen-auth">
             <h1 class="glitch-title">SPY<span>ONLINE</span></h1>
             <div class="glass-card">
                 <input type="text" id="player-name" class="neon-input" placeholder="ТВОЕ ИМЯ" maxlength="12">
-                <input type="text" id="room-id" class="neon-input" placeholder="ID КОМНАТЫ (4 ЦИФРЫ)">
+                <input type="text" id="room-id" class="neon-input" placeholder="КОД (4 ЦИФРЫ)" maxlength="4">
                 <button class="neon-btn" onclick="joinGame()">ВОЙТИ В СЕТЬ</button>
             </div>
         </section>
 
         <section class="screen" id="screen-lobby">
-            <h2 class="screen-title">КОМНАТА: <span id="display-room-id" class="neon-text">....</span></h2>
+            <h2 class="screen-title">КОМНАТА: <span id="display-room-id" style="color:var(--neon-cyan)">0000</span></h2>
             <div class="glass-card">
                 <div class="players-grid" id="lobby-players"></div>
-                <div id="host-panel" class="hidden">
+                <div id="host-panel" style="display:none; margin-top:20px;">
                     <button class="neon-btn" onclick="startGameRequest()">ЗАПУСТИТЬ ИГРУ</button>
                 </div>
-                <p id="wait-msg" class="sub-text">Ждем, когда хост нажмет старт...</p>
+                <p id="wait-msg" class="sub-text" style="text-align:center; margin-top:15px; opacity:0.6;">Ждем хоста...</p>
             </div>
         </section>
 
         <section class="screen" id="screen-role">
-            <div class="role-card-box" id="role-card" onclick="this.classList.toggle('flipped')">
+            <div class="role-card-box" onclick="this.classList.toggle('flipped')">
                 <div class="card-side front">
                     <div class="fingerprint"></div>
-                    <p>НАЖМИ ЧТОБЫ УЗНАТЬ РОЛЬ</p>
+                    <p>НАЖМИ, ЧТОБЫ УЗНАТЬ РОЛЬ</p>
                 </div>
                 <div class="card-side back">
                     <h2 id="my-role-name">...</h2>
@@ -44,16 +46,14 @@
                 </div>
             </div>
             <button class="neon-btn" id="ready-btn" onclick="confirmReady()">Я ОЗНАКОМИЛСЯ</button>
-            <p class="sub-text" id="ready-count" style="margin-top:15px">Ожидание игроков: 0/0</p>
+            <p id="ready-count" class="sub-text" style="text-align:center; margin-top:10px;">Готовы: 0/0</p>
         </section>
 
         <section class="screen" id="screen-game">
-            <div class="timer-circle-online">
-                <div id="game-timer">05:00</div>
-            </div>
-            <div class="glass-card" style="margin-top:20px; text-align:center">
-                <p id="reminder-loc" style="color: var(--neon-cyan); font-weight:bold">ЛОКАЦИЯ: ???</p>
-                <p class="sub-text">ОБСУЖДАЙТЕ В DISCORD</p>
+            <div class="timer-display" id="game-timer">05:00</div>
+            <div class="glass-card" style="text-align:center">
+                <p id="reminder-loc" style="color:var(--neon-cyan); font-weight:900;">ЛОКАЦИЯ: ???</p>
+                <p style="font-size:12px; margin-top:10px; opacity:0.5;">ОБСУЖДАЙТЕ В DISCORD / ГОЛОСОМ</p>
             </div>
         </section>
 
@@ -63,11 +63,10 @@
         </section>
 
         <section class="screen" id="screen-results">
-            <h1 class="glitch-title">ИТО<span>ГИ</span></h1>
-            <div class="glass-card">
-                <div id="winner-status" class="winner-label" style="color: black;">...</div>
+            <div class="glass-card" style="text-align:center">
+                <h1 id="winner-text" style="font-family:'Unbounded'; margin-bottom:20px;">...</h1>
                 <p>ЛОКАЦИЯ: <span id="res-location" style="color:var(--neon-cyan)">...</span></p>
-                <div id="vote-results-list" class="vote-stats-box"></div>
+                <div id="vote-results-list" style="margin-top:20px; text-align:left;"></div>
             </div>
             <button class="neon-btn" onclick="location.reload()">В МЕНЮ</button>
         </section>
