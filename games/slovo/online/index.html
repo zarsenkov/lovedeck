@@ -75,12 +75,12 @@
         </div>
     </div>
 
-    <div id="offline-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; color:#fff; display:flex; align-items:center; justify-content:center; text-align:center;">
-        <div class="overlay-content">
-            <h2 id="offline-msg">КТО-ТО ВЫШЕЛ</h2>
-            <p>Ждем возвращения...</p>
-        </div>
+<div id="offline-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; color:#fff; align-items:center; justify-content:center; text-align:center; flex-direction:column;">
+    <div class="overlay-content">
+        <h2 id="offline-msg">КТО-ТО ВЫШЕЛ</h2>
+        <p>Ждем возвращения...</p>
     </div>
+</div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="../cards.js"></script>
