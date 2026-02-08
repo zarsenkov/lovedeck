@@ -25,6 +25,16 @@
                 <p class="section-tag">ИГРОКИ</p>
                 <ul id="players-list"></ul>
             </div>
+            <div class="settings-box card-glass" style="margin-bottom: 15px; padding: 10px;">
+    <div style="display: flex; justify-content: space-between; gap: 10px;">
+        <label style="font-size: 12px; font-weight: 800;">РАУНДОВ: 
+            <input type="number" id="rounds-count" value="3" min="1" max="10" style="width: 40px;">
+        </label>
+        <label style="font-size: 12px; font-weight: 800;">ВРЕМЯ (С): 
+            <input type="number" id="turn-time" value="90" min="10" max="300" style="width: 50px;">
+        </label>
+    </div>
+</div>
             
             <div id="host-controls" style="display: none;">
                 <p class="section-tag">КАТЕГОРИИ</p>
@@ -35,9 +45,11 @@
         </section>
 
         <section class="screen" id="game-screen">
+            <button class="exit-btn-game" onclick="leaveRoom()" style="position: absolute; top: 10px; right: 10px; background: #ff4757; color: white; border: none; border-radius: 5px; padding: 5px 10px; font-size: 10px; z-index: 100;">ВЫЙТИ</button>
             <div class="game-header">
                 <div class="timer-box">⏱ <span id="timer">0</span></div>
                 <div id="active-player-name" class="active-badge">---</div>
+                <div class="round-counter" style="font-weight: 900; font-size: 14px;">РАУНД: <span id="current-round">1</span>/<span id="total-rounds">3</span></div>
             </div>
             
             <div class="card-main">
