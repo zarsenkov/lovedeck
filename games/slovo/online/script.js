@@ -9,16 +9,22 @@
     }
 
 // ИСПРАВЛЕННАЯ ФУНКЦИЯ: берет данные из ваших переменных words и alphabet
-    function getCard() {
-        let word = "СЛОВО";
+function getCard() {
+        // 1. Устанавливаем запасные значения
+        let word = "ОШИБКА"; 
         let lets = "? ? ?";
 
-        // 1. Берем случайное слово из массива words (из cards.js)
-        if (window.words && Array.isArray(window.words)) {
-            word = window.words[Math.floor(Math.random() * window.words.length)];
-        } 
+        // 2. Берем СЛОВО из твоего файла cards.js (переменная words)
+        // Проверяем window.words, так как cards.js объявляет её глобально
+        if (window.words && window.words.length > 0) {
+            const randomIndex = Math.floor(Math.random() * window.words.length);
+            word = window.words[randomIndex];
+        } else {
+            console.error("Файл cards.js не загружен или массив words пуст!");
+            word = "НЕТ СЛОВ";
+        }
 
-        // 2. Генерируем 3 случайные буквы из строки alphabet (из cards.js)
+        // 3. Берем БУКВЫ из твоего алфавита в cards.js
         if (window.alphabet) {
             const alphaArray = window.alphabet.split("");
             const randomLetters = [];
@@ -27,6 +33,9 @@
                 randomLetters.push(char);
             }
             lets = randomLetters.join(" ");
+        } else {
+            // Если алфавита нет, генерируем стандартный
+            lets = "А Б В"; 
         }
 
         return { 
