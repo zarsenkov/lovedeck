@@ -1,181 +1,125 @@
-let config = { time: 60, cats: ['common'] };
-let game = {
-    teams: [],
-    currentTeamIdx: 0,
-    timer: null,
-    timeLeft: 0,
-    roundLog: [],
-    wordsStack: []
-};
+// // Инициализация сокетов
+const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
+let currentRoom = "";
+let isHost = false;
+let canControl = false; // // Флаг: может ли игрок свайпать/жать кнопки
 
-// --- НАСТРОЙКИ ---
-function setOpt(key, val, el) {
-    config[key] = val;
-    el.parentElement.querySelectorAll('.pop-chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-}
-
-function toggleCat(cat, el) {
-    if (el.classList.contains('active')) {
-        if (config.cats.length > 1) {
-            config.cats = config.cats.filter(c => c !== cat);
-            el.classList.remove('active');
-        }
-    } else {
-        config.cats.push(cat);
-        el.classList.add('active');
-    }
-}
-
-function initBattle() {
-    const names = [...TEAM_NAMES].sort(() => 0.5 - Math.random());
-    game.teams = [
-        { name: names[0], score: 0 },
-        { name: names[1], score: 0 }
-    ];
-    game.currentTeamIdx = 0;
-    prepareTurn();
-}
-
-function prepareTurn() {
-    const team = game.teams[game.currentTeamIdx];
-    document.getElementById('ready-team-name').innerText = team.name.toUpperCase();
-    toScreen('screen-ready');
-}
-
-function startGame() {
-    game.timeLeft = config.time;
-    game.roundLog = [];
-    
-    let allWords = [];
-    config.cats.forEach(c => allWords = allWords.concat(ALIAS_WORDS[c]));
-    game.wordsStack = allWords.sort(() => 0.5 - Math.random());
-
-    document.getElementById('live-score').innerText = '0';
-    toScreen('screen-game');
-    nextWord();
-
-    game.timer = setInterval(() => {
-        game.timeLeft--;
-        document.getElementById('timer').innerText = `00:${game.timeLeft < 10 ? '0'+game.timeLeft : game.timeLeft}`;
-        if (game.timeLeft <= 0) showRoundReview();
-    }, 1000);
-}
-
-function nextWord() {
-    if (game.wordsStack.length === 0) {
-        config.cats.forEach(c => game.wordsStack = game.wordsStack.concat(ALIAS_WORDS[c]));
-        game.wordsStack.sort(() => 0.5 - Math.random());
-    }
-    document.getElementById('word-display').innerText = game.wordsStack.pop();
-}
-
-function handleWord(isCorrect) {
-    const word = document.getElementById('word-display').innerText;
-    game.roundLog.push({ word, isCorrect });
-    
-    // Мгновенный пересчет для экрана игры
-    let score = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
-    document.getElementById('live-score').innerText = score;
-
-    const card = document.getElementById('main-card');
-    card.style.transition = '0.3s ease-out';
-    card.style.transform = isCorrect ? 'translateX(350px) rotate(30deg)' : 'translateX(-350px) rotate(-30deg)';
-    card.style.opacity = '0';
-
-    setTimeout(() => {
-        card.style.transition = 'none'; card.style.transform = 'none'; card.style.opacity = '1';
-        nextWord();
-    }, 200);
-}
-
-// --- ПРОВЕРКА СЛОВ (ИСПРАВЛЕННАЯ МАТЕМАТИКА) ---
-function showRoundReview() {
-    clearInterval(game.timer);
-    toScreen('screen-results');
-    document.getElementById('res-team-name').innerText = game.teams[game.currentTeamIdx].name;
-    renderReviewList();
-    
-    document.getElementById('res-continue-btn').innerText = (game.currentTeamIdx === 0) ? "СЛЕДУЮЩИЙ ХОД" : "РЕЗУЛЬТАТ";
-}
-
-function renderReviewList() {
-    const list = document.getElementById('results-list');
-    list.innerHTML = game.roundLog.map((item, index) => `
-        <div class="word-row">
-            <span style="${item.isCorrect ? '' : 'opacity: 0.5; text-decoration: line-through;'}">${item.word}</span>
-            <div class="status-icon ${item.isCorrect ? 'status-ok' : 'status-err'}" onclick="toggleWordStatus(${index})">
-                ${item.isCorrect ? '✓' : '✕'}
-            </div>
-        </div>
-    `).join('');
-    
-    let total = game.roundLog.reduce((acc, item) => acc + (item.isCorrect ? 1 : -1), 0);
-    document.getElementById('res-team-score').innerText = total;
-    game.teams[game.currentTeamIdx].score = total;
-}
-
-function toggleWordStatus(index) {
-    game.roundLog[index].isCorrect = !game.roundLog[index].isCorrect;
-    renderReviewList();
-}
-
-function handleResultContinue() {
-    if (game.currentTeamIdx === 0) {
-        game.currentTeamIdx = 1;
-        prepareTurn();
-    } else {
-        showFinalWinner();
-    }
-}
-
-// --- ФИНАЛ ---
-function showFinalWinner() {
-    toScreen('screen-final');
-    const t1 = game.teams[0];
-    const t2 = game.teams[1];
-    
-    document.getElementById('final-stats').innerHTML = `
-        ${t1.name}: ${t1.score} БАЛЛОВ<br>
-        ${t2.name}: ${t2.score} БАЛЛОВ
-    `;
-
-    let winnerText = "";
-    if (t1.score > t2.score) winnerText = `🏆 ${t1.name}`;
-    else if (t2.score > t1.score) winnerText = `🏆 ${t2.name}`;
-    else winnerText = "🤝 НИЧЬЯ";
-    
-    document.getElementById('final-winner-name').innerText = winnerText;
-}
-
-// --- СИСТЕМА ---
-function toggleRules(show) {
-    document.getElementById('modal-rules').classList.toggle('active', show);
-}
-
+// // Утилита смены экранов
 function toScreen(id) {
-    document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+}
+
+// // 1. Вход в игру
+function joinGame(create) {
+    const name = document.getElementById('player-name').value;
+    const room = create ? Math.floor(1000 + Math.random() * 9000).toString() : document.getElementById('room-input').value;
+    if (!name || !room) return alert("Заполни поля!");
     
-    document.getElementById('game-header').style.visibility = (id === 'screen-game') ? 'visible' : 'hidden';
-    document.getElementById('menu-controls').style.display = (id === 'screen-start') ? 'block' : 'none';
+    currentRoom = room;
+    isHost = create;
+    socket.emit('alias-join', { roomId: room, playerName: name });
 }
 
-function confirmExit() {
-    if (confirm("Выйти в меню? Прогресс будет потерян.")) location.reload();
+// // 2. Обновление лобби
+socket.on('alias-update-lobby', data => {
+    toScreen('screen-lobby');
+    document.getElementById('room-id-display').innerText = currentRoom;
+    
+    const container = document.getElementById('lobby-teams');
+    container.innerHTML = "";
+    
+    [1, 2].forEach(tNum => {
+        const team = data.teams[tNum];
+        const pList = data.players.filter(p => p.team === tNum).map(p => p.name).join(", ");
+        container.innerHTML += `
+            <div class="team-ready-box">
+                <h4>${team.name}</h4>
+                <div style="font-weight:900">${pList || "Ожидание..."}</div>
+            </div>
+        `;
+    });
+
+    if (isHost) {
+        document.getElementById('host-ui').classList.remove('hidden');
+        document.getElementById('client-msg').classList.add('hidden');
+    }
+});
+
+// // 3. Запуск (Хост)
+function requestStart() {
+    const words = [...ALIAS_WORDS.common].sort(() => 0.5 - Math.random());
+    const t = document.getElementById('set-timer').value;
+    const r = document.getElementById('set-rounds').value;
+    socket.emit('alias-start', { roomId: currentRoom, words, timer: t, maxRounds: r });
 }
 
-// Свайпы
+// // 4. Подготовка
+socket.on('alias-prep-screen', d => {
+    toScreen('screen-prep');
+    document.getElementById('prep-team-name').innerText = d.teamName;
+    document.getElementById('prep-player-name').innerText = d.playerName;
+});
+
+// // 5. Игровой цикл
+socket.on('alias-new-turn', d => {
+    toScreen('screen-game');
+    const wordEl = document.getElementById('word-text');
+    const roleEl = document.getElementById('role-text');
+    const btns = document.getElementById('game-btns');
+    
+    // // Свайпать/жать кнопки может один случайный игрок из ПРОТИВОПОЛОЖНОЙ команды
+    canControl = d.isSwiper;
+    btns.classList.toggle('hidden', !canControl);
+
+    if (d.activePlayerId === socket.id) {
+        wordEl.innerText = d.word;
+        roleEl.innerText = "ОБЪЯСНЯЙ СЛОВО!";
+    } else if (canControl) {
+        wordEl.innerText = "СЛУШАЙ ВНИМАТЕЛЬНО";
+        roleEl.innerText = "ТЫ УГАДЫВАЕШЬ (ЖМИ/СВАЙПАЙ)";
+    } else {
+        wordEl.innerText = "ЖДЕМ...";
+        roleEl.innerText = "Смотри за игрой";
+    }
+});
+
+// // 6. Действия (Кнопки или Свайп)
+function handleAction(isOk) {
+    if (!canControl) return;
+    socket.emit('alias-action', { roomId: currentRoom, isCorrect: isOk });
+}
+
+// // Логика Свайпа
 let startX = 0;
-const card = document.getElementById('main-card');
-card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; card.style.transition = 'none'; }, {passive:true});
+const card = document.getElementById('word-card');
+card.addEventListener('touchstart', e => { if(canControl) startX = e.touches[0].clientX; });
 card.addEventListener('touchmove', e => {
+    if(!canControl) return;
     let x = e.touches[0].clientX - startX;
-    card.style.transform = `translateX(${x}px) rotate(${x/25}deg)`;
-}, {passive:true});
+    card.style.transform = `translateX(${x}px) rotate(${x/15}deg)`;
+});
 card.addEventListener('touchend', e => {
+    if(!canControl) return;
     let x = e.changedTouches[0].clientX - startX;
-    if (x > 110) handleWord(true);
-    else if (x < -110) handleWord(false);
-    else { card.style.transition = '0.2s'; card.style.transform = 'none'; }
+    if (Math.abs(x) > 100) handleAction(x > 0);
+    card.style.transform = "";
+});
+
+// // 7. Таймер и очки
+socket.on('alias-timer-tick', d => {
+    const m = Math.floor(d.timeLeft / 60);
+    const s = d.timeLeft % 60;
+    document.getElementById('timer-val').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+});
+socket.on('alias-update-score', d => document.getElementById('score-val').innerText = d.score);
+
+// // 8. Финал
+socket.on('alias-game-over', d => {
+    toScreen('screen-results');
+    document.getElementById('results-list').innerHTML = `
+        <div class="team-ready-box">🏆 ПОБЕДА: ${d.winner}</div>
+        <p style="font-weight:900">${d.team1Name}: ${d.team1Score}</p>
+        <p style="font-weight:900">${d.team2Name}: ${d.team2Score}</p>
+    `;
 });
