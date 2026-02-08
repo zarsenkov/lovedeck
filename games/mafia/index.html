@@ -2,196 +2,143 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MAFIA NOIR</title>
-    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MAFIA ULTIMATE | Professional Host Tool</title>
+    <link rel="stylesheet" href="mafia.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
     <style>
-        :root { --red: #8b0000; --bg: #1a1a1a; --paper: #d9d9d9; }
-        body { margin: 0; font-family: 'Special Elite', cursive; background: var(--bg); color: var(--paper); height: 100dvh; overflow: hidden; }
-        
-        .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; padding: 20px; box-sizing: border-box; }
-        .screen.active { display: flex; }
-
-        .btn { background: var(--paper); color: black; border: none; padding: 15px 30px; font-family: inherit; font-size: 1.2rem; cursor: pointer; border-radius: 5px; text-transform: uppercase; margin: 10px 0; width: 100%; max-width: 300px; }
-        .btn-red { background: var(--red); color: white; }
-
-        input { background: transparent; border: 2px solid var(--paper); color: var(--paper); padding: 15px; font-family: inherit; font-size: 1.2rem; border-radius: 5px; width: 100%; max-width: 300px; box-sizing: border-box; text-align: center; }
-
-        /* Эстетика карточек */
-        .role-card { background: var(--paper); color: black; width: 250px; height: 350px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-2deg); box-shadow: 10px 10px 0px var(--red); }
-        .role-name { font-size: 2.5rem; margin: 0; color: var(--red); }
-
-        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; }
-        .player-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--paper); color: var(--paper); padding: 15px; border-radius: 5px; text-align: center; cursor: pointer; }
-        .player-btn.dead { opacity: 0.3; text-decoration: line-through; pointer-events: none; }
-
-        .night-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .night-overlay.active { display: flex; }
-
-        .status-bar { border-bottom: 2px solid var(--red); width: 100%; padding: 10px; text-align: center; font-size: 1.2rem; margin-bottom: 20px; }
-        
-        .back-btn { position: fixed; top: 10px; left: 10px; color: var(--paper); font-size: 1.5rem; z-index: 100; }
+        /* Дополнительный стиль для кнопки онлайн-режима */
+        .online-trigger {
+            background: transparent;
+            border: 1px solid var(--red);
+            color: var(--red);
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        /* Эффект при наведении на кнопку онлайн-режима */
+        .online-trigger:hover {
+            background: rgba(255, 0, 51, 0.1);
+        }
     </style>
 </head>
 <body>
+    <div class="noir-overlay"></div>
+    
+    <div class="app-container">
+        <section class="page active" id="setupScreen">
+            <header class="top-bar">
+                <button class="icon-btn" onclick="window.location.href='../../index.html'"><i class="fas fa-chevron-left"></i></button>
+                <div class="brand">MAFIA ULTIMATE</div>
+                <div style="width:40px"></div>
+            </header>
 
-    <a href="https://lovecouple.ru" class="back-btn"><i class="fas fa-times"></i></a>
+            <div class="setup-scroll">
+                <button class="online-trigger" onclick="window.location.href='./online/index.html'">
+                    <i class="fas fa-globe"></i> ИГРАТЬ ПО СЕТИ (ONLINE)
+                </button>
 
-    <!-- ВХОД -->
-    <div id="screen-login" class="screen active">
-        <h1 style="font-size: 4rem; color: var(--red); margin-bottom: 0;">MAFIA</h1>
-        <p style="margin-top: 0; letter-spacing: 5px;">NOIR EDITION</p>
-        <input type="text" id="username" placeholder="ИМЯ" maxlength="12">
-        <button class="btn" onclick="createRoom()">СОЗДАТЬ ДЕЛО</button>
-        <input type="text" id="room-input" placeholder="КОД ДЕЛА" style="margin-top: 20px;">
-        <button class="btn btn-red" onclick="joinRoom()">ВСТУПИТЬ</button>
-    </div>
+                <div class="setting-item">
+                    <div class="label-row">КОЛИЧЕСТВО ИГРОКОВ: <b id="playerCountLabel">6</b></div>
+                    <input type="range" id="playerRange" min="4" max="16" value="6" oninput="initPlayerInputs()">
+                </div>
 
-    <!-- ЛОББИ -->
-    <div id="screen-lobby" class="screen">
-        <div class="status-bar">ДЕЛО № <span id="room-id">-----</span></div>
-        <h3>ПОДОЗРЕВАЕМЫЕ:</h3>
-        <div id="player-list" style="flex-grow: 1;"></div>
-        <button id="start-btn" class="btn btn-red" onclick="startGame()" style="display: none;">НАЧАТЬ СЛЕДСТВИЕ</button>
-    </div>
+                <div class="label-row">ИМЕНА ИГРОКОВ:</div>
+                <div id="playerInputsGrid" class="names-grid"></div>
 
-    <!-- РОЛЬ -->
-    <div id="screen-reveal" class="screen">
-        <h2>ВАША РОЛЬ В ЭТОМ ГОРОДЕ:</h2>
-        <div class="role-card">
-            <i class="fas fa-fingerprint" style="font-size: 3rem; margin-bottom: 20px;"></i>
-            <h2 id="role-display" class="role-name">...</h2>
-            <p id="role-desc" style="text-align: center; padding: 20px;">Загрузка...</p>
-        </div>
-        <p style="margin-top: 30px; animation: pulse 1s infinite alternate;">ГОРОД ЗАСЫПАЕТ...</p>
-    </div>
+                <div class="label-row" style="margin-top:20px">АКТИВНЫЕ РОЛИ:</div>
+                <div class="roles-toggle-grid">
+                    <label class="role-check"><input type="checkbox" id="check-doctor" checked onchange="updateRolesPreview()"> <span>Доктор</span></label>
+                    <label class="role-check"><input type="checkbox" id="check-commissar" checked onchange="updateRolesPreview()"> <span>Комиссар</span></label>
+                    <label class="role-check"><input type="checkbox" id="check-prostitute" onchange="updateRolesPreview()"> <span>Путана</span></label>
+                    <label class="role-check"><input type="checkbox" id="check-maniac" onchange="updateRolesPreview()"> <span>Маньяк</span></label>
+                </div>
+                <div class="roles-preview" id="rolesGrid"></div>
+            </div>
 
-    <!-- ИГРА (НОЧЬ/ДЕНЬ) -->
-    <div id="screen-game" class="screen">
-        <div id="phase-title" class="status-bar">НОЧЬ</div>
-        <h3 id="action-instruction">Выберите цель:</h3>
-        <div id="game-player-grid" class="player-grid"></div>
-    </div>
+            <button class="action-btn red" onclick="startDistribution()">К РАЗДАЧЕ РОЛЕЙ</button>
+        </section>
 
-    <!-- РЕЗУЛЬТАТ -->
-    <div id="screen-over" class="screen">
-        <h1 id="winner-text" style="font-size: 3rem; color: var(--red);">...</h1>
-        <button class="btn" onclick="location.reload()">ВЕРНУТЬСЯ</button>
-    </div>
+        <section class="page" id="distributeScreen">
+            <div class="card-area">
+                <div class="player-num" id="distributeName">ИМЯ</div>
+                <div class="flip-card" onclick="toggleCard()"> 
+                    <div class="card-inner" id="cardInner">
+                        <div class="card-front">
+                            <div class="eye-icon"><i class="fas fa-mask"></i></div>
+                            <span>УЗНАТЬ РОЛЬ</span>
+                        </div>
+                        <div class="card-back">
+                            <div id="roleIcon" class="role-icon"></div>
+                            <h2 id="roleTitle">РОЛЬ</h2>
+                            <p id="roleDesc"></p>
+                        </div>
+                    </div>
+                </div>
+                <button id="nextPlayerBtn" class="action-btn red" style="display:none; margin-top: 20px;" onclick="nextPlayer(event)">СЛЕДУЮЩИЙ ИГРОК</button>
+            </div>
+        </section>
 
-    <!-- ОВЕРЛЕЙ НОЧИ -->
-    <div id="night-overlay" class="night-overlay">
-        <i class="fas fa-moon" style="font-size: 5rem; color: #fff;"></i>
-        <h2 style="color: white; margin-top: 20px;">ГОРОД СПИТ</h2>
-        <p id="night-msg" style="color: #666;">Ждем других игроков...</p>
+        <section class="page" id="nightScreen">
+            <h2 class="logo-small">НОЧНОЙ СЦЕНАРИЙ</h2>
+            <div class="night-scroll" id="nightActionList"></div>
+            <button class="action-btn red" onclick="processNight()">ГОРОД ПРОСЫПАЕТСЯ</button>
+        </section>
+
+        <section class="page" id="morningScreen">
+            <div class="center-content">
+                <div class="script-tag">ГОЛОС ВЕДУЩЕГО</div>
+                <div class="summary-box">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <p id="morningReport" class="report-text"></p>
+                </div>
+                <button class="action-btn" onclick="startDay()">ПЕРЕЙТИ К ОБСУЖДЕНИЮ</button>
+            </div>
+        </section>
+
+        <section class="page" id="dayScreen">
+            <div class="day-header">
+                <div class="timer-box" id="dayTimer">60</div>
+                <p id="timerLabel">ВРЕМЯ ИГРОКА</p>
+                <div class="timer-controls" style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
+                    <button id="playPauseBtn" class="timer-trigger" onclick="toggleTimer()">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="timer-trigger" onclick="nextSpeaker()">СЛЕДУЮЩИЙ</button>
+                </div>
+            </div>
+            <div class="voting-grid" id="dayPlayerList"></div>
+            <button class="action-btn red" onclick="confirmVote()">ВЫГНАТЬ ВЫБРАННОГО</button>
+        </section>
+
+        <section class="page" id="finalScreen">
+            <div class="center-content">
+                <div id="winIcon" class="giant-icon"></div>
+                <h2 id="winText">ПОБЕДА</h2>
+                <button class="action-btn red" onclick="location.reload()" style="margin-top:30px">В ГЛАВНОЕ МЕНЮ</button>
+            </div>
+        </section>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script>
-        const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ['websocket', 'polling'] });
-        let myId, currentRoomId, myRole, myStatus = 'alive';
+    <script src="mafia.js"></script>
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        function createRoom() {
-            const name = document.getElementById('username').value.trim();
-            if (name) socket.emit('mafia_create', { playerName: name });
-        }
-
-        function joinRoom() {
-            const name = document.getElementById('username').value.trim();
-            const code = document.getElementById('room-input').value.trim().toUpperCase();
-            if (name && code) socket.emit('mafia_join', { roomId: code, playerName: name });
-        }
-
-        function startGame() {
-            socket.emit('mafia_start', currentRoomId);
-        }
-
-        socket.on('mafia_created', (data) => {
-            currentRoomId = data.roomId;
-            document.getElementById('room-id').innerText = currentRoomId;
-            showScreen('screen-lobby');
-        });
-
-        socket.on('mafia_update_lobby', (room) => {
-            const list = document.getElementById('player-list');
-            list.innerHTML = room.players.map(p => `<div>• ${p.name} ${p.id === socket.id ? '(ВЫ)' : ''}</div>`).join('');
-            if (room.players[0].id === socket.id) document.getElementById('start-btn').style.display = 'block';
-        });
-
-        socket.on('mafia_role_reveal', (room) => {
-            const me = room.players.find(p => p.id === socket.id);
-            myRole = me.role;
-            const roles = {
-                'mafia': { name: 'МАФИЯ', desc: 'Ваша цель - устранить всех мирных жителей.' },
-                'doctor': { name: 'ДОКТОР', desc: 'Каждую ночь вы можете спасти одного человека.' },
-                'sheriff': { name: 'ШЕРИФ', desc: 'Проверяйте подозреваемых на принадлежность к мафии.' },
-                'citizen': { name: 'МИРНЫЙ', desc: 'Найдите мафию и выживите.' }
-            };
-            document.getElementById('role-display').innerText = roles[myRole].name;
-            document.getElementById('role-desc').innerText = roles[myRole].desc;
-            showScreen('screen-reveal');
-        });
-
-        socket.on('mafia_night_start', ({ players }) => {
-            showScreen('screen-game');
-            document.getElementById('phase-title').innerText = "НОЧЬ";
-            document.getElementById('night-overlay').classList.add('active');
-            
-            if (myRole === 'mafia' || myRole === 'doctor' || myRole === 'sheriff') {
-                document.getElementById('night-overlay').classList.remove('active');
-                renderPlayers(players, 'night');
-            }
-        });
-
-        socket.on('mafia_day_start', ({ deadId, players }) => {
-            document.getElementById('night-overlay').classList.remove('active');
-            showScreen('screen-game');
-            document.getElementById('phase-title').innerText = "ДЕНЬ / ГОЛОСОВАНИЕ";
-            
-            if (deadId) {
-                const victim = players.find(p => p.id === deadId);
-                alert(victim.id === socket.id ? "ВАС УБИЛИ!" : "УБИТ ИГРОК: " + victim.name);
-                if (victim.id === socket.id) myStatus = 'dead';
-            } else {
-                alert("НОЧЬ ПРОШЛА СПОКОЙНО");
-            }
-            
-            renderPlayers(players, 'vote');
-        });
-
-        socket.on('mafia_sheriff_result', ({ name, isMafia }) => {
-            alert(`Следствие: ${name} — ${isMafia ? 'МАФИЯ!' : 'Чист.'}`);
-        });
-
-        socket.on('mafia_game_over', (msg) => {
-            showScreen('screen-over');
-            document.getElementById('winner-text').innerText = msg;
-        });
-
-        function renderPlayers(players, context) {
-            const grid = document.getElementById('game-player-grid');
-            grid.innerHTML = players.map(p => {
-                if (p.id === socket.id && context === 'night') return ''; // Нельзя ходить в себя ночью (упрощенно)
-                return `<div class="player-btn ${p.isAlive ? '' : 'dead'}" onclick="handleAction('${p.id}', '${context}')">${p.name}</div>`;
-            }).join('');
-        }
-
-        function handleAction(targetId, context) {
-            if (context === 'night') {
-                const action = myRole === 'mafia' ? 'kill' : (myRole === 'doctor' ? 'heal' : 'check');
-                socket.emit('mafia_night_action', { roomId: currentRoomId, targetId, action });
-                document.getElementById('night-overlay').classList.add('active');
-            } else {
-                if (myStatus === 'dead') return alert("МЕРТВЫЕ НЕ ГОЛОСУЮТ");
-                socket.emit('mafia_vote', { roomId: currentRoomId, targetId });
-            }
-        }
-    </script>
+    <div id="gameModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:100; align-items:center; justify-content:center;">
+        <div class="modal-card" style="padding:30px; text-align:center; max-width:80%;">
+            <div id="modalIcon" style="font-size:50px; color:var(--red); margin-bottom:15px;"></div>
+            <div id="modalText" style="font-size:14px; line-height:1.5;"></div>
+            <button class="action-btn red" onclick="closeModal()" style="margin-top:20px;">ОК</button>
+        </div>
+    </div>
 </body>
 </html>
