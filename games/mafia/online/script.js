@@ -1,5 +1,5 @@
 // Глобальное подключение к сокету
-const socket = io(); 
+const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
 
 // Локальное состояние клиента
 let gameState = {
