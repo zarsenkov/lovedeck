@@ -2,10 +2,10 @@
     const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ["polling", "websocket"] });
     let myName, myRoom, isMyTurn = false, timerInterval, allPlayers = [];
 
-    // Функция переключения экранов
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+        const target = document.getElementById(id);
+        if(target) target.classList.add('active');
     }
 
     function getCard() {
@@ -14,7 +14,7 @@
         let word = "СЛОВО";
         if (window.cards) {
             const c = window.cards[Math.floor(Math.random()*window.cards.length)];
-            word = (typeof c === 'object') ? c.word : c;
+            word = (typeof c === 'object') ? (c.word || "СЛОВО") : c;
         }
         return { word: word.toUpperCase(), letters: lets };
     }
@@ -32,7 +32,7 @@
     socket.on('update-lobby', (data) => {
         allPlayers = data.players;
         const list = document.getElementById('players-list');
-        list.innerHTML = data.players.map(p => `<li>${p.name}: ${p.score}</li>`).join('');
+        list.innerHTML = data.players.map(p => `<li style="display:flex; justify-content:space-between;"><span>${p.name}</span><b>${p.score}</b></li>`).join('');
         
         if(data.players[0].id === socket.id && !data.gameStarted) {
             document.getElementById('host-controls').style.display = 'block';
@@ -75,7 +75,7 @@
     window.showScoreModal = function() {
         const container = document.getElementById('winner-buttons');
         container.innerHTML = allPlayers.filter(p => p.id !== socket.id)
-            .map(p => `<button class="btn-zinc" style="margin-bottom:5px;" onclick="givePoint('${p.name}')">${p.name}</button>`).join('');
+            .map(p => `<button class="btn-zinc" style="margin-bottom:5px; box-shadow:2px 2px 0 #000;" onclick="givePoint('${p.name}')">${p.name}</button>`).join('');
         document.getElementById('score-modal').style.display = 'flex';
     };
 
@@ -101,6 +101,6 @@
     socket.on('game-over', (data) => {
         showScreen('result-screen');
         const sorted = [...data.players].sort((a,b) => b.score - a.score);
-        document.getElementById('final-stats').innerHTML = sorted.map(p => `<p>${p.name}: ${p.score}</p>`).join('');
+        document.getElementById('final-stats').innerHTML = sorted.map(p => `<div style="display:flex; justify-content:space-between;"><span>${p.name}</span><b>${p.score}</b></div>`).join('');
     });
 })();
