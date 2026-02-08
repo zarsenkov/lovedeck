@@ -13,6 +13,15 @@ let myData = {
 // Таймер для синхронизации
 let countdown;
 
+// Функция переключения экранов (скрывает все, показывает нужный)
+function toScreen(id) {
+    // Убираем класс active у всех секций
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    // Добавляем active нужной секции
+    const target = document.getElementById(id);
+    if (target) target.classList.add('active');
+}
+
 // Функция: Вход в комнату (вызывается кнопкой "Войти")
 function joinGame() {
     const name = document.getElementById('player-name').value.trim();
