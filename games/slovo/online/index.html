@@ -4,79 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ZINE ONLINE</title>
-    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
-        <button class="nav-btn back-btn" onclick="window.location.href='../index.html'">←</button>
+        <a href="../index.html" class="zine-back-button">← НАЗАД</a>
 
         <section id="setup-screen" class="screen active">
-            <h1 class="main-title">ZINE<span>ONLINE</span></h1>
-            <div class="card-glass">
-                <input type="text" id="player-name" class="joy-input" placeholder="ТВОЙ НИК">
-                <input type="text" id="room-id" class="joy-input" placeholder="НОМЕР КОМНАТЫ">
-                <button onclick="joinLobby()" class="primary-btn">ВОЙТИ В ИГРУ</button>
-            </div>
+            <h1>ZINE_ON</h1>
+            <div class="rules-box">ВВЕДИ ДАННЫЕ ДЛЯ КОМНАТЫ</div>
+            <input type="text" id="player-name" placeholder="ТВОЕ ИМЯ">
+            <input type="text" id="room-id" placeholder="НОМЕР КОМНАТЫ">
+            <button onclick="joinLobby()" class="btn-zinc">ВОЙТИ</button>
         </section>
 
         <section id="lobby-screen" class="screen">
-            <h2 class="main-title" style="font-size: 2rem;">ЛОББИ: <span id="room-display"></span></h2>
-            <div class="card-glass">
-                <div id="host-controls" style="display:none; margin-bottom: 20px;">
-                    <div class="setting-row">
-                        <span>КРУГОВ:</span>
-                        <input type="number" id="rounds-count" value="3" class="joy-input mini">
-                    </div>
-                    <div class="setting-row">
-                        <span>СЕКУНД:</span>
-                        <input type="number" id="timer-val" value="60" class="joy-input mini">
-                    </div>
-                </div>
-                <div class="players-list-wrapper">
-                    <strong>ИГРОКИ:</strong>
-                    <ul id="player-list"></ul>
-                </div>
+            <h2 id="room-display">ЛОББИ</h2>
+            <div id="host-controls" class="rules-box" style="display:none;">
+                <p>КРУГОВ: <input type="number" id="rounds-count" value="3" class="mini-input"></p>
+                <p>ТАЙМЕР: <input type="number" id="timer-val" value="60" class="mini-input"> сек</p>
             </div>
-            <button id="start-btn" onclick="requestStart()" class="primary-btn hidden">НАЧАТЬ ИГРУ</button>
+            <div class="rules-box">
+                <strong>ИГРОКИ:</strong>
+                <ul id="players-list"></ul>
+            </div>
+            <button id="start-btn" onclick="requestStart()" class="btn-zinc hidden">НАЧАТЬ ИГРУ</button>
         </section>
 
         <section id="game-screen" class="screen">
-            <div class="game-header">
-                <div id="role-banner">ОЖИДАНИЕ...</div>
-                <div class="timer-pill" id="timer-display">60</div>
+            <div id="timer">60</div>
+            <div id="role-banner" class="rules-box" style="text-align:center;">ОЖИДАНИЕ...</div>
+            
+            <div class="game-card">
+                <div class="letter-tag">БУКВЫ: <span id="target-letters">? ? ?</span></div>
+                <div id="current-word" class="word-display">---</div>
+            </div>
+
+            <div id="host-actions" style="display:none; flex-direction:column; gap:10px;">
+                <button onclick="showScoreModal()" class="btn-zinc" style="background:#26DE81">УГАДАЛИ!</button>
+                <button onclick="handleSkip()" class="btn-zinc" style="background:#ccc">ПРОПУСТИТЬ</button>
             </div>
             
-            <div class="word-card-main">
-                <div style="width: 100%;">
-                    <div class="letter-tag">БУКВЫ: <span id="target-letters">? ? ?</span></div>
-                    <div id="current-word">---</div>
-                </div>
-            </div>
-
-            <div id="host-action-controls" class="game-controls" style="display:none;">
-                <button onclick="handleSkip()" class="btn-skip">ПАС</button>
-                <button onclick="showScoreModal()" class="btn-win">УГАДАЛИ!</button>
-            </div>
-
-            <div id="guest-msg" class="card-glass" style="display:none; text-align:center;">
-                <p>ВЫ ОТГАДЫВАЕТЕ</p>
-                <p style="font-size: 0.8rem; opacity: 0.6;">Смотрите на буквы и слушайте ведущего</p>
+            <div id="guest-msg" class="rules-box" style="display:none; text-align:center;">
+                СЛУШАЙТЕ ВЕДУЩЕГО!
             </div>
         </section>
 
         <section id="result-screen" class="screen">
-            <h1 class="main-title">ФИНАЛ</h1>
-            <div class="card-glass" id="final-stats"></div>
-            <button onclick="location.reload()" class="primary-btn">НАЧАТЬ ЗАНОВО</button>
+            <h1>ФИНАЛ</h1>
+            <div class="rules-box" id="final-stats"></div>
+            <button onclick="location.reload()" class="btn-zinc">ЗАНОВО</button>
         </section>
     </div>
 
     <div id="score-modal" class="modal-overlay" style="display:none;">
-        <div class="modal-content card-glass">
-            <h3>КТО УГАДАЛ?</h3>
-            <div id="potential-winners"></div>
-            <button onclick="closeModal()" class="btn-skip" style="margin-top:15px; width:100%;">ОТМЕНА</button>
+        <div class="modal-content rules-box">
+            <p>КТО УГАДАЛ?</p>
+            <div id="winner-buttons"></div>
+            <button onclick="closeModal()" class="btn-zinc" style="background:#ccc; margin-top:10px; width:100%;">ОТМЕНА</button>
         </div>
     </div>
 
