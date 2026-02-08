@@ -3,62 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>SPY ONLINE | NEON</title>
-    <link rel="stylesheet" href="../style.css">
+    <title>SPY NEON ONLINE</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div class="spy-app">
-       
         <div class="back-link" onclick="location.href='../index.html'">← ВЫЙТИ</div>
 
-        <section class="screen active" id="auth-screen">
-            <h1 class="glitch-title">SPY<span> ONLINE</span></h1>
+        <section class="screen active" id="screen-auth">
+            <h1 class="glitch-title">SPY<span>ONLINE</span></h1>
             <div class="glass-card">
                 <input type="text" id="player-name" class="neon-input" placeholder="ТВОЕ ИМЯ" maxlength="12">
-                <input type="text" id="room-id" class="neon-input" placeholder="ID КОМНАТЫ (4 ЦИФРЫ)" maxlength="4">
+                <input type="text" id="room-id" class="neon-input" placeholder="ID КОМНАТЫ (4 ЦИФРЫ)">
                 <button class="neon-btn" onclick="joinGame()">ВОЙТИ В СЕТЬ</button>
             </div>
         </section>
 
-        <section class="screen" id="lobby-screen">
-            <h2 class="screen-title">КОМНАТА: <span id="display-room-id" style="color: var(--neon-cyan)"></span></h2>
+        <section class="screen" id="screen-lobby">
+            <h2 class="screen-title">КОМНАТА: <span id="display-room-id" class="neon-text">0000</span></h2>
             <div class="glass-card">
-                <div class="players-list-header">АГЕНТЫ В СЕТИ:</div>
-                <div id="online-players-list" class="names-container"></div>
-                
-                <div id="host-controls" style="display: none; margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
-                    <div class="setting-row">
-                        <span>ШПИОНЫ</span>
-                        <div class="counter">
-                            <button onclick="changeOnlineVal('spies', -1)">-</button>
-                            <span id="online-spy-count">1</span>
-                            <button onclick="changeOnlineVal('spies', 1)">+</button>
-                        </div>
-                    </div>
-                    <button class="neon-btn" onclick="startOnlineGame()">ЗАПУСТИТЬ</button>
+                <div class="players-grid" id="lobby-players"></div>
+                <div id="host-panel" class="hidden">
+                    <button class="neon-btn" onclick="startGameRequest()">ЗАПУСТИТЬ ИГРУ</button>
                 </div>
-                
-                <div id="wait-message" style="text-align: center; opacity: 0.6; margin-top: 20px;">Ждем хоста...</div>
+                <p id="wait-msg" class="sub-text">Ждем, когда хост нажмет старт...</p>
             </div>
         </section>
 
-        <section class="screen" id="role-screen">
-            <div class="role-card-container">
-                <div class="glass-card role-card" onclick="this.classList.toggle('flipped')">
-                    <div class="card-front">ПОКАЗАТЬ РОЛЬ</div>
-                    <div class="card-back">
-                        <div id="role-text" class="role-name">...</div>
-                        <div id="location-text" class="location-name">...</div>
-                    </div>
+        <section class="screen" id="screen-role">
+            <div class="role-card-box" id="role-card" onclick="this.classList.toggle('flipped')">
+                <div class="card-side front">НАЖМИ ЧТОБЫ УЗНАТЬ РОЛЬ</div>
+                <div class="card-side back">
+                    <h2 id="my-role-name">...</h2>
+                    <p id="my-location-name">...</p>
                 </div>
             </div>
-            <p style="text-align: center; margin-top: 20px; opacity: 0.5;">НАЖМИ НА КАРТУ, ЧТОБЫ ПЕРЕВЕРНУТЬ</p>
+            <button class="neon-btn" id="ready-btn" onclick="confirmReady()">Я ОЗНАКОМИЛСЯ</button>
+            <p class="sub-text" id="ready-count">Ожидание игроков: 0/0</p>
+        </section>
+
+        <section class="screen" id="screen-game">
+            <div class="timer-box">
+                <div id="game-timer">05:00</div>
+                <p>ОБСУЖДАЙТЕ В DISCORD</p>
+            </div>
+            <div class="glass-card mini">
+                <p id="reminder-loc">ЛОКАЦИЯ: ???</p>
+            </div>
+        </section>
+
+        <section class="screen" id="screen-vote">
+            <h2 class="screen-title">КТО ШПИОН?</h2>
+            <div class="players-grid" id="vote-grid"></div>
+        </section>
+
+        <section class="screen" id="screen-results">
+            <h1 class="glitch-title">ИТО<span>ГИ</span></h1>
+            <div class="glass-card">
+                <h2 id="winner-text" class="winner-msg">...</h2>
+                <p>ЛОКАЦИЯ: <span id="res-location" class="neon-text">...</span></p>
+                <div id="vote-results-list"></div>
+            </div>
+            <button class="neon-btn" onclick="location.reload()">В МЕНЮ</button>
         </section>
     </div>
-
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="../script.js"></script> <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
