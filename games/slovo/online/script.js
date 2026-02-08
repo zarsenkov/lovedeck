@@ -11,27 +11,24 @@
 
     // 1. ФУНКЦИЯ ПОЛУЧЕНИЯ КАРТОЧКИ (Исправленная)
 function getCard() {
-    // Проверяем: window.words (из cards.js) или window.cards
-    const source = window.words || window.cards || [];
+        // Проверяем наличие массива в глобальном окне
+        if (window.words && window.words.length > 0) {
+            const randomIndex = Math.floor(Math.random() * window.words.length);
+            const word = window.words[randomIndex];
 
-    if (source.length > 0) {
-        const randomIndex = Math.floor(Math.random() * source.length);
-        const word = source[randomIndex];
-        
-        // Алфавит из cards.js или стандартный
-        const alpha = window.alphabet || "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
-        const lets = Array.from({length:3}, () => alpha[Math.floor(Math.random()*alpha.length)]).join(" ");
+            // Берем алфавит оттуда же или стандарт
+            const alpha = window.alphabet || "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+            const lets = Array.from({length:3}, () => alpha[Math.floor(Math.random()*alpha.length)]).join(" ");
 
-        return { 
-            word: word.toUpperCase(), 
-            letters: lets.toUpperCase() 
-        };
-    } else {
-        // Если мы здесь, значит cards.js всё еще не загрузился
-        console.error("Критическая ошибка: Массив слов не найден в системе.");
-        return { word: "НЕТ СЛОВ", letters: "4 0 4" };
+            return { 
+                word: word.toUpperCase(), 
+                letters: lets.toUpperCase() 
+            };
+        } else {
+            console.error("Файл cards.js в папке online не найден или пуст!");
+            return { word: "ОШИБКА ФАЙЛА", letters: "? ? ?" };
+        }
     }
-}
 
     // 2. ЛОГИКА ВХОДА
     window.joinLobby = function() {
