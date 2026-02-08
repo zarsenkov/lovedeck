@@ -71,15 +71,18 @@ socket.on('whoami-new-turn', (data) => {
     if(isMyTurn) {
         wordEl.innerText = "ПРИЛОЖИ КО ЛБУ";
         instrEl.innerText = "Ты угадываешь! Слушай друзей.";
-        controls.style.display = 'none'; // Угадывающий не нажимает кнопки сам (или можно включить)
+        controls.style.display = 'none'; 
     } else {
         wordEl.innerText = data.word;
         instrEl.innerText = "Объясняй игроку " + data.activePlayerName;
-        // Кнопки управления только у тех, кто видит слово (или только у одного)
-        controls.style.display = 'grid'; 
+        controls.style.display = 'grid';  
     }
     
-    startTimer(data.timer);
+    // ПРАВКА ТУТ: Запускаем таймер только если ход ПЕРЕШЕЛ к новому человеку
+    // Если игрок просто угадал слово и получил новое в рамках того же времени — таймер не трогаем
+    if (data.isNewPlayer) {
+        startTimer(data.timer);
+    }
 });
 
 function sendAction(isCorrect) {
