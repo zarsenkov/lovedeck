@@ -1,100 +1,70 @@
-/* --- СТИЛИ ДЛЯ ИНПУТОВ (АВТОРИЗАЦИЯ) --- */
-
-/* // Основной дизайн поля ввода */
-.joy-input {
-    width: 100%;
-    padding: 16px 20px;
-    margin-bottom: 15px;
-    border: 2px solid rgba(0, 0, 0, 0.05); /* // Едва заметная граница */
-    border-radius: 20px;                   /* // Мягкое скругление */
-    background: rgba(255, 255, 255, 0.7);  /* // Эффект матового стекла */
-    color: var(--black);
-    font-size: 1rem;
-    font-weight: 500;
-    font-family: inherit;
-    outline: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-sizing: border-box;
-    backdrop-filter: blur(5px);            /* // Размытие фона под инпутом */
-}
-
-/* // Анимация при наведении или нажатии на поле */
-.joy-input:focus {
-    border-color: var(--purple);
-    background: #ffffff;
-    box-shadow: 0 8px 20px rgba(162, 89, 255, 0.15);
-    transform: translateY(-2px);           /* // Легкий подъем при фокусе */
-}
-
-/* // Цвет текста-подсказки */
-.joy-input::placeholder {
-    color: rgba(0, 0, 0, 0.3);
-}
-
-/* --- СТИЛИ ДЛЯ КНОПОК И ГРУПП --- */
-
-/* // Контейнер для кнопок Создать/Войти */
-.btn-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    margin-top: 10px;
-}
-
-/* // Стили для кнопки "ВОЙТИ" (Вторичная) */
-.btn-secondary {
-    background: white !important;
-    border: 2px solid var(--purple) !important;
-    color: var(--purple) !important;
-    box-shadow: 0 4px 10px rgba(162, 89, 255, 0.1) !important;
-}
-
-/* // Эффект при нажатии на вторичную кнопку */
-.btn-secondary:active {
-    background: var(--purple) !important;
-    color: white !important;
-    transform: scale(0.98);
-}
-
-/* --- ОНЛАЙН ЛОББИ И КОМАНДЫ --- */
-
-/* // Контейнер команды в лобби */
-.team-box {
-    margin-bottom: 15px;
-    padding: 15px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.5);
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-}
-
-/* // Заголовок команды */
-.team-box h4 {
-    margin: 0 0 8px 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.75rem;
-    opacity: 0.6;
-}
-
-/* // --- СИСТЕМНЫЕ ПРАВКИ ДЛЯ РАБОТЫ ОНЛАЙН (НЕ МЕНЯЮТ ДИЗАЙН) --- */
+/* // ПЕРЕМЕННЫЕ ИЗ ТВОЕГО ОФФЛАЙН СТИЛЯ (style 26) */
 :root {
-    --purple: #a259ff;
-    --mint: #27ae60;
-    --bg: #f0f2f5;
-    --black: #2d3436;
+    --bg: #F0F4F8; --white: #FFFFFF; --mint: #B2F5EA; --pink: #FED7E2;
+    --yellow: #FEFCBF; --purple: #E9D8FD; --blue: #BEE3F8; --black: #2D3748; 
+    --accent: #667EEA; --shadow: 6px 6px 0px #2D3748;
 }
 
-body { margin: 0; background: var(--bg); font-family: sans-serif; height: 100vh; overflow: hidden; }
+/* // Базовые настройки из оригинала */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--black); height: 100dvh; width: 100%; overflow: hidden; position: fixed; }
 
-.screen { display: none; flex-direction: column; height: 100%; padding: 20px; box-sizing: border-box; }
-.screen.active { display: flex; }
+.app-shell { height: 100%; display: flex; flex-direction: column; padding: 20px; position: relative; max-width: 500px; margin: 0 auto; }
+
+/* // Навигация (кнопки с тенями) */
+.nav-btns { display: flex; justify-content: space-between; margin-bottom: 20px; z-index: 100; }
+.home-btn, .rules-btn { 
+    width: 45px; height: 45px; background: var(--blue); border: 3px solid var(--black); 
+    border-radius: 12px; display: flex; align-items: center; justify-content: center; 
+    box-shadow: 4px 4px 0 var(--black); cursor: pointer; font-weight: 900; 
+}
+.rules-btn { background: var(--yellow); }
+
+/* // ЛОГИКА ЭКРАНОВ */
+.screen { display: none; flex-direction: column; flex-grow: 1; }
+.screen.active { display: flex; animation: popIn 0.3s ease-out; }
+@keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 .hidden { display: none !important; }
 
-.btn-main { background: var(--purple); color: white; border: none; padding: 18px; border-radius: 20px; font-weight: bold; width: 100%; cursor: pointer; }
-.word-card { flex: 1; background: white; border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-.game-footer { display: flex; gap: 10px; padding-bottom: 20px; }
-.btn-action { flex: 1; padding: 20px; border: none; border-radius: 20px; color: white; font-weight: bold; }
-.btn-skip { background: var(--purple); }
-.btn-check { background: var(--mint); }
+/* // ТИТЛЫ И ИНПУТЫ (под твой стиль) */
+.pop-title { font-size: 3.5rem; font-weight: 900; text-align: center; margin: 10px 0; letter-spacing: -2px; }
+.pop-title span { color: var(--accent); }
+
+.joy-input {
+    width: 100%; padding: 18px; margin-bottom: 15px;
+    border: 3px solid var(--black); border-radius: 15px;
+    background: var(--white); font-weight: 800;
+    box-shadow: 4px 4px 0 var(--black); outline: none;
+}
+
+/* // КНОПКИ (Neo-Brutalism) */
+.btn-pop-main { 
+    background: var(--accent); color: white; border: 4px solid var(--black); 
+    padding: 18px; border-radius: 20px; font-weight: 900; font-size: 1.2rem; 
+    box-shadow: var(--shadow); cursor: pointer; margin-top: 10px;
+}
+.btn-pop-main:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0 var(--black); }
+
+/* // КАРТОЧКА */
+.word-card { 
+    background: var(--white); border: 4px solid var(--black); border-radius: 30px; 
+    box-shadow: 10px 10px 0 var(--black); height: 300px; display: flex; 
+    align-items: center; justify-content: center; margin: auto 0;
+}
+#word-display { font-size: 2.3rem; font-weight: 900; text-transform: uppercase; text-align: center; }
+
+/* // ЛОББИ (Командные боксы) */
+.team-ready-box { 
+    background: var(--white); border: 4px solid var(--black); padding: 15px; 
+    border-radius: 20px; box-shadow: 6px 6px 0 var(--black); margin-bottom: 15px; 
+}
+.team-ready-box h4 { font-size: 0.8rem; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+
+/* // ИГРОВЫЕ ЭЛЕМЕНТЫ */
+.game-header { display: flex; justify-content: space-between; padding: 15px 0; }
+.timer-bubble { background: var(--yellow); border: 3px solid var(--black); padding: 8px 15px; border-radius: 30px; font-weight: 900; box-shadow: 4px 4px 0 var(--black); }
+.score-pill { background: var(--mint); border: 3px solid var(--black); padding: 8px 15px; border-radius: 30px; font-weight: 900; box-shadow: 4px 4px 0 var(--black); }
+
+.game-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+.btn-skip { background: #FEB2B2; border: 3px solid var(--black); padding: 15px; border-radius: 15px; font-weight: 900; box-shadow: 4px 4px 0 var(--black); }
+.btn-check { background: var(--mint); border: 3px solid var(--black); padding: 15px; border-radius: 15px; font-weight: 900; box-shadow: 4px 4px 0 var(--black); }
