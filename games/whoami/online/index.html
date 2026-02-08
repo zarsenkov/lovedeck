@@ -10,16 +10,20 @@
 <body>
     <div class="app-container">
         
-        <section class="screen active" id="join-screen">
-            <h1 class="main-title">КТО<span>Я?</span></h1>
-            
-            <div class="card-glass">
-                <input type="text" id="player-name" class="joy-input" placeholder="Твое имя">
-                <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
-                <button class="primary-btn" onclick="joinGame()">ВОЙТИ</button>
-                <button class="back-btn-menu" onclick="window.location.href='/index.html'">← В ГЛАВНОЕ МЕНЮ</button>
-            </div>
-        </section>
+<section class="screen active" id="join-screen">
+    <div class="welcome-header">
+        <h1 class="main-title">КТО<span>Я?</span></h1>
+    </div>
+    
+    <div class="card-glass">
+        <input type="text" id="player-name" class="joy-input" placeholder="Твое имя">
+        <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
+        
+        <button class="primary-btn" onclick="joinGame()">ВОЙТИ</button>
+        
+        <button class="back-btn-menu" onclick="window.location.href='/index.html'">← В ГЛАВНОЕ МЕНЮ</button>
+    </div>
+</section>
 
         <section class="screen" id="lobby-screen">
             <div class="room-header-row">
