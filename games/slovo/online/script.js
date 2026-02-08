@@ -1,4 +1,5 @@
 (function() {
+    // Подключаемся к серверу
     const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ["polling", "websocket"] });
     let myName, myRoom, isMyTurn = false, timerInterval, allPlayers = [];
 
@@ -8,33 +9,29 @@
         if(target) target.classList.add('active');
     }
 
-// ИСПРАВЛЕННАЯ ФУНКЦИЯ: берет данные из ваших переменных words и alphabet
-function getCard() {
-        // Проверяем все возможные варианты названий
-        const source = window.words || window.cards; 
+    // 1. ФУНКЦИЯ ПОЛУЧЕНИЯ КАРТОЧКИ (Исправленная)
+    function getCard() {
+        let word = "СЛОВО"; 
+        let lets = "? ? ?";
 
-        if (source && source.length > 0) {
+        // Берем слова из cards.js (window.words)
+        const source = window.words || [];
+
+        if (source.length > 0) {
             const randomIndex = Math.floor(Math.random() * source.length);
-            const word = source[randomIndex];
-            
-            // Если в cards.js алфавит не определен, используем стандарт
-            const alphaSource = window.alphabet || "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
-            const alphaArray = alphaSource.split("");
-            let lets = [];
-            for (let i = 0; i < 3; i++) {
-                lets.push(alphaArray[Math.floor(Math.random() * alphaArray.length)]);
-            }
-
-            return { 
-                word: word.toUpperCase(), 
-                letters: lets.join(" ").toUpperCase() 
-            };
+            word = source[randomIndex];
         } else {
-            // Если мы здесь - файл реально не подгрузился
-            console.error("КРИТИЧЕСКАЯ ОШИБКА: Слова не найдены в window.words");
-            return { word: "ОШИБКА ПУТИ", letters: "4 0 4" };
+            word = "НЕТ СЛОВ";
         }
-    }
+
+        // Берем алфавит из cards.js или используем стандарт
+        const alphaStr = window.alphabet || "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+        const alphaArray = alphaStr.split("");
+        const randomLetters = [];
+        for (let i = 0; i < 3; i++) {
+            randomLetters.push(alphaArray[Math.floor(Math.random() * alphaArray.length)]);
+        }
+        lets = randomLetters.join(" ");
 
         return { 
             word: word.toUpperCase(), 
@@ -42,42 +39,58 @@ function getCard() {
         };
     }
 
+    // 2. ЛОГИКА ВХОДА
     window.joinLobby = function() {
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
         if(myName && myRoom) {
             socket.emit('join-room', { roomId: myRoom, playerName: myName });
             showScreen('lobby-screen');
-            document.getElementById('room-display').innerText = `КОМНАТА: ${myRoom}`;
+            const rd = document.getElementById('room-display');
+            if(rd) rd.innerText = "КОМНАТА: " + myRoom;
         }
     };
 
+    // 3. ОБНОВЛЕНИЕ ЛОББИ
     socket.on('update-lobby', (data) => {
         allPlayers = data.players;
         const list = document.getElementById('players-list');
-        list.innerHTML = data.players.map(p => `<li style="display:flex; justify-content:space-between;"><span>${p.name}</span><b>${p.score}</b></li>`).join('');
+        if(list) {
+            list.innerHTML = data.players.map(p => 
+                `<li style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #ccc;">
+                    <span>${p.name}</span><b>${p.score}</b>
+                </li>`).join('');
+        }
         
         if(data.players[0].id === socket.id && !data.gameStarted) {
-            document.getElementById('host-controls').style.display = 'block';
-            document.getElementById('start-btn').classList.remove('hidden');
+            const hc = document.getElementById('host-controls');
+            const sb = document.getElementById('start-btn');
+            if(hc) hc.style.display = 'block';
+            if(sb) sb.classList.remove('hidden');
         }
     });
 
     window.requestStart = function() {
+        const rc = document.getElementById('rounds-count');
+        const tv = document.getElementById('timer-val');
         socket.emit('start-game', { 
             roomId: myRoom, 
-            maxRounds: document.getElementById('rounds-count').value,
-            timer: document.getElementById('timer-val').value 
+            maxRounds: rc ? rc.value : 3,
+            timer: tv ? tv.value : 60
         });
     };
 
+    // 4. ИГРОВОЙ ПРОЦЕСС
     socket.on('turn-changed', (data) => {
         showScreen('game-screen');
         isMyTurn = (socket.id === data.activePlayerId);
         
-        document.getElementById('host-actions').style.display = isMyTurn ? 'flex' : 'none';
-        document.getElementById('guest-msg').style.display = isMyTurn ? 'none' : 'block';
-        document.getElementById('role-banner').innerText = isMyTurn ? "ТВОЙ ХОД (ОБЪЯСНЯЙ)" : `ВЕДЕТ: ${data.activePlayerName}`;
+        const ha = document.getElementById('host-actions');
+        const gm = document.getElementById('guest-msg');
+        if(ha) ha.style.display = isMyTurn ? 'flex' : 'none';
+        if(gm) gm.style.display = isMyTurn ? 'none' : 'block';
+        
+        document.getElementById('role-banner').innerText = isMyTurn ? "ТВОЙ ХОД (ОБЪЯСНЯЙ)" : "ВЕДЕТ: " + data.activePlayerName;
         
         if(isMyTurn) sendNewWord();
         startTimer(data.timer);
@@ -95,35 +108,50 @@ function getCard() {
         }
     });
 
+    // 5. ВЫБОР ПОБЕДИТЕЛЯ
     window.showScoreModal = function() {
         const container = document.getElementById('winner-buttons');
-        container.innerHTML = allPlayers.filter(p => p.id !== socket.id)
-            .map(p => `<button class="btn-zinc" style="margin-bottom:5px; box-shadow:2px 2px 0 #000;" onclick="givePoint('${p.name}')">${p.name}</button>`).join('');
-        document.getElementById('score-modal').style.display = 'flex';
+        if(container) {
+            container.innerHTML = allPlayers.filter(p => p.id !== socket.id)
+                .map(p => `<button class="btn-zinc" style="margin-bottom:5px;" onclick="givePoint('${p.name}')">${p.name}</button>`).join('');
+            document.getElementById('score-modal').style.display = 'flex';
+        }
     };
 
     window.givePoint = function(name) {
         socket.emit('add-point-to', { roomId: myRoom, targetName: name });
-        closeModal();
+        window.closeModal();
         socket.emit('switch-turn', myRoom);
     };
 
-    window.closeModal = () => document.getElementById('score-modal').style.display = 'none';
+    window.closeModal = () => {
+        document.getElementById('score-modal').style.display = 'none';
+    };
+
     window.handleSkip = () => socket.emit('switch-turn', myRoom);
 
     function startTimer(sec) {
         clearInterval(timerInterval);
         let left = sec;
         const el = document.getElementById('timer');
+        if(!el) return;
+        el.innerText = left;
         timerInterval = setInterval(() => {
-            left--; el.innerText = left;
-            if(left <= 0) { clearInterval(timerInterval); if(isMyTurn) socket.emit('switch-turn', myRoom); }
+            left--;
+            el.innerText = left;
+            if(left <= 0) { 
+                clearInterval(timerInterval); 
+                if(isMyTurn) socket.emit('switch-turn', myRoom); 
+            }
         }, 1000);
     }
 
     socket.on('game-over', (data) => {
         showScreen('result-screen');
-        const sorted = [...data.players].sort((a,b) => b.score - a.score);
-        document.getElementById('final-stats').innerHTML = sorted.map(p => `<div style="display:flex; justify-content:space-between;"><span>${p.name}</span><b>${p.score}</b></div>`).join('');
+        const fs = document.getElementById('final-stats');
+        if(fs) {
+            const sorted = [...data.players].sort((a,b) => b.score - a.score);
+            fs.innerHTML = sorted.map(p => `<div>${p.name}: ${p.score}</div>`).join('');
+        }
     });
 })();
