@@ -1,6 +1,6 @@
 (function() {
     // Укажи здесь свою ссылку на сервер Amvera
-    const socket = io("https://your-app-link.amvera.io", { transports: ["polling"] });
+    const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ["polling"] });
 
     let myName, myRoom, isMyTurn = false, gamePool = [], timerInterval;
     let categoriesData = {}, selectedCats = [];
