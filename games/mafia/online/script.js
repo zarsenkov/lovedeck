@@ -1,86 +1,84 @@
-// Глобальное подключение к сокету
-const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
+// --- ИНИЦИАЛИЗАЦИЯ СОЕДИНЕНИЯ ---
+// Создаем подключение к серверу. Если библиотека загружена из CDN, io будет доступен.
+const socket = io("https://lovecouple.ru", {
+    transports: ["websocket", "polling"]
+});
 
-// Локальное состояние клиента
+// Глобальный объект состояния игры на клиенте
 let gameState = {
-    me: null,
     room: null,
-    myRole: null
+    me: null
 };
 
-// Константы ролей (идентичны оригиналу)
-const ROLES = {
-    mafia: { title: "МАФИЯ", icon: "fas fa-user-ninja", desc: "Убивайте ночью, путайте днем." },
-    citizen: { title: "МИРНЫЙ", icon: "fas fa-users", desc: "Найдите мафию в ходе обсуждения." },
-    doctor: { title: "ДОКТОР", icon: "fas fa-medkit", desc: "Может спасти одного человека за ночь." },
-    commissar: { title: "КОМИССАР", icon: "fas fa-search", desc: "Узнает роли игроков ночью." }
-};
+// --- ОБРАБОТЧИКИ СОБЫТИЙ СЕРВЕРА ---
 
-// --- СОБЫТИЯ ВХОДА ---
-// Функция авторизации и входа в комнату
+// Функция срабатывает при успешном подключении к серверу
+socket.on("connect", () => {
+    console.log("Подключено к серверу. Мой ID:", socket.id);
+});
+
+// Функция получает обновление данных о комнате от сервера
+socket.on("mafia-update-room", (roomData) => {
+    gameState.room = roomData;
+    renderLobby(); // Перерисовываем список игроков
+});
+
+// --- ФУНКЦИИ ИНТЕРФЕЙСА ---
+
+// Функция для входа в игру: отправляет данные игрока на сервер
 function joinGame() {
+    // Получаем значения из полей ввода
     const name = document.getElementById('playerName').value;
-    const roomId = document.getElementById('roomId').value;
-    if(!name || !roomId) return alert("Введите данные");
+    const room = document.getElementById('roomId').value;
 
-    socket.emit('mafia-join', { roomId, playerName: name });
+    // Проверка на заполнение полей
+    if (!name || !room) {
+        alert("Пожалуйста, введите имя и номер комнаты");
+        return;
+    }
+
+    // Отправляем событие входа на сервер с префиксом mafia-
+    socket.emit('mafia-join', { roomId: room, playerName: name });
+
+    // Визуально переключаем экран на лобби
     switchPage('lobby');
-    document.getElementById('displayRoomId').innerText = roomId;
+    document.getElementById('displayRoomId').innerText = `КОМНАТА: ${room}`;
 }
 
-// --- СЛУШАТЕЛИ СОКЕТОВ ---
-// Обновление состояния комнаты от сервера
-socket.on('mafia-update-room', (room) => {
-    gameState.room = room;
-    renderLobby();
-    
-    // Если игра началась и мы в лобби — переходим к раздаче
-    if(room.phase === 'distribution' && isCurrentPage('lobby')) {
-        switchPage('distribute');
-    }
-});
-
-// Получение персональной роли (безопасно)
-socket.on('mafia-your-role', (roleKey) => {
-    gameState.myRole = roleKey;
-    const roleData = ROLES[roleKey];
-    document.getElementById('roleTitle').innerText = roleData.title;
-    document.getElementById('roleDesc').innerText = roleData.desc;
-    document.getElementById('roleIcon').innerHTML = `<i class="${roleData.icon}"></i>`;
-});
-
-// Обновление таймера от сервера
-socket.on('mafia-timer-tick', (timeLeft) => {
-    const timerEl = document.getElementById('dayTimer');
-    if(timerEl) timerEl.innerText = timeLeft;
-});
-
-// --- ЛОГИКА ИНТЕРФЕЙСА ---
-// Отрисовка списка игроков в лобби
+// Функция для отрисовки списка игроков в лобби
 function renderLobby() {
-    const list = document.getElementById('playerList');
-    list.innerHTML = gameState.room.players.map(p => 
-        `<div class="name-input">${p.name} ${p.id === socket.id ? '(ВЫ)' : ''}</div>`
-    ).join('');
+    const listContainer = document.getElementById('playerList');
+    if (!gameState.room) return;
 
-    // Показываем кнопки управления только хосту
-    if(socket.id === gameState.room.hostId) {
-        document.getElementById('hostControls').style.display = 'block';
-        document.getElementById('startBtn').style.display = 'block';
+    // Очищаем и заполняем список заново на основе данных с сервера
+    listContainer.innerHTML = gameState.room.players.map(p => `
+        <div class="name-input" style="text-align: center;">
+            ${p.name} ${p.id === socket.id ? '<span style="color:var(--red)">(ВЫ)</span>' : ''}
+        </div>
+    `).join('');
+
+    // Если текущий игрок — создатель комнаты (host), показываем кнопку старта
+    const startBtn = document.getElementById('startBtn');
+    if (socket.id === gameState.room.hostId) {
+        startBtn.style.display = 'block';
+    } else {
+        startBtn.style.display = 'none';
     }
 }
 
-// Отправка команды на старт игры
+// Функция для запуска игры хостом
 function sendStart() {
-    socket.emit('mafia-start-dist', { roomId: gameState.room.hostId });
+    if (gameState.room) {
+        // Отправляем команду на сервер начать раздачу ролей
+        socket.emit('mafia-start-dist', { roomId: gameState.room.id });
+    }
 }
 
-// Вспомогательная функция переключения экранов
-function switchPage(id) {
+// Вспомогательная функция для переключения видимости экранов
+function switchPage(pageId) {
+    // Скрываем все страницы
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id + 'Screen').classList.add('active');
-}
-
-function isCurrentPage(id) {
-    return document.getElementById(id + 'Screen').classList.contains('active');
+    // Показываем нужную страницу по ID
+    const target = document.getElementById(pageId + 'Screen');
+    if (target) target.classList.add('active');
 }
