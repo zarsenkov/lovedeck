@@ -1,52 +1,61 @@
-/* --- ПЕРЕМЕННЫЕ И БАЗА (Твой оригинальный стиль) --- */
-:root {
-    --bg: #F0F4F8; --white: #FFFFFF; --mint: #B2F5EA; --pink: #FED7E2;
-    --yellow: #FEFCBF; --purple: #E9D8FD; --blue: #BEE3F8; --black: #2D3748; 
-    --accent: #667EEA; --shadow: 6px 6px 0px #2D3748;
+/* Импортируем базовые стили из главной папки */
+@import url('../style.css');
+
+/* Специфичные правки для онлайн-экрана */
+.card-glass {
+    background: var(--white);
+    border: 3px solid var(--black);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: var(--shadow);
 }
 
-/* Обнуление отступов и настройка шрифтов */
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+/* Стилизация полей ввода под общий "мультяшный" стиль */
+.joy-input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    border: 3px solid var(--black);
+    border-radius: 12px;
+    background: var(--bg);
+    outline: none;
+    transition: 0.2s;
+}
 
-/* Основной фон и фиксация экрана */
-body { background: var(--bg); color: var(--black); height: 100dvh; width: 100%; overflow: hidden; position: fixed; }
+.joy-input:focus {
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0 var(--black);
+}
 
-/* Оболочка приложения */
-.app-shell { height: 100%; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom); position: relative; max-width: 500px; margin: 0 auto; }
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
 
-/* --- ЭКРАНЫ И АНИМАЦИИ --- */
-.pop-screen { display: none; flex-direction: column; flex-grow: 1; overflow: hidden; }
-/* Плавное появление экрана через scale */
-.pop-screen.active { display: flex; animation: popIn 0.3s ease-out; }
-@keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.btn-secondary {
+    background: var(--blue) !important;
+}
 
-/* Заголовки */
-.pop-title { font-size: 3.5rem; font-weight: 900; text-align: center; margin: 10px 0; letter-spacing: -2px; }
-.pop-title span { color: var(--accent); }
+.status-text {
+    text-align: center;
+    font-weight: 800;
+    margin-top: 15px;
+    color: var(--black);
+    opacity: 0.7;
+}
 
-/* --- КАРТОЧКА СЛОБА (Твой дизайн) --- */
-.card-container { perspective: 1000px; margin: auto 0; }
-.word-card { background: var(--white); border: 4px solid var(--black); border-radius: 30px; box-shadow: 10px 10px 0 var(--black); height: 300px; display: flex; align-items: center; justify-content: center; touch-action: none; }
-#word-display { font-size: 2.3rem; font-weight: 900; text-transform: uppercase; text-align: center; padding: 20px; }
+/* Центрирование списка игроков в лобби */
+.pop-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
 
-/* --- КНОПКИ --- */
-.btn-pop-main { background: var(--accent); color: white; border: 4px solid var(--black); padding: 18px; border-radius: 20px; font-weight: 900; font-size: 1.2rem; box-shadow: var(--shadow); cursor: pointer; margin-top: auto; margin-bottom: 15px; width: 100%; }
-/* Эффект нажатия */
-.btn-pop-main:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0 var(--black); }
-
-/* Вторичная кнопка (для входа) */
-.btn-secondary { background: var(--purple); color: var(--black); }
-
-/* --- ОНЛАЙН ЭЛЕМЕНТЫ --- */
-/* Поля ввода (Имя, ID комнаты) */
-.joy-input { width: 100%; padding: 15px; border-radius: 15px; border: 3px solid var(--black); font-size: 1rem; font-weight: 800; margin-bottom: 10px; background: white; }
-
-/* Стеклянная подложка для форм */
-.card-glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 25px; padding: 20px; border: 3px solid var(--black); margin-top: 20px; }
-
-/* Список игроков в лобби */
-.pop-list { flex-grow: 1; overflow-y: auto; margin: 15px 0; border: 3px solid var(--black); border-radius: 15px; background: var(--white); }
-.word-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid rgba(0,0,0,0.1); font-weight: 800; }
-
-/* Бейдж статуса (кто ходит) */
-.status-pill { background: var(--yellow); padding: 5px 12px; border-radius: 10px; font-size: 0.7rem; border: 2px solid var(--black); }
+#display-room-id {
+    color: var(--accent);
+    font-size: 1.5rem;
+}
