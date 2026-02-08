@@ -10,34 +10,28 @@
     }
 
     // 1. ФУНКЦИЯ ПОЛУЧЕНИЯ КАРТОЧКИ (Исправленная)
-    function getCard() {
-        let word = "СЛОВО"; 
-        let lets = "? ? ?";
+function getCard() {
+    // Проверяем: window.words (из cards.js) или window.cards
+    const source = window.words || window.cards || [];
 
-        // Берем слова из cards.js (window.words)
-        const source = window.words || [];
-
-        if (source.length > 0) {
-            const randomIndex = Math.floor(Math.random() * source.length);
-            word = source[randomIndex];
-        } else {
-            word = "НЕТ СЛОВ";
-        }
-
-        // Берем алфавит из cards.js или используем стандарт
-        const alphaStr = window.alphabet || "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
-        const alphaArray = alphaStr.split("");
-        const randomLetters = [];
-        for (let i = 0; i < 3; i++) {
-            randomLetters.push(alphaArray[Math.floor(Math.random() * alphaArray.length)]);
-        }
-        lets = randomLetters.join(" ");
+    if (source.length > 0) {
+        const randomIndex = Math.floor(Math.random() * source.length);
+        const word = source[randomIndex];
+        
+        // Алфавит из cards.js или стандартный
+        const alpha = window.alphabet || "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+        const lets = Array.from({length:3}, () => alpha[Math.floor(Math.random()*alpha.length)]).join(" ");
 
         return { 
             word: word.toUpperCase(), 
             letters: lets.toUpperCase() 
         };
+    } else {
+        // Если мы здесь, значит cards.js всё еще не загрузился
+        console.error("Критическая ошибка: Массив слов не найден в системе.");
+        return { word: "НЕТ СЛОВ", letters: "4 0 4" };
     }
+}
 
     // 2. ЛОГИКА ВХОДА
     window.joinLobby = function() {
