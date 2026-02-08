@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>КВИЗ БАТТЛ ОНЛАЙН</title>
+    <title>КВИЗ БАТТЛ ONLINE</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -19,27 +19,29 @@
                 <h1 class="main-title">КВИЗ<span>ONLINE</span></h1>
             </div>
             <div class="card-glass">
-                <p class="section-tag">ВХОД В ИГРУ</p>
-                <input type="text" id="player-name" class="joy-input" placeholder="Твоё имя" style="margin-bottom: 15px;">
+                <p class="section-tag">ВХОД В СЕТЬ</p>
+                <input type="text" id="player-name" class="joy-input" placeholder="Твое имя" style="margin-bottom: 15px;">
                 <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты (для входа)">
                 
-                <button class="primary-btn" onclick="createRoom()" style="background: var(--green);">СОЗДАТЬ ИГРУ</button>
+                <button class="primary-btn" onclick="createRoom()" style="background: var(--green); color:white;">СОЗДАТЬ КОМНАТУ</button>
                 <button class="primary-btn" onclick="joinRoom()">ПРИСОЕДИНИТЬСЯ</button>
             </div>
         </section>
 
         <section class="screen" id="lobby-screen">
             <div class="logo-area">
-                <h2 id="display-room-id" style="color: white; font-size: 1.5rem;">ROOM: ---</h2>
+                <h2 id="display-room-id" style="color: white; font-size: 1.8rem; text-shadow: 2px 2px 0 var(--text);">ROOM: ---</h2>
             </div>
             <div class="card-glass">
-                <p class="section-tag">ИГРОКИ В СЕТИ</p>
+                <p class="section-tag">ИГРОКИ В ОЧЕРЕДИ</p>
                 <div id="lobby-players-list" class="players-container">
                     </div>
-                <p class="section-tag" style="margin-top:20px">ТЕМЫ ИГРЫ</p>
-                <div class="category-grid" id="categories-box"></div>
+
+                <p class="section-tag" style="margin-top:20px" id="cats-title">ВЫБОР ТЕМ (ТОЛЬКО ХОСТ)</p>
+                <div class="category-grid" id="categories-box">
+                    </div>
             </div>
-            <button id="start-game-btn" class="primary-btn" onclick="requestStart()" style="display: none;">НАЧАТЬ БАТТЛ</button>
+            <button id="start-game-btn" class="primary-btn pulse" onclick="requestStart()" style="display: none;">НАЧАТЬ БАТТЛ</button>
         </section>
 
         <section class="screen" id="transfer-screen">
@@ -48,7 +50,7 @@
                 <p>СЕЙЧАС ОТВЕЧАЕТ:</p>
                 <h2 id="next-player-name" class="big-name">---</h2>
                 <div id="transfer-status" class="hint-text">Ждем готовности...</div>
-                <button id="ready-btn" class="primary-btn" onclick="playerReady()" style="display:none;">Я ГОТОВ</button>
+                <button id="ready-btn" class="primary-btn" onclick="playerReady()" style="display:none;">Я ГОТОВ!</button>
             </div>
         </section>
 
@@ -59,31 +61,31 @@
             </div>
             <div class="player-indicator" id="current-active-player">Загрузка...</div>
             <div class="question-container">
-                <h2 id="question-text">Вопрос загружается...</h2>
+                <h2 id="question-text">Вопрос...</h2>
             </div>
             <div class="answers-stack" id="answers-box"></div>
         </section>
 
         <section class="screen" id="result-screen">
-            <h1 class="main-title-small" style="color:white; text-align:center;">ИТОГИ</h1>
+            <h1 class="main-title-small" style="color:white; text-align:center;">ФИНАЛ</h1>
             <div class="card-glass" id="final-results"></div>
-            <button class="primary-btn" onclick="location.reload()">В МЕНЮ</button>
+            <button class="primary-btn" onclick="goBack()">В МЕНЮ</button>
         </section>
 
         <div id="rules-modal" class="modal-overlay" onclick="toggleRules(false)">
             <div class="modal-card" onclick="event.stopPropagation()">
                 <h2>ПРАВИЛА 📖</h2>
                 <div class="rules-list-fixed">
-                    <div class="rule-row"><span>1</span> Игроки отвечают по очереди (по 5 вопросов).</div>
-                    <div class="rule-row"><span>2</span> Скорость ответа влияет на бонусные очки.</div>
-                    <div class="rule-row"><span>3</span> Победит набравший максимум за все раунды.</div>
+                    <div class="rule-row"><span>1</span> Игроки отвечают по очереди.</div>
+                    <div class="rule-row"><span>2</span> У каждого по 5 вопросов на раунд.</div>
+                    <div class="rule-row"><span>3</span> Победит тот, кто наберет больше очков.</div>
                 </div>
                 <button class="primary-btn" onclick="toggleRules(false)">ПОНЯТНО</button>
             </div>
         </div>
     </div>
 
-    <script src="questions.js"></script>
+    <script src="../questions.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
