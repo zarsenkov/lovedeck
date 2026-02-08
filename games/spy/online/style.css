@@ -1,53 +1,68 @@
+/* online/style.css */
 :root {
     --bg-dark: #0A0E17;
     --neon-cyan: #00F3FF;
     --neon-red: #FF0055;
     --glass: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { background: var(--bg-dark); color: white; height: 100dvh; overflow: hidden; }
-
-.spy-app { height: 100%; padding: 20px; display: flex; flex-direction: column; max-width: 500px; margin: 0 auto; }
-
-/* Правило, которое чинит "белый экран" и наложение */
-.screen { display: none; flex-direction: column; height: 100%; width: 100%; }
-.screen.active { display: flex; }
-
-.hidden { display: none !important; }
-
-/* Дизайн карточек и кнопок как в Alias */
-.glass-card {
-    background: var(--glass); border: 1px solid var(--glass-border);
-    padding: 20px; border-radius: 20px; backdrop-filter: blur(10px);
+.screen {
+    display: none; /* Все скрыты */
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.neon-btn {
-    background: none; border: 2px solid var(--neon-cyan); color: var(--neon-cyan);
-    padding: 15px; border-radius: 12px; font-family: 'Unbounded'; cursor: pointer;
-    margin-top: 10px; transition: 0.3s;
-}
-.neon-btn:hover { background: var(--neon-cyan); color: black; box-shadow: 0 0 20px var(--neon-cyan); }
-
-.neon-input {
-    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan);
-    padding: 15px; border-radius: 12px; color: white; text-align: center; margin-bottom: 15px;
+.screen.active {
+    display: flex; /* Только активный */
+    flex-direction: column;
+    opacity: 1;
 }
 
-.player-badge { padding: 12px; border: 1px solid var(--glass-border); border-radius: 10px; margin-bottom: 8px; }
-.player-badge.me { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+.players-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
 
-/* Анимация карты роли */
-.role-card-box { width: 100%; height: 250px; perspective: 1000px; cursor: pointer; position: relative; }
+.player-badge {
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.player-badge.me {
+    border-color: var(--neon-cyan);
+    background: rgba(0, 243, 255, 0.05);
+}
+
+.timer-display {
+    font-family: 'Unbounded';
+    font-size: 5rem;
+    color: var(--neon-cyan);
+    text-align: center;
+    margin: 40px 0;
+}
+
+/* Карточка роли */
+.role-card-box {
+    width: 100%;
+    height: 300px;
+    perspective: 1000px;
+    margin-bottom: 30px;
+}
 .card-side {
-    position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+    position: absolute;
+    width: 100%; height: 100%;
+    backface-visibility: hidden;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    border-radius: 20px; border: 2px solid var(--neon-cyan); transition: 0.6s;
+    border: 2px solid var(--neon-cyan);
+    border-radius: 20px;
+    background: var(--bg-dark);
+    transition: 0.6s;
 }
-.card-side.back { transform: rotateY(180deg); background: rgba(0, 243, 255, 0.1); }
+.card-side.back { transform: rotateY(180deg); }
 .role-card-box.flipped .front { transform: rotateY(180deg); }
 .role-card-box.flipped .back { transform: rotateY(0deg); }
-
-/* Таймер */
-#game-timer { font-size: 4rem; font-family: 'Unbounded'; color: var(--neon-cyan); text-align: center; margin: 40px 0; }
