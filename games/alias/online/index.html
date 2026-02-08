@@ -3,58 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ALIAS: NEO</title>
+    <title>ALIAS: GLASS</title>
+    <!-- Шрифт Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
+    <!-- Живой фон -->
+    <div class="ambient-light one"></div>
+    <div class="ambient-light two"></div>
+
     <!-- Экран 1: Вход -->
     <div id="screen-login" class="screen active">
-        <h1 class="logo">ALIAS<br>ONLINE</h1>
-        <div class="card">
-            <input type="text" id="username" placeholder="ТВОЕ ИМЯ" maxlength="10">
-            <button onclick="createRoom()">СОЗДАТЬ КОМНАТУ</button>
+        <div class="logo-container">
+            <h1 class="logo">Alias<br><span>Online</span></h1>
+        </div>
+        
+        <div class="glass-panel">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="username" placeholder="Твое имя" maxlength="12">
+            </div>
+            
+            <button class="btn-primary" onclick="createRoom()">
+                <i class="fas fa-plus"></i> Создать
+            </button>
+            
+            <div class="divider">или</div>
+
             <div class="join-block">
-                <input type="text" id="room-code-input" placeholder="КОД КОМНАТЫ">
-                <button onclick="joinRoom()" class="btn-secondary">ВОЙТИ</button>
+                <div class="input-group small">
+                    <i class="fas fa-hashtag"></i>
+                    <input type="text" id="room-code-input" placeholder="Код">
+                </div>
+                <button onclick="joinRoom()" class="btn-secondary">Войти</button>
             </div>
         </div>
     </div>
 
     <!-- Экран 2: Лобби -->
     <div id="screen-lobby" class="screen">
-        <div class="header">
-            <h2>ROOM: <span id="lobby-code">---</span></h2>
+        <div class="glass-panel header-panel">
+            <p class="label">Комната</p>
+            <h2 id="lobby-code" class="code-display">---</h2>
         </div>
-        <div class="card">
-            <h3>ИГРОКИ:</h3>
-            <ul id="player-list"></ul>
+        
+        <div class="glass-panel list-panel">
+            <h3>Игроки</h3>
+            <ul id="player-list" class="styled-list"></ul>
         </div>
-        <button id="start-btn" onclick="startGame()" style="display:none;">ПОГНАЛИ!</button>
-        <p id="wait-msg">Ждем хоста...</p>
+        
+        <button id="start-btn" class="btn-primary glow" onclick="startGame()" style="display:none;">
+            Погнали! <i class="fas fa-rocket"></i>
+        </button>
+        <p id="wait-msg" class="pulse-text">Ждем хоста...</p>
     </div>
 
     <!-- Экран 3: Игра -->
     <div id="screen-game" class="screen">
         <div class="top-bar">
-            <div class="timer" id="timer">60</div>
-            <div class="role-badge" id="my-role">РОЛЬ</div>
+            <div class="glass-pill timer-pill">
+                <i class="far fa-clock"></i> <span id="timer">60</span>
+            </div>
+            <div class="glass-pill role-pill" id="my-role">
+                Зритель
+            </div>
         </div>
 
-        <!-- Карточка со словом (Видна Объясняющему и Судье) -->
-        <div id="word-card" class="word-card">
-            <h1 id="current-word">???</h1>
-            <p id="instruction-text">Жди начала...</p>
+        <!-- Карточка со словом -->
+        <div id="word-card-container">
+            <div id="word-card" class="glass-card">
+                <div class="card-content">
+                    <h1 id="current-word">...</h1>
+                    <p id="instruction-text" class="sub-text">Жди раунда</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Кнопки управления (Видны только Судье) -->
+        <!-- Кнопки управления -->
         <div id="judge-controls" class="controls hidden">
-            <button class="btn-skip" onclick="sendAction('skip')">ПРОПУСК</button>
-            <button class="btn-ok" onclick="sendAction('guessed')">УГАДАЛ!</button>
+            <button class="btn-circle skip" onclick="sendAction('skip')">
+                <i class="fas fa-times"></i>
+            </button>
+            <p class="hint">Свайп</p>
+            <button class="btn-circle ok" onclick="sendAction('guessed')">
+                <i class="fas fa-check"></i>
+            </button>
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Скрипт Socket.io -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
