@@ -1,108 +1,127 @@
-// Подключение к твоему серверу Amvera
-// Мы используем основной URL, так как сервер слушает порт 80
+// Устанавливаем соединение с сервером Amvera по порту 80
 const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
 
-// Глобальные переменные состояния
-let currentRoom = "";   // Номер текущей комнаты
-let isHost = false;     // Флаг: является ли пользователь создателем
+// Переменные для хранения состояния текущей сессии
+let currentRoom = "";   // ID комнаты, в которой находится игрок
+let isHost = false;     // Флаг, является ли игрок создателем (хостом)
 
-// --- ФУНКЦИИ ВЗАИМОДЕЙСТВИЯ ---
+// --- ФУНКЦИИ ВЗАИМОДЕЙСТВИЯ (ОТПРАВКА НА СЕРВЕР) ---
 
-// Функция создания новой комнаты
+// Функция для создания новой игровой комнаты
 function createOnlineGame() {
-    const name = document.getElementById('player-name').value; // Берем имя из инпута
-    if (!name) return alert("Введите имя!"); // Проверка заполнения
+    const name = document.getElementById('player-name').value;
+    if (!name) return alert("Введите имя!");
     
-    // Эмитим событие создания комнаты (обработчик должен быть в slovoSocket)
-    socket.emit('slovo:create', { playerName: name });
-    isHost = true; // Устанавливаем статус хоста локально
+    // Генерируем случайный ID комнаты из 4 цифр
+    const roomId = Math.floor(1000 + Math.random() * 9000).toString();
+    
+    // Отправляем серверу запрос на создание/вход в комнату Alias
+    socket.emit('alias-join', { roomId, playerName: name });
+    isHost = true; // Тот, кто создает, становится хостом
 }
 
-// Функция входа в существующую комнату по ID
+// Функция для входа в уже существующую комнату по её ID
 function joinOnlineGame() {
-    const name = document.getElementById('player-name').value; // Твое имя
-    const room = document.getElementById('room-id').value;      // ID из инпута
+    const name = document.getElementById('player-name').value;
+    const room = document.getElementById('room-id').value;
     
     if (!name || !room) return alert("Заполни все поля!");
     
-    // Эмитим событие входа
-    socket.emit('slovo:join', { playerName: name, roomId: room });
+    // Отправляем серверу запрос на вход в конкретную комнату
+    socket.emit('alias-join', { playerName: name, roomId: room });
 }
 
-// Запрос на запуск игры (только от хоста)
+// Функция запуска игры, которую вызывает только хост
 function requestStart() {
-    socket.emit('slovo:start_game', { roomId: currentRoom });
+    // Выбираем категории слов и перемешиваем их (используем массив ALIAS_WORDS из твоего cards.js)
+    // Здесь для примера берем категорию 'common'
+    const words = [...ALIAS_WORDS.common].sort(() => 0.5 - Math.random());
+    
+    // Отправляем серверу сигнал о начале игры вместе с массивом слов и временем
+    socket.emit('alias-start', { 
+        roomId: currentRoom, 
+        words: words, 
+        timer: 60 
+    });
 }
 
-// --- ОБРАБОТКА ОТВЕТОВ СЕРВЕРА ---
+// --- ОБРАБОТКА ОТВЕТОВ СЕРВЕРА (ПРИЕМ ДАННЫХ) ---
 
-// Когда сервер подтверждает создание или вход
-socket.on('slovo:room_data', (data) => {
-    currentRoom = data.roomId; // Сохраняем ID комнаты
-    document.getElementById('display-room-id').innerText = data.roomId; // Пишем ID на экране
-    toScreen('screen-lobby'); // Переключаем экран на лобби
-    updatePlayers(data.players); // Отрисовываем список игроков
+// Обработка обновления данных о комнате (список игроков)
+socket.on('alias-update-lobby', (data) => {
+    // Если мы только что вошли, сохраняем ID комнаты и переходим в лобби
+    toScreen('screen-lobby');
+    
+    // Ищем в списке игроков себя, чтобы понять, не назначил ли сервер нас хостом
+    const me = data.players.find(p => p.id === socket.id);
+    if (me && me.isHost) isHost = true;
+
+    // Обновляем визуальный список игроков на экране
+    updatePlayers(data.players);
 });
 
-// Когда список игроков в комнате меняется
-socket.on('slovo:update_players', (players) => {
-    updatePlayers(players); // Перерисовываем список
+// Событие начала хода: сервер присылает новое слово и того, кто должен объяснять
+socket.on('alias-new-turn', (data) => {
+    toScreen('screen-game');
+    document.getElementById('word-display').innerText = data.word;
+    
+    // Проверяем, наш ли сейчас ход
+    const isMyTurn = data.activePlayerId === socket.id;
+    
+    // Если не наш ход — блокируем возможность свайпать карточки
+    const cardElement = document.getElementById('main-card');
+    cardElement.style.pointerEvents = isMyTurn ? 'auto' : 'none';
+    cardElement.style.opacity = isMyTurn ? '1' : '0.7';
 });
 
-// Когда игра начинается для всех
-socket.on('slovo:game_started', () => {
-    toScreen('screen-game'); // Переход на экран самой игры
+// Обновление текущего счета в шапке игры
+socket.on('alias-update-score', (data) => {
+    document.getElementById('live-score').innerText = data.score;
 });
 
-// Когда приходит новое слово от сервера
-socket.on('slovo:new_word', (word) => {
-    document.getElementById('word-display').innerText = word; // Показываем слово в карточке
+// Событие завершения игры (когда кончились слова)
+socket.on('alias-game-over', (data) => {
+    alert("Игра окончена!");
+    location.reload(); // Перезагружаем для возврата в меню
 });
 
-// Синхронизация счета
-socket.on('slovo:update_score', (score) => {
-    document.getElementById('live-score').innerText = score; // Обновляем огонек в шапке
-});
+// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ИНТЕРФЕЙСА ---
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
-
-// Отрисовка списка участников
+// Функция отрисовки списка игроков в лобби
 function updatePlayers(players) {
     const list = document.getElementById('player-list');
     list.innerHTML = players.map(p => `
         <div class="word-row">
             <span>${p.name}</span>
-            ${p.isHost ? '<span class="status-pill" style="font-size:10px; background:var(--yellow); padding:2px 5px; border-radius:5px; border:1px solid var(--black);">HOST</span>' : ''}
+            ${p.isHost ? '<span class="status-pill" style="background:var(--yellow); padding:2px 8px; border-radius:8px; font-size:12px; border:2px solid var(--black);">HOST</span>' : ''}
         </div>
     `).join('');
 
-    // Показываем кнопку старта, если ты хост
-    if (isHost) {
-        document.getElementById('start-btn-online').style.display = 'block';
-    }
+    // Показываем кнопку старта только если текущий игрок — хост
+    document.getElementById('start-btn-online').style.display = isHost ? 'block' : 'none';
 }
 
-// Функция смены экранов (твоя стандартная)
+// Функция для переключения между экранами приложения
 function toScreen(id) {
     document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 }
 
-// Обработка клика/свайпа слова в онлайне
+// Обработка результата объяснения слова (свайп или клик)
 function handleOnlineWord(isCorrect) {
-    // Отправляем на сервер информацию: угадано слово или нет
-    socket.emit('slovo:word_action', { 
+    // Отправляем серверу результат: угадано слово (true) или пропущено (false)
+    socket.emit('alias-action', { 
         roomId: currentRoom, 
         isCorrect: isCorrect 
     });
     
-    // Анимируем карточку (визуальный эффект улетания)
+    // Визуальная анимация карточки (улет в сторону)
     const card = document.getElementById('main-card');
     card.style.transition = '0.3s ease-out';
     card.style.transform = isCorrect ? 'translateX(350px) rotate(30deg)' : 'translateX(-350px) rotate(-30deg)';
     card.style.opacity = '0';
 
-    // Возвращаем карточку обратно через 200мс (слово обновится через сокет)
+    // Возврат карточки в центр для следующего слова
     setTimeout(() => {
         card.style.transition = 'none'; 
         card.style.transform = 'none'; 
