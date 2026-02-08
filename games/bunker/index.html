@@ -2,62 +2,102 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мафия: Pass & Play</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MAFIA: NOIR EDITION</title>
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="background-overlay"></div>
 
-    <div class="container">
-        <!-- Экран 1: Настройка -->
-        <div id="setup-screen" class="screen active">
-            <h1>Мафия</h1>
-            <p>Введите имена игроков (минимум 4):</p>
-            <div id="players-input-list">
-                <input type="text" placeholder="Имя игрока 1" value="Игрок 1">
-                <input type="text" placeholder="Имя игрока 2" value="Игрок 2">
-                <input type="text" placeholder="Имя игрока 3" value="Игрок 3">
-                <input type="text" placeholder="Имя игрока 4" value="Игрок 4">
+    <main class="app-container">
+        
+        <!-- ЭКРАН 1: Лобби -->
+        <section id="screen-setup" class="screen active">
+            <div class="logo-container">
+                <h1 class="glitch" data-text="MAFIA">MAFIA</h1>
+                <p class="subtitle">PROJECT NOIR</p>
             </div>
-            <button onclick="addPlayerInput()">+ Добавить игрока</button>
-            <button class="start-btn" onclick="startGame()">Начать игру</button>
-        </div>
-
-        <!-- Экран 2: Раздача ролей -->
-        <div id="role-reveal-screen" class="screen">
-            <h2 id="reveal-name">Имя игрока</h2>
-            <p>Передайте устройство этому игроку.</p>
-            <button id="show-role-btn" onclick="revealRole()">Показать роль</button>
-            <div id="role-info" class="hidden">
-                <h1 id="role-title">РОЛЬ</h1>
-                <p id="role-desc">Описание</p>
-                <button onclick="nextRole()">Скрыть и передать следующему</button>
+            
+            <div class="settings-box">
+                <div class="player-list" id="player-input-list">
+                    <!-- Инпуты генерируются JS -->
+                </div>
+                <button class="btn-secondary" onclick="addPlayerInput()"><i class="fas fa-plus"></i> Добавить игрока</button>
             </div>
-        </div>
 
-        <!-- Экран 3: Ночь (Действия) -->
-        <div id="night-screen" class="screen">
-            <h2 id="night-phase-title">Ход Мафии</h2>
-            <p>Выберите цель:</p>
-            <div id="night-targets" class="targets-grid"></div>
-        </div>
+            <div class="roles-toggle">
+                <h3>Активные спецроли:</h3>
+                <label><input type="checkbox" id="role-doctor" checked disabled> <span class="role-tag doc">Доктор</span></label>
+                <label><input type="checkbox" id="role-sheriff" checked disabled> <span class="role-tag pol">Шериф</span></label>
+                <label><input type="checkbox" id="role-maniac"> <span class="role-tag man">Маньяк</span></label>
+                <label><input type="checkbox" id="role-putana"> <span class="role-tag put">Путана</span></label>
+                <label><input type="checkbox" id="role-don"> <span class="role-tag don">Дон</span></label>
+            </div>
 
-        <!-- Экран 4: День (Итоги и Голосование) -->
-        <div id="day-screen" class="screen">
-            <h2>ДЕНЬ</h2>
-            <div id="day-log" class="log-box"></div>
-            <h3>Голосование (Кого казнить?)</h3>
-            <div id="voting-targets" class="targets-grid"></div>
-            <button class="skip-btn" onclick="skipVoting()">Пропустить голосование</button>
-        </div>
+            <button class="btn-primary" onclick="startGame()">НАЧАТЬ ИГРУ</button>
+        </section>
 
-        <!-- Экран 5: Конец игры -->
-        <div id="game-over-screen" class="screen">
+        <!-- ЭКРАН 2: Раскрытие роли (Карточка) -->
+        <section id="screen-reveal" class="screen">
+            <h2 id="reveal-header">Передайте устройство:</h2>
+            <div class="card-container" onclick="flipCard()">
+                <div class="card" id="role-card">
+                    <div class="card-front">
+                        <i class="fas fa-fingerprint icon-large"></i>
+                        <h3 id="reveal-player-name">Имя</h3>
+                        <p class="tap-hint">Нажми, чтобы узнать роль</p>
+                    </div>
+                    <div class="card-back">
+                        <div class="role-icon-container" id="role-icon-display"></div>
+                        <h2 id="role-name-display">РОЛЬ</h2>
+                        <p id="role-desc-display">Описание задачи</p>
+                    </div>
+                </div>
+            </div>
+            <button id="btn-next-role" class="btn-primary hidden" onclick="nextRoleReveal()">Далее</button>
+        </section>
+
+        <!-- ЭКРАН 3: Ночь (Действия) -->
+        <section id="screen-night" class="screen">
+            <div class="phase-header">
+                <span class="phase-badge"><i class="fas fa-moon"></i> НОЧЬ</span>
+                <h2 id="night-actor-role">Ход Мафии</h2>
+            </div>
+            <p id="night-action-desc" class="action-desc">Выберите цель...</p>
+            
+            <div class="grid-targets" id="night-targets"></div>
+        </section>
+
+        <!-- ЭКРАН 4: День (Итоги и Голосование) -->
+        <section id="screen-day" class="screen">
+            <div class="phase-header">
+                <span class="phase-badge sun"><i class="fas fa-sun"></i> ДЕНЬ</span>
+                <h2>Город просыпается</h2>
+            </div>
+
+            <div class="events-log" id="day-log"></div>
+
+            <div class="voting-section">
+                <h3>Голосование</h3>
+                <div class="grid-targets" id="voting-targets"></div>
+            </div>
+            
+            <button class="btn-secondary" onclick="skipDay()">Пропустить голосование</button>
+        </section>
+
+        <!-- ЭКРАН 5: Победа -->
+        <section id="screen-gameover" class="screen">
+            <i class="fas fa-trophy winner-icon"></i>
             <h1>ИГРА ОКОНЧЕНА</h1>
-            <h2 id="winner-text">Победили ...</h2>
-            <button onclick="location.reload()">Играть снова</button>
-        </div>
-    </div>
+            <h2 id="winner-team" class="winner-text">Победила Мафия</h2>
+            <div id="survivors-list"></div>
+            <button class="btn-primary" onclick="location.reload()">Новая игра</button>
+        </section>
+
+    </main>
 
     <script src="script.js"></script>
 </body>
