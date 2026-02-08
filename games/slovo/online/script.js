@@ -52,19 +52,23 @@
     }
 
     // 4. ЛОББИ И ВХОД
-    window.joinLobby = function() {
-        myName = document.getElementById('player-name').value.trim();
-        myRoom = document.getElementById('room-id').value.trim();
-        
-        if(myName && myRoom) {
-            requestWakeLock();
-            socket.emit('join-room', { roomId: myRoom, playerName: myName });
-            showScreen('lobby-screen');
-            document.getElementById('room-display').innerText = myRoom;
-        } else {
-            alert("Заполни имя и комнату!");
-        }
-    };
+window.joinLobby = function() {
+    myName = document.getElementById('player-name').value.trim();
+    myRoom = document.getElementById('room-id').value.trim();
+    
+    if(myName && myRoom) {
+        // Скрываем оверлей при попытке входа
+        const overlay = document.getElementById('offline-overlay');
+        if(overlay) overlay.style.display = 'none';
+
+        requestWakeLock();
+        socket.emit('join-room', { roomId: myRoom, playerName: myName });
+        showScreen('lobby-screen');
+        document.getElementById('room-display').innerText = myRoom;
+    } else {
+        alert("Заполни имя и комнату!");
+    }
+};
 
     socket.on('update-lobby', (data) => {
         const list = document.getElementById('player-list');
