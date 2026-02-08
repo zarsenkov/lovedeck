@@ -95,22 +95,27 @@ body { background: var(--bg); color: var(--text); margin: 0; display: flex; just
     font-weight: bold;
     border-radius: 10px;
 }
-/* ПУНКТ 1: Стиль кнопки под "Войти" */
+/* Стили для кнопки возврата в главное меню */
 .back-btn-menu {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 12px;
-    font-weight: 800;
-    margin-top: 15px;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: 0.3s;
+    background: rgba(255, 255, 255, 0.4); /* Полупрозрачный белый фон кнопки */
+    border: 1px solid rgba(0, 0, 0, 0.1); /* Едва заметная темная рамка */
+    color: #000000;                       /* ЧЕРНЫЙ цвет текста */
+    font-size: 11px;                      /* Размер шрифта */
+    font-weight: 900;                     /* Максимальная жирность текста */
+    margin-top: 20px;                     /* Отступ сверху от кнопки ВОЙТИ */
+    padding: 12px 15px;                   /* Внутренние отступы (высота кнопки) */
+    border-radius: 12px;                  /* Скругление углов под стиль карточек */
+    cursor: pointer;                      /* Указатель пальца при наведении */
+    text-transform: uppercase;            /* Все буквы заглавные */
+    letter-spacing: 1px;                  /* Расстояние между буквами */
+    transition: all 0.3s ease;            /* Плавная анимация при наведении */
+    width: 100%;                          /* Кнопка на всю ширину контейнера */
 }
 
+/* Эффект при наведении на кнопку */
 .back-btn-menu:hover {
-    color: #fff;
+    background: rgba(255, 255, 255, 0.6); /* Фон становится чуть плотнее */
+    transform: translateY(-2px);          /* Кнопка слегка приподнимается */
 }
 
 /* ПУНКТ 3: Строка Комната + Выйти в лобби */
