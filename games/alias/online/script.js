@@ -1,15 +1,16 @@
-// // Подключение к серверу
+// // Подключение
 const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
 let currentRoomId = "";
 let iAmSwiper = false;
 let startX = 0;
 
+// // Смена экранов
 function toScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 }
 
-// // Вход/Создание
+// // Вход
 function joinGame(isCreate) {
     const name = document.getElementById('player-name').value;
     const rInput = document.getElementById('room-input').value;
@@ -18,7 +19,16 @@ function joinGame(isCreate) {
     socket.emit('alias-join', { roomId: currentRoomId, playerName: name });
 }
 
-// // Старт (нажать "НАЧАТЬ ИГРУ")
+// // Лобби
+socket.on('alias-update-lobby', data => {
+    toScreen('screen-lobby');
+    document.getElementById('room-id-display').innerText = data.roomId;
+    const me = data.players.find(p => p.id === socket.id);
+    if(me?.isHost) document.getElementById('host-ui').classList.remove('hidden');
+    document.getElementById('lobby-teams').innerHTML = data.players.map(p => `<div>${p.name} (Т-${p.team})</div>`).join('');
+});
+
+// // КНОПКА НАЧАТЬ ИГРУ
 function requestStart() {
     const words = [...ALIAS_WORDS.common].sort(() => 0.5 - Math.random());
     const t = document.getElementById('set-timer').value;
@@ -26,21 +36,12 @@ function requestStart() {
     socket.emit('alias-start', { roomId: currentRoomId, words, timer: t, maxRounds: r });
 }
 
-// // Лобби
-socket.on('alias-update-lobby', d => {
-    toScreen('screen-lobby');
-    document.getElementById('room-id-display').innerText = d.roomId;
-    const me = d.players.find(p => p.id === socket.id);
-    if(me?.isHost) document.getElementById('host-ui').classList.remove('hidden');
-});
-
-// // Игровой экран и свайпы
+// // Игровой процесс
 socket.on('alias-new-turn', data => {
     toScreen('screen-game');
     const card = document.getElementById('word-card');
     iAmSwiper = (data.swiperId === socket.id);
     
-    // // Управление (кнопки) видно только судье
     document.getElementById('game-btns').classList.toggle('hidden', !iAmSwiper);
     card.style.transform = "translateX(0) rotate(0)";
 
@@ -52,22 +53,24 @@ socket.on('alias-new-turn', data => {
         document.getElementById('role-text').innerText = "ТЫ СУДЬЯ";
     } else {
         document.getElementById('word-text').innerText = "СМОТРИ";
-        document.getElementById('role-text').innerText = "Ход другой команды";
+        document.getElementById('role-text').innerText = "Ход противника";
     }
 });
 
-// // Логика СВАЙПА (Neo-Brutalism)
+// // СВАЙПЫ
 const card = document.getElementById('word-card');
-card.addEventListener('touchstart', e => {
+card.addEventListener('touchstart', e => { 
     if(!iAmSwiper) return;
-    startX = e.touches[0].clientX;
+    startX = e.touches[0].clientX; 
     card.style.transition = 'none';
-});
+}, {passive: true});
+
 card.addEventListener('touchmove', e => {
     if(!iAmSwiper) return;
     let x = e.touches[0].clientX - startX;
     card.style.transform = `translateX(${x}px) rotate(${x/25}deg)`;
-});
+}, {passive: true});
+
 card.addEventListener('touchend', e => {
     if(!iAmSwiper) return;
     let x = e.changedTouches[0].clientX - startX;
@@ -79,20 +82,13 @@ card.addEventListener('touchend', e => {
     }
 });
 
-// // Кнопки (дублируют свайп)
+// // Кнопки
 function handleAction(isOk) {
     if(iAmSwiper) socket.emit('alias-action', { roomId: currentRoomId, isCorrect: isOk });
 }
 
 // // Таймер и Очки
-socket.on('alias-timer-tick', d => {
-    document.getElementById('timer-val').innerText = `00:${d.timeLeft < 10 ? '0'+d.timeLeft : d.timeLeft}`;
-});
+socket.on('alias-timer-tick', d => { document.getElementById('timer-val').innerText = `00:${d.timeLeft < 10 ? '0'+d.timeLeft : d.timeLeft}`; });
 socket.on('alias-update-score', d => { document.getElementById('score-val').innerText = d.score; });
-
-// // Финал игры
-socket.on('alias-game-over', d => {
-    toScreen('screen-results');
-    const res = document.getElementById('results-list');
-    res.innerHTML = `<h2>КОМАНДА 1: ${d.teams[1].score}</h2><h2>КОМАНДА 2: ${d.teams[2].score}</h2>`;
-});
+socket.on('alias-prep-screen', d => { toScreen('screen-prep'); document.getElementById('prep-player-name').innerText = d.playerName; });
+socket.on('alias-game-over', d => { toScreen('screen-results'); });
