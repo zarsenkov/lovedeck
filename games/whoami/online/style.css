@@ -51,3 +51,47 @@ body { background: var(--bg); color: var(--text); margin: 0; display: flex; just
 .back-btn:hover {
     background: rgba(0, 0, 0, 0.4);
 }
+.exit-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    z-index: 100;
+}
+
+.settings-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.settings-row label {
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+}
+
+.settings-row input {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.winner {
+    background: #fff3cd;
+    font-weight: bold;
+    border-radius: 10px;
+}
