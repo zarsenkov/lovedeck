@@ -114,12 +114,13 @@ function startTimer(sec) {
 }
 
 function leaveRoom() {
-    if (confirm("Вы точно хотите выйти в меню? Прогресс игры будет потерян.")) {
-        socket.emit('whoami-leave', myRoom);
-        clearInterval(window.gameTimer); // Используем твое имя интервала
-        showScreen('join-screen');
-        myRoom = null;
-        document.getElementById('room-id').value = "";
+    if (myRoom) {
+        if (confirm("Вы точно хотите выйти? Прогресс будет потерян.")) {
+            socket.emit('whoami-leave', myRoom);
+            if (window.gameTimer) clearInterval(window.gameTimer);
+            myRoom = null;
+            showScreen('join-screen'); // Возвращаем на экран ввода имени
+        }
     }
 }
 
