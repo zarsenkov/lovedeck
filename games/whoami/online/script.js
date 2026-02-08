@@ -103,6 +103,23 @@ function startTimer(sec) {
     }, 1000);
 }
 
+function leaveRoom() {
+    if (confirm("Вы точно хотите выйти? Прогресс будет потерян.")) {
+        // 1. Отправляем сигнал серверу
+        socket.emit('whoami-leave', myRoom);
+        
+        // 2. Останавливаем таймер, если он шел
+        clearInterval(window.t);
+        
+        // 3. Возвращаемся на экран входа
+        showScreen('join-screen');
+        
+        // 4. Очищаем данные комнаты локально
+        myRoom = null;
+        document.getElementById('room-id').value = "";
+    }
+}
+
 socket.on('whoami-game-over', (data) => {
     showScreen('result-screen');
     const stats = document.getElementById('final-stats');
