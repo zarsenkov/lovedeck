@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MAFIA ONLINE | PRO</title>
+    <title>MAFIA ONLINE</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div class="noir-overlay"></div>
@@ -15,61 +17,21 @@
         <section class="page active" id="authScreen">
             <div class="center-content">
                 <div class="brand">MAFIA ONLINE</div>
-                <input type="text" id="playerName" class="name-input" placeholder="Твое имя" style="width: 100%; margin: 20px 0;">
-                <input type="text" id="roomId" class="name-input" placeholder="ID Комнаты" style="width: 100%; margin-bottom: 20px;">
-                <button class="action-btn red" onclick="joinGame()">ВОЙТИ В ИГРУ</button>
+                <div style="width: 100%; margin: 20px 0;">
+                    <input type="text" id="playerName" class="name-input" placeholder="Твое имя" style="width: 100%; margin-bottom: 10px;">
+                    <input type="text" id="roomId" class="name-input" placeholder="ID Комнаты" style="width: 100%;">
+                </div>
+                <button class="action-btn red" onclick="joinGame()">ПРИСОЕДИНИТЬСЯ</button>
             </div>
         </section>
 
         <section class="page" id="lobbyScreen">
-            <header class="top-bar">
-                <div class="brand">ЛОББИ: <span id="displayRoomId"></span></div>
-            </header>
-            <div class="setup-scroll">
-                <div class="label-row">ИГРОКИ:</div>
-                <div id="playerList" class="names-grid"></div>
-                
-                <div id="hostControls" style="display:none">
-                    <div class="label-row" style="margin-top:20px">НАСТРОЙКИ:</div>
-                    <div class="roles-toggle-grid">
-                        <label class="role-check"><input type="checkbox" id="check-doctor" checked onchange="toggleRole('doctor')"> <span>Доктор</span></label>
-                        <label class="role-check"><input type="checkbox" id="check-commissar" checked onchange="toggleRole('commissar')"> <span>Комиссар</span></label>
-                    </div>
-                </div>
-            </div>
-            <button id="startBtn" class="action-btn red" style="display:none" onclick="sendStart()">НАЧАТЬ ИГРУ</button>
+            <div class="brand" id="displayRoomId">КОМНАТА</div>
+            <div id="playerList" class="names-grid" style="margin-top: 20px;"></div>
+            <button id="startBtn" class="action-btn red" style="display:none; margin-top: auto;" onclick="sendStart()">НАЧАТЬ</button>
         </section>
-
-        <section class="page" id="distributeScreen">
-            <div class="card-area">
-                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
-                    <div class="card-inner">
-                        <div class="card-front">
-                            <i class="fas fa-mask" style="font-size: 50px; color: var(--red);"></i>
-                            <p>НАЖМИ, ЧТОБЫ УЗНАТЬ РОЛЬ</p>
-                        </div>
-                        <div class="card-back">
-                            <div id="roleIcon" class="role-icon"></div>
-                            <h2 id="roleTitle">РОЛЬ</h2>
-                            <p id="roleDesc"></p>
-                        </div>
-                    </div>
-                </div>
-                <p style="margin-top: 20px; font-size: 10px; color: var(--muted);">НЕ ПОКАЗЫВАЙ ЭКРАН ДРУГИМ</p>
-            </div>
-        </section>
-
-        </div>
-
-    <div id="gameModal" class="modal-overlay" style="display:none">
-        <div class="modal-card">
-            <div id="modalIcon"></div>
-            <div id="modalText"></div>
-            <button class="action-btn red" onclick="closeModal()">OK</button>
-        </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
