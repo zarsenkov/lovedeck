@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>SPY ONLINE | NEON</title>
-    <link rel="stylesheet" href="../style (27).css">
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="spy-app">
-        <div class="back-link" onclick="location.href='../index (32).html'">← ВЫЙТИ</div>
+        // Кнопка выхода назад в оффлайн версию
+        <div class="back-link" onclick="location.href='../index.html'">← ВЫЙТИ</div>
 
         <section class="screen active" id="auth-screen">
             <h1 class="glitch-title">SPY<span> ONLINE</span></h1>
@@ -38,24 +39,26 @@
                     </div>
                     <button class="neon-btn" onclick="startOnlineGame()">ЗАПУСТИТЬ</button>
                 </div>
+                
                 <div id="wait-message" style="text-align: center; opacity: 0.6; margin-top: 20px;">Ждем хоста...</div>
             </div>
         </section>
 
         <section class="screen" id="role-screen">
-            <div class="glass-card role-card" onclick="this.classList.toggle('flipped')">
-                <div class="card-front">ПОКАЗАТЬ РОЛЬ</div>
-                <div class="card-back">
-                    <div id="role-text" class="role-name">...</div>
-                    <div id="location-text" class="location-name">...</div>
+            <div class="role-card-container">
+                <div class="glass-card role-card" onclick="this.classList.toggle('flipped')">
+                    <div class="card-front">ПОКАЗАТЬ РОЛЬ</div>
+                    <div class="card-back">
+                        <div id="role-text" class="role-name">...</div>
+                        <div id="location-text" class="location-name">...</div>
+                    </div>
                 </div>
             </div>
             <p style="text-align: center; margin-top: 20px; opacity: 0.5;">НАЖМИ НА КАРТУ, ЧТОБЫ ПЕРЕВЕРНУТЬ</p>
         </section>
-
-        </div>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="../script (20).js"></script> <script src="script.js"></script>
+    <script src="../script.js"></script> <script src="script.js"></script>
 </body>
 </html>
