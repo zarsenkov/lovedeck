@@ -9,13 +9,19 @@
 
 /* // Базовые настройки */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { margin: 0; font-family: sans-serif; background: var(--bg); height: 100vh; overflow: hidden; }
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); height: 100vh; overflow: hidden; }
 
 /* // ГЛАВНОЕ: Логика переключения экранов */
+.app-shell {
+    max-width: 500px; margin: 0 auto; height: 100%;
+    display: flex; flex-direction: column; padding: 20px;
+}
+
 .screen {
     display: none; /* // Прячем все экраны */
     flex-direction: column;
     height: 100%;
+    width: 100%;
 }
 .screen.active {
     display: flex; /* // Показываем только активный */
@@ -38,18 +44,30 @@ body { margin: 0; font-family: sans-serif; background: var(--bg); height: 100vh;
 }
 
 /* // Стили карточек и кнопок */
-.glass-card { background: var(--glass); border-radius: 30px; padding: 25px; backdrop-filter: blur(10px); }
-.btn-main { background: var(--purple); color: #fff; border: none; padding: 18px; border-radius: 20px; font-weight: bold; width: 100%; cursor: pointer; }
-.btn-sub { background: #fff; color: var(--purple); border: 2px solid var(--purple); padding: 16px; border-radius: 20px; font-weight: bold; width: 100%; margin-top: 10px; cursor: pointer; }
+.glass-card { background: var(--glass); border-radius: 30px; padding: 25px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+.btn-main { background: var(--purple); color: #fff; border: none; padding: 18px; border-radius: 20px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; }
+.btn-main:active { transform: scale(0.98); opacity: 0.9; }
+
+.btn-sub { background: #fff; color: var(--purple); border: 2px solid var(--purple); padding: 16px; border-radius: 20px; font-weight: bold; width: 100%; margin-top: 10px; cursor: pointer; transition: 0.3s; }
+.btn-sub:active { background: var(--purple); color: #fff; }
 
 /* // Игровые элементы */
-#game-header { display: flex; justify-content: space-between; padding: 10px 0; }
-.word-card { flex: 1; background: #fff; border-radius: 35px; display: flex; align-items: center; justify-content: center; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 4px solid transparent; touch-action: none; }
+#game-header { display: flex; justify-content: space-between; padding: 10px 0; align-items: center; }
+
+.word-card { 
+    flex: 1; background: #fff; border-radius: 35px; 
+    display: flex; align-items: center; justify-content: center; 
+    margin: 20px 0; box-shadow: 0 15px 45px rgba(0,0,0,0.08); 
+    border: 4px solid transparent; touch-action: none; 
+}
+
 .game-footer { display: flex; gap: 15px; padding-bottom: 20px; }
-.btn-action { flex: 1; padding: 20px; border: none; border-radius: 20px; color: #fff; font-weight: bold; cursor: pointer; }
+.btn-action { flex: 1; padding: 20px; border: none; border-radius: 20px; color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; }
+
 .btn-skip { background: var(--purple) !important; }
 .btn-check { background: var(--mint) !important; }
 
 /* // Лобби (Твой стиль team-box) */
 .team-box { background: rgba(255,255,255,0.5); padding: 15px; border-radius: 20px; margin-bottom: 10px; }
-.team-box h4 { margin: 0 0 5px 0; font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; }
+.team-box h4 { margin: 0 0 5px 0; font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
