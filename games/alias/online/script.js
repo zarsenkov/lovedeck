@@ -1,134 +1,125 @@
-// // Подключение и глобальные переменные
+// // Инициализация сокетов
 const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
-let myRoom = "";
+let currentRoom = "";
 let isHost = false;
-let canSwipe = false;
+let canControl = false; // // Флаг: может ли игрок свайпать/жать кнопки
 
-// // Предотвращение засыпания экрана
-async function keepAwake() {
-    try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch (err) {}
-}
-
-// // Смена экранов
+// // Утилита смены экранов
 function toScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    keepAwake();
 }
 
-// // Авторизация
-function auth(create) {
+// // 1. Вход в игру
+function joinGame(create) {
     const name = document.getElementById('player-name').value;
-    const roomInput = document.getElementById('join-room-id').value;
-    if (!name) return alert("Введите имя");
+    const room = create ? Math.floor(1000 + Math.random() * 9000).toString() : document.getElementById('room-input').value;
+    if (!name || !room) return alert("Заполни поля!");
     
-    myRoom = create ? Math.floor(1000 + Math.random() * 9000).toString() : roomInput;
+    currentRoom = room;
     isHost = create;
-    
-    socket.emit('alias-join', { roomId: myRoom, playerName: name });
+    socket.emit('alias-join', { roomId: room, playerName: name });
 }
 
-// // Обновление лобби
+// // 2. Обновление лобби
 socket.on('alias-update-lobby', data => {
     toScreen('screen-lobby');
-    document.getElementById('room-number').innerText = myRoom;
+    document.getElementById('room-id-display').innerText = currentRoom;
     
-    const list = document.getElementById('team-list');
-    list.innerHTML = "";
+    const container = document.getElementById('lobby-teams');
+    container.innerHTML = "";
     
     [1, 2].forEach(tNum => {
         const team = data.teams[tNum];
-        const players = data.players.filter(p => p.team === tNum).map(p => p.name).join(", ");
-        
-        const box = document.createElement('div');
-        box.className = "team-ready-box";
-        box.innerHTML = `
-            ${isHost ? `<input value="${team.name}" onchange="updateTeamName(${tNum}, this.value)">` : `<h4>${team.name}</h4>`}
-            <div>${players || "Пусто"}</div>
+        const pList = data.players.filter(p => p.team === tNum).map(p => p.name).join(", ");
+        container.innerHTML += `
+            <div class="team-ready-box">
+                <h4>${team.name}</h4>
+                <div style="font-weight:900">${pList || "Ожидание..."}</div>
+            </div>
         `;
-        list.appendChild(box);
     });
 
-    if(isHost) {
-        document.getElementById('host-controls').classList.remove('hidden');
-        document.getElementById('wait-msg').classList.add('hidden');
+    if (isHost) {
+        document.getElementById('host-ui').classList.remove('hidden');
+        document.getElementById('client-msg').classList.add('hidden');
     }
 });
 
-// // Хост меняет название команды
-function updateTeamName(num, name) {
-    // В данной версии упрощено: можно добавить emit, если нужно сохранять названия на сервере
-}
-
-// // Хост запускает игру
-function startGame() {
-    const t = document.getElementById('setup-timer').value;
-    const r = document.getElementById('setup-rounds').value;
+// // 3. Запуск (Хост)
+function requestStart() {
     const words = [...ALIAS_WORDS.common].sort(() => 0.5 - Math.random());
-    socket.emit('alias-start', { roomId: myRoom, words, timer: t, maxRounds: r });
+    const t = document.getElementById('set-timer').value;
+    const r = document.getElementById('set-rounds').value;
+    socket.emit('alias-start', { roomId: currentRoom, words, timer: t, maxRounds: r });
 }
 
-// // Экран подготовки
-socket.on('alias-prep-screen', data => {
+// // 4. Подготовка
+socket.on('alias-prep-screen', d => {
     toScreen('screen-prep');
-    document.getElementById('prep-team').innerText = data.teamName;
-    document.getElementById('prep-player').innerText = data.playerName;
+    document.getElementById('prep-team-name').innerText = d.teamName;
+    document.getElementById('prep-player-name').innerText = d.playerName;
 });
 
-// // Новый ход (слово)
-socket.on('alias-new-turn', data => {
+// // 5. Игровой цикл
+socket.on('alias-new-turn', d => {
     toScreen('screen-game');
-    const card = document.getElementById('word-display');
-    const info = document.getElementById('swipe-info');
+    const wordEl = document.getElementById('word-text');
+    const roleEl = document.getElementById('role-text');
+    const btns = document.getElementById('game-btns');
     
-    // Свайпать может только один человек из команды угадывающих (назначается сервером)
-    // В этой версии упростим: активный игрок объясняет, а ВТОРОЙ игрок команды (или случайный из другой) свайпает
-    // Чтобы не усложнять, сервер шлет флаг isSwiper
-    
-    if (data.activePlayerId === socket.id) {
-        card.innerText = data.word;
-        info.innerText = "ТЫ ОБЪЯСНЯЕШЬ!";
-        canSwipe = false;
-    } else if (data.isSwiper) {
-        card.innerText = "СЛУШАЙ И СВАЙПАЙ";
-        info.innerText = "ТЫ УГАДЫВАЕШЬ (СВАЙП)";
-        canSwipe = true;
+    // // Свайпать/жать кнопки может один случайный игрок из ПРОТИВОПОЛОЖНОЙ команды
+    canControl = d.isSwiper;
+    btns.classList.toggle('hidden', !canControl);
+
+    if (d.activePlayerId === socket.id) {
+        wordEl.innerText = d.word;
+        roleEl.innerText = "ОБЪЯСНЯЙ СЛОВО!";
+    } else if (canControl) {
+        wordEl.innerText = "СЛУШАЙ ВНИМАТЕЛЬНО";
+        roleEl.innerText = "ТЫ УГАДЫВАЕШЬ (ЖМИ/СВАЙПАЙ)";
     } else {
-        card.innerText = "ЖДИ...";
-        info.innerText = "Смотри на экран друга";
-        canSwipe = false;
+        wordEl.innerText = "ЖДЕМ...";
+        roleEl.innerText = "Смотри за игрой";
     }
 });
 
-// // Логика свайпа
-let startX = 0;
-const card = document.getElementById('main-card');
+// // 6. Действия (Кнопки или Свайп)
+function handleAction(isOk) {
+    if (!canControl) return;
+    socket.emit('alias-action', { roomId: currentRoom, isCorrect: isOk });
+}
 
-card.addEventListener('touchstart', e => { if(!canSwipe) return; startX = e.touches[0].clientX; });
+// // Логика Свайпа
+let startX = 0;
+const card = document.getElementById('word-card');
+card.addEventListener('touchstart', e => { if(canControl) startX = e.touches[0].clientX; });
 card.addEventListener('touchmove', e => {
-    if(!canSwipe) return;
-    let move = e.touches[0].clientX - startX;
-    card.style.transform = `translateX(${move}px) rotate(${move/10}deg)`;
+    if(!canControl) return;
+    let x = e.touches[0].clientX - startX;
+    card.style.transform = `translateX(${x}px) rotate(${x/15}deg)`;
 });
 card.addEventListener('touchend', e => {
-    if(!canSwipe) return;
-    let move = e.changedTouches[0].clientX - startX;
-    if (Math.abs(move) > 100) {
-        socket.emit('alias-action', { roomId: myRoom, isCorrect: move > 0 });
-    }
+    if(!canControl) return;
+    let x = e.changedTouches[0].clientX - startX;
+    if (Math.abs(x) > 100) handleAction(x > 0);
     card.style.transform = "";
 });
 
-// // Таймер и счет
-socket.on('alias-timer-tick', d => document.getElementById('timer').innerText = `00:${d.timeLeft}`);
-socket.on('alias-update-score', d => document.getElementById('current-points').innerText = d.score);
+// // 7. Таймер и очки
+socket.on('alias-timer-tick', d => {
+    const m = Math.floor(d.timeLeft / 60);
+    const s = d.timeLeft % 60;
+    document.getElementById('timer-val').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+});
+socket.on('alias-update-score', d => document.getElementById('score-val').innerText = d.score);
 
-// // Финал
-socket.on('alias-game-over', data => {
+// // 8. Финал
+socket.on('alias-game-over', d => {
     toScreen('screen-results');
-    document.getElementById('final-results').innerHTML = `
-        <div class="team-ready-box"> ПОБЕДИТЕЛЬ: ${data.winner} </div>
-        <p>${data.team1Name}: ${data.team1Score}</p>
-        <p>${data.team2Name}: ${data.team2Score}</p>
+    document.getElementById('results-list').innerHTML = `
+        <div class="team-ready-box">🏆 ПОБЕДА: ${d.winner}</div>
+        <p style="font-weight:900">${d.team1Name}: ${d.team1Score}</p>
+        <p style="font-weight:900">${d.team2Name}: ${d.team2Score}</p>
     `;
 });
