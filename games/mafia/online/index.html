@@ -3,88 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MAFIA ONLINE | NOIR</title>
-    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <title>MAFIA: MODERN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Кнопка выхода -->
-    <div class="back-btn" onclick="handleBack()"><i class="fas fa-arrow-left"></i></div>
-
-    <!-- ФОНОВЫЕ ЭФФЕКТЫ -->
-    <div class="grain"></div>
+    <!-- Кнопка возврата на LoveCouple.ru -->
+    <div class="top-nav">
+        <div class="nav-btn" onclick="handleBack()"><i class="fas fa-chevron-left"></i> Назад</div>
+        <div id="room-badge" class="room-badge hidden" onclick="copyCode()">
+            <span id="room-id-display">CODE</span> <i class="far fa-copy"></i>
+        </div>
+    </div>
 
     <!-- ЭКРАН 1: ВХОД -->
     <div id="screen-login" class="screen active">
-        <div class="stamp">TOP SECRET</div>
-        <h1 class="main-title">MAFIA</h1>
-        <p class="subtitle">PROJECT NOIR</p>
+        <div class="hero">
+            <h1>MAFIA</h1>
+            <p>ONLINE STRATEGY</p>
+        </div>
         
-        <div class="input-block">
-            <input type="text" id="username" placeholder="ВАШЕ ИМЯ" maxlength="12">
-            <button class="btn" onclick="createRoom()">СОЗДАТЬ ДЕЛО</button>
-            <div class="divider">ИЛИ ВСТУПИТЬ</div>
-            <input type="text" id="room-input" placeholder="КОД ДЕЛА" style="text-transform: uppercase;">
-            <button class="btn btn-red" onclick="joinRoom()">ВСТУПИТЬ</button>
+        <div class="main-card">
+            <input type="text" id="username" placeholder="Введите ваше имя" maxlength="12">
+            <button class="btn-primary" onclick="createRoom()">Создать игру</button>
+            <div class="hr">или войти по коду</div>
+            <input type="text" id="room-input" placeholder="КОД" style="text-transform: uppercase;">
+            <button class="btn-outline" onclick="joinRoom()">Присоединиться</button>
         </div>
     </div>
 
     <!-- ЭКРАН 2: ЛОББИ -->
     <div id="screen-lobby" class="screen">
-        <div class="paper-header" onclick="copyCode()">
-            <span>ДЕЛО №</span>
-            <span id="room-id-display">-----</span>
-            <i class="fas fa-copy"></i>
-        </div>
-        
-        <div class="player-list-container">
-            <h3>СПИСОК ПОДОЗРЕВАЕМЫХ:</h3>
-            <div id="player-list"></div>
-        </div>
-
-        <button id="start-btn" class="btn btn-red" onclick="startGame()" style="display: none;">НАЧАТЬ ОБЛАВУ</button>
-        <p id="wait-msg" class="pulse">Ждем комиссара...</p>
-    </div>
-
-    <!-- ЭКРАН 3: РАСКРЫТИЕ РОЛИ -->
-    <div id="screen-reveal" class="screen">
-        <div class="folder">
-            <div class="photo-area">
-                <i class="fas fa-user-secret"></i>
+        <div class="main-card lobby-card">
+            <h3>Подозреваемые</h3>
+            <div id="player-list" class="player-list">
+                <!-- Сюда JS добавит игроков -->
             </div>
-            <h2 id="role-display">...</h2>
-            <p id="role-desc">Ваша задача будет ясна после начала...</p>
+            
+            <div class="lobby-footer">
+                <button id="start-btn" class="btn-primary" onclick="startGame()" style="display: none;">Начать следствие</button>
+                <div id="wait-msg" class="wait-status">Ожидание игроков...</div>
+            </div>
         </div>
-        <div class="night-transition">ГОРОД ЗАСЫПАЕТ...</div>
     </div>
 
-    <!-- ЭКРАН 4: ИГРОВОЕ ПОЛЕ (НОЧЬ/ДЕНЬ) -->
+    <!-- ЭКРАН 3: РОЛЬ -->
+    <div id="screen-reveal" class="screen">
+        <div class="role-card-container">
+            <div class="role-card" id="role-card-ui">
+                <div class="role-icon"><i id="role-icon-i" class="fas fa-user-secret"></i></div>
+                <h2 id="role-display">МАФИЯ</h2>
+                <p id="role-desc">Описание вашей роли появится здесь.</p>
+            </div>
+        </div>
+        <div class="countdown-bar">Город засыпает через несколько секунд...</div>
+    </div>
+
+    <!-- ЭКРАН 4: ИГРА -->
     <div id="screen-game" class="screen">
-        <div id="phase-header" class="phase-header">НОЧЬ</div>
-        <div class="game-info">
-            <span id="game-instruction">Выберите цель:</span>
+        <div class="game-header">
+            <h2 id="phase-title">ФАЗА</h2>
+            <p id="game-instruction">Выберите цель</p>
         </div>
         
-        <div id="player-grid" class="player-grid"></div>
-        
-        <div id="dead-overlay" class="dead-msg hidden">ВЫ МЕРТВЫ И НЕ МОЖЕТЕ ГОВОРИТЬ</div>
+        <div id="player-grid" class="player-grid">
+            <!-- Сюда JS добавит живых игроков -->
+        </div>
+
+        <div id="dead-status" class="status-overlay hidden">
+            <i class="fas fa-ghost"></i> ВЫ ВЫБЫЛИ ИЗ ИГРЫ
+        </div>
     </div>
 
     <!-- ЭКРАН 5: ФИНАЛ -->
     <div id="screen-results" class="screen">
-        <div class="blood-splatter"></div>
-        <h1 id="winner-text">ПОБЕДА</h1>
-        <div id="final-stats"></div>
-        <button class="btn" onclick="location.reload()">В МЕНЮ</button>
+        <div class="result-box">
+            <h1 id="winner-text">ПОБЕДА</h1>
+            <div id="final-stats"></div>
+            <button class="btn-primary" onclick="location.reload()">В МЕНЮ</button>
+        </div>
     </div>
 
-    <!-- ОВЕРЛЕЙ НОЧИ ДЛЯ МИРНЫХ -->
+    <!-- ОВЕРЛЕЙ НОЧИ -->
     <div id="night-overlay" class="night-overlay">
-        <div class="moon"></div>
-        <h2>ВЫ СПИТЕ...</h2>
-        <p>На улицах города происходят темные дела</p>
+        <div class="night-content">
+            <div class="loader-circle"></div>
+            <h2>ГОРОД СПИТ</h2>
+            <p>Сейчас ходят активные роли...</p>
+        </div>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
