@@ -1,5 +1,5 @@
 (function() {
-    const socket = io("https://ваша-ссылка.amvera.io", { transports: ["polling"] });
+    const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ["polling"] });
     let myName, myRoom, isMyTurn = false, gamePool = [], timerInterval;
     let wakeLock = null;
 
