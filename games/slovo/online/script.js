@@ -8,15 +8,31 @@
         if(target) target.classList.add('active');
     }
 
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ: берет данные из ваших переменных words и alphabet
     function getCard() {
-        let alpha = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
-        let lets = Array.from({length:3}, () => alpha[Math.floor(Math.random()*alpha.length)]).join(" ");
         let word = "СЛОВО";
-        if (window.cards) {
-            const c = window.cards[Math.floor(Math.random()*window.cards.length)];
-            word = (typeof c === 'object') ? (c.word || "СЛОВО") : c;
+        let lets = "? ? ?";
+
+        // 1. Берем случайное слово из массива words (из cards.js)
+        if (window.words && Array.isArray(window.words)) {
+            word = window.words[Math.floor(Math.random() * window.words.length)];
+        } 
+
+        // 2. Генерируем 3 случайные буквы из строки alphabet (из cards.js)
+        if (window.alphabet) {
+            const alphaArray = window.alphabet.split("");
+            const randomLetters = [];
+            for (let i = 0; i < 3; i++) {
+                const char = alphaArray[Math.floor(Math.random() * alphaArray.length)];
+                randomLetters.push(char);
+            }
+            lets = randomLetters.join(" ");
         }
-        return { word: word.toUpperCase(), letters: lets };
+
+        return { 
+            word: word.toUpperCase(), 
+            letters: lets.toUpperCase() 
+        };
     }
 
     window.joinLobby = function() {
