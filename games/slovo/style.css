@@ -11,76 +11,163 @@ body {
     background-size: 20px 20px;
     color: var(--ink);
     font-family: "Courier New", Courier, monospace;
-    display: flex; justify-content: center; align-items: center;
-    min-height: 100vh; margin: 0; overflow-x: hidden;
-}
-
-/* ГЛАВНОЕ ИСПРАВЛЕНИЕ: Скрываем все экраны по умолчанию */
-.screen {
-    display: none; 
-    flex-direction: column;
-    width: 100%;
-}
-
-/* Показываем только тот экран, у которого есть класс .active */
-.screen.active {
-    display: flex !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
 }
 
 .app-container {
     background: var(--bg-paper);
-    width: 92%; max-width: 420px; padding: 40px 20px;
-    box-shadow: 15px 15px 0px #000; position: relative;
-    border: 2px solid var(--ink); transform: rotate(-1deg);
+    width: 90%;
+    max-width: 420px;
+    padding: 40px 20px;
+    box-shadow: 15px 15px 0px #000;
+    position: relative;
+    border: 2px solid var(--ink);
+    transform: rotate(-1deg);
 }
 
+/* Эффект скотча */
+.app-container::before {
+    content: "";
+    position: absolute;
+    top: -20px;
+    left: 30%;
+    width: 100px;
+    height: 35px;
+    background: var(--tape-color);
+    transform: rotate(5deg);
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+.screen { display: flex; flex-direction: column; }
+.hidden { display: none !important; }
+
 h1 {
-    font-size: 2.5rem; text-align: center; background: var(--ink);
-    color: var(--bg-paper); padding: 10px; margin: 0 0 20px 0;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    text-align: center;
+    background: var(--ink);
+    color: var(--bg-paper);
+    padding: 10px;
+    margin-top: 0;
+    transform: rotate(2deg);
 }
 
 .rules-box {
-    border: 2px dashed var(--ink); padding: 15px; margin: 15px 0;
-    background: #fff; font-size: 0.9rem; position: relative;
+    border: 2px dashed var(--ink);
+    padding: 15px;
+    margin: 20px 0;
+    background: #fff;
+    font-size: 0.9rem;
+    transform: rotate(-1deg);
 }
 
+.input-section { display: flex; gap: 5px; }
+
 input {
-    border: 2px solid var(--ink); background: transparent; padding: 12px;
-    font-family: inherit; font-weight: bold; width: 100%; margin-bottom: 10px;
+    border: 2px solid var(--ink);
+    background: transparent;
+    padding: 10px;
+    font-family: inherit;
+    font-weight: bold;
+    flex-grow: 1;
 }
 
 .btn-zinc {
-    background: var(--accent-marker); color: white; border: 2px solid var(--ink);
-    padding: 15px; cursor: pointer; font-family: inherit; font-weight: bold;
-    text-transform: uppercase; box-shadow: 4px 4px 0px var(--ink); width: 100%;
+    background: var(--accent-marker);
+    color: white;
+    border: 2px solid var(--ink);
+    padding: 10px 15px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 4px 4px 0px var(--ink);
 }
 
-.btn-zinc:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px; }
+.btn-zinc:active {
+    box-shadow: 0px 0px 0px;
+    transform: translate(2px, 2px);
+}
 
+#players-list {
+    margin: 20px 0;
+    padding: 0;
+    list-style: none;
+}
+
+#players-list li {
+    background: #eee;
+    margin-bottom: 5px;
+    padding: 8px;
+    border: 1px solid var(--ink);
+    transform: rotate(calc(var(--r, 1) * 1deg));
+}
+
+/* Игровой экран */
 .game-card {
-    background: #fff; border: 1px solid var(--ink); padding: 40px 10px;
-    text-align: center; margin: 20px 0; position: relative;
+    background: #fff;
+    border: 1px solid var(--ink);
+    padding: 30px 10px;
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+    box-shadow: 8px 8px 0px rgba(0,0,0,0.05);
 }
 
 .letter-tag {
-    position: absolute; top: -15px; left: 10px; background: var(--ink);
-    color: #fff; padding: 5px 10px; font-weight: bold;
+    position: absolute;
+    top: -15px;
+    left: 10px;
+    background: var(--ink);
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 1.2rem;
 }
 
-.word-display { font-size: 2.2rem; font-weight: 900; text-decoration: underline; }
-
-#timer { font-size: 3.5rem; font-weight: 900; text-align: center; color: var(--accent-marker); }
-
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); z-index: 1000; display: flex;
-    align-items: center; justify-content: center; padding: 20px;
+.word-display {
+    font-size: 2.2rem;
+    font-weight: 900;
+    text-decoration: underline;
+    margin: 20px 0;
 }
 
-.hidden { display: none !important; }
+#timer {
+    font-size: 3rem;
+    font-weight: 900;
+    text-align: center;
+    color: var(--accent-marker);
+    border-bottom: 4px double var(--ink);
+    margin-bottom: 10px;
+}
 
+.res-item {
+    border-bottom: 2px solid var(--ink);
+    padding: 10px 0;
+
+}
 .zine-back-button {
-    position: absolute; top: -45px; left: 0; background: var(--ink);
-    color: var(--bg-paper); padding: 8px 15px; text-decoration: none;
-    font-weight: bold; transform: rotate(-2deg); box-shadow: 4px 4px 0px var(--tape-color);
+    position: absolute;
+    top: -45px; /* Кнопка «парит» над основным блоком */
+    left: 0;
+    background: var(--ink); /* Черный цвет из твоих переменных */
+    color: var(--bg-paper); /* Цвет бумаги */
+    padding: 8px 15px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: 1px solid var(--ink);
+    transform: rotate(-2deg); /* Панк-наклон */
+    box-shadow: 4px 4px 0px var(--tape-color); /* Желтая тень как скотч */
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.zine-back-button:hover {
+    transform: rotate(0deg) scale(1.05);
+    background: var(--accent-marker); /* Оранжевый при наведении */
 }
