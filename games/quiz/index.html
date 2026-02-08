@@ -19,7 +19,14 @@
             </div>
             
             <div class="card-glass">
-                <p class="section-tag">КТО ИГРАЕТ?</p>
+                <p class="section-tag">РЕЖИМ ИГРЫ</p>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="primary-btn" onclick="location.href='online/index.html'" style="margin-top:0; background: var(--bg); color: white; flex: 1; font-size: 0.8rem; height: 50px;">
+                        🌐 ВОЙТИ В ОНЛАЙН
+                    </button>
+                </div>
+
+                <p class="section-tag">КТО ИГРАЕТ ТУТ? (OFFLINE)</p>
                 <div id="player-list" class="players-container">
                     <div class="player-input-wrapper">
                         <input type="text" class="joy-input" placeholder="Имя игрока" value="Игрок 1">
@@ -34,6 +41,7 @@
                 <p class="section-tag" style="margin-top:20px">ВЫБЕРИ ТЕМЫ</p>
                 <div class="category-grid" id="categories-box"></div>
             </div>
+            
             <button class="primary-btn pulse" onclick="confirmSetup()">ПОЕХАЛИ!</button>
         </section>
 
@@ -77,6 +85,7 @@
             </div>
         </div>
     </div>
+
     <script src="questions.js"></script>
     <script src="script.js"></script>
 </body>
