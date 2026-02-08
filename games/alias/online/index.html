@@ -3,65 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alias Online</title>
+    <title>ALIAS: NEO</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
-    <div class="app-shell">
-        <section class="screen active" id="screen-auth">
-            <h1 class="pop-title">ALIAS<span>ON</span></h1>
-            <input type="text" id="player-name" class="joy-input" placeholder="ТВОЕ ИМЯ">
-            <input type="text" id="room-input" class="joy-input" placeholder="№ КОМНАТЫ">
-            <button class="btn-pop-main" onclick="joinGame(true)">СОЗДАТЬ</button>
-            <button class="btn-pop-main" style="background:var(--purple)" onclick="joinGame(false)">ВОЙТИ</button>
-        </section>
 
-        <section class="screen" id="screen-lobby">
-            <h2 style="text-align:center; margin-bottom: 15px;">ROOM: <span id="room-id-display">0000</span></h2>
-            <div id="lobby-teams"></div>
-            
-            <div id="host-ui" class="hidden">
-                <div style="display:flex; gap:10px">
-                    <input type="number" id="set-timer" class="joy-input" value="60">
-                    <input type="number" id="set-rounds" class="joy-input" value="3">
-                </div>
-                <button class="btn-pop-main" onclick="requestStart()">НАЧАТЬ ИГРУ</button>
+    <!-- Экран 1: Вход -->
+    <div id="screen-login" class="screen active">
+        <h1 class="logo">ALIAS<br>ONLINE</h1>
+        <div class="card">
+            <input type="text" id="username" placeholder="ТВОЕ ИМЯ" maxlength="10">
+            <button onclick="createRoom()">СОЗДАТЬ КОМНАТУ</button>
+            <div class="join-block">
+                <input type="text" id="room-code-input" placeholder="КОД КОМНАТЫ">
+                <button onclick="joinRoom()" class="btn-secondary">ВОЙТИ</button>
             </div>
-            <p id="client-msg" style="text-align:center; font-weight:800;">ЖДЕМ ХОСТА...</p>
-        </section>
-
-        <section class="screen" id="screen-prep">
-            <div class="team-ready-box" style="margin-top:auto; margin-bottom:auto; text-align:center;">
-                <h4 id="prep-team-name">КОМАНДА</h4>
-                <h1 id="prep-player-name">ИГРОК</h1>
-                <p>ГОТОВИТСЯ ОБЪЯСНЯТЬ</p>
-            </div>
-        </section>
-
-        <section class="screen" id="screen-game">
-            <div class="game-header">
-                <div class="timer-bubble" id="timer-val">00:00</div>
-                <div class="score-pill">🔥 <span id="score-val">0</span></div>
-            </div>
-            <div class="word-card" id="word-card">
-                <h2 id="word-text">...</h2>
-            </div>
-            <div class="game-controls hidden" id="game-btns">
-                <button class="btn-game btn-err" onclick="handleAction(false)">ПРОПУСК</button>
-                <button class="btn-game btn-ok" onclick="handleAction(true)">УГАДАНО</button>
-            </div>
-            <p id="role-text" style="text-align:center; font-weight:800; opacity:0.6; margin-bottom:10px;"></p>
-        </section>
-
-        <section class="screen" id="screen-results">
-            <h1 class="pop-title">ИТОГИ</h1>
-            <div id="results-list"></div>
-            <button class="btn-pop-main" onclick="location.reload()">В МЕНЮ</button>
-        </section>
+        </div>
     </div>
 
-    <script src="cards.js"></script>
+    <!-- Экран 2: Лобби -->
+    <div id="screen-lobby" class="screen">
+        <div class="header">
+            <h2>ROOM: <span id="lobby-code">---</span></h2>
+        </div>
+        <div class="card">
+            <h3>ИГРОКИ:</h3>
+            <ul id="player-list"></ul>
+        </div>
+        <button id="start-btn" onclick="startGame()" style="display:none;">ПОГНАЛИ!</button>
+        <p id="wait-msg">Ждем хоста...</p>
+    </div>
+
+    <!-- Экран 3: Игра -->
+    <div id="screen-game" class="screen">
+        <div class="top-bar">
+            <div class="timer" id="timer">60</div>
+            <div class="role-badge" id="my-role">РОЛЬ</div>
+        </div>
+
+        <!-- Карточка со словом (Видна Объясняющему и Судье) -->
+        <div id="word-card" class="word-card">
+            <h1 id="current-word">???</h1>
+            <p id="instruction-text">Жди начала...</p>
+        </div>
+
+        <!-- Кнопки управления (Видны только Судье) -->
+        <div id="judge-controls" class="controls hidden">
+            <button class="btn-skip" onclick="sendAction('skip')">ПРОПУСК</button>
+            <button class="btn-ok" onclick="sendAction('guessed')">УГАДАЛ!</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
