@@ -1,46 +1,50 @@
-// Устанавливаем соединение с сервером Amvera по порту 80
+// Устанавливаем соединение с сервером
 const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
 
-// Переменные для хранения состояния текущей сессии
-let currentRoom = "";   // ID комнаты, в которой находится игрок
-let isHost = false;     // Флаг, является ли игрок создателем (хостом)
+// Состояние игры
+let currentRoom = "";   // ID текущей комнаты
+let isHost = false;     // Является ли пользователь хостом
 
-// --- ФУНКЦИИ ВЗАИМОДЕЙСТВИЯ (ОТПРАВКА НА СЕРВЕР) ---
+// --- ФУНКЦИИ ОТПРАВКИ ---
 
-// Функция для создания новой игровой комнаты
+// Функция создания игры (ID генерируется автоматически)
 function createOnlineGame() {
+    // Получаем только имя
     const name = document.getElementById('player-name').value;
     if (!name) return alert("Введите имя!");
     
-    // Генерируем случайный ID комнаты из 4 цифр
+    // Генерируем 4-значный номер
     const roomId = Math.floor(1000 + Math.random() * 9000).toString();
     
-    // ВАЖНО: Сохраняем ID комнаты локально перед отправкой
-    currentRoom = roomId; 
+    // Запоминаем ID комнаты локально
+    currentRoom = roomId;
     
-    // Отправляем серверу запрос на создание
+    // Отправляем серверу
     socket.emit('alias-join', { roomId, playerName: name });
 }
 
-// Функция для входа в уже существующую комнату по её ID
+// Функция входа (имя и ID комнаты обязательны)
 function joinOnlineGame() {
     const name = document.getElementById('player-name').value;
     const room = document.getElementById('room-id').value;
     
-    if (!name || !room) return alert("Заполни все поля!");
+    if (!name || !room) return alert("Введите имя и ID комнаты!");
     
-    // Сохраняем ID комнаты, которую ввели вручную
-    currentRoom = room; 
+    // Запоминаем ID комнаты, в которую входим
+    currentRoom = room;
     
     socket.emit('alias-join', { playerName: name, roomId: room });
 }
 
-// Функция запуска игры
+// Функция нажатия "Старт" (только для хоста)
 function requestStart() {
-    // Берем слова из cards.js
+    // Проверяем, что комната установлена
+    if (!currentRoom) return alert("Ошибка: комната не определена");
+
+    // Берем слова из cards.js (категория common)
     const words = [...ALIAS_WORDS.common].sort(() => 0.5 - Math.random());
     
-    // Отправляем сигнал старта
+    // Отправляем команду серверу
     socket.emit('alias-start', { 
         roomId: currentRoom, 
         words: words, 
@@ -48,49 +52,50 @@ function requestStart() {
     });
 }
 
-// --- ОБРАБОТКА ОТВЕТОВ СЕРВЕРА (ПРИЕМ ДАННЫХ) ---
+// --- ОБРАБОТКА ОТВЕТОВ СЕРВЕРА ---
 
-// Обработка обновления данных о комнате
 socket.on('alias-update-lobby', (data) => {
-    // Переключаем экран на лобби
+    // Переходим в лобби
     toScreen('screen-lobby');
     
-    // Выводим ID комнаты на экран
+    // ВАЖНО: Обновляем ROOM ID в интерфейсе
     document.getElementById('display-room-id').innerText = currentRoom;
 
-    // Ищем себя в списке игроков, чтобы проверить статус хоста
+    // Проверяем статус хоста по списку игроков от сервера
     const me = data.players.find(p => p.id === socket.id);
     if (me) {
-        isHost = me.isHost; // Берем статус хоста напрямую от сервера
+        isHost = me.isHost;
     }
 
-    // Обновляем визуальный список игроков
+    // Обновляем список игроков и кнопки
     updatePlayers(data.players);
 });
 
-// Событие начала хода
+// Когда игра начинается
 socket.on('alias-new-turn', (data) => {
+    // Показываем игровой экран
     toScreen('screen-game');
+    
+    // Устанавливаем слово
     document.getElementById('word-display').innerText = data.word;
     
-    // Логика блокировки карточки для тех, кто не водит
+    // Если сейчас не мой ход — блокируем управление
     const isMyTurn = data.activePlayerId === socket.id;
     const cardElement = document.getElementById('main-card');
     cardElement.style.pointerEvents = isMyTurn ? 'auto' : 'none';
     cardElement.style.opacity = isMyTurn ? '1' : '0.7';
     
-    // Скрываем/показываем кнопки управления в зависимости от хода
+    // Убираем/показываем кнопки Угадано/Пропуск
     document.getElementById('game-controls').style.display = isMyTurn ? 'flex' : 'none';
 });
 
-// Обновление текущего счета
+// Обновление счета
 socket.on('alias-update-score', (data) => {
     document.getElementById('live-score').innerText = data.score;
 });
 
 // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
-// Отрисовка игроков и управление кнопкой СТАРТ
 function updatePlayers(players) {
     const list = document.getElementById('player-list');
     list.innerHTML = players.map(p => `
@@ -100,7 +105,7 @@ function updatePlayers(players) {
         </div>
     `).join('');
 
-    // Показываем кнопку старта и скрываем текст "Ждем хоста", если мы хост
+    // Управление видимостью кнопки Старт и сообщения ожидания
     const startBtn = document.getElementById('start-btn-online');
     const waitMsg = document.getElementById('wait-msg');
 
@@ -113,19 +118,19 @@ function updatePlayers(players) {
     }
 }
 
-// Переключение экранов
 function toScreen(id) {
     document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+    const screen = document.getElementById(id);
+    if (screen) screen.classList.add('active');
 }
 
-// Обработка результата (свайп/клик)
 function handleOnlineWord(isCorrect) {
     socket.emit('alias-action', { 
         roomId: currentRoom, 
         isCorrect: isCorrect 
     });
     
+    // Анимация карточки
     const card = document.getElementById('main-card');
     card.style.transition = '0.3s ease-out';
     card.style.transform = isCorrect ? 'translateX(350px) rotate(30deg)' : 'translateX(-350px) rotate(-30deg)';
