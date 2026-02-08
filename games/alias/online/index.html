@@ -3,104 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alias Online - LoveCouple</title>
-    <link rel="stylesheet" href="../style.css">
+    <title>Alias Online</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
-        /* Стили для командных боксов в лобби */
-        .team-box { transition: all 0.3s ease; background: rgba(255,255,255,0.1); }
-        .active-team { transform: scale(1.02); background: rgba(255,255,255,0.2); }
-        /* Стили для свайпов */
-        #main-card { touch-action: none; user-select: none; position: relative; }
-        .game-actions { display: flex; justify-content: space-between; width: 100%; gap: 15px; margin-top: 20px; }
-        .btn-check { background: var(--mint) !important; flex: 1; }
-        .btn-skip { background: var(--purple) !important; flex: 1; }
-        /* Управление раундами */
-        #rounds-range { width: 100%; margin: 10px 0; accent-color: var(--purple); }
-    </style>
 </head>
 <body>
     <div class="app-shell">
-        <div id="menu-controls">
-            <div class="home-btn" onclick="location.href='../index.html'">🏠</div>
-            <div class="rules-btn" id="rules-icon" onclick="toggleOnlineRules(true)">?</div>
+        <div id="top-nav">
+            <div class="nav-btn" onclick="location.href='../index.html'">🏠</div>
+            <div class="nav-btn" id="rules-icon" onclick="toggleOnlineRules(true)">?</div>
         </div>
 
-        <header class="pop-header" id="game-header" style="visibility: hidden;">
-            <div class="back-circle" onclick="location.reload()">⚙️</div>
-            <div class="timer-bubble" id="timer">00:00</div>
-            <div class="score-pill">🔥 <span id="live-score">0</span></div>
+        <header id="game-header" class="hidden" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div id="timer" style="font-weight: bold; font-size: 1.2rem; background: #fff; padding: 5px 15px; border-radius: 20px;">00:00</div>
+            <div style="background: #fff; padding: 5px 15px; border-radius: 20px;">🔥 <span id="live-score">0</span></div>
         </header>
 
-        <section class="pop-screen active" id="screen-auth">
-            <h1 class="pop-title">AL<span>IAS</span> ON</h1>
-            <div class="card-glass shadow-box">
-                <input type="text" id="player-name" class="joy-input" placeholder="Твоё имя">
-                <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты (для входа)">
+        <section class="screen active" id="screen-auth">
+            <h1 class="main-logo">ALIAS<span>ON</span></h1>
+            <div class="glass-card">
+                <input type="text" id="player-name" class="joy-input" placeholder="Твое имя">
+                <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты">
                 <div class="btn-group">
-                    <button class="btn-pop-main" onclick="createOnlineGame()">СОЗДАТЬ</button>
-                    <button class="btn-pop-main btn-secondary" onclick="joinOnlineGame()">ВОЙТИ</button>
+                    <button class="btn-main" onclick="createOnlineGame()">СОЗДАТЬ ИГРУ</button>
+                    <button class="btn-sub" onclick="joinOnlineGame()">ПРИСОЕДИНИТЬСЯ</button>
                 </div>
             </div>
         </section>
 
-        <section class="pop-screen" id="screen-lobby">
-            <h2 class="pop-title">ЛОББИ</h2>
-            <div class="summary-box">
-                <p>ROOM ID: <span id="display-room-id" style="font-weight: bold; color: var(--purple);">----</span></p>
-            </div>
+        <section class="screen" id="screen-lobby">
+            <h2 style="text-align: center; margin-bottom: 5px;">КОМНАТА: <span id="display-room-id">----</span></h2>
             
-            <div id="host-settings" style="display:none; margin: 20px 0;">
-                <p class="section-label">КОЛИЧЕСТВО РАУНДОВ: <span id="round-val">3</span></p>
-                <input type="range" id="rounds-range" min="1" max="10" value="3" oninput="updateRoundsDisplay(this.value)">
-                
-                <p class="section-label" style="margin-top: 15px;">ВРЕМЯ НА ХОД</p>
-                <div class="chips-group" style="display: flex; justify-content: center; gap: 10px;">
-                    <div class="pop-chip active" onclick="setOnlineTime(60, this)">60с</div>
-                    <div class="pop-chip" onclick="setOnlineTime(90, this)">90с</div>
+            <div id="host-settings" class="glass-card hidden" style="margin-bottom: 20px;">
+                <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span>Раундов: <b id="round-val">3</b></span>
+                    <input type="range" id="rounds-range" min="1" max="10" value="3" oninput="updateRoundsDisplay(this.value)">
+                </div>
+                <div style="display:flex; justify-content: space-between; align-items: center;">
+                    <span>Время:</span>
+                    <div style="display:flex; gap: 8px;">
+                        <button class="chip" onclick="setOnlineTime(60, this)" style="padding: 5px 12px; border-radius: 12px; border: 1px solid #ddd; background: #fff;">60с</button>
+                        <button class="chip" onclick="setOnlineTime(90, this)" style="padding: 5px 12px; border-radius: 12px; border: 1px solid #ddd; background: #fff;">90с</button>
+                    </div>
                 </div>
             </div>
 
-            <div id="player-list" class="pop-list"></div>
+            <div id="player-list"></div>
 
-            <div id="lobby-footer" style="margin-top: 20px;">
-                <button id="start-btn-online" class="btn-pop-main" style="display:none;" onclick="requestStart()">СТАРТ</button>
-                <p id="wait-msg" style="font-size: 0.8rem; opacity: 0.7;">Ожидаем, когда хост запустит игру...</p>
+            <div style="margin-top: auto; padding-bottom: 20px;">
+                <button id="start-btn-online" class="btn-main hidden" onclick="requestStart()">ЗАПУСТИТЬ ИГРУ</button>
+                <p id="wait-msg" style="text-align: center; opacity: 0.6;">Ожидаем хоста...</p>
             </div>
         </section>
 
-        <section class="pop-screen" id="screen-game">
-            <div class="card-container">
-                <div class="pop-card word-card" id="main-card">
-                    <h2 id="word-display">ПРИГОТОВЬТЕСЬ...</h2>
+        <section class="screen" id="screen-game">
+            <div class="card-zone">
+                <div class="word-card shadow-box" id="main-card">
+                    <h2 id="word-display" style="font-size: 2.2rem;">...</h2>
                 </div>
             </div>
-            
-            <div class="game-actions" id="game-controls" style="display: none;">
-                <button class="btn-pop-main btn-skip" onclick="handleOnlineWord(false)">ПРОПУСК</button>
-                <button class="btn-pop-main btn-check" onclick="handleOnlineWord(true)">УГАДАНО</button>
+            <div class="game-footer hidden" id="game-controls">
+                <button class="btn-action btn-skip" onclick="handleOnlineWord(false)">ПРОПУСК</button>
+                <button class="btn-action btn-check" onclick="handleOnlineWord(true)">УГАДАНО</button>
             </div>
         </section>
 
-        <section class="pop-screen" id="screen-results">
-            <h2 class="pop-title">ФИНАЛ</h2>
-            <div class="summary-box" id="final-results-list">
-                </div>
-            <button class="btn-pop-main" onclick="location.reload()" style="margin-top: 20px;">В ГЛАВНОЕ МЕНЮ</button>
+        <section class="screen" id="screen-results">
+            <h2 class="main-logo">ИТОГИ</h2>
+            <div id="final-results-list" class="glass-card"></div>
+            <button class="btn-main" onclick="location.reload()" style="margin-top: 20px;">В МЕНЮ</button>
         </section>
     </div>
 
-    <div class="modal-overlay" id="modal-online-rules" style="display: none;">
-        <div class="modal-card">
-            <h3>ПРАВИЛА ONLINE</h3>
-            <ul style="text-align: left; font-size: 0.9rem; line-height: 1.4;">
-                <li>Команды распределяются автоматически.</li>
-                <li>Объясняющий видит слово и кнопки управления.</li>
-                <li>Его команда видит только слово (можете угадывать голосом).</li>
-                <li>Противники не видят слово до конца хода.</li>
-                <li>Свайп вправо — угадано, влево — пропуск.</li>
-            </ul>
-            <button class="btn-pop-main" onclick="toggleOnlineRules(false)">ПОНЯТНО</button>
+    <div class="modal" id="modal-online-rules" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:20px; z-index:100;">
+        <div class="glass-card" style="background:#fff; text-align:center;">
+            <h3>Правила</h3>
+            <p style="font-size: 0.9rem; opacity: 0.8;">Объясняй слова своей команде. Свайп вправо — угадано (+1), влево — пропуск (-1).</p>
+            <button class="btn-main" onclick="toggleOnlineRules(false)">ПОНЯТНО</button>
         </div>
     </div>
 
