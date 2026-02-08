@@ -3,44 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alias Online Pop</title>
+    <title>Alias Online</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div class="app-shell">
         <div class="nav-btns">
-            <div class="home-btn" onclick="location.href='../index.html'">🏠</div>
-            <div class="rules-btn" onclick="toggleModal(true)">?</div>
-        </div>
-
-        <div class="game-header hidden" id="live-header">
-            <div class="timer-bubble" id="timer">00:00</div>
-            <div class="score-pill">🔥 <span id="live-score">0</span></div>
+            <div class="home-btn" onclick="location.href='index.html'">🏠</div>
+            <div class="rules-btn" id="room-number">?</div>
         </div>
 
         <section class="screen active" id="screen-auth">
             <h1 class="pop-title">ALIAS<span>ON</span></h1>
             <input type="text" id="player-name" class="joy-input" placeholder="ТВОЕ ИМЯ">
-            <input type="text" id="room-id" class="joy-input" placeholder="ID КОМНАТЫ">
-            <button class="btn-pop-main" onclick="createGame()">СОЗДАТЬ</button>
-            <button class="btn-pop-main" style="background:var(--purple)" onclick="joinGame()">ВОЙТИ</button>
+            <input type="text" id="join-room-id" class="joy-input" placeholder="№ КОМНАТЫ (ЕСЛИ ЕСТЬ)">
+            <button class="btn-pop-main" onclick="auth(true)">СОЗДАТЬ ИГРУ</button>
+            <button class="btn-pop-main" style="background:var(--purple)" onclick="auth(false)">ВОЙТИ К ДРУГУ</button>
         </section>
 
         <section class="screen" id="screen-lobby">
-            <p class="section-label">КОМНАТА: <span id="display-id">0000</span></p>
-            <div id="player-list"></div>
-            <button id="start-btn" class="btn-pop-main hidden" onclick="requestStart()">ПОГНАЛИ!</button>
+            <div id="team-list"></div>
+            
+            <div id="host-controls" class="hidden">
+                <div class="game-header">
+                    <input type="number" id="setup-timer" class="joy-input" value="60" style="width:48%">
+                    <input type="number" id="setup-rounds" class="joy-input" value="3" style="width:48%">
+                </div>
+                <button class="btn-pop-main" onclick="startGame()">НАЧАТЬ ИГРУ</button>
+            </div>
+            <p id="wait-msg" style="text-align:center; font-weight:800; margin-top:20px;">ЖДЕМ ХОСТА...</p>
+        </section>
+
+        <section class="screen" id="screen-prep">
+            <div class="team-ready-box">
+                <h4 id="prep-team">КОМАНДА</h4>
+                <h2 id="prep-player">ИГРОК</h2>
+                <p>ОБЪЯСНЯЕТ СЛОВА!</p>
+            </div>
         </section>
 
         <section class="screen" id="screen-game">
+            <div class="game-header">
+                <div class="timer-bubble" id="timer">01:00</div>
+                <div class="score-pill">🔥 <span id="current-points">0</span></div>
+            </div>
             <div class="word-card" id="main-card">
-                <h2 id="word-display">ЖДЕМ...</h2>
+                <h2 id="word-display">ПРИГОТОВЬТЕСЬ</h2>
             </div>
-            <div class="game-actions hidden" id="controls">
-                <button class="btn-skip" onclick="sendAction(false)">ПРОПУСК</button>
-                <button class="btn-check" onclick="sendAction(true)">УГАДАНО</button>
-            </div>
+            <p id="swipe-info" style="text-align:center; font-weight:800; margin-top:20px; opacity:0.5"></p>
+        </section>
+
+        <section class="screen" id="screen-results">
+            <h1 class="pop-title">ФИНАЛ</h1>
+            <div id="final-results"></div>
+            <button class="btn-pop-main" onclick="location.reload()">В МЕНЮ</button>
         </section>
     </div>
     
