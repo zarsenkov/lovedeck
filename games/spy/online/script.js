@@ -1,139 +1,123 @@
-// Подключение к твоему серверу Amvera
+// Подключение к серверу
 const socket = io("https://lovecouple-server-zarsenkov.amvera.io");
 
-// Глобальное состояние игры для игрока
-let myData = { room: '', name: '', isHost: false, role: '', location: '', isSpy: false };
-let gameTimerInterval;
+// Состояние игрока
+let myData = { room: '', name: '', isHost: false };
+let wakeLock = null;
 
-// Функция: Смена экранов
+// // ЗАЩИТА ОТ ПОТУХАНИЯ ЭКРАНА
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock активен!');
+        }
+    } catch (err) {
+        console.log('Wake Lock не поддерживается или ошибка');
+    }
+}
+
+// // СМЕНА ЭКРАНОВ
 function toScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(id);
     if (target) target.classList.add('active');
 }
 
-// Функция: Вход в игру
+// // ВХОД В ИГРУ
 function joinGame() {
     const n = document.getElementById('player-name').value.trim();
     const r = document.getElementById('room-id').value.trim();
     if(n && r) {
         myData.name = n;
         myData.room = r;
+        requestWakeLock(); // Активируем защиту при входе в лобби
         socket.emit('spy-join', { roomId: r, playerName: n });
     } else {
-        alert("Заполни имя и ID комнаты!");
+        alert("Введите имя и код!");
     }
 }
 
-// Функция: Запрос на запуск (только для хоста)
+// // СТАРТ (ХОСТ)
 function startGameRequest() {
     socket.emit('spy-start-request', myData.room);
 }
 
-// Функция: Кнопка "Ознакомился"
+// // ГОТОВНОСТЬ
 function confirmReady() {
-    const btn = document.getElementById('ready-btn');
-    btn.disabled = true;
-    btn.innerText = "ЖДЕМ ОСТАЛЬНЫХ...";
+    document.getElementById('ready-btn').style.display = 'none';
     socket.emit('spy-player-ready', myData.room);
 }
 
-// Функция: Голос за игрока
+// // ГОЛОСОВАНИЕ
 function castVote(targetId) {
     socket.emit('spy-cast-vote', { roomId: myData.room, targetId });
-    // Чтобы не голосовать дважды, очищаем список
-    document.getElementById('vote-grid').innerHTML = "<p>Голос принят. Ждем финала...</p>";
+    document.getElementById('vote-grid').innerHTML = "<p style='text-align:center'>Голос учтен...</p>";
 }
 
-// --- ОБРАБОТЧИКИ СОБЫТИЙ СЕРВЕРА ---
+// --- СЛУШАТЕЛИ СОБЫТИЙ ---
 
-// Обновление списка в лобби
 socket.on('spy-update-lobby', (data) => {
     toScreen('screen-lobby');
     document.getElementById('display-room-id').innerText = data.roomId;
-    const list = document.getElementById('lobby-players');
-    
-    list.innerHTML = data.players.map(p => `
+    const grid = document.getElementById('lobby-players');
+    grid.innerHTML = data.players.map(p => `
         <div class="player-badge ${p.id === socket.id ? 'me' : ''}">
             ${p.isHost ? '👑' : '👤'} ${p.name}
         </div>
     `).join('');
     
     const me = data.players.find(p => p.id === socket.id);
-    if (me) {
-        myData.isHost = me.isHost;
-        document.getElementById('host-panel').classList.toggle('hidden', !me.isHost);
-        document.getElementById('wait-msg').classList.toggle('hidden', me.isHost);
-    }
+    myData.isHost = me?.isHost;
+    document.getElementById('host-panel').style.display = myData.isHost ? 'block' : 'none';
+    document.getElementById('wait-msg').style.display = myData.isHost ? 'none' : 'block';
 });
 
-// Раздача ролей
 socket.on('spy-init-roles', (data) => {
-    myData.role = data.role;
-    myData.location = data.location;
-    myData.isSpy = data.isSpy;
-    
     document.getElementById('my-role-name').innerText = data.role;
+    document.getElementById('my-role-name').style.color = data.isSpy ? 'var(--neon-red)' : 'var(--neon-cyan)';
     document.getElementById('my-location-name').innerText = data.isSpy ? "УЗНАЙТЕ ГДЕ ВЫ" : "ГДЕ: " + data.location;
     document.getElementById('reminder-loc').innerText = data.isSpy ? "ВЫ ШПИОН 💀" : "ЛОКАЦИЯ: " + data.location;
-    
-    // Сброс кнопки готовности
-    const btn = document.getElementById('ready-btn');
-    btn.disabled = false;
-    btn.innerText = "Я ОЗНАКОМИЛСЯ";
-    
+    document.getElementById('ready-btn').style.display = 'block';
     toScreen('screen-role');
 });
 
-// Обновление счетчика готовности
 socket.on('spy-ready-update', (data) => {
-    document.getElementById('ready-count').innerText = `Ожидание игроков: ${data.ready}/${data.total}`;
+    document.getElementById('ready-count').innerText = `Готовы: ${data.ready}/${data.total}`;
 });
 
-// Старт таймера игры
 socket.on('spy-game-begin', (time) => {
     toScreen('screen-game');
-    startVisualTimer(time);
+    let timer = time;
+    const display = document.getElementById('game-timer');
+    const interval = setInterval(() => {
+        let m = Math.floor(timer / 60);
+        let s = timer % 60;
+        display.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+        if (--timer < 0) {
+            clearInterval(interval);
+        }
+    }, 1000);
 });
 
-// Переход к голосованию
 socket.on('spy-start-voting', (players) => {
     toScreen('screen-vote');
     const grid = document.getElementById('vote-grid');
-    // Голосуем за любого, кроме себя
     grid.innerHTML = players
         .filter(p => p.id !== socket.id)
         .map(p => `<button class="neon-btn" onclick="castVote('${p.id}')">${p.name}</button>`)
         .join('');
 });
 
-// Финал и итоги
 socket.on('spy-results', (data) => {
     toScreen('screen-results');
-    const winLabel = document.getElementById('winner-status');
-    winLabel.innerText = data.spyWin ? "ПОБЕДА ШПИОНОВ!" : "ШПИОН ПОЙМАН!";
-    winLabel.style.background = data.spyWin ? "var(--neon-red)" : "var(--neon-cyan)";
-    
+    document.getElementById('winner-text').innerText = data.spyWin ? "💀 ШПИОНЫ ВЫИГРАЛИ" : "👮 ШПИОН ПОЙМАН";
     document.getElementById('res-location').innerText = data.location;
-    const resList = document.getElementById('vote-results-list');
     
-    resList.innerHTML = "<h3>ИТОГИ ГОЛОСОВАНИЯ:</h3>" + Object.entries(data.votes).map(([id, count]) => {
+    const stats = document.getElementById('vote-results-list');
+    stats.innerHTML = Object.entries(data.votes).map(([id, count]) => {
         const p = data.players.find(pl => pl.id === id);
         const isSpy = data.spies.includes(id);
-        return `<div class="stat-line"><span>${p ? p.name : '???'} ${isSpy ? '💀' : ''}</span><span>${count} 👤</span></div>`;
+        return `<div style="margin-bottom:5px;">${p?.name || 'Игрок'}: ${count} голосов ${isSpy ? '<b>(ШПИОН)</b>' : ''}</div>`;
     }).join('');
 });
-
-// Функция визуального таймера
-function startVisualTimer(duration) {
-    clearInterval(gameTimerInterval);
-    let timer = duration;
-    const display = document.getElementById('game-timer');
-    
-    gameTimerInterval = setInterval(() => {
-        let m = Math.floor(timer / 60);
-        let s = timer % 60;
-        display.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-        if (--timer < 0) clearInterval(gameTimerInterval);
-    }, 1000);
-}
