@@ -1,7 +1,7 @@
-// // Подключаем сокет к твоему серверу
+// // Инициализация сокета с твоим Amvera URL
 const socket = io("https://lovecouple-server-zarsenkov.amvera.io"); 
 
-// // Переводы категорий для интерфейса
+// // Названия категорий
 const TRANSLATIONS = {
     general: "ОБЩЕЕ", science: "НАУКА", history: "ИСТОРИЯ", 
     culture: "КУЛЬТУРА", sport: "СПОРТ", geography: "ГЕОГРАФИЯ", 
@@ -14,16 +14,16 @@ let selectedCats = [];
 
 // --- ЛОГИКА ИНТЕРФЕЙСА ---
 
-// // Инициализация категорий из файла questions.js
+// // Функция отрисовки категорий (теперь работает с файлом в той же папке)
 function initCategories() {
     const list = document.getElementById('categories-box');
     if (!list || typeof QUIZ_QUESTIONS === 'undefined') return;
 
-    // Собираем категории из всех сложностей
+    // Собираем уникальные категории из всех уровней сложности
     const allQs = [...QUIZ_QUESTIONS.easy, ...QUIZ_QUESTIONS.medium, ...QUIZ_QUESTIONS.hard];
     const uniqueCats = [...new Set(allQs.map(q => q.category))];
     
-    list.innerHTML = ''; // Очищаем перед отрисовкой
+    list.innerHTML = ''; 
     uniqueCats.forEach(cat => {
         const div = document.createElement('div');
         div.className = 'cat-item';
@@ -40,16 +40,16 @@ function initCategories() {
     });
 }
 
-// --- СЕТЕВАЯ ЛОГИКА ---
+// --- SOCKET СОБЫТИЯ ---
 
-// // Создание новой комнаты
+// // Создать новую комнату
 function createRoom() {
     const name = document.getElementById('player-name').value.trim();
     if(!name) return alert("Введите имя!");
     socket.emit('quiz-create', { name });
 }
 
-// // Вход в существующую комнату
+// // Присоединиться к существующей
 function joinRoom() {
     const name = document.getElementById('player-name').value.trim();
     const roomId = document.getElementById('room-id').value.trim().toUpperCase();
@@ -57,7 +57,7 @@ function joinRoom() {
     socket.emit('quiz-join', { name, roomId });
 }
 
-// // Обработка входа в комнату
+// // Когда игрок вошел в комнату
 socket.on('quiz-room-joined', (data) => {
     currentRoom = data.roomId;
     myId = socket.id;
@@ -68,7 +68,7 @@ socket.on('quiz-room-joined', (data) => {
     const catBox = document.getElementById('categories-box');
     const catTitle = document.getElementById('cats-title');
 
-    // Настраиваем видимость для Хоста и обычного игрока
+    // Если этот клиент — хост, показываем настройки тем
     if(data.isHost) {
         startBtn.style.display = 'block';
         catBox.style.display = 'grid';
@@ -81,12 +81,12 @@ socket.on('quiz-room-joined', (data) => {
     }
 });
 
-// // Обновление списка игроков (БЕЗ ДУБЛИРОВАНИЯ)
+// // Обновление списка игроков (без дублей)
 socket.on('quiz-update-players', (players) => {
     const list = document.getElementById('lobby-players-list');
     if (!list) return;
     
-    list.innerHTML = ''; // Очистка перед обновлением
+    list.innerHTML = ''; // Очистка перед перерисовкой
     players.forEach(p => {
         const div = document.createElement('div');
         div.className = 'joy-input';
@@ -97,28 +97,28 @@ socket.on('quiz-update-players', (players) => {
     });
 });
 
-// // Запрос на старт игры (от хоста)
+// // Запрос старта от хоста
 function requestStart() {
-    if(selectedCats.length === 0) return alert("Выбери темы!");
+    if(selectedCats.length === 0) return alert("Выберите хотя бы одну тему!");
     socket.emit('quiz-start-request', { roomId: currentRoom, categories: selectedCats });
 }
 
-// // Фаза ожидания (передача хода)
+// // Фаза передачи хода
 socket.on('quiz-prep-phase', (data) => {
     showScreen('transfer-screen');
     document.getElementById('next-player-name').innerText = data.activePlayerName;
     const isMe = data.activePlayerId === socket.id;
     
     document.getElementById('ready-btn').style.display = isMe ? 'block' : 'none';
-    document.getElementById('transfer-status').innerText = isMe ? 'Твой черед!' : 'Ждем игрока...';
+    document.getElementById('transfer-status').innerText = isMe ? 'Твой черед!' : 'Игрок готовится...';
 });
 
-// // Игрок готов начать свои вопросы
+// // Подтверждение готовности игрока
 function playerReady() {
     socket.emit('quiz-player-ready', { roomId: currentRoom });
 }
 
-// // Получение вопроса от сервера
+// // Получение вопроса
 socket.on('quiz-question', (data) => {
     showScreen('game-screen');
     document.getElementById('question-text').innerText = data.question.question;
@@ -133,7 +133,6 @@ socket.on('quiz-question', (data) => {
         btn.className = 'answer-btn';
         btn.innerText = ans;
         btn.onclick = () => {
-            // Блокируем кнопки после клика
             document.querySelectorAll('.answer-btn').forEach(b => b.style.pointerEvents = 'none');
             socket.emit('quiz-answer', { roomId: currentRoom, answerIdx: idx });
         };
@@ -141,7 +140,7 @@ socket.on('quiz-question', (data) => {
     });
 });
 
-// // Результат ответа (подсветка)
+// // Подсветка правильного ответа
 socket.on('quiz-answer-result', (data) => {
     const btns = document.querySelectorAll('.answer-btn');
     if (btns[data.correctIdx]) btns[data.correctIdx].classList.add('correct');
@@ -150,12 +149,13 @@ socket.on('quiz-answer-result', (data) => {
     }
 });
 
-// // Таймер
+// // Синхронизация таймера
 socket.on('quiz-timer-tick', (time) => {
-    document.getElementById('timer-display').innerText = time;
+    const t = document.getElementById('timer-display');
+    if(t) t.innerText = time;
 });
 
-// // Финальные результаты
+// // Вывод финальных результатов
 socket.on('quiz-results', (results) => {
     showScreen('result-screen');
     const board = document.getElementById('final-results');
@@ -171,19 +171,19 @@ socket.on('quiz-results', (results) => {
 
 // --- УТИЛИТЫ ---
 
-// // Переключение экранов
+// // Функция переключения экранов
 function showScreen(id) { 
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active'); 
 }
 
-// // Возврат в главное меню
+// // Функция возврата: выходит из папки online в корень квиза
 function goBack() {
     if (confirm("Выйти в главное меню?")) {
         if(socket) socket.disconnect();
-        window.location.href = "../index.html";
+        window.location.href = "../index.html"; // Выход на уровень выше
     }
 }
 
-// // Модалка правил
+// // Правила
 function toggleRules(show) { document.getElementById('rules-modal').classList.toggle('active', show); }
