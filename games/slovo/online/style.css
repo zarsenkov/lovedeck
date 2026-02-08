@@ -1,57 +1,99 @@
-/* Дополнительные стили к основному файлу */
-#player-list {
-    list-style: none;
-    margin-top: 15px;
+:root {
+    --bg-paper: #e4e0d9;
+    --tape-color: rgba(241, 231, 103, 0.5);
+    --ink: #1a1a1a;
+    --accent-marker: #ff3e00;
 }
 
-#player-list li {
-    background: #f1f2f6;
-    margin-bottom: 8px;
-    padding: 12px;
-    border-radius: 15px;
-    font-weight: 800;
+body {
+    background-color: #222;
+    background-image: radial-gradient(#333 10%, transparent 10%);
+    background-size: 20px 20px;
+    color: var(--ink);
+    font-family: "Courier New", Courier, monospace;
     display: flex;
-    justify-content: space-between;
-}
-
-.setting-item {
-    margin-bottom: 15px;
-    font-weight: 900;
-}
-
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    z-index: 2000;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    padding: 20px;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
 }
 
-.modal-content {
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
+.app-container {
+    background: var(--bg-paper);
+    width: 90%;
+    max-width: 420px;
+    padding: 40px 20px;
+    box-shadow: 15px 15px 0px #000;
+    position: relative;
+    border: 2px solid var(--ink);
+    transform: rotate(-1deg);
 }
 
-.winner-btn {
-    width: 100%;
-    padding: 15px;
-    margin-top: 10px;
-    border-radius: 15px;
-    border: 3px solid var(--text);
-    background: white;
-    font-weight: 800;
-    cursor: pointer;
+.app-container::before {
+    content: ""; position: absolute; top: -20px; left: 30%;
+    width: 100px; height: 35px; background: var(--tape-color);
+    transform: rotate(5deg); box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
 }
 
-.winner-btn:active { background: var(--green); color: white; }
+.screen { display: flex; flex-direction: column; }
+.hidden { display: none !important; }
 
-.back-btn {
-    position: absolute; top: 20px; left: 20px;
-    width: 45px; height: 45px; border-radius: 50%;
-    background: white; border: 3px solid black;
-    font-size: 1.5rem; font-weight: 900; z-index: 100;
+h1 {
+    font-size: 2.5rem; text-transform: uppercase; text-align: center;
+    background: var(--ink); color: var(--bg-paper); padding: 10px;
+    margin-top: 0; transform: rotate(2deg);
+}
+
+.rules-box {
+    border: 2px dashed var(--ink); padding: 15px; margin: 20px 0;
+    background: #fff; font-size: 0.9rem; transform: rotate(-0.5deg);
+}
+
+input {
+    border: 2px solid var(--ink); background: transparent; padding: 12px;
+    font-family: inherit; font-weight: bold; width: 100%; margin-bottom: 10px;
+}
+
+.mini-input { width: 60px !important; display: inline; padding: 5px; }
+
+.btn-zinc {
+    background: var(--accent-marker); color: white; border: 2px solid var(--ink);
+    padding: 15px; cursor: pointer; font-family: inherit; font-weight: bold;
+    text-transform: uppercase; box-shadow: 4px 4px 0px var(--ink);
+}
+
+.btn-zinc:active { box-shadow: 0px 0px 0px; transform: translate(2px, 2px); }
+
+#players-list { list-style: none; padding: 0; margin: 20px 0; }
+#players-list li {
+    background: #fff; border: 1px solid var(--ink);
+    padding: 10px; margin-bottom: 5px; display: flex; justify-content: space-between;
+}
+
+.game-card {
+    background: #fff; border: 1px solid var(--ink); padding: 40px 10px;
+    text-align: center; margin: 20px 0; position: relative;
+}
+
+.letter-tag {
+    position: absolute; top: -15px; left: 10px; background: var(--ink);
+    color: #fff; padding: 5px 10px; font-size: 1rem;
+}
+
+.word-display { font-size: 2.2rem; font-weight: 900; text-decoration: underline; }
+
+#timer {
+    font-size: 3.5rem; font-weight: 900; text-align: center;
+    color: var(--accent-marker); border-bottom: 4px double var(--ink);
+}
+
+.modal {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+
+.zine-back-button {
+    position: absolute; top: -45px; left: 0; background: var(--ink);
+    color: var(--bg-paper); padding: 8px 15px; font-size: 0.8rem;
+    font-weight: bold; transform: rotate(-2deg); box-shadow: 4px 4px 0px var(--tape-color);
 }
