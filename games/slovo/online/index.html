@@ -6,17 +6,20 @@
     <title>ZINE ONLINE</title>
     <link rel="stylesheet" href="../style.css">
     <style>
-        /* Гарантируем, что экраны переключаются правильно */
         .screen { display: none; }
-        .screen.active { display: block; }
+        .screen.active { display: flex; flex-direction: column; }
         .hidden { display: none; }
-        #target-word { transition: filter 0.3s ease; }
-        /* Стиль для кнопки назад */
+        #current-word { transition: filter 0.3s ease; }
         .nav-btn.back-btn {
-            position: absolute; top: 10px; left: 10px;
-            width: 40px; height: 40px; border-radius: 50%;
-            background: #fff; border: 2px solid #000;
+            position: absolute; top: 10px; left: 10px; width: 40px; height: 40px; 
+            border-radius: 50%; background: #fff; border: 2px solid #000;
             font-size: 1.2rem; cursor: pointer; z-index: 10;
+        }
+        /* Центрирование оверлея */
+        #offline-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; color: #fff;
+            justify-content: center; align-items: center; text-align: center;
         }
     </style>
 </head>
@@ -25,62 +28,56 @@
         <button class="nav-btn back-btn" onclick="window.location.href='../index.html'">←</button>
 
         <div id="setup-screen" class="screen active">
-            <h1 class="glitch">ZINE_ON</h1>
-            <div class="rules-box" style="text-align: center; border-style: solid; margin-bottom: 20px;">
-                ОНЛАЙН ВЕРСИЯ
-            </div>
-            <input type="text" id="player-name" placeholder="НИК">
-            <input type="text" id="room-id" placeholder="КОМНАТА">
-            <button onclick="joinLobby()" class="btn-zinc">ВОЙТИ</button>
+            <h1 class="main-title">ZINE<span>ONLINE</span></h1>
+            <input type="text" id="player-name" class="joy-input" placeholder="НИК">
+            <input type="text" id="room-id" class="joy-input" placeholder="КОМНАТА">
+            <button onclick="joinLobby()" class="primary-btn">ВОЙТИ</button>
         </div>
 
         <div id="lobby-screen" class="screen">
             <h2>ЛОББИ: <span id="room-display"></span></h2>
-            <div class="rules-box" id="host-config" style="display:none;">
-                КРУГОВ: <input type="number" id="rounds-count" value="5" min="1" max="10" style="width: 50px;">
-            </div>
-            <div class="rules-box">
+            <div class="card-glass">
                 <strong>ИГРОКИ:</strong>
-                <ul id="player-list" style="padding-left: 20px; margin: 10px 0;"></ul>
+                <ul id="player-list" style="list-style: none; margin-top: 10px;"></ul>
             </div>
-            <button id="start-btn" onclick="requestStart()" class="btn-zinc hidden" style="background:var(--accent)">НАЧАТЬ ИГРУ</button>
+            <button id="start-btn" onclick="requestStart()" class="primary-btn hidden">НАЧАТЬ ИГРУ</button>
         </div>
 
         <div id="game-screen" class="screen">
-            <div id="role-banner" style="text-align:center; font-weight:bold; margin-bottom:10px;"></div>
-            <div id="timer-display" style="font-size: 3rem; text-align:center; font-weight:bold;">60</div>
+            <div id="role-banner" style="text-align:center; font-weight:900; margin-bottom:10px; color: var(--primary);"></div>
+            <div class="timer-pill" id="timer-display" style="text-align: center; font-size: 2rem; margin: 0 auto 15px auto;">60</div>
             
-            <div class="game-card">
-                <div class="letter-tag">БУКВЫ: <span id="target-letters">? ? ?</span></div>
-                <div id="current-word" class="word-display" style="font-size: 2.5rem; text-align:center; margin: 20px 0;">---</div>
+            <div class="word-card-main">
+                <div style="width: 100%;">
+                    <div class="letter-tag" style="font-weight: 800; opacity: 0.6;">БУКВЫ: <span id="target-letters">? ? ?</span></div>
+                    <div id="current-word">---</div>
+                </div>
             </div>
 
-            <div id="action-controls" class="controls" style="display:none; gap: 10px; flex-direction: column;">
-                <button onclick="handleWin()" class="btn-zinc" style="background:#44ff44; color:#000; border: 2px solid #000;">УГАДАЛ! (+1)</button>
-                <button onclick="handleSkip()" class="btn-zinc" style="background:#ccc; color:#000;">ПРОПУСТИТЬ</button>
+            <div id="action-controls" class="game-controls" style="display:none;">
+                <button onclick="handleSkip()" class="btn-skip">ПАС</button>
+                <button onclick="handleWin()" class="btn-win">УГАДАЛ!</button>
             </div>
 
-            <div id="observer-msg" class="rules-box" style="display:none; text-align:center;">
-                <p>ДЕРЖИ ТЕЛЕФОН У ЛБА!</p>
-                <p style="font-size: 0.8rem; opacity: 0.7;">Слушай подсказки друзей</p>
+            <div id="observer-msg" class="card-glass" style="display:none; text-align:center; margin-top: 20px;">
+                <p style="font-weight: 900;">ДЕРЖИ ТЕЛЕФОН У ЛБА!</p>
+                <p class="mini-rules">Слушай подсказки друзей и отгадывай слово</p>
             </div>
         </div>
 
         <div id="result-screen" class="screen">
-            <h1 style="color: var(--accent);">ФИНАЛ</h1>
-            <div class="rules-box">
-                <div id="final-stats"></div>
-            </div>
-            <button onclick="location.reload()" class="btn-zinc">ИГРАТЬ ЕЩЕ РАЗ</button>
+            <h1 class="main-title">ФИНАЛ</h1>
+            <div class="card-glass" id="final-stats"></div>
+            <button onclick="location.reload()" class="primary-btn">ЕЩЕ РАЗ</button>
         </div>
     </div>
 
-<div id="offline-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; color:#fff; align-items:center; justify-content:center; text-align:center; flex-direction:column;">
-    <div class="overlay-content">
-        <h2 id="offline-msg">КТО-ТО ВЫШЕЛ</h2>
-        <p>Ждем возвращения...</p>
+    <div id="offline-overlay" style="display:none;">
+        <div>
+            <h2 id="offline-msg">КТО-ТО ВЫШЕЛ</h2>
+            <p>Ждем возвращения...</p>
+        </div>
     </div>
-</div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="../cards.js"></script>
