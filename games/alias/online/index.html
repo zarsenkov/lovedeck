@@ -1,37 +1,25 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALIAS ONLINE</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="app-shell">
-        <section id="screen-auth" class="pop-screen active">
-            <h1 class="pop-title">AL<span>IAS</span> ON</h1>
-            <div class="card-glass">
-                <input type="text" id="player-name" class="joy-input" placeholder="Твоё имя">
-                <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты (для входа)">
-                
-                <button class="btn-pop-main" onclick="createGame()">СОЗДАТЬ ИГРУ</button>
-                <button class="btn-pop-main btn-secondary" onclick="joinGame()">ВОЙТИ В ИГРУ</button>
-            </div>
-        </section>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
-        <section id="screen-lobby" class="pop-screen">
-            <h2 class="pop-title">ЛОББИ</h2>
-            <div class="summary-box">
-                <p>ID КОМНАТЫ: <span id="display-room-id">...</span></p>
-            </div>
-            <div id="player-list" class="pop-list">
-                </div>
-            <button id="start-btn" class="btn-pop-main" style="display:none;" onclick="startOnlineGame()">СТАРТ</button>
-        </section>
+<section class="pop-screen active" id="screen-auth">
+    <h1 class="pop-title">AL<span>IAS</span> ON</h1>
+    
+    <div class="card-glass">
+        <input type="text" id="player-name" class="joy-input" placeholder="Твоё имя">
+        <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты (для входа)">
+        
+        <button class="btn-pop-main" onclick="createOnlineGame()">СОЗДАТЬ ИГРУ</button>
+        <button class="btn-pop-main btn-secondary" onclick="joinOnlineGame()">ВОЙТИ В ИГРУ</button>
     </div>
+</section>
 
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    <script src="online-logic.js"></script>
-</body>
-</html>
+<section class="pop-screen" id="screen-lobby">
+    <h2 class="pop-title">ЛОББИ</h2>
+    <div class="summary-box">
+        <p>ID КОМНАТЫ: <span id="display-room-id" style="color: var(--accent);">----</span></p>
+    </div>
+    
+    <div id="player-list" class="pop-list">
+        </div>
+    
+    <button id="start-btn-online" class="btn-pop-main" style="display:none;" onclick="requestStart()">СТАРТ</button>
+</section>
