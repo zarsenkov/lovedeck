@@ -10,33 +10,30 @@
 
 // ИСПРАВЛЕННАЯ ФУНКЦИЯ: берет данные из ваших переменных words и alphabet
 function getCard() {
-        // 1. Устанавливаем запасные значения
-        let word = "ОШИБКА"; 
+        let word = "СЛОВО"; // Запасное слово
         let lets = "? ? ?";
 
-        // 2. Берем СЛОВО из твоего файла cards.js (переменная words)
-        // Проверяем window.words, так как cards.js объявляет её глобально
-        if (window.words && window.words.length > 0) {
-            const randomIndex = Math.floor(Math.random() * window.words.length);
-            word = window.words[randomIndex];
+        // Проверяем наличие слов в глобальной видимости
+        // Мы ищем именно window.words, так как в твоем cards.js: const words = [...]
+        const source = window.words || words; 
+
+        if (source && source.length > 0) {
+            const randomIndex = Math.floor(Math.random() * source.length);
+            word = source[randomIndex];
+            console.log("Слово успешно выбрано:", word);
         } else {
-            console.error("Файл cards.js не загружен или массив words пуст!");
+            console.error("МАССИВ СЛОВ НЕ НАЙДЕН! Проверь cards.js");
             word = "НЕТ СЛОВ";
         }
 
-        // 3. Берем БУКВЫ из твоего алфавита в cards.js
-        if (window.alphabet) {
-            const alphaArray = window.alphabet.split("");
-            const randomLetters = [];
-            for (let i = 0; i < 3; i++) {
-                const char = alphaArray[Math.floor(Math.random() * alphaArray.length)];
-                randomLetters.push(char);
-            }
-            lets = randomLetters.join(" ");
-        } else {
-            // Если алфавита нет, генерируем стандартный
-            lets = "А Б В"; 
+        // Генерация букв из твоего алфавита
+        const alphaSource = window.alphabet || "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+        const alphaArray = alphaSource.split("");
+        const randomLetters = [];
+        for (let i = 0; i < 3; i++) {
+            randomLetters.push(alphaArray[Math.floor(Math.random() * alphaArray.length)]);
         }
+        lets = randomLetters.join(" ");
 
         return { 
             word: word.toUpperCase(), 
