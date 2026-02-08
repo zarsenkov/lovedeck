@@ -3,82 +3,77 @@
     let myName, myRoom, isMyTurn = false, timerInterval, allPlayers = [];
     let wakeLock = null;
 
-    async function toggleWakeLock() {
+    async function lockScreen() {
         if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} }
     }
 
-    function getCardData() {
-        let alphabet = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
-        let letters = "";
-        for(let i=0; i<3; i++) letters += alphabet[Math.floor(Math.random()*alphabet.length)] + " ";
-        
+    function getCard() {
+        let alpha = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ";
+        let lets = Array.from({length:3}, () => alpha[Math.floor(Math.random()*alpha.length)]).join(" ");
         let word = "СЛОВО";
-        if (window.cards && Array.isArray(window.cards)) {
-            word = window.cards[Math.floor(Math.random()*window.cards.length)];
-            if(typeof word === 'object') word = word.word;
+        if (window.cards) {
+            const c = window.cards[Math.floor(Math.random()*window.cards.length)];
+            word = (typeof c === 'object') ? c.word : c;
         }
-        return { word: word.toUpperCase(), letters: letters.trim() };
+        return { word: word.toUpperCase(), letters: lets };
     }
 
     window.joinLobby = function() {
         myName = document.getElementById('player-name').value.trim();
         myRoom = document.getElementById('room-id').value.trim();
         if(myName && myRoom) {
-            toggleWakeLock();
+            lockScreen();
             socket.emit('join-room', { roomId: myRoom, playerName: myName });
             showScreen('lobby-screen');
-            document.getElementById('room-display').innerText = myRoom;
+            document.getElementById('room-display').innerText = `КОМНАТА: ${myRoom}`;
         }
     };
 
     socket.on('update-lobby', (data) => {
         allPlayers = data.players;
-        const list = document.getElementById('player-list');
-        list.innerHTML = data.players.map(p => `<li>${p.name} <span>${p.score}</span></li>`).join('');
-        
-        if(data.players[0].id === socket.id && !data.gameStarted) {
+        const list = document.getElementById('players-list');
+        list.innerHTML = data.players.map(p => `<li>${p.name} <b>${p.score}</b></li>`).join('');
+        if(data.players[0].id === socket.id) {
             document.getElementById('host-controls').style.display = 'block';
             document.getElementById('start-btn').classList.remove('hidden');
         }
     });
 
     window.requestStart = function() {
-        const r = document.getElementById('rounds-count').value;
-        const t = document.getElementById('timer-val').value;
-        socket.emit('start-game', { roomId: myRoom, maxRounds: r, timer: t });
+        socket.emit('start-game', { 
+            roomId: myRoom, 
+            maxRounds: document.getElementById('rounds-count').value,
+            timer: document.getElementById('timer-val').value 
+        });
     };
 
     socket.on('turn-changed', (data) => {
         showScreen('game-screen');
         isMyTurn = (socket.id === data.activePlayerId);
-        
-        document.getElementById('host-action-controls').style.display = isMyTurn ? 'grid' : 'none';
+        document.getElementById('host-actions').style.display = isMyTurn ? 'flex' : 'none';
         document.getElementById('guest-msg').style.display = isMyTurn ? 'none' : 'block';
-        document.getElementById('role-banner').innerText = isMyTurn ? "ВЫ ВЕДУЩИЙ" : `ВЕДЕТ: ${data.activePlayerName}`;
-        
-        if (isMyTurn) nextWord();
+        document.getElementById('role-banner').innerText = isMyTurn ? "ТВОЙ ХОД (ОБЪЯСНЯЙ)" : `ОБЪЯСНЯЕТ: ${data.activePlayerName}`;
+        if(isMyTurn) sendNewWord();
         startTimer(data.timer);
     });
 
-    function nextWord() {
-        const d = getCardData();
-        socket.emit('game-action', { roomId: myRoom, data: { type: 'SYNC', word: d.word, letters: d.letters } });
+    function sendNewWord() {
+        const c = getCard();
+        socket.emit('game-action', { roomId: myRoom, data: { type: 'SYNC', word: c.word, letters: c.letters } });
     }
 
     socket.on('game-event', (data) => {
         if(data.type === 'SYNC') {
             document.getElementById('target-letters').innerText = data.letters;
-            // КЛЮЧЕВОЙ МОМЕНТ: гости видят прочерки
-            document.getElementById('current-word').innerText = isMyTurn ? data.word : "---";
+            document.getElementById('current-word').innerText = isMyTurn ? data.word : "???";
         }
     });
 
     window.showScoreModal = function() {
-        const modal = document.getElementById('score-modal');
-        const container = document.getElementById('potential-winners');
+        const container = document.getElementById('winner-buttons');
         container.innerHTML = allPlayers.filter(p => p.id !== socket.id)
-            .map(p => `<button class="winner-btn" onclick="givePoint('${p.name}')">${p.name}</button>`).join('');
-        modal.style.display = 'flex';
+            .map(p => `<button class="btn-zinc" style="width:100%; margin-bottom:5px;" onclick="givePoint('${p.name}')">${p.name}</button>`).join('');
+        document.getElementById('score-modal').classList.remove('hidden');
     };
 
     window.givePoint = function(name) {
@@ -87,30 +82,27 @@
         socket.emit('switch-turn', myRoom);
     };
 
-    window.closeModal = function() { document.getElementById('score-modal').style.display = 'none'; };
-    window.handleSkip = function() { socket.emit('switch-turn', myRoom); };
+    window.closeModal = () => document.getElementById('score-modal').classList.add('hidden');
+    window.handleSkip = () => socket.emit('switch-turn', myRoom);
 
     function startTimer(sec) {
         clearInterval(timerInterval);
         let left = sec;
-        const el = document.getElementById('timer-display');
+        const el = document.getElementById('timer');
         timerInterval = setInterval(() => {
             left--; el.innerText = left;
-            if(left <= 0) {
-                clearInterval(timerInterval);
-                if(isMyTurn) socket.emit('switch-turn', myRoom);
-            }
+            if(left <= 0) { clearInterval(timerInterval); if(isMyTurn) socket.emit('switch-turn', myRoom); }
         }, 1000);
     }
 
     socket.on('game-over', (data) => {
         showScreen('result-screen');
         const sorted = [...data.players].sort((a,b) => b.score - a.score);
-        document.getElementById('final-stats').innerHTML = sorted.map(p => `<p><b>${p.name}</b>: ${p.score}</p>`).join('');
+        document.getElementById('final-stats').innerHTML = sorted.map(p => `<p>${p.name}: ${p.score}</p>`).join('');
     });
 
     function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
     }
 })();
