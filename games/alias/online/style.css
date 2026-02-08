@@ -1,81 +1,103 @@
-/* Импортируем базовые стили из главной папки */
-@import url('../style.css');
+/* --- СТИЛИ ДЛЯ ИНПУТОВ (АВТОРИЗАЦИЯ) --- */
 
-/* Специфичные правки для онлайн-экрана */
-.card-glass {
-    background: var(--white);
-    border: 3px solid var(--black);
-    border-radius: 20px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    box-shadow: var(--shadow);
-}
-
-/* Стилизация полей ввода под общий "мультяшный" стиль */
+/* // Основной дизайн поля ввода */
 .joy-input {
     width: 100%;
-    padding: 15px;
-    font-size: 1.1rem;
-    font-weight: 900;
-    border: 3px solid var(--black);
-    border-radius: 12px;
-    background: var(--bg);
-    outline: none;
-    transition: 0.2s;
-}
-
-.joy-input:focus {
-    border-color: var(--accent);
-    box-shadow: 4px 4px 0 var(--black);
-}
-
-.btn-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.btn-secondary {
-    background: var(--blue) !important;
-}
-
-.status-text {
-    text-align: center;
-    font-weight: 800;
-    margin-top: 15px;
+    padding: 16px 20px;
+    margin-bottom: 15px;
+    border: 2px solid rgba(0, 0, 0, 0.05); /* // Едва заметная граница */
+    border-radius: 20px;                   /* // Мягкое скругление */
+    background: rgba(255, 255, 255, 0.7);  /* // Эффект матового стекла */
     color: var(--black);
-    opacity: 0.7;
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    backdrop-filter: blur(5px);            /* // Размытие фона под инпутом */
 }
 
-/* Центрирование списка игроков в лобби */
-.pop-list {
-    max-height: 300px;
-    overflow-y: auto;
+/* // Анимация при наведении или нажатии на поле */
+.joy-input:focus {
+    border-color: var(--purple);
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(162, 89, 255, 0.15);
+    transform: translateY(-2px);           /* // Легкий подъем при фокусе */
 }
 
-#display-room-id {
-    color: var(--accent);
-    font-size: 1.5rem;
+/* // Цвет текста-подсказки */
+.joy-input::placeholder {
+    color: rgba(0, 0, 0, 0.3);
 }
-/* Центрирование модального окна поверх всего */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); /* Затемнение фона */
+
+/* --- СТИЛИ ДЛЯ КНОПОК И ГРУПП --- */
+
+/* // Контейнер для кнопок Создать/Войти */
+.btn-group {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 10px;
 }
 
-.modal-content {
-    background: var(--white);
-    padding: 25px;
+/* // Стили для кнопки "ВОЙТИ" (Вторичная) */
+.btn-secondary {
+    background: white !important;
+    border: 2px solid var(--purple) !important;
+    color: var(--purple) !important;
+    box-shadow: 0 4px 10px rgba(162, 89, 255, 0.1) !important;
+}
+
+/* // Эффект при нажатии на вторичную кнопку */
+.btn-secondary:active {
+    background: var(--purple) !important;
+    color: white !important;
+    transform: scale(0.98);
+}
+
+/* --- ОНЛАЙН ЛОББИ И КОМАНДЫ --- */
+
+/* // Контейнер команды в лобби */
+.team-box {
+    margin-bottom: 15px;
+    padding: 15px;
     border-radius: 20px;
-    border: 3px solid var(--black);
-    width: 90%;
-    max-width: 400px;
-    box-shadow: var(--shadow);
+    background: rgba(255, 255, 255, 0.5);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+/* // Заголовок команды */
+.team-box h4 {
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+/* // Список игроков внутри бокса */
+.team-box div {
+    font-weight: 600;
+    color: var(--black);
+}
+
+/* --- ИГРОВОЙ ЭКРАН (ФИКСЫ) --- */
+
+/* // Убираем стандартные жесты браузера, чтобы свайп работал четко */
+#main-card {
+    touch-action: none; 
+    user-select: none;
+}
+
+/* // Кнопка "Угадано" (зеленая) */
+.btn-check {
+    background: var(--mint) !important;
+}
+
+/* // Кнопка "Пропуск" (фиолетовая) */
+.btn-skip {
+    background: var(--purple) !important;
 }
