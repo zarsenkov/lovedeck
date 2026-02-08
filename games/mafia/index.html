@@ -7,6 +7,29 @@
     <link rel="stylesheet" href="mafia.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+    <style>
+        /* Дополнительный стиль для кнопки онлайн-режима */
+        .online-trigger {
+            background: transparent;
+            border: 1px solid var(--red);
+            color: var(--red);
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .online-trigger:hover {
+            background: rgba(255, 0, 51, 0.1);
+        }
+    </style>
 </head>
 <body>
     <div class="noir-overlay"></div>
@@ -20,6 +43,10 @@
             </header>
 
             <div class="setup-scroll">
+                <button class="online-trigger" onclick="window.location.href='./online/index.html'">
+                    <i class="fas fa-globe"></i> ИГРАТЬ ПО СЕТИ (ONLINE)
+                </button>
+
                 <div class="setting-item">
                     <div class="label-row">КОЛИЧЕСТВО ИГРОКОВ: <b id="playerCountLabel">6</b></div>
                     <input type="range" id="playerRange" min="4" max="16" value="6" oninput="initPlayerInputs()">
@@ -41,25 +68,25 @@
             <button class="action-btn red" onclick="startDistribution()">К РАЗДАЧЕ РОЛЕЙ</button>
         </section>
 
-<section class="page" id="distributeScreen">
-    <div class="card-area">
-        <div class="player-num" id="distributeName">ИМЯ</div>
-        <div class="flip-card" onclick="toggleCard()"> 
-            <div class="card-inner" id="cardInner">
-                <div class="card-front">
-                    <div class="eye-icon"><i class="fas fa-mask"></i></div>
-                    <span>УЗНАТЬ РОЛЬ</span>
+        <section class="page" id="distributeScreen">
+            <div class="card-area">
+                <div class="player-num" id="distributeName">ИМЯ</div>
+                <div class="flip-card" onclick="toggleCard()"> 
+                    <div class="card-inner" id="cardInner">
+                        <div class="card-front">
+                            <div class="eye-icon"><i class="fas fa-mask"></i></div>
+                            <span>УЗНАТЬ РОЛЬ</span>
+                        </div>
+                        <div class="card-back">
+                            <div id="roleIcon" class="role-icon"></div>
+                            <h2 id="roleTitle">РОЛЬ</h2>
+                            <p id="roleDesc"></p>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-back">
-                    <div id="roleIcon" class="role-icon"></div>
-                    <h2 id="roleTitle">РОЛЬ</h2>
-                    <p id="roleDesc"></p>
-                </div>
+                <button id="nextPlayerBtn" class="action-btn red" style="display:none; margin-top: 20px;" onclick="nextPlayer(event)">СЛЕДУЮЩИЙ ИГРОК</button>
             </div>
-        </div>
-        <button id="nextPlayerBtn" class="action-btn red" style="display:none; margin-top: 20px;" onclick="nextPlayer(event)">СЛЕДУЮЩИЙ ИГРОК</button>
-    </div>
-</section>
+        </section>
 
         <section class="page" id="nightScreen">
             <h2 class="logo-small">НОЧНОЙ СЦЕНАРИЙ</h2>
@@ -78,20 +105,20 @@
             </div>
         </section>
 
-<section class="page" id="dayScreen">
-    <div class="day-header">
-        <div class="timer-box" id="dayTimer">60</div>
-        <p id="timerLabel">ВРЕМЯ ИГРОКА</p>
-        <div class="timer-controls" style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
-            <button id="playPauseBtn" class="timer-trigger" onclick="toggleTimer()">
-                <i class="fas fa-play"></i>
-            </button>
-            <button class="timer-trigger" onclick="nextSpeaker()">СЛЕДУЮЩИЙ</button>
-        </div>
-    </div>
-    <div class="voting-grid" id="dayPlayerList"></div>
-    <button class="action-btn red" onclick="confirmVote()">ВЫГНАТЬ ВЫБРАННОГО</button>
-</section>
+        <section class="page" id="dayScreen">
+            <div class="day-header">
+                <div class="timer-box" id="dayTimer">60</div>
+                <p id="timerLabel">ВРЕМЯ ИГРОКА</p>
+                <div class="timer-controls" style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
+                    <button id="playPauseBtn" class="timer-trigger" onclick="toggleTimer()">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="timer-trigger" onclick="nextSpeaker()">СЛЕДУЮЩИЙ</button>
+                </div>
+            </div>
+            <div class="voting-grid" id="dayPlayerList"></div>
+            <button class="action-btn red" onclick="confirmVote()">ВЫГНАТЬ ВЫБРАННОГО</button>
+        </section>
 
         <section class="page" id="finalScreen">
             <div class="center-content">
@@ -105,11 +132,11 @@
     <script src="mafia.js"></script>
 
     <div id="gameModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:100; align-items:center; justify-content:center;">
-    <div class="modal-card" style="padding:30px; text-align:center; max-width:80%;">
-        <div id="modalIcon" style="font-size:50px; color:var(--red); margin-bottom:15px;"></div>
-        <div id="modalText" style="font-size:14px; line-height:1.5;"></div>
-        <button class="action-btn red" onclick="closeModal()" style="margin-top:20px;">ОК</button>
+        <div class="modal-card" style="padding:30px; text-align:center; max-width:80%;">
+            <div id="modalIcon" style="font-size:50px; color:var(--red); margin-bottom:15px;"></div>
+            <div id="modalText" style="font-size:14px; line-height:1.5;"></div>
+            <button class="action-btn red" onclick="closeModal()" style="margin-top:20px;">ОК</button>
+        </div>
     </div>
-</div>
 </body>
 </html>
