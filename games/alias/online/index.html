@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ALIAS ONLINE</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
-</head>
 <body>
     <div class="app-shell">
         <div id="menu-controls">
             <div class="home-btn" onclick="location.href='../index.html'">🏠</div>
-            <div class="rules-btn" onclick="toggleOnlineRules(true)">?</div>
+            <div class="rules-btn" id="rules-icon" onclick="toggleOnlineRules(true)">?</div>
         </div>
 
         <header class="pop-header" id="game-header" style="visibility: hidden;">
@@ -37,49 +28,39 @@
             <div class="summary-box">
                 <p>ROOM ID: <span id="display-room-id">----</span></p>
             </div>
+            
+            <div id="host-settings" style="display:none; margin: 15px 0;">
+                <p class="section-label">РАУНДОВ: <span id="round-val">3</span></p>
+                <input type="range" id="rounds-range" min="1" max="10" value="3" oninput="updateRoundsDisplay(this.value)">
+                
+                <p class="section-label">ВРЕМЯ: <span id="time-val">60</span>с</p>
+                <div class="chips-group">
+                    <div class="pop-chip active" onclick="setOnlineTime(60, this)">60</div>
+                    <div class="pop-chip" onclick="setOnlineTime(90, this)">90</div>
+                </div>
+            </div>
+
             <div id="player-list" class="pop-list"></div>
-            <div id="host-settings" style="display:none; margin-bottom: 20px;">
-    <p class="section-label">ВРЕМЯ НА РАУНД</p>
-    <div class="chips-group" style="display: flex; justify-content: center; gap: 10px;">
-        <div class="pop-chip active" onclick="setOnlineTime(30, this)">30</div>
-        <div class="pop-chip" onclick="setOnlineTime(60, this)">60</div>
-        <div class="pop-chip" onclick="setOnlineTime(90, this)">90</div>
-    </div>
-</div>
             <button id="start-btn-online" class="btn-pop-main" style="display:none;" onclick="requestStart()">СТАРТ</button>
-            <p id="wait-msg" class="status-text">Ждем хоста...</p>
         </section>
 
         <section class="pop-screen" id="screen-game">
-            <div class="swipe-hint">← ПРОПУСК | УГАДАНО →</div>
             <div class="card-container">
                 <div class="pop-card word-card" id="main-card">
                     <h2 id="word-display">ЗАГРУЗКА...</h2>
                 </div>
             </div>
+            
             <div class="game-actions" id="game-controls">
                 <button class="btn-pop-main btn-skip" onclick="handleOnlineWord(false)">ПРОПУСК</button>
                 <button class="btn-pop-main btn-check" onclick="handleOnlineWord(true)">УГАДАНО</button>
             </div>
         </section>
-    </div>
 
-    <div class="modal-overlay" id="modal-online-rules" style="display: none;">
-        <div class="modal-content">
-            <h2>КАК ИГРАТЬ ONLINE</h2>
-            <ul style="text-align: left; font-size: 0.9rem; line-height: 1.4;">
-                <li><b>1. Создание:</b> Хост создает комнату и дает ID друзьям.</li>
-                <li><b>2. Вход:</b> Вводи имя и ID комнаты.</li>
-                <li><b>3. Очередь:</b> Все ходят по списку из лобби.</li>
-                <li><b>4. Роль:</b> Видишь слово? <b>Объясняй его!</b></li>
-                <li><b>5. Кнопки:</b> "УГАДАНО" (+1), "ПРОПУСК" (-1).</li>
-            </ul>
-            <button class="btn-pop-main" onclick="toggleOnlineRules(false)" style="padding:10px; margin-top:15px;">ПОНЯТНО</button>
-        </div>
+        <section class="pop-screen" id="screen-results">
+            <h2 class="pop-title">ИТОГИ</h2>
+            <div id="final-results-list" class="summary-box"></div>
+            <button class="btn-pop-main" onclick="location.reload()">В МЕНЮ</button>
+        </section>
     </div>
-
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="cards.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+    </body>
