@@ -38,6 +38,14 @@
                 <p>ROOM ID: <span id="display-room-id">----</span></p>
             </div>
             <div id="player-list" class="pop-list"></div>
+            <div id="host-settings" style="display:none; margin-bottom: 20px;">
+    <p class="section-label">ВРЕМЯ НА РАУНД</p>
+    <div class="chips-group" style="display: flex; justify-content: center; gap: 10px;">
+        <div class="pop-chip active" onclick="setOnlineTime(30, this)">30</div>
+        <div class="pop-chip" onclick="setOnlineTime(60, this)">60</div>
+        <div class="pop-chip" onclick="setOnlineTime(90, this)">90</div>
+    </div>
+</div>
             <button id="start-btn-online" class="btn-pop-main" style="display:none;" onclick="requestStart()">СТАРТ</button>
             <p id="wait-msg" class="status-text">Ждем хоста...</p>
         </section>
