@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MAFIA ONLINE</title>
+    <title>MAFIA ONLINE | PRO</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
@@ -26,9 +26,14 @@
         </section>
 
         <section class="page" id="lobbyScreen">
-            <div class="brand" id="displayRoomId">КОМНАТА</div>
-            <div id="playerList" class="names-grid" style="margin-top: 20px;"></div>
-            <button id="startBtn" class="action-btn red" style="display:none; margin-top: auto;" onclick="sendStart()">НАЧАТЬ</button>
+            <header class="top-bar">
+                <div class="brand" id="displayRoomId">КОМНАТА: -</div>
+            </header>
+            <div class="setup-scroll">
+                <div class="label-row">ИГРОКИ В ЛОББИ:</div>
+                <div id="playerList" class="names-grid"></div>
+            </div>
+            <button id="startBtn" class="action-btn red" style="display:none; margin-top: auto;" onclick="sendStart()">НАЧАТЬ ИГРУ</button>
         </section>
     </div>
 
