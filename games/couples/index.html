@@ -3,115 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Love Jar Premium</title>
+    <title>Love Story: Connection</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
     <div class="app-shell">
-        
-        <!-- Экран 1: Вход -->
-        <section id="screen-start" class="screen active">
+        <!-- Экран 1: Ввод Имен -->
+        <section id="screen-setup" class="screen active">
             <div class="hero">
-                <div class="main-icon-float">🍯</div>
-                <h1 class="premium-title">LOVE<span>JAR</span></h1>
-                <p class="premium-subtitle">Наполни баночку любовью</p>
+                <div class="main-orb">🌸</div>
+                <h1 class="title">LOVE<span>STORY</span></h1>
+                <p class="subtitle">Ваше личное приключение</p>
             </div>
             
-            <div class="card-glass setup-card">
-                <div class="input-group">
-                    <label>Она / Он</label>
-                    <input type="text" id="p1-name" placeholder="Имя игрока 1" class="custom-input">
-                </div>
-                <div class="input-group">
-                    <label>Он / Она</label>
-                    <input type="text" id="p2-name" placeholder="Имя игрока 2" class="custom-input">
-                </div>
-                <button class="btn-clay primary" onclick="startGame()">СОЗДАТЬ МАГИЮ</button>
+            <div class="clay-card">
+                <input type="text" id="name1" placeholder="Имя первого игрока" class="joy-input">
+                <input type="text" id="name2" placeholder="Имя второго игрока" class="joy-input">
+                <button class="btn-clay primary" onclick="toLobby()">ВОЙТИ В ИСТОРИЮ</button>
             </div>
         </section>
 
-        <!-- Экран 2: Меню (Лобби) -->
-        <section id="screen-menu" class="screen">
-            <div class="top-nav">
-                <div class="player-turn-pill" id="turn-indicator">
-                    Очередь: <b id="current-player-name">...</b>
-                </div>
+        <!-- Экран 2: Лобби (Выбор сюжета) -->
+        <section id="screen-lobby" class="screen">
+            <div class="header-status">
+                <div class="stats-pill">⭐ <span id="total-progress">0</span>%</div>
+                <button class="btn-circle" onclick="showAlbum()"><i class="fas fa-book-heart"></i></button>
             </div>
-
-            <div class="progress-section card-glass">
-                <div class="progress-header">
-                    <span>До исполнения желания</span>
-                    <span id="wish-percent">0%</span>
-                </div>
-                <div class="progress-bar">
-                    <div id="wish-fill" class="progress-fill"></div>
-                </div>
-            </div>
-
-            <div class="category-list">
-                <div class="cat-item clay-box" onclick="selectCategory('romance')">
-                    <span class="emoji">🌸</span>
-                    <div class="cat-info"><b>НЕЖНОСТЬ</b><p>Милые задания</p></div>
-                </div>
-                <div class="cat-item clay-box" onclick="selectCategory('fun')">
-                    <span class="emoji">🎭</span>
-                    <div class="cat-info"><b>ВЕСЕЛЬЕ</b><p>Смех и игры</p></div>
-                </div>
-                <div class="cat-item clay-box" onclick="selectCategory('hot')">
-                    <span class="emoji">🍓</span>
-                    <div class="cat-info"><b>ОГОНЕК</b><p>Для двоих</p></div>
-                </div>
-            </div>
-
-            <div class="bottom-nav">
-                <button class="btn-clay secondary" onclick="showAlbum()">
-                    <i class="fas fa-book-heart"></i> АЛЬБОМ
-                </button>
-            </div>
-        </section>
-
-        <!-- Экран 3: Баночка -->
-        <section id="screen-play" class="screen">
-            <div class="header-game">
-                <button class="btn-circle-back" onclick="showScreen('screen-menu')">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <div class="turn-label">Твой ход, <span id="active-user">...</span>!</div>
-            </div>
-
-            <div class="jar-wrapper">
-                <div class="jar-container" id="jar" onclick="drawCard()">
-                    <div class="jar-lid"></div>
-                    <div class="jar-glass">
-                        <div class="paper p1"></div>
-                        <div class="paper p2"></div>
-                        <div class="paper p3"></div>
+            <h2 class="section-label">ВЫБЕРИТЕ ИСТОРИЮ</h2>
+            
+            <div class="story-grid">
+                <div class="story-card clay-box" onclick="startStory('spark')">
+                    <div class="story-img">🔥</div>
+                    <div class="story-info">
+                        <h3>Искры начала</h3>
+                        <p>О том, как всё начиналось и что скрыто внутри.</p>
+                        <span class="badge">30-40 мин</span>
                     </div>
                 </div>
-                <p class="hint-text">Нажми на баночку,<br>чтобы вытянуть записку</p>
+                <div class="story-card clay-box" onclick="startStory('midnight')">
+                    <div class="story-img">🌙</div>
+                    <div class="story-info">
+                        <h3>Тайны полуночи</h3>
+                        <p>Ролевая игра, фантазии и предельная честность.</p>
+                        <span class="badge">HOT</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Экран 3: Квест (Игровой процесс) -->
+        <section id="screen-quest" class="screen">
+            <div class="quest-header">
+                <button class="btn-back" onclick="toLobby()"><i class="fas fa-chevron-left"></i></button>
+                <div class="progress-line"><div id="quest-bar" class="fill"></div></div>
+            </div>
+
+            <div class="npc-area">
+                <div class="npc-avatar">🎭</div>
+                <div class="npc-bubble clay-box">
+                    <p id="npc-text">Приветствую вас, влюбленные...</p>
+                </div>
+            </div>
+
+            <div id="game-action-area" class="action-container">
+                <!-- Сюда JS вставляет карточки заданий или диалоги -->
+            </div>
+
+            <div id="honesty-check" class="honesty-modal hidden">
+                <p>Партнер был честен?</p>
+                <div class="honesty-btns">
+                    <button class="btn-clay small green" onclick="rateHonesty(true)">ВЕРЮ</button>
+                    <button class="btn-clay small red" onclick="rateHonesty(false)">НЕ СОВСЕМ</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Экран 4: Результаты -->
+        <section id="screen-results" class="screen">
+            <div class="clay-card result-box">
+                <h2>ФИНАЛ ИСТОРИИ</h2>
+                <div class="result-circle">
+                    <span id="honesty-result">0%</span>
+                    <label>Честность пары</label>
+                </div>
+                <p id="result-desc">Вы отлично знаете друг друга!</p>
+                <button class="btn-clay primary" onclick="toLobby()">В ЛОББИ</button>
+            </div>
+        </section>
+
+        <!-- Экран 5: Альбом -->
+        <section id="screen-album" class="screen">
+            <div class="header-status">
+                <button class="btn-back" onclick="toLobby()"><i class="fas fa-chevron-left"></i></button>
+                <h2 class="mini-title">ВАШ ДНЕВНИК</h2>
+            </div>
+            <div id="album-content" class="album-scroll">
+                <!-- Записи из памяти -->
             </div>
         </section>
     </div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА (Дизайнерские) -->
-    <div id="modal-task" class="modal-overlay">
-        <div class="modal-card clay-box">
-            <div class="modal-tag" id="task-cat">РОМАНТИКА</div>
-            <p id="task-text">Текст задания...</p>
-            <div class="modal-btns">
-                <button class="btn-clay success" onclick="completeTask()">ВЫПОЛНЕНО</button>
-                <button class="btn-clay skip" onclick="closeModal()">ПРОПУСТИТЬ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Уведомления (Custom Alert) -->
-    <div id="custom-alert" class="alert-box">
-        <span id="alert-msg"></span>
-    </div>
+    <!-- Уведомления -->
+    <div id="toast" class="toast"></div>
 
     <script src="script.js"></script>
 </body>
