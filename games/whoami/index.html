@@ -3,77 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>КТО Я? | ОФФЛАЙН</title>
+    <title>КТО Я? — Выбор режима</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div class="app-container">
-        <!-- Навигация -->
-        <div class="nav-btn back-btn" onclick="window.location.href='https://lovecouple.ru'"><i class="fas fa-home"></i></div>
-        <div class="nav-btn online-toggle" onclick="goToOnline()" title="Перейти в онлайн">🌐</div>
+        <div class="logo-area" style="margin-top: 60px;">
+            <div class="emoji-float">🎭</div>
+            <h1 class="main-title">КТО<span>Я?</span></h1>
+        </div>
 
-        <!-- ЭКРАН 1: СПИСОК ИГРОКОВ -->
-        <section id="screen-setup" class="screen active">
-            <div class="logo-area">
-                <div class="emoji-float">🃏</div>
-                <h1 class="main-title">КТО<span>Я?</span></h1>
-            </div>
+        <div class="card-glass" style="justify-content: center; gap: 20px;">
+            <span class="section-tag" style="align-self: center;">ВЫБЕРИТЕ РЕЖИМ</span>
             
-            <div class="card-glass">
-                <span class="section-tag">ИГРОКИ</span>
-                <div id="player-inputs" class="player-column">
-                    <input type="text" class="joy-input player-name" placeholder="ИГРОК 1" value="ИГРОК 1">
-                    <input type="text" class="joy-input player-name" placeholder="ИГРОК 2" value="ИГРОК 2">
-                </div>
-                
-                <button class="add-player-circle" onclick="addInput()">+</button>
-                <button class="primary-btn" onclick="startAssignment()">НАЧАТЬ</button>
-            </div>
-        </section>
+            <button class="primary-btn" onclick="location.href='offline.html'">
+                📱 ОФФЛАЙН<br><small style="font-size: 10px; opacity: 0.8;">Одно устройство</small>
+            </button>
 
-        <!-- ЭКРАН 2: ПЕРЕДАЙ ТЕЛЕФОН (ЗАГАДЫВАНИЕ) -->
-        <section id="screen-assign" class="screen">
-            <div class="card-glass">
-                <span class="section-tag">ПЕРЕДАЙ ТЕЛЕФОН</span>
-                <div class="transfer-card">
-                    <p style="font-weight: 900;">СЕЙЧАС ОЧЕРЕДЬ:</p>
-                    <h2 id="current-actor-name" class="big-name">---</h2>
-                    <p style="font-size: 14px; font-weight: 700; opacity: 0.7;">
-                        Загадай персонажа для игрока: <br>
-                        <span id="target-player-name" style="color: var(--accent); font-size: 1.5rem;">---</span>
-                    </p>
-                </div>
-
-                <div id="input-area" style="margin-top: 20px;">
-                    <input type="text" id="offline-character-input" class="joy-input" placeholder="НАПР: ГАРРИ ПОТТЕР">
-                    <button class="primary-btn" onclick="saveCharacter()">ГОТОВО, ПЕРЕДАЮ!</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ЭКРАН 3: ИГРОВОЙ СТОЛ -->
-        <section id="screen-board" class="screen">
-            <div class="game-top">
-                <div class="score-pill">OFFLINE</div>
-                <div class="timer-pill" onclick="resetGame()">ЗАНОВО</div>
-            </div>
-
-            <div class="card-glass">
-                <span class="section-tag">СТИКЕРЫ НА ЛБАХ</span>
-                <div class="category-grid" id="stickers-board">
-                    <!-- Здесь будут карточки -->
-                </div>
-                <p style="font-size: 11px; font-weight: 800; text-align: center; opacity: 0.5; margin-top: 20px;">
-                    Нажмите на стикер, чтобы показать/скрыть имя. <br> Не смотрите на свой стикер!
-                </p>
-                <button class="primary-btn" style="margin-top: auto; background: var(--accent); box-shadow: 0 8px 0 #C0392B;" onclick="location.reload()">ВЫХОД</button>
-            </div>
-        </section>
+            <button class="primary-btn" style="background: var(--accent); box-shadow: 0 8px 0 #C0392B;" onclick="location.href='online.html'">
+                🌐 ОНЛАЙН<br><small style="font-size: 10px; opacity: 0.8;">Каждый со своего телефона</small>
+            </button>
+        </div>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
