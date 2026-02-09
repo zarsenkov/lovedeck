@@ -3,196 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>LoveCouple Premium | Swipe & Love</title>
-    
-    <!-- Шрифты и Иконки -->
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>LoveCouple Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Стили -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Анимированный фон -->
-    <div class="bg-blobs">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="blob b3"></div>
-    </div>
-
-    <!-- Лоадер -->
     <div id="loading-screen" class="loading-screen">
         <div class="loader-content">
             <div class="loading-heart">💖</div>
             <h1 class="logo-text">LoveCouple</h1>
-            <p id="loading-quote">Создаем атмосферу...</p>
-            <div class="loader-bar-bg"><div class="loader-bar-fill"></div></div>
         </div>
     </div>
 
     <div class="app-container">
-        
-        <!-- ЭКРАН 1: РЕГИСТРАЦИЯ -->
+        <!-- Экран регистрации -->
         <section id="screen-setup" class="screen active">
-            <div class="screen-header">
-                <h2 class="title-main">LoveCouple</h2>
-                <p class="subtitle">Премиальное пространство для двоих</p>
+            <h2 class="title-main">LoveCouple</h2>
+            <div class="glass-panel setup-box">
+                <input type="text" id="name1" placeholder="Твое имя">
+                <input type="text" id="name2" placeholder="Имя партнера">
             </div>
-            
-            <div class="setup-inputs glass-panel">
-                <div class="input-group">
-                    <label>Твое имя</label>
-                    <input type="text" id="name1" placeholder="Напр: Алексей">
-                </div>
-                <div class="input-group">
-                    <label>Имя партнера</label>
-                    <input type="text" id="name2" placeholder="Напр: Марина">
-                </div>
-            </div>
-            
-            <button class="btn-next big-btn" onclick="saveNames()">Начать магию</button>
+            <button class="btn-primary big-btn" onclick="saveNames()">НАЧАТЬ</button>
         </section>
 
-        <!-- ЭКРАН 2: ВЫБОР РЕЖИМА -->
+        <!-- Выбор тем -->
         <section id="screen-themes" class="screen">
-            <div class="mode-selector glass-panel">
-                <button id="mode-offline" class="mode-btn active" onclick="setGameMode('offline')">ЛОКАЛЬНО</button>
-                <button id="mode-online" class="mode-btn" onclick="setGameMode('online')">ОНЛАЙН</button>
-            </div>
-
-            <h2 class="theme-title">Выберите атмосферу</h2>
-            
+            <h2 class="theme-title">Выберите режим</h2>
             <div class="themes-grid">
-                <div class="theme-card glass-panel" onclick="selectTheme('romance')">
-                    <div class="theme-icon">❤️</div>
-                    <h3>Романтика</h3>
-                </div>
-                <div class="theme-card glass-panel" onclick="selectTheme('fun')">
-                    <div class="theme-icon">😄</div>
-                    <h3>Веселье</h3>
-                </div>
-                <div class="theme-card glass-panel" onclick="selectTheme('adult')">
-                    <div class="theme-icon">🔥</div>
-                    <h3>HOT 18+</h3>
-                </div>
-                <div class="theme-card glass-panel" onclick="selectTheme('dates')">
-                    <div class="theme-icon">📍</div>
-                    <h3>Свидания</h3>
-                </div>
+                <div class="theme-card glass-panel" onclick="selectTheme('romance')">❤️<br>Романтика</div>
+                <div class="theme-card glass-panel" onclick="selectTheme('fun')">😄<br>Веселье</div>
+                <div class="theme-card glass-panel" onclick="selectTheme('adult')">🔥<br>HOT</div>
+                <div class="theme-card glass-panel" onclick="selectTheme('dates')">📍<br>Свидания</div>
             </div>
-            
             <div class="special-actions">
-                <div class="action-row">
-                    <button class="btn-special glass-panel" onclick="showModal('custom')"><i class="fas fa-plus"></i></button>
-                    <button class="btn-special glass-panel" onclick="showModal('favs')"><i class="fas fa-star"></i></button>
-                    <button class="btn-special glass-panel" onclick="showModal('stats')"><i class="fas fa-chart-bar"></i></button>
-                </div>
-                <button class="btn-settings glass-panel" onclick="showModal('reset')">
-                    <i class="fas fa-cog"></i> Настройки профиля
-                </button>
-                <a href="../../index.html" class="exit-link">В главное меню</a>
+                <button class="btn-glass" onclick="showModal('favs')"><i class="fas fa-star"></i></button>
+                <button class="btn-glass" onclick="showModal('stats')"><i class="fas fa-chart-pie"></i></button>
+                <button class="btn-glass" onclick="confirmReset()"><i class="fas fa-user-edit"></i></button>
             </div>
         </section>
 
-        <!-- ЭКРАН 3: ИГРА (СВАЙП-ИНТЕРФЕЙС) -->
+        <!-- Экран игры -->
         <section id="screen-game" class="screen">
             <div class="game-header">
-                <button onclick="goToScreen('themes')" class="back-btn glass-panel">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <div id="online-status" class="status-pill hidden">Online: <span id="room-code">----</span></div>
-                <div id="timer-display" class="timer-badge glass-panel" onclick="startTimer()">01:00</div>
+                <button onclick="goToScreen('themes')" class="back-btn"><i class="fas fa-chevron-left"></i></button>
+                <div id="timer-display" class="timer-badge" onclick="startTimer()">01:00</div>
                 <div id="intensity-badge" class="level-badge">SOFT</div>
             </div>
 
-            <div class="card-stack" id="card-stack">
-                <!-- Карта-тело -->
-                <div class="main-game-card" id="game-card-body">
+            <div class="card-stack">
+                <div class="main-game-card glass-panel" id="game-card-body">
                     <div class="card-tag" id="card-type">ЗАДАНИЕ</div>
-                    <div id="card-text">Приготовьтесь...</div>
-                    
-                    <div id="card-details" class="dates-info glass-panel">
-                        <i class="fas fa-lightbulb"></i> <span id="detail-tip"></span>
-                    </div>
-
+                    <div id="card-text">Текст задания появится здесь...</div>
                     <button onclick="toggleFavorite()" id="fav-btn" class="fav-btn-star">
                         <i class="far fa-star"></i>
                     </button>
                 </div>
             </div>
 
-            <div class="swipe-hint">
-                <i class="fas fa-arrow-left"></i> Свайп для пропуска | Готово <i class="fas fa-arrow-right"></i>
-            </div>
-
             <div class="game-controls">
-                <button class="control-btn secondary glass-panel" onclick="swipe('left')">
-                    <i class="fas fa-times"></i>
-                </button>
-                <button class="control-btn primary" onclick="swipe('right')">ВЫПОЛНЕНО</button>
+                <button class="control-btn skip" onclick="swipe('left')"><i class="fas fa-times"></i></button>
+                <button class="control-btn done" onclick="swipe('right')"><i class="fas fa-check"></i></button>
             </div>
         </section>
     </div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА -->
-    
-    <!-- Кастомная карта -->
-    <div id="modal-custom" class="modal-overlay" onclick="closeModals()">
-        <div class="modal-content glass-panel" onclick="event.stopPropagation()">
-            <h3 class="modal-h">Создать задание</h3>
-            <textarea id="custom-card-input" placeholder="Напишите ваше секретное задание..."></textarea>
-            <select id="custom-category" class="modal-select">
-                <option value="romance">❤️ Романтика</option>
-                <option value="fun">😄 Веселье</option>
-                <option value="adult">🔥 HOT 18+</option>
-            </select>
-            <button class="btn-next" onclick="saveCustomCard()">Добавить в колоду</button>
-        </div>
-    </div>
-
-    <!-- Избранное -->
+    <!-- Модалки -->
     <div id="modal-favs" class="modal-overlay" onclick="closeModals()">
         <div class="modal-content glass-panel" onclick="event.stopPropagation()">
-            <h3 class="modal-h">Избранное</h3>
-            <div id="favs-list" class="favs-scroll-area"></div>
-            <button onclick="closeModals()" class="btn-next">Назад</button>
+            <h3>Избранное</h3>
+            <div id="favs-list"></div>
         </div>
     </div>
 
-    <!-- Настройки -->
-    <div id="modal-reset" class="modal-overlay" onclick="closeModals()">
-        <div class="modal-content glass-panel" onclick="event.stopPropagation()">
-            <h3 class="modal-h">Профиль</h3>
-            <div class="current-names">
-                <div class="name-display"><span>Игрок 1:</span> <b id="current-name1"></b></div>
-                <div class="name-display"><span>Игрок 2:</span> <b id="current-name2"></b></div>
-            </div>
-            <button class="btn-danger" onclick="confirmReset()">Сбросить всё</button>
-            <button class="btn-secondary" onclick="closeModals()">Отмена</button>
-        </div>
-    </div>
-
-    <!-- Статистика -->
     <div id="modal-stats" class="modal-overlay" onclick="closeModals()">
         <div class="modal-content glass-panel" onclick="event.stopPropagation()">
-            <h3 class="modal-h">Ваша история</h3>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span id="stat-completed">0</span>
-                    <label>Выполнено</label>
-                </div>
-                <div class="stat-item">
-                    <span id="stat-sessions">0</span>
-                    <label>Сессий</label>
-                </div>
-            </div>
-            <div id="detailed-stats" class="detailed-stats"></div>
-            <button onclick="closeModals()" class="btn-next">Закрыть</button>
+            <h3>Статистика</h3>
+            <div id="stats-content"></div>
         </div>
     </div>
 
-    <!-- Подключаем логику -->
     <script src="cards.js"></script>
     <script src="app.js"></script>
 </body>
