@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5 БУКВ ОНЛАЙН</title>
+    <title>5 БУКВ | ОНЛАЙН</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
         <a href="https://lovecouple.ru" class="zine-back-button">← НА ГЛАВНУЮ</a>
         
-        <!-- Экран входа -->
+        <!-- ЭКРАН ВХОДА -->
         <div id="auth-screen" class="screen">
             <h1>5 БУКВ 🌐</h1>
-            <div class="rules-box"><strong>ONLINE MODE:</strong> Зайди в комнату друга или создай свою.</div>
+            <div class="rules-box">
+                <strong>ОНЛАЙН СЕССИЯ:</strong><br>
+                Создай комнату или введи код друга.
+            </div>
             <input type="text" id="player-name" placeholder="ТВОЙ НИК">
             <div style="margin-top:15px; display:flex; flex-direction:column; gap:10px;">
                 <button onclick="createRoom()" class="btn-zinc">СОЗДАТЬ КОМНАТУ</button>
@@ -24,18 +27,18 @@
             </div>
         </div>
 
-        <!-- Экран лобби -->
+        <!-- ЛОББИ -->
         <div id="lobby-screen" class="screen hidden">
             <h1 id="lobby-id-display">КОД: ----</h1>
-            <p>ЖДЕМ ИГРОКОВ...</p>
+            <div class="rules-box">ЖДЕМ ОСТАЛЬНЫХ ИГРОКОВ...</div>
             <ul id="players-list"></ul>
-            <button id="start-btn" onclick="startGame()" class="btn-zinc" style="display:none; background:#000;">ВСЕ В СБОРЕ - ПУСК</button>
+            <button id="start-btn" onclick="startGame()" class="btn-zinc" style="display:none; background:#000; width:100%;">ПУСК БАТЛА</button>
         </div>
 
-        <!-- Игровой экран -->
+        <!-- ИГРОВОЙ ЭКРАН -->
         <div id="game-screen" class="screen hidden">
             <div id="timer">60</div>
-            <div id="current-player-display" style="font-weight:bold; margin-bottom:10px;"></div>
+            <div id="current-player-display" style="font-weight:bold; margin-bottom:10px; font-size: 0.9rem;"></div>
             
             <div class="game-card">
                 <div class="letter-tag">БУКВА: <span id="target-letter">?</span></div>
@@ -47,18 +50,18 @@
                 <button onclick="sendResult(false)" class="btn-zinc">ПРОПУСТИТЬ</button>
             </div>
             
-            <div id="listener-msg" class="rules-box" style="text-align:center;">СЛУШАЙТЕ ВЕЩАТЕЛЯ!</div>
+            <div id="listener-msg" class="rules-box" style="text-align:center;">СЛУШАЙТЕ ВЕЩАТЕЛЯ! ОН ОБЪЯСНЯЕТ...</div>
         </div>
 
-        <!-- Финал -->
+        <!-- ФИНАЛ -->
         <div id="result-screen" class="screen hidden">
-            <h1>ИТОГИ</h1>
+            <h1>ИТОГИ БАТЛА</h1>
             <div id="final-stats"></div>
-            <button onclick="location.reload()" class="btn-zinc" style="margin-top:20px;">В МЕНЮ</button>
+            <button onclick="location.reload()" class="btn-zinc" style="margin-top:20px; width:100%;">В МЕНЮ</button>
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
