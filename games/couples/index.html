@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>LoveCouple Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -12,75 +12,127 @@
 
     <div id="loading-screen" class="loading-screen">
         <div class="loader-content">
-            <div class="loading-heart">💖</div>
+            <div class="heart-pulse">💖</div>
             <h1 class="logo-text">LoveCouple</h1>
         </div>
     </div>
 
     <div class="app-container">
-        <!-- Экран регистрации -->
+        
+        <!-- ЭКРАН 1: РЕГИСТРАЦИЯ -->
         <section id="screen-setup" class="screen active">
-            <h2 class="title-main">LoveCouple</h2>
-            <div class="glass-panel setup-box">
-                <input type="text" id="name1" placeholder="Твое имя">
-                <input type="text" id="name2" placeholder="Имя партнера">
+            <div class="welcome-box">
+                <h2 class="title-main">LoveCouple</h2>
+                <p class="subtitle">Ваша история начинается здесь</p>
             </div>
-            <button class="btn-primary big-btn" onclick="saveNames()">НАЧАТЬ</button>
+            <div class="clay-card setup-box">
+                <div class="input-wrapper">
+                    <label>Твое имя</label>
+                    <input type="text" id="name1" placeholder="Алексей">
+                </div>
+                <div class="input-wrapper">
+                    <label>Её/Его имя</label>
+                    <input type="text" id="name2" placeholder="Мария">
+                </div>
+            </div>
+            <button class="btn-primary clay-button big-btn" onclick="saveNames()">СОЗДАТЬ МАГИЮ</button>
         </section>
 
-        <!-- Выбор тем -->
+        <!-- ЭКРАН 2: ТЕМЫ -->
         <section id="screen-themes" class="screen">
-            <h2 class="theme-title">Выберите режим</h2>
-            <div class="themes-grid">
-                <div class="theme-card glass-panel" onclick="selectTheme('romance')">❤️<br>Романтика</div>
-                <div class="theme-card glass-panel" onclick="selectTheme('fun')">😄<br>Веселье</div>
-                <div class="theme-card glass-panel" onclick="selectTheme('adult')">🔥<br>HOT</div>
-                <div class="theme-card glass-panel" onclick="selectTheme('dates')">📍<br>Свидания</div>
+            <div class="top-bar">
+                <h2 class="theme-title">Выберите режим</h2>
+                <div class="streak-badge">🔥 <span id="streak-val">0</span></div>
             </div>
-            <div class="special-actions">
-                <button class="btn-glass" onclick="showModal('favs')"><i class="fas fa-star"></i></button>
-                <button class="btn-glass" onclick="showModal('stats')"><i class="fas fa-chart-pie"></i></button>
-                <button class="btn-glass" onclick="confirmReset()"><i class="fas fa-user-edit"></i></button>
+
+            <div class="themes-grid">
+                <div class="theme-card clay-card" onclick="selectTheme('romance')">
+                    <span class="icon">❤️</span>
+                    <label>Романтика</label>
+                </div>
+                <div class="theme-card clay-card" onclick="selectTheme('fun')">
+                    <span class="icon">😄</span>
+                    <label>Веселье</label>
+                </div>
+                <div class="theme-card clay-card" onclick="selectTheme('adult')">
+                    <span class="icon">🔥</span>
+                    <label>HOT</label>
+                </div>
+                <div class="theme-card clay-card" onclick="selectTheme('dates')">
+                    <span class="icon">📍</span>
+                    <label>Свидания</label>
+                </div>
+            </div>
+
+            <div class="atmosphere-player clay-card">
+                <p>Атмосфера:</p>
+                <div class="mood-btns">
+                    <button class="mood-btn" onclick="toggleMood('fire')">🔥</button>
+                    <button class="mood-btn" onclick="toggleMood('rain')">🌧️</button>
+                    <button class="mood-btn" onclick="toggleMood('jazz')">🎷</button>
+                </div>
+            </div>
+
+            <div class="footer-actions">
+                <button class="circle-action clay-card" onclick="showModal('favs')"><i class="fas fa-star"></i></button>
+                <button class="circle-action clay-card" onclick="showModal('stats')"><i class="fas fa-chart-line"></i></button>
+                <button class="circle-action clay-card" onclick="confirmReset()"><i class="fas fa-cog"></i></button>
             </div>
         </section>
 
-        <!-- Экран игры -->
+        <!-- ЭКРАН 3: ИГРА -->
         <section id="screen-game" class="screen">
             <div class="game-header">
-                <button onclick="goToScreen('themes')" class="back-btn"><i class="fas fa-chevron-left"></i></button>
-                <div id="timer-display" class="timer-badge" onclick="startTimer()">01:00</div>
-                <div id="intensity-badge" class="level-badge">SOFT</div>
+                <button onclick="goToScreen('themes')" class="clay-card back-mini"><i class="fas fa-chevron-left"></i></button>
+                <div class="game-stats">
+                    <div id="timer-display" class="timer-clay" onclick="startTimer()">01:00</div>
+                    <div id="intensity-badge" class="level-clay">SOFT</div>
+                </div>
+                <button onclick="rollDice()" class="clay-card dice-btn"><i class="fas fa-dice"></i></button>
             </div>
 
             <div class="card-stack">
-                <div class="main-game-card glass-panel" id="game-card-body">
-                    <div class="card-tag" id="card-type">ЗАДАНИЕ</div>
-                    <div id="card-text">Текст задания появится здесь...</div>
-                    <button onclick="toggleFavorite()" id="fav-btn" class="fav-btn-star">
-                        <i class="far fa-star"></i>
-                    </button>
+                <div class="main-card-container">
+                    <div class="main-game-card clay-card" id="game-card-body">
+                        <div class="card-tag" id="card-type">ЗАДАНИЕ</div>
+                        <div id="card-text">Начнем?</div>
+                        <button onclick="toggleFavorite()" id="fav-btn" class="fav-star"><i class="far fa-star"></i></button>
+                    </div>
                 </div>
             </div>
 
             <div class="game-controls">
-                <button class="control-btn skip" onclick="swipe('left')"><i class="fas fa-times"></i></button>
-                <button class="control-btn done" onclick="swipe('right')"><i class="fas fa-check"></i></button>
+                <button class="control-btn skip clay-card" onclick="swipe('left')"><i class="fas fa-times"></i></button>
+                <button class="control-btn done clay-button" onclick="swipe('right')">ВЫПОЛНЕНО</button>
             </div>
         </section>
     </div>
 
-    <!-- Модалки -->
+    <!-- МОДАЛЬНЫЕ ОКНА -->
     <div id="modal-favs" class="modal-overlay" onclick="closeModals()">
-        <div class="modal-content glass-panel" onclick="event.stopPropagation()">
-            <h3>Избранное</h3>
-            <div id="favs-list"></div>
+        <div class="modal-content clay-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Избранное</h3>
+                <button onclick="closeModals()" class="close-x">&times;</button>
+            </div>
+            <div id="favs-list" class="scroll-list"></div>
         </div>
     </div>
 
     <div id="modal-stats" class="modal-overlay" onclick="closeModals()">
-        <div class="modal-content glass-panel" onclick="event.stopPropagation()">
-            <h3>Статистика</h3>
-            <div id="stats-content"></div>
+        <div class="modal-content clay-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Статистика</h3>
+                <button onclick="closeModals()" class="close-x">&times;</button>
+            </div>
+            <div id="stats-content" class="stats-grid"></div>
+        </div>
+    </div>
+
+    <div id="modal-dice" class="modal-overlay" onclick="closeModals()">
+        <div class="modal-content clay-card dice-modal">
+            <div id="dice-result">?</div>
+            <p id="dice-text">Бросаем кубик...</p>
         </div>
     </div>
 
