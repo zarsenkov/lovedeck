@@ -1,157 +1,174 @@
 const socket = io("https://lovecouple-server-zarsenkov.amvera.io", { transports: ['websocket', 'polling'] });
-let myId, currentRoomId, myRole, wakeLock = null;
 
-// ПРЕДОТВРАЩЕНИЕ ГАСНУЩЕГО ЭКРАНА
-async function requestWakeLock() {
-    try {
-        if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
-    } catch (err) { console.log(err); }
-}
+let myId, currentRoomId, myRole, gameSettings = { time: 60 };
+let startX = 0;
+
+// --- ИНИЦИАЛИЗАЦИЯ ---
+
+socket.on('connect', () => {
+    myId = socket.id;
+    console.log("Connected to Neo-Pop Server");
+});
 
 function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.pop-screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-}
-
-function goBack() {
-    if (document.getElementById('screen-login').classList.contains('active')) {
-        window.location.href = "https://lovecouple.ru";
+    
+    // Скрываем/показываем хедер в зависимости от экрана
+    const header = document.getElementById('game-header');
+    if (id === 'screen-game' || id === 'screen-summary') {
+        header.style.visibility = 'visible';
     } else {
-        if (confirm("Выйти из комнаты?")) location.reload();
+        header.style.visibility = 'hidden';
     }
 }
 
-function copyCode() {
-    const code = document.getElementById('room-id-display').innerText;
-    navigator.clipboard.writeText(code);
-    alert("Код скопирован: " + code);
-}
+// --- ЛОГИКА КОМНАТ ---
 
-// ЛОББИ
 function createRoom() {
     const name = document.getElementById('username').value.trim();
-    if (!name) return alert("Введите имя");
-    requestWakeLock();
-    socket.emit('create_room', { playerName: name });
+    if (!name) return alert("ВВЕДИ ИМЯ!");
+    socket.emit('create_room', { playerName: name, gameType: 'alias' });
 }
 
 function joinRoom() {
     const name = document.getElementById('username').value.trim();
     const code = document.getElementById('room-input').value.trim().toUpperCase();
-    if (!name || !code) return alert("Введите имя и код");
-    requestWakeLock();
+    if (!name || !code) return alert("ЗАПОЛНИ ПОЛЯ!");
     socket.emit('join_room', { roomId: code, playerName: name });
 }
 
-function updateSettings() {
-    if (!currentRoomId) return;
-    const settings = {
-        time: parseInt(document.getElementById('set-time').value),
-        goal: parseInt(document.getElementById('set-goal').value)
-    };
-    socket.emit('update_settings', { roomId: currentRoomId, settings });
-}
-
-function startGame() { socket.emit('start_game', currentRoomId); }
-
-// СОБЫТИЯ
 socket.on('room_created', (data) => {
     currentRoomId = data.roomId;
-    document.getElementById('room-id-display').innerText = currentRoomId;
+    document.getElementById('lobby-code').innerText = data.roomId;
     showScreen('screen-lobby');
-});
-
-socket.on('update_settings', (s) => {
-    document.getElementById('set-time').value = s.time;
-    document.getElementById('set-goal').value = s.goal;
 });
 
 socket.on('update_lobby', (room) => {
     const list = document.getElementById('player-list');
     list.innerHTML = room.players.map(p => `
-        <div class="player-item">
-            <span>${p.name} ${p.id === socket.id ? '<b>(ВЫ)</b>' : ''}</span>
-            <span class="score">${p.score}</span>
+        <div class="player-row">
+            <span>${p.name} ${p.id === myId ? '(ТЫ)' : ''}</span>
+            ${p.isHost ? '<span class="host-badge">HOST</span>' : ''}
+            <span class="score-pill" style="box-shadow: 2px 2px 0 var(--black)">${p.score}</span>
         </div>
     `).join('');
 
-    const isHost = room.players[0].id === socket.id;
+    const isHost = room.players[0].id === myId;
     document.getElementById('host-settings').classList.toggle('hidden', !isHost);
     document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
     document.getElementById('wait-msg').style.display = isHost ? 'none' : 'block';
 });
 
-socket.on('round_start', ({ explainerId, judgeId, players }) => {
-    showScreen('screen-game');
-    const card = document.getElementById('word-card');
-    document.getElementById('judge-controls').classList.add('hidden');
-    
-    const me = players.find(p => p.id === socket.id);
-    document.getElementById('game-score').innerText = `Очки: ${me.score}`;
+// --- ГЕЙМПЛЕЙ ---
 
-    if (socket.id === explainerId) {
+function startGame() {
+    socket.emit('start_game', currentRoomId);
+}
+
+socket.on('round_start', ({ explainerId, judgeId, players }) => {
+    const explainer = players.find(p => p.id === explainerId);
+    const judge = players.find(p => p.id === judgeId);
+    
+    document.getElementById('player-turn-name').innerText = explainer.name;
+    
+    if (myId === explainerId) {
         myRole = 'explainer';
-        document.getElementById('role-name').innerText = "Вы объясняете";
-        document.getElementById('hint-text').innerText = "Говорите слова!";
-    } else if (socket.id === judgeId) {
+        document.getElementById('role-name').innerText = "ТЫ ОБЪЯСНЯЕШЬ!";
+    } else if (myId === judgeId) {
         myRole = 'judge';
-        document.getElementById('role-name').innerText = "Вы судья";
-        document.getElementById('hint-text').innerText = "Свайпайте карточку!";
-        document.getElementById('judge-controls').classList.remove('hidden');
-        initSwipe(card);
+        document.getElementById('role-name').innerText = "ТЫ СУДЬЯ!";
     } else {
         myRole = 'guesser';
-        document.getElementById('role-name').innerText = "Вы угадываете";
-        document.getElementById('hint-text').innerText = "Слушайте объяснение";
+        document.getElementById('role-name').innerText = "ТЫ УГАДЫВАЕШЬ!";
     }
+    
+    showScreen('screen-ready');
 });
+
+function playerReady() {
+    showScreen('screen-game');
+    initSwipe(); // Включаем свайпы для тех, кому можно
+}
 
 socket.on('new_word', (word) => {
-    document.getElementById('current-word').innerText = (myRole === 'explainer' || myRole === 'judge') ? word : "???";
+    const display = document.getElementById('word-display');
+    if (myRole === 'explainer' || myRole === 'judge') {
+        display.innerText = word;
+    } else {
+        display.innerText = "???";
+    }
+    resetCard();
+});
+
+socket.on('timer_update', (time) => {
+    const el = document.getElementById('timer-display');
+    el.innerText = time;
+    if (time <= 10) el.style.background = '#FEB2B2';
+    else el.style.background = 'var(--yellow)';
+});
+
+// --- СВАЙПЫ И ДЕЙСТВИЯ ---
+
+function initSwipe() {
     const card = document.getElementById('word-card');
-    card.style.transition = 'none'; card.style.transform = 'scale(0.8)'; card.style.opacity = '0';
-    setTimeout(() => { card.style.transition = '0.3s'; card.style.transform = 'scale(1)'; card.style.opacity = '1'; }, 50);
-});
+    if (myRole !== 'judge') return;
 
-socket.on('timer_update', (t) => {
-    const el = document.getElementById('timer');
-    el.innerText = t;
-    el.style.color = t < 10 ? '#ff4b2b' : 'white';
-});
+    card.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+    });
 
-socket.on('game_over', ({ message, players }) => {
-    showScreen('screen-results');
-    document.getElementById('result-title').innerText = message;
-    document.getElementById('final-scores').innerHTML = players.map(p => `<p>${p.name}: ${p.score}</p>`).join('');
-});
+    card.addEventListener('touchmove', (e) => {
+        const moveX = e.touches[0].clientX - startX;
+        const rotation = moveX / 15;
+        card.style.transform = `translateX(${moveX}px) rotate(${rotation}deg)`;
+    });
 
-socket.on('round_end', () => alert("Раунд завершен!"));
-socket.on('error_msg', (m) => alert(m));
+    card.addEventListener('touchend', (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const diff = endX - startX;
 
-// ЖЕСТЫ
+        if (diff > 100) {
+            handleAction('guessed');
+        } else if (diff < -100) {
+            handleAction('skip');
+        } else {
+            resetCard();
+        }
+    });
+}
+
 function handleAction(action) {
     if (myRole !== 'judge') return;
-    socket.emit('word_action', { roomId: currentRoomId, action });
-    animateCard(action === 'guessed' ? 200 : -200);
-}
-
-function initSwipe(el) {
-    let startX = 0;
-    el.ontouchstart = (e) => { startX = e.touches[0].clientX; el.style.transition = 'none'; };
-    el.ontouchmove = (e) => {
-        let diff = e.touches[0].clientX - startX;
-        el.style.transform = `translateX(${diff}px) rotate(${diff/15}deg)`;
-    };
-    el.ontouchend = (e) => {
-        let diff = e.changedTouches[0].clientX - startX;
-        if (Math.abs(diff) > 100) handleAction(diff > 0 ? 'guessed' : 'skip');
-        else { el.style.transition = '0.3s'; el.style.transform = 'none'; }
-    };
-}
-
-function animateCard(x) {
+    
     const card = document.getElementById('word-card');
-    card.style.transition = '0.3s';
-    card.style.transform = `translateX(${x}px) rotate(${x/10}deg)`;
-    card.style.opacity = '0';
+    card.classList.add(action === 'guessed' ? 'swipe-right-anim' : 'swipe-left-anim');
+    
+    setTimeout(() => {
+        socket.emit('word_action', { roomId: currentRoomId, action });
+    }, 200);
+}
+
+function resetCard() {
+    const card = document.getElementById('word-card');
+    card.classList.remove('swipe-right-anim', 'swipe-left-anim');
+    card.style.transform = 'translateX(0) rotate(0)';
+}
+
+// --- УТИЛИТЫ ---
+
+function handleBack() {
+    if (confirm("Выйти из игры?")) window.location.href = "https://lovecouple.ru";
+}
+
+function toggleModal(id) {
+    document.getElementById(`modal-${id}`).classList.toggle('active');
+}
+
+function setSetting(type, val, el) {
+    // Визуальное переключение чипсов
+    el.parentElement.querySelectorAll('.pop-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    gameSettings[type] = val;
+    // Можно добавить socket.emit('update_settings'...)
 }
