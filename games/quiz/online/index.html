@@ -2,88 +2,96 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>КВИЗ БАТТЛ ONLINE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>QUIZ BATTLE ONLINE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
+
     <div class="app-container">
-        <button class="nav-btn back-btn" onclick="goBack()">←</button>
-        <button class="nav-btn rules-btn" onclick="toggleRules(true)">?</button>
+        <!-- Кнопки навигации -->
+        <div class="nav-btn back-btn" onclick="app.leaveRoom()"><i class="fas fa-times"></i></div>
+        <div class="nav-btn rules-btn" onclick="app.toggleRules(true)">?</div>
 
-        <section class="screen active" id="auth-screen">
+        <!-- ЭКРАН 1: ВХОД / СОЗДАНИЕ -->
+        <section id="screen-auth" class="screen active">
             <div class="logo-area">
-                <div class="emoji-float">🌐</div>
-                <h1 class="main-title">КВИЗ<span>ONLINE</span></h1>
+                <div class="emoji-float">⚡</div>
+                <h1 class="main-title">QUIZ<span>BATTLE</span></h1>
             </div>
+            
             <div class="card-glass">
-                <p class="section-tag">ВХОД В СЕТЬ</p>
-                <input type="text" id="player-name" class="joy-input" placeholder="Твое имя" style="margin-bottom: 15px;">
-                <input type="text" id="room-id" class="joy-input" placeholder="ID комнаты (для входа)">
+                <span class="section-tag">ПРОФИЛЬ</span>
+                <input type="text" id="username" class="joy-input" placeholder="ТВОЙ НИК" maxlength="12">
                 
-                <button class="primary-btn" onclick="createRoom()" style="background: var(--green); color:white;">СОЗДАТЬ КОМНАТУ</button>
-                <button class="primary-btn" onclick="joinRoom()">ПРИСОЕДИНИТЬСЯ</button>
+                <button class="primary-btn" onclick="app.createRoom()">СОЗДАТЬ ИГРУ</button>
+                <div style="text-align: center; margin: 15px; font-weight: 900; opacity: 0.3;">ИЛИ</div>
+                <input type="text" id="room-input" class="joy-input" placeholder="КОД КОМНАТЫ" style="text-transform: uppercase;">
+                <button class="primary-btn" style="background: var(--accent); box-shadow: 0 6px 0 #C0392B;" onclick="app.joinRoom()">ВОЙТИ ПО КОДУ</button>
             </div>
         </section>
 
-        <section class="screen" id="lobby-screen">
+        <!-- ЭКРАН 2: ЛОББИ -->
+        <section id="screen-lobby" class="screen">
             <div class="logo-area">
-                <h2 id="display-room-id" style="color: white; font-size: 1.8rem; text-shadow: 2px 2px 0 var(--text);">ROOM: ---</h2>
+                <h2 class="main-title-small">КОД: <span id="display-room-code">----</span></h2>
             </div>
             <div class="card-glass">
-                <p class="section-tag">ИГРОКИ В КОМНАТЕ</p>
-                <div id="lobby-players-list" class="players-container"></div>
-
-                <p class="section-tag" style="margin-top:20px" id="cats-title">ВЫБОР ТЕМ</p>
-                <div class="category-grid" id="categories-box"></div>
-            </div>
-            <button id="start-game-btn" class="primary-btn pulse" onclick="requestStart()" style="display: none;">НАЧАТЬ БАТТЛ</button>
-        </section>
-
-        <section class="screen" id="transfer-screen">
-            <div class="transfer-card">
-                <div class="avatar-circle">👤</div>
-                <p>СЕЙЧАС ОТВЕЧАЕТ:</p>
-                <h2 id="next-player-name" class="big-name">---</h2>
-                <div id="transfer-status" class="hint-text">Ждем готовности...</div>
-                <button id="ready-btn" class="primary-btn" onclick="playerReady()" style="display:none;">Я ГОТОВ!</button>
-            </div>
-        </section>
-
-        <section class="screen" id="game-screen">
-            <div class="game-top">
-                <div class="timer-pill" id="timer-display">30</div>
-                <div class="score-pill">СЧЕТ: <span id="score-counter">0</span></div>
-            </div>
-            <div class="player-indicator" id="current-active-player">Загрузка...</div>
-            <div class="question-container">
-                <h2 id="question-text">Вопрос...</h2>
-            </div>
-            <div class="answers-stack" id="answers-box"></div>
-        </section>
-
-        <section class="screen" id="result-screen">
-            <h1 class="main-title-small" style="color:white; text-align:center;">ФИНАЛ</h1>
-            <div class="card-glass" id="final-results"></div>
-            <button class="primary-btn" onclick="goBack()">В МЕНЮ</button>
-        </section>
-
-        <div id="rules-modal" class="modal-overlay" onclick="toggleRules(false)">
-            <div class="modal-card" onclick="event.stopPropagation()">
-                <h2>ПРАВИЛА 📖</h2>
-                <div class="rules-list-fixed">
-                    <div class="rule-row"><span>1</span> Игроки отвечают по очереди (по 5 вопросов).</div>
-                    <div class="rule-row"><span>2</span> На ответ дается 30 секунд.</div>
-                    <div class="rule-row"><span>3</span> Победит тот, кто наберет больше очков.</div>
+                <span class="section-tag">ИГРОКИ В СЕТИ</span>
+                <div id="player-list" class="player-list-online">
+                    <!-- Игроки подгружаются здесь -->
                 </div>
-                <button class="primary-btn" onclick="toggleRules(false)">ПОНЯТНО</button>
+                <button id="start-game-btn" class="primary-btn" style="display:none;" onclick="app.requestStart()">НАЧАТЬ БАТЛ!</button>
+                <p id="wait-msg" style="text-align: center; font-weight: 800; margin-top: 20px; opacity: 0.6;">Ждем хоста...</p>
             </div>
+        </section>
+
+        <!-- ЭКРАН 3: ИГРА -->
+        <section id="screen-game" class="screen">
+            <div class="game-top">
+                <div class="timer-pill" id="game-timer">15</div>
+                <div class="score-pill" id="my-score">Очки: 0</div>
+            </div>
+            <div class="player-indicator" id="current-question-num">Вопрос 1 из 10</div>
+
+            <div class="question-container">
+                <h2 id="question-text">Загрузка вопроса...</h2>
+            </div>
+
+            <div class="answers-stack" id="answers-grid">
+                <!-- Кнопки ответов -->
+            </div>
+        </section>
+
+        <!-- ЭКРАН 4: РЕЗУЛЬТАТЫ -->
+        <section id="screen-results" class="screen">
+            <div class="transfer-card">
+                <div class="emoji-float">🏆</div>
+                <h2 class="big-name">ИТОГИ</h2>
+                <div id="leaderboard" class="leaderboard-list">
+                    <!-- Список победителей -->
+                </div>
+                <button class="primary-btn" onclick="location.reload()">В МЕНЮ</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- МОДАЛКА ПРАВИЛ -->
+    <div id="modal-rules" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="font-weight: 900; color: var(--bg);">ПРАВИЛА БАТЛА</h2>
+            <div class="rules-list-fixed">
+                <div class="rule-row"><span>1</span> У вас 15 секунд на каждый вопрос.</div>
+                <div class="rule-row"><span>2</span> Чем быстрее ответишь — тем больше очков.</div>
+                <div class="rule-row"><span>3</span> Очки начисляются только за верный ответ.</div>
+            </div>
+            <button class="primary-btn" onclick="app.toggleRules(false)">ПОНЯТНО!</button>
         </div>
     </div>
 
-    <script src="questions.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
