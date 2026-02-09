@@ -2,112 +2,94 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Croco Flow</title>
-    <link rel="stylesheet" href="crocodile.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Jungle Крокодил</title>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="main-wrapper">
-        <section class="page active" id="mainScreen">
-            <div class="top-bar">
-                <button class="icon-btn" onclick="exitToCluster()"><i class="fas fa-chevron-left"></i></button>
-                <div class="brand">CROCO</div>
-                <button class="icon-btn" onclick="showRules()"><i class="fas fa-info"></i></button>
-            </div>
 
-            <div class="setup-container">
-                <div class="label-row">ИГРОКИ</div>
-                <div class="players-row">
-                    <div class="players-scroll" id="playerList">
-                        <div class="p-bubble">
-                            <input type="text" class="p-input" value="Игрок 1">
-                            <button class="p-del" onclick="removePlayer(this)">×</button>
-                        </div>
-                        <div class="p-bubble">
-                            <input type="text" class="p-input" value="Игрок 2">
-                            <button class="p-del" onclick="removePlayer(this)">×</button>
-                        </div>
+    <div class="app-container">
+        
+        <!-- ЭКРАН 1: ГЛАВНЫЙ -->
+        <section id="screen-main" class="screen active">
+            <div class="jungle-header">
+                <div class="leaf-icon">🌿</div>
+                <h1 class="title">КРОКО<br>ДИЛ</h1>
+            </div>
+            <div class="clay-card setup-card">
+                <div class="score-setup">
+                    <div class="team-box">
+                        <input type="text" id="team1-name" value="Команда 1">
+                        <span id="score1" class="score-val">0</span>
                     </div>
-                    <button class="p-add" onclick="addPlayerField()"><i class="fas fa-plus"></i></button>
+                    <div class="vs">VS</div>
+                    <div class="team-box">
+                        <input type="text" id="team2-name" value="Команда 2">
+                        <span id="score2" class="score-val">0</span>
+                    </div>
                 </div>
-
-                <div class="label-row" style="margin-top: 25px;">КАТЕГОРИИ</div>
-                <div class="cat-grid" id="categoriesGrid"></div>
             </div>
-
-            <button class="start-btn" onclick="startGame()">ИГРАТЬ</button>
+            <button class="clay-button primary-btn big-btn" onclick="goToScreen('difficulty')">ПОГНАЛИ!</button>
         </section>
 
-        <section class="page" id="transferScreen">
-            <div class="center-content">
-                <div class="status">ПЕРЕДАЙТЕ ТЕЛЕФОН</div>
-                <h2 id="currentPlayerName">ИГРОК</h2>
-                <div id="transferScore"></div>
-                <button class="action-circle" onclick="startRound()">
-                    <div class="ring"></div>
-                    <i class="fas fa-play"></i>
-                    <span>НАЧАТЬ</span>
+        <!-- ЭКРАН 2: ВЫБОР СЛОЖНОСТИ -->
+        <section id="screen-difficulty" class="screen">
+            <h2 class="section-title">Уровень джунглей</h2>
+            <div class="difficulty-grid">
+                <div class="diff-card clay-card" onclick="startGame('easy')">
+                    <span class="emoji">🐣</span>
+                    <label>ЛЕГКО</label>
+                </div>
+                <div class="diff-card clay-card" onclick="startGame('medium')">
+                    <span class="emoji">🐒</span>
+                    <label>СРЕДНЕ</label>
+                </div>
+                <div class="diff-card clay-card" onclick="startGame('hard')">
+                    <span class="emoji">🦖</span>
+                    <label>СЛОЖНО</label>
+                </div>
+            </div>
+            <button class="back-btn" onclick="goToScreen('main')">НАЗАД</button>
+        </section>
+
+        <!-- ЭКРАН 3: ИГРОВОЕ ПОЛЕ -->
+        <section id="screen-game" class="screen">
+            <div class="game-top">
+                <div id="active-team-name" class="current-team">Команда 1</div>
+                <div id="timer" class="clay-timer">60</div>
+            </div>
+
+            <div class="word-card-container">
+                <div id="word-display" class="clay-card word-card">
+                    <p class="hint">Ваше слово:</p>
+                    <h2 id="current-word">МАНГО</h2>
+                </div>
+            </div>
+
+            <div class="game-actions">
+                <button class="game-btn skip-btn clay-card" onclick="nextWord(false)">
+                    <i class="fas fa-redo"></i> Скип
                 </button>
-                <button class="link-btn" onclick="switchScreen('main')">НАСТРОЙКИ</button>
+                <button class="game-btn done-btn clay-button" onclick="nextWord(true)">
+                    УГАДАЛИ!
+                </button>
             </div>
         </section>
 
-        <section class="page" id="gameScreen">
-            <div class="top-bar">
-                <button class="icon-btn" onclick="backToSettings()"><i class="fas fa-chevron-left"></i></button>
-                <div class="brand">CROCO</div>
-                <div style="width: 44px;"></div>
+        <!-- ЭКРАН 4: ИТОГИ РАУНДА -->
+        <section id="screen-results" class="screen">
+            <div class="clay-card results-card">
+                <h2 id="round-winner">РАУНД ОКОНЧЕН!</h2>
+                <p id="round-points">+0 очков</p>
             </div>
-
-            <div class="game-header">
-                <div id="timer" class="timer">60</div>
-                <div id="gamePlayerName" class="player-tag">ИГРОК</div>
-                <div id="gameScore"></div>
-            </div>
-
-            <div class="swipe-zone" id="swipeArea">
-                <div class="swipe-hint hint-left">ПАС</div>
-                <div class="swipe-hint hint-right">ОК</div>
-                <div class="card" id="wordCard">
-                    <small id="wordCategory">КАТЕГОРИЯ</small>
-                    <h2 id="currentWord">СЛОВО</h2>
-                </div>
-            </div>
-            <div class="footer-hint">СВАЙП ВЛЕВО – ПАС (-1) / ВПРАВО – УГАДАЛ (+1)</div>
+            <button class="clay-button primary-btn big-btn" onclick="goToScreen('main')">СЛЕДУЮЩИЙ РАУНД</button>
         </section>
 
-        <section class="page" id="resultsScreen">
-            <div class="top-bar">
-                <button class="icon-btn" onclick="switchScreen('main')"><i class="fas fa-chevron-left"></i></button>
-                <div class="brand">CROCO</div>
-                <div style="width: 44px;"></div>
-            </div>
-
-            <div class="results-box">
-                <h2 class="title">ЛИДЕРЫ</h2>
-                <div id="leaderboard" class="list"></div>
-                <button class="start-btn" onclick="location.reload()">ЗАНОВО</button>
-            </div>
-        </section>
-    </div>
-
-    <div id="rulesModal" class="modal" onclick="closeRules()">
-        <div class="modal-body" onclick="event.stopPropagation()">
-            <h3>ПРАВИЛА</h3>
-            <ul>
-                <li>Объясняй слова только жестами</li>
-                <li>Никаких звуков и слов</li>
-                <li>Не показывай на предметы вокруг</li>
-                <li>Свайп вправо – угадал (+1 балл)</li>
-                <li>Свайп влево – пас (-1 балл)</li>
-            </ul>
-            <button class="start-btn" onclick="closeRules()">ПОНЯЛ</button>
-        </div>
     </div>
 
     <script src="words.js"></script>
-    <script src="crocodile.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
