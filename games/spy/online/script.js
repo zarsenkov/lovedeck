@@ -1,8 +1,10 @@
 const SERVER_URL = "https://lovecouple-server-zarsenkov.amvera.io";
 const socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
 
-let myId, currentRoomId, timerInterval, wakeLock = null;
+let myId, currentRoomId, wakeLock = null;
+let totalTime = 480;
 
+// Защита от сна
 async function requestWakeLock() {
     try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
 }
@@ -10,33 +12,27 @@ async function requestWakeLock() {
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    
-    const badge = document.getElementById('room-badge');
-    if (id === 'screen-login') badge.classList.add('hidden');
-    else badge.classList.remove('hidden');
 }
 
-function goHome() {
+function handleBack() {
     if (document.getElementById('screen-login').classList.contains('active')) {
         window.location.href = "https://lovecouple.ru";
     } else {
-        if (confirm("Выйти из игры?")) {
-            clearInterval(timerInterval);
-            window.location.reload();
-        }
+        if (confirm("ПРЕРВАТЬ ТЕКУЩУЮ СЕССИЮ?")) window.location.reload();
     }
 }
 
 function copyCode() {
-    const code = document.getElementById('room-badge').innerText.split(' ')[0];
+    const code = document.getElementById('room-id').innerText;
     navigator.clipboard.writeText(code);
-    alert("Код комнаты скопирован!");
+    alert("КОД СКОПИРОВАН");
 }
 
-// --- ЛОББИ ---
+// --- СОБЫТИЯ ---
+
 function createRoom() {
     const name = document.getElementById('username').value.trim();
-    if (!name) return alert("Введите имя");
+    if (!name) return alert("ВВЕДИТЕ ИМЯ АГЕНТА");
     requestWakeLock();
     socket.emit('spy_create', { playerName: name });
 }
@@ -44,84 +40,86 @@ function createRoom() {
 function joinRoom() {
     const name = document.getElementById('username').value.trim();
     const code = document.getElementById('room-input').value.trim().toUpperCase();
-    if (!name || !code) return alert("Заполните поля");
+    if (!name || !code) return alert("ВВЕДИТЕ ДАННЫЕ");
     requestWakeLock();
-    socket.emit('spy_join', { roomId: code, playerName: name });
+    socket.emit('join_room', { roomId: code, playerName: name });
 }
 
 function startGame() {
     socket.emit('spy_start', currentRoomId);
 }
 
-function endGame() {
-    if(confirm("Завершить раунд и вернуться в лобби?")) {
-        clearInterval(timerInterval);
-        socket.emit('spy_end_round', currentRoomId); // Опционально: можно просто перезагрузить
-        window.location.reload();
-    }
+function flipCard() {
+    document.getElementById('spy-card').classList.toggle('flipped');
 }
 
-// --- СОБЫТИЯ ---
+function goToGame() {
+    showScreen('screen-game');
+}
+
+// --- ОТВЕТЫ СЕРВЕРА ---
+
 socket.on('spy_created', (data) => {
     currentRoomId = data.roomId;
-    document.getElementById('room-badge').innerHTML = `${currentRoomId} <i class="far fa-copy"></i>`;
+    document.getElementById('room-id').innerText = currentRoomId;
     showScreen('screen-lobby');
 });
 
-socket.on('spy_update', (room) => {
+socket.on('spy_update_lobby', (room) => {
+    currentRoomId = room.id;
     const list = document.getElementById('player-list');
     list.innerHTML = room.players.map(p => `
-        <div class="user-item">
-            <span>${p.name} ${p.id === socket.id ? '(Вы)' : ''}</span>
+        <div class="name-input" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>${p.name}</span>
+            ${p.id === socket.id ? '<span style="color:var(--neon-cyan); font-size:10px;">ВЫ</span>' : ''}
         </div>
     `).join('');
-
+    
+    document.getElementById('player-count').innerText = room.players.length;
+    
     const isHost = room.players[0].id === socket.id;
-    document.getElementById('start-btn').classList.toggle('hidden', !isHost || room.players.length < 3);
-    document.getElementById('wait-msg').classList.toggle('hidden', isHost && room.players.length >= 3);
+    document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
+    document.getElementById('wait-msg').style.display = isHost ? 'none' : 'block';
 });
 
-socket.on('spy_game_start', ({ location, players, time }) => {
-    showScreen('screen-game');
-    const me = players.find(p => p.id === socket.id);
-    
-    // Показываем локацию или Шпиона
-    const locDisplay = document.getElementById('location-display');
-    const spyAlert = document.getElementById('spy-alert');
-    
-    if (me.role === 'spy') {
-        locDisplay.classList.add('hidden');
-        spyAlert.classList.remove('hidden');
+socket.on('spy_game_start', (data) => {
+    // data = { location, players, totalTime }
+    const me = data.players.find(p => p.id === socket.id);
+    totalTime = data.totalTime;
+
+    const locName = document.getElementById('location-name');
+    const roleText = document.getElementById('role-text');
+    const roleIcon = document.getElementById('role-icon');
+
+    if (me.role === 'SPY') {
+        locName.innerText = "ВЫ ШПИОН";
+        locName.style.color = "var(--neon-red)";
+        roleText.innerText = "ВАША ЦЕЛЬ: НЕ ВЫДАТЬ СЕБЯ И УЗНАТЬ ЛОКАЦИЮ";
+        roleIcon.innerText = "🕵️‍♂️";
     } else {
-        locDisplay.classList.remove('hidden');
-        spyAlert.classList.add('hidden');
-        locDisplay.innerText = location;
+        locName.innerText = data.location;
+        locName.style.color = "black";
+        roleText.innerText = "ВАША ЦЕЛЬ: ВЫЧИСЛИТЬ ШПИОНА, ЗАДАВАЯ ВОПРОСЫ";
+        roleIcon.innerText = "📍";
     }
 
-    // Список игроков для всех
-    document.getElementById('game-players').innerHTML = players.map(p => `
-        <div class="player-tag">${p.name}</div>
-    `).join('');
-
-    // Таймер
-    startTimer(time);
+    showScreen('screen-reveal');
 });
 
-function startTimer(seconds) {
-    let timeLeft = seconds;
-    const display = document.getElementById('timer');
+socket.on('spy_timer_tick', (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    document.getElementById('countdown').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        let mins = Math.floor(timeLeft / 60);
-        let secs = timeLeft % 60;
-        display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        
-        if (--timeLeft < 0) {
-            clearInterval(timerInterval);
-            alert("ВРЕМЯ ВЫШЛО! Пора разоблачать шпиона.");
-        }
-    }, 1000);
-}
+    // Обновление кругового прогресса
+    const progress = document.getElementById('timer-progress');
+    const offset = 565 - (seconds / totalTime) * 565;
+    progress.style.strokeDashoffset = offset;
+
+    if (seconds < 30) {
+        progress.style.stroke = "var(--neon-red)";
+        document.getElementById('countdown').style.color = "var(--neon-red)";
+    }
+});
 
 socket.on('error_msg', (m) => alert(m));
