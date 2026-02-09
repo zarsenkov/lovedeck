@@ -1,120 +1,117 @@
-let state = {
-    names: { n1: '', n1_v: '', n1_d: '', n2: '', n2_v: '', n2_d: '' },
-    theme: '',
-    currentCard: null,
-    used: new Set(),
-    sync: 20,
-    timer: null
+const state = {
+    player1: "",
+    player2: "",
+    syncLevel: 0,
+    chargeInterval: null,
+    chargeProgress: 0,
+    currentTask: null
 };
 
-// Функция склонения имён
-function decline(name, type) {
-    if (!name) return "";
-    let n = name.trim();
-    const last = n.slice(-1).toLowerCase();
-    if (type === 'v') { // Кого?
-        if (last === 'а') return n.slice(0, -1) + 'у';
-        if (last === 'я') return n.slice(0, -1) + 'ю';
-        if (last === 'й') return n.slice(0, -1) + 'я';
-        if ("бвгджзклмнпрстфхцчшщ".includes(last)) return n + 'а';
-    }
-    if (type === 'd') { // Кому?
-        if (last === 'а' || last === 'я') return n.slice(0, -1) + 'е';
-        if (last === 'й') return n.slice(0, -1) + 'ю';
-        if ("бвгджзклмнпрстфхцчшщ".includes(last)) return n + 'у';
-    }
-    return n;
-}
+const tasks = [
+    { cat: "БЛИЗОСТЬ", text: "{n1}, расскажи {n2}, какое его/ее качество заставляет тебя чувствовать себя в безопасности?" },
+    { cat: "ИМПУЛЬС", text: "{n2}, поцелуй {n1} в шею и прошепчи на ухо самое смелое желание." },
+    { cat: "ОТКРОВЕНИЕ", text: "{n1}, если бы вы могли прямо сейчас улететь в любую точку мира вдвоем, куда бы вы отправились?" },
+    { cat: "СИНТЕЗ", text: "Смотрите друг другу в глаза в течение 30 секунд без единого слова. Почувствуйте пульс друг друга." },
+    { cat: "БЛИЗОСТЬ", text: "{n2}, расскажи {n1} о самом приятном сне, в котором он/она присутствовал(а)." },
+    { cat: "ИМПУЛЬС", text: "{n1}, сделай {n2} легкий массаж плеч, пока считаешь до 20." }
+];
 
-function saveNames() {
-    const name1 = document.getElementById('name1').value;
-    const name2 = document.getElementById('name2').value;
-    if (!name1 || !name2) return alert("Введите оба имени");
-
-    state.names = {
-        n1: name1, n1_v: decline(name1, 'v'), n1_d: decline(name1, 'd'),
-        n2: name2, n2_v: decline(name2, 'v'), n2_d: decline(name2, 'd')
-    };
-    
-    localStorage.setItem('sync_names', JSON.stringify(state.names));
-    goToScreen('themes');
-}
-
-function selectTheme(t) {
-    state.theme = t;
-    nextCard();
-    goToScreen('game');
-}
-
-function unlockCard() {
-    if (navigator.vibrate) navigator.vibrate(100);
-    document.getElementById('blind-lock').style.opacity = '0';
-    setTimeout(() => {
-        document.getElementById('blind-lock').classList.add('hidden');
-    }, 300);
-}
-
-function nextCard() {
-    const pool = CARDS_DB[state.theme];
-    state.currentCard = pool[Math.floor(Math.random() * pool.length)];
-    
-    renderCard();
-    document.getElementById('blind-lock').classList.remove('hidden');
-    document.getElementById('blind-lock').style.opacity = '1';
-}
-
-function renderCard() {
-    let text = state.currentCard.text;
-    const n = state.names;
-    const reps = {
-        '{n1}': n.n1, '{n1_v}': n.n1_v, '{n1_d}': n.n1_d,
-        '{n2}': n.n2, '{n2_v}': n.n2_v, '{n2_d}': n.n2_d
-    };
-
-    for (let key in reps) text = text.split(key).join(`<span style="color:var(--primary)">${reps[key]}</span>`);
-
-    document.getElementById('card-text').innerHTML = text;
-    document.getElementById('task-type').innerText = state.currentCard.type.toUpperCase();
-    document.getElementById('task-subtext').innerText = state.currentCard.task || "";
-    
-    if (state.currentCard.timer) {
-        startTimer(state.currentCard.timer);
-    } else {
-        document.getElementById('game-timer').innerText = "00";
-    }
-}
-
-function finishTask() {
-    state.sync = Math.min(100, state.sync + 5);
-    document.getElementById('sync-progress').style.width = state.sync + '%';
-    nextCard();
-}
-
-function startTimer(seconds) {
-    let left = seconds;
-    const el = document.getElementById('game-timer');
-    if (state.timer) clearInterval(state.timer);
-    
-    state.timer = setInterval(() => {
-        left--;
-        el.innerText = left < 10 ? '0' + left : left;
-        if (left <= 0) {
-            clearInterval(state.timer);
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        }
-    }, 1000);
-}
-
-function goToScreen(id) {
+// Переключение экранов
+function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(`screen-${id}`).classList.add('active');
+    document.getElementById(id).classList.add('active');
 }
 
-// Загрузка
-document.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('sync_names');
-    if (saved) {
-        state.names = JSON.parse(saved);
-        goToScreen('themes');
+// Инициализация
+function initLab() {
+    const n1 = document.getElementById('name1').value.trim();
+    const n2 = document.getElementById('name2').value.trim();
+
+    if (n1 && n2) {
+        state.player1 = n1;
+        state.player2 = n2;
+        showScreen('screen-lab');
+    } else {
+        alert("ОШИБКА: Имена операторов не обнаружены.");
     }
+}
+
+// Механика зарядки ядра
+function startCharging() {
+    if (document.getElementById('reaction-card').classList.contains('active')) return;
+
+    const core = document.querySelector('.core-inner');
+    const triggerLabel = document.getElementById('trigger-label');
+    
+    state.chargeInterval = setInterval(() => {
+        state.chargeProgress += 2;
+        if (state.chargeProgress >= 100) {
+            state.chargeProgress = 100;
+            triggerTask();
+            stopCharging();
+        }
+        updateChargeUI();
+        core.style.opacity = 0.5 + (state.chargeProgress / 100);
+        triggerLabel.style.letterSpacing = (state.chargeProgress / 10) + 'px';
+    }, 20);
+}
+
+function stopCharging() {
+    clearInterval(state.chargeInterval);
+    if (state.chargeProgress < 100) {
+        state.chargeProgress = 0;
+        updateChargeUI();
+        document.querySelector('.core-inner').style.opacity = 0.5;
+        document.getElementById('trigger-label').style.letterSpacing = 'normal';
+    }
+}
+
+function updateChargeUI() {
+    document.getElementById('charge-val').innerText = `${state.chargeProgress}%`;
+}
+
+// Генерация задания
+function triggerTask() {
+    const task = tasks[Math.floor(Math.random() * tasks.length)];
+    state.currentTask = task;
+
+    // Подстановка имен (n1 или n2 в случайном порядке для честности)
+    const processedText = task.text
+        .replace(/{n1}/g, state.player1)
+        .replace(/{n2}/g, state.player2);
+
+    document.getElementById('task-text').innerText = processedText;
+    document.getElementById('task-category').innerText = task.cat;
+    
+    document.getElementById('reaction-card').classList.add('active');
+    document.getElementById('status-text').innerText = "РЕАКЦИЯ...";
+    document.getElementById('status-text').style.color = "var(--accent)";
+}
+
+function closeTask() {
+    document.getElementById('reaction-card').classList.remove('active');
+    document.getElementById('status-text').innerText = "СТАБИЛЬНО";
+    document.getElementById('status-text').style.color = "var(--primary)";
+    state.chargeProgress = 0;
+    updateChargeUI();
+}
+
+function completeTask() {
+    state.syncLevel += 15;
+    if (state.syncLevel > 100) state.syncLevel = 100;
+    
+    document.getElementById('sync-bar').style.width = `${state.syncLevel}%`;
+    
+    if (state.syncLevel >= 100) {
+        setTimeout(() => {
+            showScreen('screen-results');
+        }, 500);
+    } else {
+        closeTask();
+    }
+}
+
+// Легкая вибрация при нажатии (если поддерживается устройством)
+document.addEventListener('touchstart', () => {
+    if (window.navigator.vibrate) window.navigator.vibrate(5);
 });
