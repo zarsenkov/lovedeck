@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>LoveCouple Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <title>Our Secret Garden</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -12,95 +12,97 @@
 
     <div id="loading-screen" class="loading-screen">
         <div class="loader-content">
-            <div class="heart">💖</div>
-            <h1 class="logo-text">LoveCouple</h1>
+            <div class="seed-icon">🌱</div>
+            <h1 class="garden-logo">Secret Garden</h1>
         </div>
     </div>
 
     <div class="app-container">
-        <!-- Экран регистрации -->
+        
+        <!-- ЭКРАН 1: ПОСАДКА (Имена) -->
         <section id="screen-setup" class="screen active">
-            <h2 class="title-main">LoveCouple</h2>
-            <p class="subtitle">Ваши имена создадут магию</p>
-            <div class="clay-card setup-box">
-                <input type="text" id="name1" placeholder="Твое имя">
+            <div class="intro-box">
+                <h2 class="garden-title">Наш Сад</h2>
+                <p class="garden-subtitle">Давайте вырастим что-то прекрасное вместе</p>
+            </div>
+            <div class="clay-panel setup-panel">
+                <input type="text" id="name1" placeholder="Ваше имя">
                 <input type="text" id="name2" placeholder="Имя партнера">
             </div>
-            <button class="btn-primary clay-button big-btn" onclick="saveNames()">НАЧАТЬ</button>
+            <button class="btn-organic main-btn" onclick="saveNames()">ПОСАДИТЬ СЕМЯ</button>
         </section>
 
-        <!-- Выбор тем -->
+        <!-- ЭКРАН 2: САД (Меню) -->
         <section id="screen-themes" class="screen">
-            <div class="top-row">
-                <h2 class="theme-title">Режим игры</h2>
-                <button class="add-btn clay-card" onclick="showModal('create')"><i class="fas fa-plus"></i></button>
+            <div class="garden-status">
+                <div class="tree-container">
+                    <div id="visual-tree" class="tree-stage-1">🌸</div>
+                    <div class="growth-bar"><div id="growth-fill" style="width: 0%"></div></div>
+                </div>
+                <p>Рост сада: <span id="growth-val">0</span>%</p>
             </div>
-            <div class="themes-grid">
-                <div class="theme-card clay-card" onclick="selectTheme('romance')">❤️<br>Романтика</div>
-                <div class="theme-card clay-card" onclick="selectTheme('fun')">😄<br>Веселье</div>
-                <div class="theme-card clay-card" onclick="selectTheme('adult')">🔥<br>HOT</div>
-                <div class="theme-card clay-card" onclick="selectTheme('dates')">📍<br>Свидания</div>
-                <div class="theme-card clay-card fav-theme" onclick="selectTheme('favorites')">⭐<br>Любимое</div>
-                <div class="theme-card clay-card user-theme" onclick="selectTheme('custom')">📝<br>Своё</div>
+
+            <div class="themes-list">
+                <div class="theme-item clay-panel" onclick="selectTheme('roots')">
+                    <span class="t-icon">🪵</span>
+                    <div class="t-info"><h3>Корни</h3><p>Основы и прошлое</p></div>
+                </div>
+                <div class="theme-item clay-panel" onclick="selectTheme('trunk')">
+                    <span class="t-icon">🌳</span>
+                    <div class="t-info"><h3>Ствол</h3><p>Забота и настоящее</p></div>
+                </div>
+                <div class="theme-item clay-panel" onclick="selectTheme('blossom')">
+                    <span class="t-icon">🌺</span>
+                    <div class="t-info"><h3>Цветы</h3><p>Мечты и страсть</p></div>
+                </div>
             </div>
-            <div class="footer-btns">
-                <button class="circle-btn clay-card" onclick="showModal('stats')"><i class="fas fa-chart-bar"></i></button>
-                <button class="circle-btn clay-card" onclick="confirmReset()"><i class="fas fa-user-edit"></i></button>
+
+            <div class="garden-footer">
+                <button class="icon-btn clay-panel" onclick="showModal('diary')"><i class="fas fa-book"></i></button>
+                <button class="icon-btn clay-panel" onclick="showModal('favs')"><i class="fas fa-heart"></i></button>
+                <button class="icon-btn clay-panel" onclick="confirmReset()"><i class="fas fa-seedling"></i></button>
             </div>
+            <a href="https://lovecouple.ru" class="exit-btn">Вернуться к списку игр</a>
         </section>
 
-        <!-- Экран игры -->
+        <!-- ЭКРАН 3: ПОЛИВ (Игра) -->
         <section id="screen-game" class="screen">
-            <div class="game-header">
-                <button onclick="goToScreen('themes')" class="back-mini clay-card"><i class="fas fa-chevron-left"></i></button>
-                <div class="badges">
-                    <div id="timer-display" class="timer-badge" onclick="startTimer()">01:00</div>
-                    <div id="intensity-badge" class="level-badge">SOFT</div>
-                </div>
-                <button onclick="rollDice()" class="dice-mini clay-card"><i class="fas fa-dice"></i></button>
+            <div class="game-nav">
+                <button onclick="goToScreen('themes')" class="nav-back"><i class="fas fa-arrow-left"></i></button>
+                <div class="task-category" id="task-cat-name">Ствол</div>
+                <button onclick="rollDice()" class="nav-dice"><i class="fas fa-dice"></i></button>
             </div>
 
-            <div class="card-stack">
-                <div class="main-game-card clay-card" id="game-card-body">
-                    <div class="card-tag" id="card-type">ЗАДАНИЕ</div>
-                    <div id="card-text">Приготовьтесь...</div>
-                    <button onclick="toggleFavorite()" id="fav-btn" class="fav-star"><i class="far fa-star"></i></button>
+            <div class="leaf-container">
+                <div class="game-card clay-panel" id="game-card-body">
+                    <div id="card-text">Загрузка...</div>
+                    <button id="fav-btn" onclick="toggleFavorite()"><i class="far fa-heart"></i></button>
                 </div>
             </div>
 
-            <div class="game-controls">
-                <button class="control-btn skip clay-card" onclick="swipe('left')"><i class="fas fa-times"></i></button>
-                <button class="control-btn done clay-button" onclick="swipe('right')">ГОТОВО</button>
+            <div class="game-actions">
+                <button class="btn-action skip" onclick="swipe('left')">ПРОПУСТИТЬ</button>
+                <button class="btn-action done btn-organic" onclick="swipe('right')">ПОЛИТЬ</button>
             </div>
         </section>
     </div>
 
-    <!-- Модалки -->
-    <div id="modal-create" class="modal-overlay" onclick="closeModals()">
-        <div class="modal-content clay-card" onclick="event.stopPropagation()">
-            <h3>Своя карта</h3>
-            <textarea id="custom-text" placeholder="Напиши задание... Имена подставятся сами!"></textarea>
-            <select id="custom-cat">
-                <option value="romance">Романтика</option>
-                <option value="fun">Веселье</option>
-                <option value="adult">HOT</option>
-            </select>
-            <button class="clay-button" style="width:100%; padding:15px;" onclick="addCustomCard()">ДОБАВИТЬ</button>
+    <!-- МОДАЛКА: ДНЕВНИК (Записи) -->
+    <div id="modal-diary" class="modal-overlay" onclick="closeModals()">
+        <div class="modal-content clay-panel" onclick="event.stopPropagation()">
+            <h3>Дневник Сада</h3>
+            <div id="diary-list" class="scroll-area"></div>
+            <button class="btn-organic" onclick="closeModals()">ЗАКРЫТЬ</button>
         </div>
     </div>
 
-    <div id="modal-stats" class="modal-overlay" onclick="closeModals()">
-        <div class="modal-content clay-card" onclick="event.stopPropagation()">
-            <h3>Статистика</h3>
-            <div id="stats-info"></div>
-            <button class="btn-primary clay-button" style="width:100%; margin-top:20px;" onclick="closeModals()">ЗАКРЫТЬ</button>
-        </div>
-    </div>
-
-    <div id="modal-dice" class="modal-overlay" onclick="closeModals()">
-        <div class="modal-content clay-card" style="text-align:center;">
-            <div id="dice-res" style="font-size:60px; font-weight:900; color:#ff4d6d;">?</div>
-            <p id="dice-who"></p>
+    <!-- МОДАЛКА: ЗАПИСЬ ВОСПОМИНАНИЯ -->
+    <div id="modal-memory" class="modal-overlay">
+        <div class="modal-content clay-panel">
+            <h3>Запишите момент</h3>
+            <p>Одна фраза об этом задании...</p>
+            <textarea id="memory-input" placeholder="Например: Это было очень трогательно..."></textarea>
+            <button class="btn-organic" onclick="saveMemory()">СОХРАНИТЬ В ЛИСТЬЯХ</button>
         </div>
     </div>
 
