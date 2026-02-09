@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>LoveCouple Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -12,71 +12,58 @@
 
     <div id="loading-screen" class="loading-screen">
         <div class="loader-content">
-            <div class="heart-pulse">💖</div>
+            <div class="heart">💖</div>
             <h1 class="logo-text">LoveCouple</h1>
         </div>
     </div>
 
     <div class="app-container">
-        
-        <!-- ЭКРАН 1: ПРОФИЛЬ (ПАДЕЖИ) -->
+        <!-- Экран регистрации -->
         <section id="screen-setup" class="screen active">
-            <h2 class="title-main">Ваши Имена</h2>
-            <div class="clay-card setup-box scroll-y">
-                <div class="name-block">
-                    <p class="name-label">Игрок 1</p>
-                    <input type="text" id="n1_nom" placeholder="Кто? (Алексей)">
-                    <input type="text" id="n1_vin" placeholder="Кого? (Алексея)">
-                    <input type="text" id="n1_dat" placeholder="Кому? (Алексею)">
-                </div>
-                <div class="name-block">
-                    <p class="name-label">Игрок 2</p>
-                    <input type="text" id="n2_nom" placeholder="Кто? (Мария)">
-                    <input type="text" id="n2_vin" placeholder="Кого? (Марию)">
-                    <input type="text" id="n2_dat" placeholder="Кому? (Марии)">
-                </div>
+            <h2 class="title-main">LoveCouple</h2>
+            <p class="subtitle">Ваши имена создадут магию</p>
+            <div class="clay-card setup-box">
+                <input type="text" id="name1" placeholder="Твое имя">
+                <input type="text" id="name2" placeholder="Имя партнера">
             </div>
-            <button class="btn-primary clay-button big-btn" onclick="saveNames()">СОХРАНИТЬ</button>
+            <button class="btn-primary clay-button big-btn" onclick="saveNames()">НАЧАТЬ</button>
         </section>
 
-        <!-- ЭКРАН 2: ТЕМЫ -->
+        <!-- Выбор тем -->
         <section id="screen-themes" class="screen">
-            <div class="top-bar">
-                <h2 class="theme-title">Выберите режим</h2>
-                <button class="add-custom-btn clay-card" onclick="showModal('create')"><i class="fas fa-plus"></i></button>
+            <div class="top-row">
+                <h2 class="theme-title">Режим игры</h2>
+                <button class="add-btn clay-card" onclick="showModal('create')"><i class="fas fa-plus"></i></button>
             </div>
-
             <div class="themes-grid">
-                <div class="theme-card clay-card" onclick="selectTheme('romance')"><span>❤️</span><label>Романтика</label></div>
-                <div class="theme-card clay-card" onclick="selectTheme('fun')"><span>😄</span><label>Веселье</label></div>
-                <div class="theme-card clay-card" onclick="selectTheme('adult')"><span>🔥</span><label>HOT</label></div>
-                <div class="theme-card clay-card" onclick="selectTheme('dates')"><span>📍</span><label>Свидания</label></div>
-                <!-- НОВЫЙ РЕЖИМ -->
-                <div class="theme-card clay-card special-card" onclick="selectTheme('favorites')"><span>⭐</span><label>Избранное</label></div>
-                <div class="theme-card clay-card special-card" onclick="selectTheme('custom')"><span>📝</span><label>Свои карты</label></div>
+                <div class="theme-card clay-card" onclick="selectTheme('romance')">❤️<br>Романтика</div>
+                <div class="theme-card clay-card" onclick="selectTheme('fun')">😄<br>Веселье</div>
+                <div class="theme-card clay-card" onclick="selectTheme('adult')">🔥<br>HOT</div>
+                <div class="theme-card clay-card" onclick="selectTheme('dates')">📍<br>Свидания</div>
+                <div class="theme-card clay-card fav-theme" onclick="selectTheme('favorites')">⭐<br>Любимое</div>
+                <div class="theme-card clay-card user-theme" onclick="selectTheme('custom')">📝<br>Своё</div>
             </div>
-
-            <div class="footer-actions">
-                <button class="circle-action clay-card" onclick="showModal('stats')"><i class="fas fa-chart-line"></i></button>
-                <button class="circle-action clay-card" onclick="confirmReset()"><i class="fas fa-user-edit"></i></button>
+            <div class="footer-btns">
+                <button class="circle-btn clay-card" onclick="showModal('stats')"><i class="fas fa-chart-bar"></i></button>
+                <button class="circle-btn clay-card" onclick="confirmReset()"><i class="fas fa-user-edit"></i></button>
             </div>
         </section>
 
-        <!-- ЭКРАН 3: ИГРА -->
+        <!-- Экран игры -->
         <section id="screen-game" class="screen">
             <div class="game-header">
-                <button onclick="goToScreen('themes')" class="clay-card back-mini"><i class="fas fa-chevron-left"></i></button>
-                <div class="game-stats">
-                    <div id="timer-display" class="timer-clay" onclick="startTimer()">01:00</div>
-                    <div id="intensity-badge" class="level-clay">SOFT</div>
+                <button onclick="goToScreen('themes')" class="back-mini clay-card"><i class="fas fa-chevron-left"></i></button>
+                <div class="badges">
+                    <div id="timer-display" class="timer-badge" onclick="startTimer()">01:00</div>
+                    <div id="intensity-badge" class="level-badge">SOFT</div>
                 </div>
-                <button onclick="rollDice()" class="clay-card dice-btn"><i class="fas fa-dice"></i></button>
+                <button onclick="rollDice()" class="dice-mini clay-card"><i class="fas fa-dice"></i></button>
             </div>
 
             <div class="card-stack">
                 <div class="main-game-card clay-card" id="game-card-body">
                     <div class="card-tag" id="card-type">ЗАДАНИЕ</div>
-                    <div id="card-text">...</div>
+                    <div id="card-text">Приготовьтесь...</div>
                     <button onclick="toggleFavorite()" id="fav-btn" class="fav-star"><i class="far fa-star"></i></button>
                 </div>
             </div>
@@ -88,34 +75,32 @@
         </section>
     </div>
 
-    <!-- МОДАЛКА: СОЗДАНИЕ КАРТЫ -->
+    <!-- Модалки -->
     <div id="modal-create" class="modal-overlay" onclick="closeModals()">
         <div class="modal-content clay-card" onclick="event.stopPropagation()">
-            <h3>Новое задание</h3>
-            <textarea id="custom-text" placeholder="Используй {n1} или {n2_v} для имен..."></textarea>
-            <select id="custom-cat-select" class="clay-select">
+            <h3>Своя карта</h3>
+            <textarea id="custom-text" placeholder="Напиши задание... Имена подставятся сами!"></textarea>
+            <select id="custom-cat">
                 <option value="romance">Романтика</option>
                 <option value="fun">Веселье</option>
                 <option value="adult">HOT</option>
             </select>
-            <button class="btn-primary clay-button" onclick="addCustomCard()">ДОБАВИТЬ</button>
+            <button class="clay-button" style="width:100%; padding:15px;" onclick="addCustomCard()">ДОБАВИТЬ</button>
         </div>
     </div>
 
-    <!-- Статистика -->
     <div id="modal-stats" class="modal-overlay" onclick="closeModals()">
         <div class="modal-content clay-card" onclick="event.stopPropagation()">
-            <h3>Прогресс</h3>
-            <div id="stats-content" class="stats-grid"></div>
-            <button class="btn-primary clay-button" onclick="closeModals()">OK</button>
+            <h3>Статистика</h3>
+            <div id="stats-info"></div>
+            <button class="btn-primary clay-button" style="width:100%; margin-top:20px;" onclick="closeModals()">ЗАКРЫТЬ</button>
         </div>
     </div>
 
-    <!-- Кубик -->
     <div id="modal-dice" class="modal-overlay" onclick="closeModals()">
-        <div class="modal-content clay-card dice-modal">
-            <div id="dice-result">?</div>
-            <p id="dice-text">Кто же?</p>
+        <div class="modal-content clay-card" style="text-align:center;">
+            <div id="dice-res" style="font-size:60px; font-weight:900; color:#ff4d6d;">?</div>
+            <p id="dice-who"></p>
         </div>
     </div>
 
