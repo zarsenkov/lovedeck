@@ -1,166 +1,163 @@
-const SERVER_URL = "https://lovecouple-server-zarsenkov.amvera.io";
-const socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
-
-let myId, currentRoomId, myRole, myStatus = 'alive', wakeLock = null;
-
-// Не даем экрану гаснуть
-async function requestWakeLock() {
-    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
-}
-
-function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    
-    const navRoom = document.getElementById('room-badge');
-    if (id === 'screen-login') navRoom.classList.add('hidden');
-    else navRoom.classList.remove('hidden');
-}
-
-function handleBack() {
-    if (document.getElementById('screen-login').classList.contains('active')) {
-        window.location.href = "https://lovecouple.ru";
-    } else {
-        if (confirm("Покинуть игру?")) window.location.reload();
-    }
-}
-
-function copyCode() {
-    const code = document.getElementById('room-id-display').innerText;
-    navigator.clipboard.writeText(code);
-    alert("Код скопирован: " + code);
-}
-
-// --- ЛОББИ ---
-function createRoom() {
-    const name = document.getElementById('username').value.trim();
-    if (!name) return alert("Введите имя");
-    requestWakeLock();
-    socket.emit('mafia_create', { playerName: name });
-}
-
-function joinRoom() {
-    const name = document.getElementById('username').value.trim();
-    const code = document.getElementById('room-input').value.trim().toUpperCase();
-    if (!name || !code) return alert("Заполните поля");
-    requestWakeLock();
-    socket.emit('mafia_join', { roomId: code, playerName: name });
-}
-
-function startGame() {
-    socket.emit('mafia_start', currentRoomId);
-}
-
-// --- СОБЫТИЯ СЕРВЕРА ---
-socket.on('mafia_created', (data) => {
-    currentRoomId = data.roomId;
-    document.getElementById('room-id-display').innerText = currentRoomId;
-    showScreen('screen-lobby');
+const socket = io("https://lovecouple-server-zarsenkov.amvera.io", {
+    transports: ['websocket', 'polling']
 });
 
-socket.on('mafia_update_lobby', (room) => {
-    const list = document.getElementById('player-list');
-    list.innerHTML = room.players.map(p => `
-        <div class="player-row">
-            <span>${p.name}</span>
-            ${p.id === socket.id ? '<span style="color:var(--primary)">Вы</span>' : ''}
-        </div>
-    `).join('');
-    
-    const isHost = room.players[0].id === socket.id;
-    document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
-    document.getElementById('wait-msg').style.display = isHost ? 'none' : 'block';
-});
+const app = {
+    roomId: null,
+    myId: null,
+    myRole: null,
+    isAlive: true,
+    selectedVote: null,
 
-socket.on('mafia_role_reveal', (room) => {
-    const me = room.players.find(p => p.id === socket.id);
-    myRole = me.role;
-    
-    const config = {
-        'mafia': { name: 'МАФИЯ', icon: 'fa-user-secret', color: '#ff3d71', desc: 'Ваша цель: устранить мирных жителей ночью и не выдать себя днем.' },
-        'doctor': { name: 'ДОКТОР', icon: 'fa-user-md', color: '#00e5ff', desc: 'Ваша цель: спасти город. Каждую ночь вы лечите одного человека.' },
-        'sheriff': { name: 'ШЕРИФ', icon: 'fa-shield-halved', color: '#ffaa00', desc: 'Ваша цель: найти мафию. Каждую ночь вы проверяете одного подозреваемого.' },
-        'citizen': { name: 'МИРНЫЙ', icon: 'fa-users', color: '#ffffff', desc: 'Ваша цель: вычислить мафию в ходе дневного обсуждения и выжить.' }
-    };
-    
-    const ui = config[myRole];
-    const card = document.getElementById('role-card-ui');
-    document.getElementById('role-display').innerText = ui.name;
-    document.getElementById('role-display').style.color = ui.color;
-    document.getElementById('role-icon-i').className = `fas ${ui.icon}`;
-    document.getElementById('role-icon-i').style.color = ui.color;
-    document.getElementById('role-desc').innerText = ui.desc;
-    card.style.borderColor = ui.color;
+    init() {
+        socket.on('connect', () => { this.myId = socket.id; });
+        socket.on('room_data', (data) => this.updateLobby(data));
+        socket.on('game_start', (role) => this.revealRole(role));
+        socket.on('night_phase', (players) => this.startNight(players));
+        socket.on('day_phase', (data) => this.startDay(data));
+        socket.on('timer_tick', (time) => this.updateTimer(time));
+        socket.on('sheriff_result', (isMafia) => this.alert(isMafia ? "ОН МАФИЯ!" : "ОН МИРНЫЙ"));
+        socket.on('game_over', (winner) => this.showResults(winner));
+        socket.on('error', (msg) => this.alert(msg));
+    },
 
-    showScreen('screen-reveal');
-});
+    showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    },
 
-socket.on('mafia_night_start', ({ players }) => {
-    showScreen('screen-game');
-    document.getElementById('phase-title').innerText = "НОЧЬ";
-    document.getElementById('phase-title').style.color = "var(--primary)";
-    
-    const isActive = ['mafia', 'doctor', 'sheriff'].includes(myRole);
-    const overlay = document.getElementById('night-overlay');
-    
-    if (isActive && myStatus === 'alive') {
-        overlay.classList.remove('active');
-        document.getElementById('game-instruction').innerText = "Ваш ход. Выберите цель:";
-        renderGrid(players, 'night');
-    } else {
-        overlay.classList.add('active');
-    }
-});
+    alert(text) {
+        const modal = document.getElementById('modal-overlay');
+        document.getElementById('modal-text').innerHTML = text;
+        modal.style.display = 'flex';
+    },
 
-socket.on('mafia_day_start', ({ deadId, players }) => {
-    document.getElementById('night-overlay').classList.remove('active');
-    showScreen('screen-game');
-    document.getElementById('phase-title').innerText = "ДЕНЬ";
-    document.getElementById('phase-title').style.color = "#ffffff";
-    
-    if (deadId) {
-        const victim = players.find(p => p.id === deadId);
-        if (deadId === socket.id) {
-            myStatus = 'dead';
-            document.getElementById('dead-status').classList.remove('hidden');
+    createRoom() {
+        const name = document.getElementById('username').value.trim();
+        if (!name) return this.alert("Введите имя!");
+        socket.emit('mafia_create', { name });
+    },
+
+    joinRoom() {
+        const name = document.getElementById('username').value.trim();
+        const code = document.getElementById('room-input').value.trim().toUpperCase();
+        if (!name || !code) return this.alert("Заполните поля!");
+        socket.emit('mafia_join', { name, roomId: code });
+    },
+
+    updateLobby(data) {
+        this.roomId = data.roomId;
+        document.getElementById('display-room-code').innerText = data.roomId;
+        const list = document.getElementById('player-list');
+        list.innerHTML = data.players.map(p => `
+            <div class="player-item-row">
+                <span>${p.name} ${p.id === this.myId ? '(ТЫ)' : ''}</span>
+                ${p.isHost ? '<span class="host-badge">HOST</span>' : ''}
+            </div>
+        `).join('');
+
+        const isHost = data.players.find(p => p.id === this.myId)?.isHost;
+        document.getElementById('host-controls').style.display = isHost ? 'block' : 'none';
+        document.getElementById('wait-msg').style.display = isHost ? 'none' : 'block';
+        this.showPage('screen-lobby');
+    },
+
+    requestStart() { socket.emit('mafia_start_game', { roomId: this.roomId }); },
+
+    revealRole(role) {
+        this.myRole = role;
+        const rData = {
+            'mafia': { n: 'МАФИЯ', i: 'fa-user-secret', d: 'Договоритесь с другими мафиози и устраните город.' },
+            'doctor': { n: 'ДОКТОР', i: 'fa-user-md', d: 'Вы можете спасти одного человека каждую ночь.' },
+            'sheriff': { n: 'ШЕРИФ', i: 'fa-shield-halved', d: 'Проверяйте игроков. Цель — найти мафию.' },
+            'citizen': { n: 'МИРНЫЙ', i: 'fa-users', d: 'Найдите мафию днем и отправьте их за решетку.' }
+        };
+        document.getElementById('role-name').innerText = rData[role].n;
+        document.getElementById('role-icon').className = `fas ${rData[role].i} role-icon`;
+        document.getElementById('role-desc').innerText = rData[role].d;
+        this.showPage('screen-reveal');
+    },
+
+    startNight(players) {
+        this.showPage('screen-night');
+        const container = document.getElementById('night-actions');
+        container.innerHTML = '';
+
+        if (!this.isAlive) {
+            container.innerHTML = '<div class="center-content"><p>Мертвые не видят снов...</p></div>';
+            return;
         }
-        alert("Этой ночью погиб: " + victim.name);
-    } else {
-        alert("Ночь прошла спокойно.");
-    }
-    
-    document.getElementById('game-instruction').innerText = "ОБСУЖДЕНИЕ И ГОЛОСОВАНИЕ";
-    renderGrid(players, 'vote');
-});
 
-socket.on('mafia_sheriff_result', ({ name, isMafia }) => {
-    alert(`Проверка: ${name} — ${isMafia ? 'МАФИЯ' : 'МИРНЫЙ'}`);
-});
-
-socket.on('mafia_game_over', (msg) => {
-    showScreen('screen-results');
-    document.getElementById('winner-text').innerText = msg;
-});
-
-function renderGrid(players, context) {
-    const grid = document.getElementById('player-grid');
-    grid.innerHTML = players.map(p => `
-        <div class="p-btn ${p.isAlive ? '' : 'hidden'}" onclick="handleGameClick('${p.id}', '${context}')">
-            ${p.name}
-        </div>
-    `).join('');
-}
-
-function handleGameClick(targetId, context) {
-    if (myStatus === 'dead') return;
-    
-    if (context === 'night') {
-        const action = myRole === 'mafia' ? 'kill' : (myRole === 'doctor' ? 'heal' : 'check');
-        socket.emit('mafia_night_action', { roomId: currentRoomId, targetId, action });
-        document.getElementById('night-overlay').classList.add('active');
-    } else {
-        if (confirm("Вы уверены, что хотите проголосовать против этого игрока?")) {
-            socket.emit('mafia_vote', { roomId: currentRoomId, targetId });
+        if (this.myRole === 'citizen') {
+            container.innerHTML = '<div class="center-content"><i class="fas fa-moon giant-icon"></i><p>Город спит. Ждите утра.</p></div>';
+            return;
         }
+
+        // Кнопки действий для активных ролей
+        const label = this.myRole === 'mafia' ? "КОГО УБРАТЬ?" : (this.myRole === 'doctor' ? "КОГО СПАСТИ?" : "КОГО ПРОВЕРИТЬ?");
+        let html = `<div class="night-step"><p>${label}</p><div class="voting-grid">`;
+        
+        players.forEach(p => {
+            if (p.id === this.myId && this.myRole !== 'doctor') return;
+            html += `<button class="action-btn" onclick="app.sendNightAction('${p.id}')">${p.name}</button>`;
+        });
+        
+        html += `</div></div>`;
+        container.innerHTML = html;
+    },
+
+    sendNightAction(targetId) {
+        socket.emit('mafia_night_action', { roomId: this.roomId, targetId, action: this.myRole });
+        document.getElementById('night-actions').innerHTML = '<div class="center-content"><p>Действие принято. Ждем остальных...</p></div>';
+    },
+
+    startDay(data) {
+        const report = data.deadName ? `Утро началось с плохих новостей. Был убит <b>${data.deadName}</b>.` : "Утро началось спокойно. Жертв нет.";
+        if (data.deadId === this.myId) this.isAlive = false;
+        
+        document.getElementById('morning-report').innerHTML = report;
+        this.showPage('screen-morning');
+    },
+
+    confirmMorning() {
+        socket.emit('mafia_ready_day', { roomId: this.roomId });
+        this.renderVoting();
+    },
+
+    renderVoting() {
+        this.showPage('screen-day');
+        socket.emit('mafia_get_alive', { roomId: this.roomId }, (players) => {
+            const list = document.getElementById('voting-list');
+            list.innerHTML = players.map(p => `
+                <div class="vote-card ${!this.isAlive ? 'disabled' : ''}" id="v-${p.id}" onclick="app.selectVote('${p.id}')">
+                    <span>${p.name}</span>
+                    <i class="fas fa-gavel"></i>
+                </div>
+            `).join('');
+        });
+    },
+
+    selectVote(id) {
+        if (!this.isAlive) return;
+        document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById(`v-${id}`).classList.add('selected');
+        this.selectedVote = id;
+        document.getElementById('btn-vote').disabled = false;
+    },
+
+    submitVote() {
+        socket.emit('mafia_vote', { roomId: this.roomId, targetId: this.selectedVote });
+        document.getElementById('btn-vote').disabled = true;
+        document.getElementById('voting-list').classList.add('disabled');
+    },
+
+    updateTimer(t) { document.getElementById('game-timer').innerText = t; },
+
+    showResults(winner) {
+        const text = winner === 'mafia' ? "МАФИЯ ПОБЕДИЛА" : "ГОРОД ПОБЕДИЛ";
+        document.getElementById('winner-text').innerText = text;
+        this.showPage('screen-results');
     }
-}
+};
+
+app.init();
