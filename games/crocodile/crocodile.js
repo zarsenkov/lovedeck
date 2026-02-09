@@ -1,214 +1,90 @@
 let game = {
-    players: [],
-    currentPlayerIndex: 0,
-    selectedCats: [],
-    roundWords: [],
-    currentWordIndex: 0,
-    scores: {},
-    timer: 60,
-    interval: null,
-    startX: 0,
-    currentX: 0
+    team1: "Команда 1",
+    team2: "Команда 2",
+    score1: 0,
+    score2: 0,
+    activeTeam: 1,
+    timer: null,
+    timeLeft: 60,
+    currentWord: "",
+    difficulty: 'easy',
+    roundPoints: 0
 };
 
-const LABELS = {
-    objects: 'ПРЕДМЕТЫ', animals: 'ЖИВОТНЫЕ', actions: 'ДЕЙСТВИЯ',
-    professions: 'ПРОФЕССИИ', movies: 'КИНО', food: 'ЕДА', memnoe: 'МЕМНОЕ'
-};
-
-function init() {
-    const grid = document.getElementById('categoriesGrid');
-    Object.keys(crocodileWords).forEach(cat => {
-        if (cat === 'adult') return;
-        const div = document.createElement('div');
-        div.className = 'cat-tag';
-        div.innerText = LABELS[cat] || cat;
-        div.onclick = () => {
-            div.classList.toggle('active');
-            game.selectedCats.includes(cat) ? 
-                game.selectedCats = game.selectedCats.filter(c => c !== cat) : 
-                game.selectedCats.push(cat);
-        };
-        grid.appendChild(div);
-    });
-    setupGestures();
+function goToScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(`screen-${id}`).classList.add('active');
 }
 
-function addPlayerField() {
-    const list = document.getElementById('playerList');
-    const div = document.createElement('div');
-    div.className = 'p-bubble';
-    div.innerHTML = `
-        <input type="text" class="p-input" value="ИГРОК">
-        <button class="p-del" onclick="removePlayer(this)">×</button>
-    `;
-    list.appendChild(div);
-}
-
-function removePlayer(btn) {
-    if (document.querySelectorAll('.p-bubble').length > 2) {
-        btn.parentElement.remove();
-    }
-}
-
-function startGame() {
-    const names = Array.from(document.querySelectorAll('.p-input')).map(i => i.value.trim()).filter(v => v);
-    if (names.length < 2) return alert('Нужно 2 игрока');
-    if (game.selectedCats.length === 0) return alert('Выбери тему');
+function startGame(diff) {
+    game.difficulty = diff;
+    game.roundPoints = 0;
+    game.timeLeft = 60;
     
-    game.players = names;
-    game.players.forEach(p => game.scores[p] = 0);
-    game.currentPlayerIndex = 0;
-    showTransfer();
-}
-
-function showTransfer() {
-    if (game.currentPlayerIndex >= game.players.length) return showFinal();
-    switchScreen('transfer');
-    document.getElementById('currentPlayerName').innerText = game.players[game.currentPlayerIndex];
-    updateTransferScore();
-}
-
-function updateTransferScore() {
-    const currentPlayer = game.players[game.currentPlayerIndex];
-    const scoreEl = document.getElementById('transferScore');
-    scoreEl.innerHTML = `
-        <div class="score-display">
-            <span class="score-label">Счет:</span>
-            <span class="score-value">${game.scores[currentPlayer]}</span>
-        </div>
-    `;
-}
-
-function startRound() {
-    let pool = [];
-    game.selectedCats.forEach(c => pool = pool.concat(crocodileWords[c]));
-    game.roundWords = pool.sort(() => Math.random() - 0.5).slice(0, 15);
-    game.currentWordIndex = 0;
+    // Обновляем имена команд
+    game.team1 = document.getElementById('team1-name').value || "Команда 1";
+    game.team2 = document.getElementById('team2-name').value || "Команда 2";
     
-    switchScreen('game');
-    document.getElementById('gamePlayerName').innerText = game.players[game.currentPlayerIndex];
-    updateGameScore();
-    updateWord();
+    document.getElementById('active-team-name').innerText = game.activeTeam === 1 ? game.team1 : game.team2;
+    
+    nextWord(null); // Генерируем первое слово
     startTimer();
-}
-
-function updateGameScore() {
-    const currentPlayer = game.players[game.currentPlayerIndex];
-    const scoreEl = document.getElementById('gameScore');
-    scoreEl.innerHTML = `
-        <div class="score-display">
-            <span class="score-label">Счет:</span>
-            <span class="score-value">${game.scores[currentPlayer]}</span>
-        </div>
-    `;
-}
-
-function updateWord() {
-    if (game.currentWordIndex >= game.roundWords.length) return endRound();
-    const w = game.roundWords[game.currentWordIndex];
-    document.getElementById('currentWord').innerText = w.word;
-    document.getElementById('wordCategory').innerText = LABELS[w.category] || w.category;
-}
-
-function setupGestures() {
-    const area = document.getElementById('swipeArea');
-    const card = document.getElementById('wordCard');
-    const hDone = document.querySelector('.hint-right');
-    const hSkip = document.querySelector('.hint-left');
-
-    area.addEventListener('touchstart', e => {
-        game.startX = e.touches[0].clientX;
-        card.style.transition = 'none';
-    });
-
-    area.addEventListener('touchmove', e => {
-        game.currentX = e.touches[0].clientX - game.startX;
-        let rotate = game.currentX / 10;
-        card.style.transform = `translateX(${game.currentX}px) rotate(${rotate}deg)`;
-        
-        // Добавляем/убираем классы для визуальной обратной связи
-        if (game.currentX > 50) {
-            card.classList.add('swipe-right');
-            card.classList.remove('swipe-left');
-        } else if (game.currentX < -50) {
-            card.classList.add('swipe-left');
-            card.classList.remove('swipe-right');
-        } else {
-            card.classList.remove('swipe-right', 'swipe-left');
-        }
-        
-        hDone.style.opacity = game.currentX > 50 ? (game.currentX / 150) : 0;
-        hSkip.style.opacity = game.currentX < -50 ? (Math.abs(game.currentX) / 150) : 0;
-    });
-
-    area.addEventListener('touchend', () => {
-        card.style.transition = '0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        if (game.currentX > 120) {
-            handleAnswer(true);
-        } else if (game.currentX < -120) {
-            handleAnswer(false);
-        }
-        card.style.transform = '';
-        card.classList.remove('swipe-right', 'swipe-left');
-        hDone.style.opacity = 0;
-        hSkip.style.opacity = 0;
-        game.currentX = 0;
-    });
-}
-
-function handleAnswer(isOk) {
-    const currentPlayer = game.players[game.currentPlayerIndex];
-    if (isOk) {
-        game.scores[currentPlayer]++; // +1 балл за угадывание
-    } else {
-        game.scores[currentPlayer]--; // -1 балл за пас
-    }
-    updateGameScore();
-    game.currentWordIndex++;
-    updateWord();
+    goToScreen('game');
 }
 
 function startTimer() {
-    game.timer = 60;
-    document.getElementById('timer').innerText = game.timer;
-    clearInterval(game.interval);
-    game.interval = setInterval(() => {
-        game.timer--;
-        document.getElementById('timer').innerText = game.timer;
-        if (game.timer <= 0) endRound();
+    const timerEl = document.getElementById('timer');
+    timerEl.innerText = game.timeLeft;
+    
+    game.timer = setInterval(() => {
+        game.timeLeft--;
+        timerEl.innerText = game.timeLeft;
+        
+        if (game.timeLeft <= 0) {
+            endRound();
+        }
     }, 1000);
 }
 
+function nextWord(isCorrect) {
+    if (isCorrect === true) {
+        game.roundPoints++;
+        if (navigator.vibrate) navigator.vibrate(50);
+    }
+    
+    const words = WORD_DATABASE[game.difficulty];
+    game.currentWord = words[Math.floor(Math.random() * words.length)];
+    
+    const wordEl = document.getElementById('current-word');
+    wordEl.style.opacity = 0;
+    setTimeout(() => {
+        wordEl.innerText = game.currentWord;
+        wordEl.style.opacity = 1;
+    }, 150);
+}
+
 function endRound() {
-    clearInterval(game.interval);
-    game.currentPlayerIndex++;
-    showTransfer();
+    clearInterval(game.timer);
+    
+    // Начисляем очки команде
+    if (game.activeTeam === 1) {
+        game.score1 += game.roundPoints;
+        document.getElementById('score1').innerText = game.score1;
+    } else {
+        game.score2 += game.roundPoints;
+        document.getElementById('score2').innerText = game.score2;
+    }
+
+    document.getElementById('round-points').innerText = `+${game.roundPoints} очков`;
+    document.getElementById('round-winner').innerText = game.activeTeam === 1 ? game.team1 : game.team2;
+
+    // Меняем ход
+    game.activeTeam = game.activeTeam === 1 ? 2 : 1;
+    
+    goToScreen('results');
 }
 
-function showFinal() {
-    switchScreen('results');
-    const res = document.getElementById('leaderboard');
-    const sorted = Object.entries(game.scores).sort((a,b) => b[1]-a[1]);
-    res.innerHTML = sorted.map(([n, s], i) => `
-        <div style="display:flex; justify-content:space-between; padding:15px; background:var(--card); margin-bottom:10px; border-radius:15px;">
-            <span>${i+1}. ${n}</span>
-            <span style="color:var(--accent)">${s} очков</span>
-        </div>
-    `).join('');
-}
-
-function switchScreen(s) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(s + 'Screen').classList.add('active');
-}
-
-function showRules() { document.getElementById('rulesModal').classList.add('active'); }
-function closeRules() { document.getElementById('rulesModal').classList.remove('active'); }
-function exitToCluster() { window.location.href = '../../index.html'; }
-function backToSettings() { 
-    clearInterval(game.interval);
-    switchScreen('main'); 
-}
-
-init();
+// Инициализация имен при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    // Можно добавить анимации листьев на фон
+});
