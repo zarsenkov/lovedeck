@@ -1,114 +1,120 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Love Story: Connection</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+:root {
+    --p-pink: #ffafbd;
+    --p-rose: #ff8fa3;
+    --p-dark: #ff4d6d;
+    --p-white: #ffffff;
+    --p-text: #4a3a3d;
+    --clay-shadow: 8px 8px 16px rgba(255, 143, 163, 0.2), -8px -8px 16px #ffffff;
+}
 
-    <div class="app-shell">
-        <!-- Экран 1: Ввод Имен -->
-        <section id="screen-setup" class="screen active">
-            <div class="hero">
-                <div class="main-orb">🌸</div>
-                <h1 class="title">LOVE<span>STORY</span></h1>
-                <p class="subtitle">Ваше личное приключение</p>
-            </div>
-            
-            <div class="clay-card">
-                <input type="text" id="name1" placeholder="Имя первого игрока" class="joy-input">
-                <input type="text" id="name2" placeholder="Имя второго игрока" class="joy-input">
-                <button class="btn-clay primary" onclick="toLobby()">ВОЙТИ В ИСТОРИЮ</button>
-            </div>
-        </section>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-        <!-- Экран 2: Лобби (Выбор сюжета) -->
-        <section id="screen-lobby" class="screen">
-            <div class="header-status">
-                <div class="stats-pill">⭐ <span id="total-progress">0</span>%</div>
-                <button class="btn-circle" onclick="showAlbum()"><i class="fas fa-book-heart"></i></button>
-            </div>
-            <h2 class="section-label">ВЫБЕРИТЕ ИСТОРИЮ</h2>
-            
-            <div class="story-grid">
-                <div class="story-card clay-box" onclick="startStory('spark')">
-                    <div class="story-img">🔥</div>
-                    <div class="story-info">
-                        <h3>Искры начала</h3>
-                        <p>О том, как всё начиналось и что скрыто внутри.</p>
-                        <span class="badge">30-40 мин</span>
-                    </div>
-                </div>
-                <div class="story-card clay-box" onclick="startStory('midnight')">
-                    <div class="story-img">🌙</div>
-                    <div class="story-info">
-                        <h3>Тайны полуночи</h3>
-                        <p>Ролевая игра, фантазии и предельная честность.</p>
-                        <span class="badge">HOT</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+body { 
+    background: #fff0f3; 
+    color: var(--p-text); 
+    font-family: 'Montserrat', sans-serif; 
+    height: 100dvh; width: 100vw;
+    overflow: hidden; position: fixed;
+}
 
-        <!-- Экран 3: Квест (Игровой процесс) -->
-        <section id="screen-quest" class="screen">
-            <div class="quest-header">
-                <button class="btn-back" onclick="toLobby()"><i class="fas fa-chevron-left"></i></button>
-                <div class="progress-line"><div id="quest-bar" class="fill"></div></div>
-            </div>
+#particle-container { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.particle { position: absolute; color: var(--p-rose); opacity: 0.3; animation: floatUp var(--speed) linear infinite; }
+@keyframes floatUp {
+    0% { transform: translateY(110vh) rotate(0deg); }
+    100% { transform: translateY(-10vh) rotate(360deg); }
+}
 
-            <div class="npc-area">
-                <div class="npc-avatar">🎭</div>
-                <div class="npc-bubble clay-box">
-                    <p id="npc-text">Приветствую вас, влюбленные...</p>
-                </div>
-            </div>
+.app-shell {
+    max-width: 500px; margin: 0 auto; height: 100%; position: relative;
+    padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px);
+    display: flex; flex-direction: column; z-index: 1;
+}
 
-            <div id="game-action-area" class="action-container">
-                <!-- Сюда JS вставляет карточки заданий или диалоги -->
-            </div>
+.screen { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease-out; }
+.screen.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-            <div id="honesty-check" class="honesty-modal hidden">
-                <p>Партнер был честен?</p>
-                <div class="honesty-btns">
-                    <button class="btn-clay small green" onclick="rateHonesty(true)">ВЕРЮ</button>
-                    <button class="btn-clay small red" onclick="rateHonesty(false)">НЕ СОВСЕМ</button>
-                </div>
-            </div>
-        </section>
+/* CLAYMORPHISM */
+.clay-card, .clay-box {
+    background: #ffffff; border-radius: 30px; box-shadow: var(--clay-shadow);
+    padding: 25px; border: 1px solid rgba(255, 255, 255, 0.4);
+}
 
-        <!-- Экран 4: Результаты -->
-        <section id="screen-results" class="screen">
-            <div class="clay-card result-box">
-                <h2>ФИНАЛ ИСТОРИИ</h2>
-                <div class="result-circle">
-                    <span id="honesty-result">0%</span>
-                    <label>Честность пары</label>
-                </div>
-                <p id="result-desc">Вы отлично знаете друг друга!</p>
-                <button class="btn-clay primary" onclick="toLobby()">В ЛОББИ</button>
-            </div>
-        </section>
+/* LOVE JAR */
+.love-jar {
+    position: relative; width: 55px; height: 55px; background: #eee;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    overflow: hidden; border: 2px solid var(--p-rose); box-shadow: var(--clay-shadow);
+}
+.liquid {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
+    background: linear-gradient(to top, var(--p-dark), var(--p-rose));
+    transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 
-        <!-- Экран 5: Альбом -->
-        <section id="screen-album" class="screen">
-            <div class="header-status">
-                <button class="btn-back" onclick="toLobby()"><i class="fas fa-chevron-left"></i></button>
-                <h2 class="mini-title">ВАШ ДНЕВНИК</h2>
-            </div>
-            <div id="album-content" class="album-scroll">
-                <!-- Записи из памяти -->
-            </div>
-        </section>
-    </div>
+/* DUEL WHEEL */
+.duel-overlay {
+    position: absolute; inset: 0; background: rgba(255, 240, 243, 0.95);
+    z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.wheel-container { position: relative; width: 220px; height: 220px; margin: 20px auto; }
+.wheel {
+    width: 100%; height: 100%; border-radius: 50%; border: 8px solid var(--p-text);
+    position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+.sector {
+    position: absolute; width: 50%; height: 100%; left: 50%; transform-origin: left;
+    display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 10px;
+}
+#sector1 { background: var(--p-rose); transform: rotate(0deg); }
+#sector2 { background: var(--p-dark); transform: rotate(180deg); }
+.wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 24px; color: var(--p-text); z-index: 10; }
 
-    <!-- Уведомления -->
-    <div id="toast" class="toast"></div>
+/* NPC */
+.npc-timer-line { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--p-rose); width: 0%; }
+.amalia-avatar { font-size: 3rem; text-align: center; transition: 0.3s; }
+.amalia-talking { transform: scale(1.1); filter: drop-shadow(0 0 10px var(--p-rose)); }
 
-    <script src="script.js"></script>
-</body>
-</html>
+/* BUTTONS */
+.btn-clay {
+    border: none; padding: 18px 25px; border-radius: 22px; font-family: 'Unbounded';
+    font-weight: 900; font-size: 0.8rem; cursor: pointer; box-shadow: var(--clay-shadow);
+    text-transform: uppercase; transition: 0.2s;
+}
+.btn-clay:active { transform: scale(0.96); box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1); }
+.btn-clay.primary { background: var(--p-rose); color: white; width: 100%; }
+.btn-clay.green { background: #26de81; color: white; }
+.btn-clay.red { background: #ff6b6b; color: white; }
+.btn-mini { background: white; border: none; width: 42px; height: 42px; border-radius: 50%; box-shadow: var(--clay-shadow); color: var(--p-rose); }
+.btn-circle { background: white; border: none; width: 45px; height: 45px; border-radius: 50%; box-shadow: var(--clay-shadow); color: var(--p-rose); }
+
+/* LISTS & BADGES */
+.status-badge { font-size: 0.6rem; font-weight: 900; padding: 4px 10px; border-radius: 10px; margin-bottom: 5px; display: inline-block; }
+.badge-unfinished { background: #ffd93d; color: #4a3a3d; }
+.badge-finished { background: #26de81; color: white; }
+
+/* DIARY */
+.album-scroll { flex: 1; overflow-y: auto; padding-bottom: 30px; }
+.diary-story-header { position: sticky; top: 0; background: #fff0f3; padding: 10px; font-weight: 900; font-size: 0.8rem; color: var(--p-dark); z-index: 10; border-radius: 10px; }
+.memory-item { margin: 10px 0; border-left: 6px solid var(--p-rose); background: white; border-radius: 0 20px 20px 0; padding: 15px; }
+
+/* UTILS */
+.hidden { display: none !important; }
+.toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--p-dark); color: white; padding: 12px 24px; border-radius: 20px;
+    font-size: 0.8rem; font-weight: 800; z-index: 10000; opacity: 0; pointer-events: none; transition: 0.3s;
+}
+.toast.active { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+
+.liquid-burst { animation: jarPulse 0.5s infinite alternate; }
+@keyframes jarPulse { 
+    from { transform: scale(1); }
+    to { transform: scale(1.1); box-shadow: 0 0 20px var(--p-rose); }
+}
+
+.joy-input { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid transparent; background: #fdf2f4; outline: none; font-weight: 600; font-size: 1rem; }
+.joy-input:focus { border-color: var(--p-rose); background: white; }
+
+.honesty-overlay { position: absolute; inset: 0; background: rgba(255, 240, 243, 0.9); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+.honesty-btns { display: flex; gap: 10px; margin-top: 20px; width: 100%; }
