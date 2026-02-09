@@ -1,94 +1,54 @@
-:root {
-    --bg: #0a0a0c;
-    --card: rgba(255, 255, 255, 0.05);
-    --primary: #00f3ff; /* Циан */
-    --accent: #ff0055;  /* Неоновый розовый */
-    --text: #ffffff;
-    --border: rgba(255, 255, 255, 0.1);
+/* Ломаем вертикальный шаблон */
+.orbital-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(circle, #1a1a2e, #000);
 }
 
-* { box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
-
-body { 
-    margin: 0; background: var(--bg); color: var(--text); 
-    height: 100dvh; display: flex; justify-content: center; overflow: hidden;
+.core-connection {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 0 50px var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
 }
 
-.glow-bg {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 20% 30%, #1a1a2e 0%, #0a0a0c 100%);
-    z-index: -1;
+.task-orb {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid var(--primary);
+    border-radius: 50%;
+    /* Сферы летают по кругу сами по себе */
+    offset-path: path('M 0,200 a 200,200 0 1,1 400,0 a 200,200 0 1,1 -400,0');
+    animation: orbit 10s infinite linear;
+    animation-delay: var(--d);
 }
 
-.app-container { width: 100%; max-width: 420px; padding: 20px; height: 100%; display: flex; flex-direction: column; }
-
-/* Тексты */
-.title { font-family: 'Unbounded'; font-size: 3.5rem; text-align: center; letter-spacing: -2px; margin: 0; background: linear-gradient(to bottom, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.tagline { text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 5px; color: var(--primary); opacity: 0.8; }
-
-/* Стеклянные карточки */
-.glass-card {
-    background: var(--card);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--border);
-    border-radius: 30px;
-    padding: 25px;
+@keyframes orbit {
+    from { offset-distance: 0%; }
+    to { offset-distance: 100%; }
 }
 
-/* Кнопки */
-.btn-glow {
-    width: 100%; padding: 22px; border-radius: 20px; border: none;
-    background: var(--primary); color: #000; font-family: 'Unbounded';
-    font-weight: 900; font-size: 1rem; cursor: pointer;
-    box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
-    margin-top: 20px;
+.task-modal {
+    position: fixed;
+    bottom: -100%; /* Спрятана внизу */
+    width: 100%;
+    height: 70%;
+    background: rgba(255,255,255,0.95);
+    border-radius: 40px 40px 0 0;
+    transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+    padding: 40px;
+    color: #000;
 }
-
-/* Сетка тем */
-.themes-grid { display: flex; flex-direction: column; gap: 15px; flex: 1; margin: 20px 0; }
-.theme-card {
-    height: 120px; border-radius: 25px; display: flex; align-items: center; padding: 0 30px;
-    background: var(--card); border: 1px solid var(--border); position: relative; overflow: hidden;
-}
-.theme-card .icon { font-size: 40px; margin-right: 20px; }
-.theme-card .label { font-family: 'Unbounded'; font-size: 1.2rem; }
-.theme-card span { display: block; font-size: 10px; font-family: 'Montserrat'; opacity: 0.5; }
-
-/* Индикаторы */
-.sync-level { flex: 1; }
-.sync-level .bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 5px; }
-#sync-progress { height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--primary); transition: 0.5s; }
-
-/* Игровая карта */
-.main-card-wrap { flex: 1; position: relative; margin: 20px 0; }
-.game-card {
-    height: 100%; background: var(--card); border: 1px solid var(--primary);
-    border-radius: 35px; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; text-align: center; padding: 40px;
-    box-shadow: inset 0 0 30px rgba(0, 243, 255, 0.05);
-}
-.blind-overlay {
-    position: absolute; inset: 0; background: #0a0a0c; border-radius: 35px;
-    z-index: 10; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; text-align: center; border: 1px solid var(--border);
-}
-
-.fingerprint-scan { font-size: 60px; color: var(--primary); margin-bottom: 20px; position: relative; }
-.scan-line {
-    position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-    background: var(--primary); box-shadow: 0 0 15px var(--primary);
-    animation: scan 2s infinite;
-}
-@keyframes scan { 0%, 100% { top: 0; } 50% { top: 100%; } }
-
-.unlock-btn {
-    background: transparent; border: 1px solid var(--primary); color: var(--primary);
-    padding: 12px 30px; border-radius: 50px; font-weight: 800; font-size: 12px; margin-top: 20px;
-}
-
-/* Утилиты */
-.screen { display: none; flex-direction: column; height: 100%; }
-.screen.active { display: flex; animation: slideIn 0.4s ease; }
-@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-.hidden { display: none !important; }
