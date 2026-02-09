@@ -109,3 +109,49 @@ input { width: 100%; padding: 18px; border-radius: 15px; border: none; backgroun
 
 .swipe-right { transform: translateX(150%) rotate(30deg) !important; opacity: 0; }
 .swipe-left { transform: translateX(-150%) rotate(-30deg) !important; opacity: 0; }
+/* ... (весь предыдущий CSS остается) ... */
+
+.scroll-y { overflow-y: auto; max-height: 50vh; }
+
+.name-block {
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--shadow);
+}
+
+.name-block:last-child { border: none; }
+
+.name-label {
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.setup-box input {
+    margin-bottom: 10px;
+}
+
+.special-card {
+    background: #fff9e6 !important;
+    border-color: #ffeaa7 !important;
+}
+
+.add-custom-btn {
+    width: 45px; height: 45px; border-radius: 15px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--primary); font-size: 18px; cursor: pointer;
+}
+
+textarea.clay-select, .clay-select {
+    width: 100%; padding: 15px; border-radius: 15px;
+    border: none; background: #fff5f7; margin-bottom: 15px;
+    font-family: inherit; font-size: 14px; outline: none;
+}
+
+textarea { min-height: 100px; resize: none; }
+
+#card-text span {
+    color: var(--primary);
+    font-weight: 800;
+}
