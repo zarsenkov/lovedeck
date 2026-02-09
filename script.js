@@ -1,19 +1,25 @@
+// Функция загрузки игры
 function loadGame(gameId) {
     const fade = document.querySelector('.black-fade');
     if(fade) fade.classList.add('active');
     
+    // Ссылки на твои игры на Vercel
+    // Когда создашь новые игры, просто заменяй эти ссылки на свои
+    const gameUrls = {
+        'danetki': 'https://danetki-noir.vercel.app',
+        'mafia': 'https://mafia-offline-noir.vercel.app',
+        'couples': 'https://love-moments.vercel.app'
+        // добавь остальные позже
+    };
+
     setTimeout(() => {
-        let path = "";
-
-        if (gameId === 'couples') {
-            // Ведем в папку lovecoulpe (с твоей опечаткой) и далее в online
-            path = "/games/couples/index.html";
+        // Если ссылка для игры есть в списке — идем по ней, 
+        // если нет — идем по старому пути (на папку)
+        if (gameUrls[gameId]) {
+            window.location.href = gameUrls[gameId];
         } else {
-            // Для всех остальных игр: alias, crocodile, spy и т.д.
-            path = `/games/${gameId}/index.html`;
+            window.location.href = `/games/${gameId}/index.html`;
         }
-
-        window.location.href = path;
     }, 400);
 }
 
