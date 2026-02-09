@@ -3,46 +3,41 @@ let state = {
     theme: '', 
     currentCard: null,
     used: new Set(),
-    stats: JSON.parse(localStorage.getItem('lc_stats')) || { done: 0 },
-    favs: JSON.parse(localStorage.getItem('lc_favs')) || [],
-    custom: JSON.parse(localStorage.getItem('lc_custom')) || [],
+    stats: JSON.parse(localStorage.getItem('garden_stats')) || { growth: 0 },
+    diary: JSON.parse(localStorage.getItem('garden_diary')) || [],
+    favs: JSON.parse(localStorage.getItem('garden_favs')) || [],
     startX: 0
 };
 
-// --- СКЛОНЕНИЕ ИМЕН (ПОД КАПОТОМ) ---
-function declineName(name, type) {
+// Функция склонения (улучшенная под капотом)
+function decline(name, type) {
     if (!name) return "";
     let n = name.trim();
-    const lastChar = n.slice(-1).toLowerCase();
-    const beforeLastChar = n.slice(-2, -1).toLowerCase();
-
-    // Очень упрощенная логика склонения для популярных русских имен
+    const last = n.slice(-1).toLowerCase();
     if (type === 'v') { // Винительный (Кого?)
-        if (lastChar === 'а') return n.slice(0, -1) + 'у'; // Мария -> Марию
-        if (lastChar === 'я' && beforeLastChar !== 'и') return n.slice(0, -1) + 'ю'; // Настя -> Настю
-        if (lastChar === 'й') return n.slice(0, -1) + 'я'; // Алексей -> Алексея
-        if ("бвгджзклмнпрстфхцчшщ".includes(lastChar)) return n + 'а'; // Антон -> Антона
+        if (last === 'а') return n.slice(0, -1) + 'у';
+        if (last === 'я') return n.slice(0, -1) + 'ю';
+        if (last === 'й') return n.slice(0, -1) + 'я';
+        if ("бвгджзклмнпрстфхцчшщ".includes(last)) return n + 'а';
     }
     if (type === 'd') { // Дательный (Кому?)
-        if (lastChar === 'а' || lastChar === 'я') return n.slice(0, -1) + 'е'; // Мария -> Марие (упрощ), Маша -> Маше
-        if (lastChar === 'й') return n.slice(0, -1) + 'ю'; // Алексей -> Алексею
-        if ("бвгджзклмнпрстфхцчшщ".includes(lastChar)) return n + 'у'; // Антон -> Антону
+        if (last === 'а' || last === 'я') return n.slice(0, -1) + 'е';
+        if (last === 'й') return n.slice(0, -1) + 'ю';
+        if ("бвгджзклмнпрстфхцчшщ".includes(last)) return n + 'у';
     }
-    return n; // Именительный по умолчанию
+    return n;
 }
 
-// --- ИНИЦИАЛИЗАЦИЯ ---
 document.addEventListener('DOMContentLoaded', () => {
-    const saved = JSON.parse(localStorage.getItem('lc_names_v2'));
+    const saved = JSON.parse(localStorage.getItem('garden_names'));
     if (saved) {
         state.names = saved;
+        updateGrowthUI();
         goToScreen('themes');
     }
     setupSwipes();
-    setTimeout(() => {
-        const loader = document.getElementById('loading-screen');
-        if(loader) loader.style.display = 'none';
-    }, 1000);
+    setTimeout(() => document.getElementById('loading-screen').style.opacity = '0', 1500);
+    setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 2500);
 });
 
 function goToScreen(id) {
@@ -53,10 +48,9 @@ function goToScreen(id) {
 function saveNames() {
     const n1 = document.getElementById('name1').value.trim();
     const n2 = document.getElementById('name2').value.trim();
-    if (!n1 || !n2) return alert("Введите имена партнёров ❤️");
-    
+    if (!n1 || !n2) return alert("Введите имена партнеров");
     state.names = { n1, n2 };
-    localStorage.setItem('lc_names_v2', JSON.stringify(state.names));
+    localStorage.setItem('garden_names', JSON.stringify(state.names));
     goToScreen('themes');
 }
 
@@ -64,142 +58,93 @@ function selectTheme(t) {
     state.theme = t;
     state.used.clear();
     nextCard();
+    goToScreen('game');
 }
 
 function nextCard() {
-    let pool = [];
-    if (state.theme === 'favorites') pool = state.favs;
-    else if (state.theme === 'custom') pool = state.custom;
-    else pool = [...(CARDS_DB[state.theme] || []), ...state.custom.filter(c => c.category === state.theme)];
-
-    if (pool.length === 0) {
-        alert("В этой категории пока пусто!");
-        return;
-    }
-
-    const available = pool.filter(c => !state.used.has(c.id));
-    if (available.length === 0) { state.used.clear(); return nextCard(); }
+    let pool = state.theme === 'favs' ? state.favs : CARDS_DB[state.theme];
+    if (!pool || pool.length === 0) return alert("Тут пока пусто!");
+    
+    let available = pool.filter(c => !state.used.has(c.id));
+    if (available.length === 0) { state.used.clear(); available = pool; }
     
     state.currentCard = available[Math.floor(Math.random() * available.length)];
     state.used.add(state.currentCard.id);
     renderCard();
-    goToScreen('game');
 }
 
 function renderCard() {
-    let text = state.currentCard.text;
     const n = state.names;
-    
-    // Заменяем теги на склоненные имена
-    const replacements = {
-        '{n1}': n.n1, 
-        '{n1_v}': declineName(n.n1, 'v'), 
-        '{n1_d}': declineName(n.n1, 'd'),
-        '{n2}': n.n2, 
-        '{n2_v}': declineName(n.n2, 'v'), 
-        '{n2_d}': declineName(n.n2, 'd')
+    let text = state.currentCard.text;
+    const reps = {
+        '{n1}': n.n1, '{n1_v}': decline(n.n1, 'v'), '{n1_d}': decline(n.n1, 'd'),
+        '{n2}': n.n2, '{n2_v}': decline(n.n2, 'v'), '{n2_d}': decline(n.n2, 'd')
     };
-
-    for (let key in replacements) {
-        text = text.split(key).join(`<span class="name-span">${replacements[key]}</span>`);
-    }
-    
+    for (let k in reps) text = text.split(k).join(`<span>${reps[k]}</span>`);
     document.getElementById('card-text').innerHTML = text;
-    document.getElementById('intensity-badge').innerText = state.currentCard.level || 'USER';
-    document.getElementById('card-type').innerText = state.theme.toUpperCase();
+    document.getElementById('task-cat-name').innerText = state.theme.toUpperCase();
     updateFavUI();
 }
 
-// --- КНОПКИ И ДЕЙСТВИЯ ---
 function swipe(dir) {
     const card = document.getElementById('game-card-body');
-    if (dir === 'right') {
-        card.classList.add('swipe-right');
-        state.stats.done++;
-        localStorage.setItem('lc_stats', JSON.stringify(state.stats));
-    } else {
-        card.classList.add('swipe-left');
-    }
+    card.classList.add(dir === 'right' ? 'swipe-right' : 'swipe-left');
     
     setTimeout(() => {
-        nextCard();
-        card.classList.remove('swipe-right', 'swipe-left');
-    }, 300);
+        if (dir === 'right') {
+            state.stats.growth = Math.min(100, state.stats.growth + 2);
+            updateGrowthUI();
+            document.getElementById('modal-memory').classList.add('active');
+        } else {
+            finishAction();
+        }
+    }, 400);
+}
+
+function saveMemory() {
+    const val = document.getElementById('memory-input').value.trim();
+    if (val) state.diary.push({ date: new Date().toLocaleDateString(), text: val });
+    localStorage.setItem('garden_diary', JSON.stringify(state.diary));
+    document.getElementById('memory-input').value = '';
+    document.getElementById('modal-memory').classList.remove('active');
+    finishAction();
+}
+
+function finishAction() {
+    const card = document.getElementById('game-card-body');
+    card.classList.remove('swipe-right', 'swipe-left');
+    nextCard();
+}
+
+function updateGrowthUI() {
+    document.getElementById('growth-val').innerText = state.stats.growth;
+    document.getElementById('growth-fill').style.width = state.stats.growth + '%';
+    localStorage.setItem('garden_stats', JSON.stringify(state.stats));
 }
 
 function setupSwipes() {
     const card = document.getElementById('game-card-body');
-    if(!card) return;
     card.addEventListener('touchstart', e => state.startX = e.touches[0].clientX);
+    card.addEventListener('touchmove', e => {
+        const x = e.touches[0].clientX - state.startX;
+        card.style.transform = `translateX(${x}px) rotate(${x/15}deg)`;
+    });
     card.addEventListener('touchend', e => {
-        const diff = e.changedTouches[0].clientX - state.startX;
-        if (diff > 100) swipe('right');
-        else if (diff < -100) swipe('left');
+        const x = e.changedTouches[0].clientX - state.startX;
+        if (x > 100) swipe('right');
+        else if (x < -100) swipe('left');
+        else card.style.transform = '';
     });
 }
 
-function toggleFavorite() {
-    const idx = state.favs.findIndex(f => f.id === state.currentCard.id);
-    if (idx === -1) state.favs.push(state.currentCard);
-    else state.favs.splice(idx, 1);
-    localStorage.setItem('lc_favs', JSON.stringify(state.favs));
-    updateFavUI();
-}
-
-function updateFavUI() {
-    const isFav = state.favs.some(f => f.id === state.currentCard.id);
-    document.getElementById('fav-btn').innerHTML = isFav ? '<i class="fas fa-star" style="color: gold"></i>' : '<i class="far fa-star"></i>';
-}
-
-function addCustomCard() {
-    const text = document.getElementById('custom-text').value.trim();
-    const category = document.getElementById('custom-cat').value;
-    if (!text) return;
-
-    state.custom.push({ id: Date.now(), text, category, level: 'USER' });
-    localStorage.setItem('lc_custom', JSON.stringify(state.custom));
-    document.getElementById('custom-text').value = '';
-    closeModals();
-    alert("Карта добавлена!");
-}
-
 function showModal(id) {
-    if (id === 'stats') {
-        document.getElementById('stats-info').innerText = `Выполнено заданий: ${state.stats.done}\nСвоих карточек: ${state.custom.length}`;
+    if (id === 'diary') {
+        const list = document.getElementById('diary-list');
+        list.innerHTML = state.diary.map(d => `<div class="diary-item"><b>${d.date}</b><p>${d.text}</p></div>`).join('') || "Дневник пуст";
     }
     document.getElementById(`modal-${id}`).classList.add('active');
 }
 
-function closeModals() {
-    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-}
+function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); }
 
-function rollDice() {
-    showModal('dice');
-    const res = document.getElementById('dice-res');
-    const who = document.getElementById('dice-who');
-    res.innerText = "🎲";
-    setTimeout(() => {
-        const val = Math.floor(Math.random() * 6) + 1;
-        res.innerText = val;
-        who.innerText = val % 2 === 0 ? `Выполняет ${state.names.n2}` : `Выполняет ${state.names.n1}`;
-    }, 600);
-}
-
-function confirmReset() {
-    if (confirm("Сбросить имена?")) {
-        localStorage.removeItem('lc_names_v2');
-        location.reload();
-    }
-}
-
-function startTimer() {
-    let t = 60;
-    const el = document.getElementById('timer-display');
-    const interval = setInterval(() => {
-        t--;
-        let m = Math.floor(t/60), s = t%60;
-        el.innerText = `${m}:${s < 10 ? '0' + s : s}`;
-        if (t <= 0) { clearInterval(interval); alert("Время вышло!"); el.innerText = "01:00"; }
-    }, 1000);
-}
+function confirmReset() { if(confirm("Начать заново? Сад будет очищен.")) { localStorage.clear(); location.reload(); } }
