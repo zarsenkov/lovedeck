@@ -1,54 +1,302 @@
-/* Ломаем вертикальный шаблон */
-.orbital-wrapper {
-    position: relative;
-    width: 100vw;
+:root {
+    --bg: #07070a;
+    --primary: #00f2ff;
+    --accent: #ff007b;
+    --glass: rgba(255, 255, 255, 0.05);
+    --border: rgba(255, 255, 255, 0.1);
+    --text: #e0e0ff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Unbounded', sans-serif;
     height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
-    background: radial-gradient(circle, #1a1a2e, #000);
+    user-select: none;
 }
 
-.core-connection {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    background: var(--primary);
-    border-radius: 50%;
-    box-shadow: 0 0 50px var(--primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 5;
+/* Анимированный фон */
+.background-fx {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    overflow: hidden;
 }
 
-.task-orb {
+.orb {
     position: absolute;
-    width: 60px;
-    height: 60px;
-    background: rgba(255,255,255,0.1);
+    width: 300px; height: 300px;
+    background: var(--primary);
+    filter: blur(100px);
+    border-radius: 50%;
+    opacity: 0.15;
+    animation: drift 20s infinite alternate;
+}
+
+.orb:nth-child(2) {
+    background: var(--accent);
+    right: -100px;
+    bottom: -100px;
+    animation-delay: -10s;
+}
+
+@keyframes drift {
+    from { transform: translate(0, 0); }
+    to { transform: translate(100px, 100px); }
+}
+
+.app-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* Типографика */
+.glitch {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: -2px;
+    text-align: center;
+    color: white;
+    text-shadow: 2px 0 var(--accent), -2px 0 var(--primary);
+    margin-bottom: 5px;
+}
+
+.tagline {
+    text-align: center;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--primary);
+    opacity: 0.7;
+}
+
+/* Поля ввода */
+.setup-form {
+    margin: 60px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-field label {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--primary);
+}
+
+.input-field input {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 15px;
+    color: white;
+    font-family: inherit;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-field input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+/* Кнопки */
+.btn-primary {
+    background: var(--primary);
+    color: #000;
+    border: none;
+    padding: 22px;
+    border-radius: 18px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 10px 0 #0099a1;
+    transition: 0.1s;
+}
+
+.btn-primary:active {
+    transform: translateY(4px);
+    box-shadow: 0 6px 0 #0099a1;
+}
+
+/* Ядро (Центральный элемент) */
+.core-area {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.core-center {
+    width: 180px;
+    height: 180px;
+    background: var(--glass);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    z-index: 10;
+    transition: 0.2s;
+}
+
+.core-inner {
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.5;
+    transition: 0.3s;
+}
+
+.core-inner span {
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: white;
+}
+
+.core-ring {
+    position: absolute;
     border: 1px solid var(--primary);
     border-radius: 50%;
-    /* Сферы летают по кругу сами по себе */
-    offset-path: path('M 0,200 a 200,200 0 1,1 400,0 a 200,200 0 1,1 -400,0');
-    animation: orbit 10s infinite linear;
-    animation-delay: var(--d);
+    opacity: 0.2;
+    animation: pulse 4s infinite;
 }
 
-@keyframes orbit {
-    from { offset-distance: 0%; }
-    to { offset-distance: 100%; }
+.core-ring:nth-child(1) { width: 220px; height: 220px; }
+.core-ring:nth-child(2) { width: 280px; height: 280px; animation-delay: 2s; }
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.2; }
+    50% { transform: scale(1.05); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 0.2; }
 }
 
-.task-modal {
-    position: fixed;
-    bottom: -100%; /* Спрятана внизу */
+/* Карточка задания */
+.reaction-card {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 90%;
+    background: #11111a;
+    border: 2px solid var(--primary);
+    border-radius: 30px;
+    padding: 30px;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.reaction-card.active {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.card-header span {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--primary);
+}
+
+.close-card {
+    background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;
+}
+
+.card-body {
+    padding: 20px 0 40px;
+}
+
+#task-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    text-align: center;
+    color: white;
+}
+
+.btn-success {
     width: 100%;
-    height: 70%;
-    background: rgba(255,255,255,0.95);
-    border-radius: 40px 40px 0 0;
-    transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1);
-    padding: 40px;
-    color: #000;
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    background: var(--primary);
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Статус и прогресс */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.status-item span {
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+}
+
+.progress-track {
+    width: 100%;
+    height: 4px;
+    background: var(--glass);
+    margin-top: 10px;
+    border-radius: 2px;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: var(--primary);
+    box-shadow: 0 0 10px var(--primary);
+    transition: 0.5s;
+}
+
+.progress-label {
+    font-size: 0.5rem;
+    letter-spacing: 2px;
+    opacity: 0.5;
 }
