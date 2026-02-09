@@ -3,91 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BUNKER: SURVIVAL</title>
+    <title>BUNKER ONLINE</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="terminal-overlay"></div>
 
     <div class="app-container">
-        <!-- Навигация -->
         <div class="top-nav">
-            <div class="back-link" onclick="handleBack()">[ ВЫХОД ]</div>
-            <div class="online-switch" onclick="goToOnline()">ПЕРЕЙТИ В ONLINE <i class="fas fa-external-link-alt"></i></div>
+            <div class="nav-btn" onclick="app.exit()">[ ВЫХОД ]</div>
+            <div id="room-badge" class="room-pill hidden" onclick="app.copyCode()">
+                CODE: <span id="display-code">----</span> <i class="far fa-copy"></i>
+            </div>
         </div>
 
-        <!-- Экран 1: Настройка -->
-        <div id="screen-setup" class="screen active">
-            <h1 class="glitch-text">BUNKER<span>_OS</span></h1>
-            <div class="terminal-box">
-                <p>> ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ...</p>
-                <p>> ВЫБЕРИТЕ КОЛИЧЕСТВО ВЫЖИВШИХ:</p>
-                <div class="counter">
-                    <button onclick="changePlayers(-1)">-</button>
-                    <span id="player-count">6</span>
-                    <button onclick="changePlayers(1)">+</button>
-                </div>
+        <!-- Экран 1: Вход -->
+        <section id="screen-auth" class="screen active">
+            <div class="hero">
+                <h1 class="glitch">BUNKER<span>_ONLINE</span></h1>
+                <p class="subtitle">СИСТЕМА ЖИЗНЕОБЕСПЕЧЕНИЯ v.2.0</p>
             </div>
-            <button class="action-btn" onclick="startGeneration()">ГЕНЕРИРОВАТЬ СЦЕНАРИЙ</button>
-        </div>
-
-        <!-- Экран 2: Катастрофа и Бункер -->
-        <div id="screen-disaster" class="screen">
-            <h2 class="section-title">ОТЧЕТ О КАТАСТРОФЕ</h2>
-            <div class="glass-panel alert">
-                <h3 id="disaster-name">ЯДЕРНАЯ ЗИМА</h3>
-                <p id="disaster-desc">...</p>
-            </div>
-            <div class="glass-panel">
-                <h4>ХАРАКТЕРИСТИКИ БУНКЕРА:</h4>
-                <ul id="bunker-stats"></ul>
-            </div>
-            <button class="action-btn" onclick="startPlayerReveal()">ПЕРЕЙТИ К ПЕРСОНАЖАМ</button>
-        </div>
-
-        <!-- Экран 3: Раскрытие (Pass & Play) -->
-        <div id="screen-reveal" class="screen">
-            <h2 id="player-title">ИГРОК #1</h2>
-            <p class="pass-hint">Передайте устройство этому игроку и нажмите кнопку ниже</p>
             
-            <div id="character-card" class="char-card hidden">
-                <div class="trait"><span>ПРОФЕССИЯ:</span> <b id="t-prof">...</b></div>
-                <div class="trait"><span>БИО-ДАННЫЕ:</span> <b id="t-bio">...</b></div>
-                <div class="trait"><span>ЗДОРОВЬЕ:</span> <b id="t-health">...</b></div>
-                <div class="trait"><span>ХОББИ:</span> <b id="t-hobby">...</b></div>
-                <div class="trait"><span>ФОБИЯ:</span> <b id="t-phobia">...</b></div>
-                <div class="trait"><span>ДОП. ИНФО:</span> <b id="t-info">...</b></div>
-                <div class="trait"><span>БАГАЖ:</span> <b id="t-luggage">...</b></div>
-                <div class="special-card">
-                    <span>СПЕЦ. КАРТА:</span>
-                    <p id="t-special">...</p>
+            <div class="clay-card setup-box">
+                <input type="text" id="username" placeholder="ИМЯ ВЫЖИВШЕГО" class="terminal-input" maxlength="12">
+                <button class="btn-terminal primary" onclick="app.createRoom()">СОЗДАТЬ УБЕЖИЩЕ</button>
+                <div class="hr">ИЛИ ВВЕДИТЕ КОД ДОСТУПА</div>
+                <input type="text" id="room-input" placeholder="КОД" class="terminal-input" style="text-transform: uppercase;">
+                <button class="btn-terminal" onclick="app.joinRoom()">ПОДКЛЮЧИТЬСЯ</button>
+            </div>
+        </section>
+
+        <!-- Экран 2: Лобби -->
+        <section id="screen-lobby" class="screen">
+            <div class="clay-card">
+                <h3>ОБНАРУЖЕНЫ СИГНАЛЫ:</h3>
+                <div id="player-list" class="player-list"></div>
+                <button id="start-btn" class="btn-terminal primary hidden" onclick="app.startGame()">АКТИВИРОВАТЬ ПРОТОКОЛ</button>
+                <p id="wait-msg" class="blink">ОЖИДАНИЕ ДРУГИХ ВЫЖИВШИХ...</p>
+            </div>
+        </section>
+
+        <!-- Экран 3: Игра -->
+        <section id="screen-game" class="screen">
+            <div class="disaster-header glass" onclick="app.showWorldInfo()">
+                <i class="fas fa-biohazard"></i> КАТАСТРОФА: <b id="dis-name">...</b>
+            </div>
+
+            <!-- Личная карточка -->
+            <div class="my-card clay-card">
+                <div class="card-label">ВАШИ ДАННЫЕ (СКРЫТО):</div>
+                <div class="traits-grid">
+                    <div class="trait-btn" onclick="app.reveal('prof')">Профессия: <span id="my-prof">???</span></div>
+                    <div class="trait-btn" onclick="app.reveal('bio')">Био-данные: <span id="my-bio">???</span></div>
+                    <div class="trait-btn" onclick="app.reveal('health')">Здоровье: <span id="my-health">???</span></div>
+                    <div class="trait-btn" onclick="app.reveal('hobby')">Хобби: <span id="my-hobby">???</span></div>
+                    <div class="trait-btn" onclick="app.reveal('phobia')">Фобия: <span id="my-phobia">???</span></div>
+                    <div class="trait-btn" onclick="app.reveal('luggage')">Багаж: <span id="my-luggage">???</span></div>
+                    <div class="trait-btn special" onclick="app.reveal('special')">Спец. карта: <span id="my-special">???</span></div>
                 </div>
+                <p class="hint">* Нажми на характеристику, чтобы вскрыть её для всех</p>
             </div>
 
-            <button id="show-btn" class="action-btn" onclick="toggleCard(true)">ПОКАЗАТЬ ДАННЫЕ</button>
-            <button id="next-btn" class="action-btn hidden" onclick="nextPlayer()">СЛЕДУЮЩИЙ ИГРОК</button>
-        </div>
-
-        <!-- Экран 4: Игровой стол -->
-        <div id="screen-table" class="screen">
-            <div class="table-header">
-                <h3>ВЫЖИВШИЕ В БУНКЕРЕ</h3>
-                <p id="round-info">РАУНД 1: ОТКРЫТИЕ ХАРАКТЕРИСТИК</p>
-            </div>
-            <div id="players-grid" class="players-grid"></div>
-            <button class="action-btn danger" onclick="startVoting()">НАЧАТЬ ГОЛОСОВАНИЕ</button>
-        </div>
-
-        <!-- Экран 5: Голосование -->
-        <div id="screen-voting" class="screen">
-            <h2 class="section-title">ГОЛОСОВАНИЕ НА ИЗГНАНИЕ</h2>
-            <p>КТО НЕ ДОСТОИН МЕСТА В БУНКЕРЕ?</p>
-            <div id="voting-list" class="voting-grid"></div>
-        </div>
-
+            <div class="table-label">ВЫЖИВШИЕ ЗА СТОЛОМ:</div>
+            <div id="game-table" class="game-table"></div>
+        </section>
     </div>
 
+    <!-- Модалка инфо -->
+    <div id="modal-info" class="modal" onclick="this.classList.remove('active')">
+        <div class="clay-card modal-content">
+            <h2 id="modal-title">...</h2>
+            <p id="modal-desc">...</p>
+            <div id="modal-extra" class="modal-extra"></div>
+            <button class="btn-terminal">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
