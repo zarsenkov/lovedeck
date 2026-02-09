@@ -1,51 +1,66 @@
 :root {
-    --bg: #050510;
-    --primary: #bc13fe;
-    --secondary: #240b36;
-    --neon: #00f2ff;
-    --glass: rgba(255, 255, 255, 0.05);
+    --bg: #f0f4f8;
+    --text: #2d3436;
+    --primary: #6c5ce7;
+    --secondary: #00b894;
+    --accent: #fdcb6e;
+    --clay-shadow: 0 10px 20px rgba(0,0,0,0.05), inset 0 -4px 0 rgba(0,0,0,0.1);
 }
 
 body {
-    margin: 0; font-family: 'Montserrat', sans-serif;
-    background: var(--bg); color: white;
+    margin: 0; font-family: 'Outfit', sans-serif;
+    background: var(--bg); color: var(--text);
     height: 100dvh; display: flex; align-items: center; justify-content: center;
     overflow: hidden;
 }
 
-.nav-bar { position: fixed; top: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; z-index: 100; box-sizing: border-box; }
-.back-btn { width: 40px; height: 40px; background: var(--glass); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
-.room-id { background: var(--glass); padding: 8px 15px; border-radius: 20px; font-weight: 900; color: var(--neon); font-size: 0.9rem; border: 1px solid var(--neon); }
+/* Навигация */
+.top-nav { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; box-sizing: border-box; z-index: 100; }
+.back-circle { width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--clay-shadow); cursor: pointer; color: var(--primary); }
+.room-pill { background: white; padding: 10px 20px; border-radius: 30px; font-weight: 700; box-shadow: var(--clay-shadow); color: var(--primary); cursor: pointer; display: flex; gap: 10px; align-items: center; }
 
+/* Экраны */
 .screen { display: none; width: 100%; max-width: 400px; flex-direction: column; padding: 20px; box-sizing: border-box; height: 100%; justify-content: center; }
-.screen.active { display: flex; animation: fadeIn 0.4s ease; }
+.screen.active { display: flex; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-.glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 30px; padding: 30px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+.clay-card { background: white; border-radius: 35px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box; }
 
-h1.glitch { font-size: 3.5rem; font-weight: 900; text-align: center; margin-bottom: 20px; color: white; text-shadow: 3px 3px var(--primary); }
+.title { font-size: 4rem; font-weight: 900; margin: 0 0 30px 0; text-align: center; color: var(--primary); }
+.title span { color: var(--accent); }
 
-input { width: 100%; padding: 18px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white; font-size: 1.1rem; box-sizing: border-box; margin-bottom: 15px; outline: none; }
-input:focus { border-color: var(--neon); }
+/* Элементы управления */
+input { width: 100%; padding: 18px; border-radius: 20px; border: 2px solid #edf2f7; background: #f8fafc; font-family: inherit; font-size: 1.1rem; box-sizing: border-box; margin-bottom: 15px; outline: none; transition: 0.3s; }
+input:focus { border-color: var(--primary); background: white; }
 
-button { width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: 900; font-size: 1.1rem; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-.btn-main { background: linear-gradient(45deg, var(--primary), #c31432); color: white; }
-.btn-alt { background: transparent; border: 1px solid white; color: white; }
-button:active { transform: scale(0.95); }
+button { width: 100%; padding: 18px; border-radius: 20px; border: none; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
+.btn-main { background: var(--primary); color: white; box-shadow: 0 6px 0 #5849c4; margin-bottom: 6px; }
+.btn-main:active { transform: translateY(3px); box-shadow: 0 3px 0 #5849c4; }
+.btn-light { background: #edf2f7; color: var(--text); }
+.separator { text-align: center; margin: 15px 0; font-weight: 700; opacity: 0.3; }
 
-.user-list { margin: 20px 0; }
-.user-item { padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; }
+/* Список игроков */
+.player-list { margin-bottom: 20px; }
+.player-row { padding: 15px; background: #f8fafc; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; font-weight: 700; }
 
-.highlight-name { color: var(--neon); text-align: center; font-size: 2rem; margin: 10px 0; }
+/* Стикеры */
+.stickers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+.sticker { 
+    background: #fffb96; padding: 20px 10px; border-radius: 5px; color: #2d3436; 
+    text-align: center; box-shadow: 5px 5px 0 rgba(0,0,0,0.1); 
+    transform: rotate(calc(var(--r) * 1deg));
+    display: flex; flex-direction: column;
+}
+.sticker span { font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px; text-transform: uppercase; }
+.sticker b { font-size: 1.2rem; word-break: break-word; line-height: 1.1; }
 
-/* Игровая сетка */
-.game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 50px; }
-.player-sticker { background: white; color: black; padding: 15px 10px; border-radius: 5px; text-align: center; transform: rotate(-2deg); box-shadow: 5px 5px 0 var(--primary); }
-.player-sticker span { display: block; font-size: 0.7rem; opacity: 0.6; margin-bottom: 5px; }
-.player-sticker b { font-size: 1.1rem; word-break: break-word; }
+.my-zone { margin-top: 40px; display: flex; justify-content: center; }
+.my-sticker-placeholder { background: white; padding: 20px; border-radius: 25px; border: 3px dashed #cbd5e0; text-align: center; width: 100%; }
+.blur-overlay { font-size: 2rem; filter: blur(10px); color: var(--primary); margin-top: 10px; letter-spacing: 5px; }
 
-.my-status-panel { margin-top: 40px; text-align: center; }
-.my-card { background: var(--glass); padding: 20px; border-radius: 20px; border: 1px dashed var(--neon); }
-.hidden-blur { filter: blur(8px); font-size: 2rem; margin-top: 10px; letter-spacing: 5px; }
+/* Декор */
+.mini-sticker { position: absolute; padding: 10px 20px; background: var(--accent); color: white; font-weight: 900; border-radius: 10px; transform: rotate(-10deg); z-index: -1; }
+.s1 { top: 100px; left: 20px; background: var(--secondary); transform: rotate(15deg); }
+.s2 { bottom: 100px; right: 20px; transform: rotate(-15deg); }
 
 .hidden { display: none !important; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
