@@ -2,86 +2,63 @@
     --jungle-green: #2ecc71;
     --dark-green: #27ae60;
     --pop-orange: #e67e22;
-    --soft-white: #f8fdfa;
     --shadow: rgba(46, 204, 113, 0.2);
     --text: #2c3e50;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-body { 
-    background: #eafff2; 
-    color: var(--text); 
-    height: 100dvh; 
-    display: flex; 
-    justify-content: center; 
-    overflow: hidden;
-}
+body { background: #eafff2; color: var(--text); height: 100dvh; display: flex; justify-content: center; overflow: hidden; }
 
-.app-container { width: 100%; max-width: 420px; padding: 20px; position: relative; }
+.app-container { width: 100%; max-width: 420px; padding: 20px; position: relative; height: 100%; display: flex; flex-direction: column; }
+
+/* Ссылка в кластер */
+.exit-to-cluster { position: fixed; top: 10px; right: 10px; text-decoration: none; color: var(--dark-green); font-size: 10px; font-weight: 900; background: white; padding: 5px 12px; border-radius: 20px; box-shadow: 4px 4px 10px var(--shadow); z-index: 1000; }
+
+/* Навигация */
+.nav-back { background: none; border: none; color: var(--dark-green); font-weight: 800; cursor: pointer; text-align: left; margin-bottom: 20px; }
 
 /* Claymorphism */
-.clay-card {
-    background: white;
-    border-radius: 30px;
-    box-shadow: 10px 10px 20px var(--shadow), -5px -5px 15px #ffffff;
-    border: 2px solid #ffffff;
-}
-
-.clay-button {
-    background: var(--pop-orange);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    box-shadow: inset -4px -4px 8px rgba(0,0,0,0.2), inset 4px 4px 8px rgba(255,255,255,0.3), 8px 8px 16px var(--shadow);
-    cursor: pointer;
-    font-family: 'Unbounded', sans-serif;
-    font-weight: 900;
-}
-
-.clay-button:active { transform: scale(0.95); box-shadow: inset 4px 4px 8px rgba(0,0,0,0.2); }
+.clay-card { background: white; border-radius: 30px; box-shadow: 10px 10px 20px var(--shadow), -5px -5px 15px #ffffff; border: 2px solid #ffffff; }
+.clay-button { background: var(--pop-orange); color: white; border: none; border-radius: 25px; box-shadow: inset -4px -4px 8px rgba(0,0,0,0.2), inset 4px 4px 8px rgba(255,255,255,0.3), 8px 8px 16px var(--shadow); cursor: pointer; font-family: 'Unbounded', sans-serif; font-weight: 900; transition: 0.2s; }
+.clay-button:active { transform: scale(0.95); }
 
 /* Screens */
-.screen { display: none; flex-direction: column; height: 100%; padding: 40px 0; }
-.screen.active { display: flex; animation: slideIn 0.4s ease-out; }
+.screen { display: none; flex-direction: column; height: 100%; padding-top: 20px; }
+.screen.active { display: flex; animation: slideIn 0.3s ease-out; }
+@keyframes slideIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
-@keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+/* Настройки */
+.settings-card { padding: 20px; flex: 1; overflow-y: auto; margin-bottom: 20px; }
+.input-group { margin-bottom: 20px; }
+.input-group label { display: block; font-size: 12px; font-weight: 900; color: var(--dark-green); margin-bottom: 10px; text-transform: uppercase; }
+.input-group input[type="text"] { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-weight: 700; margin-bottom: 5px; }
+input[type="range"] { width: 100%; accent-color: var(--dark-green); }
 
-/* Header */
-.jungle-header { text-align: center; margin-bottom: 30px; }
-.leaf-icon { font-size: 50px; }
-.title { font-family: 'Unbounded'; font-size: 42px; color: var(--dark-green); line-height: 1; }
+.categories-toggle { display: flex; flex-wrap: wrap; gap: 8px; }
+.cat-chip { padding: 8px 15px; border-radius: 15px; border: 2px solid #eee; background: white; font-size: 11px; font-weight: 800; cursor: pointer; }
+.cat-chip.active { border-color: var(--dark-green); background: var(--jungle-green); color: white; }
 
-.setup-card { padding: 30px; margin-bottom: 30px; }
-.score-setup { display: flex; align-items: center; justify-content: space-between; text-align: center; }
-.team-box input { width: 100px; border: none; background: #f0fdf4; padding: 10px; border-radius: 10px; font-weight: 800; text-align: center; color: var(--dark-green); }
-.score-val { display: block; font-size: 24px; font-weight: 900; margin-top: 10px; color: var(--pop-orange); }
-.vs { font-family: 'Unbounded'; font-size: 14px; opacity: 0.3; }
+/* Игра */
+.game-top { display: flex; justify-content: space-between; align-items: center; }
+.pause-btn { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: var(--pop-orange); }
+.clay-timer { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; background: white; box-shadow: 5px 5px 10px var(--shadow); }
+.current-team { background: var(--dark-green); color: white; padding: 8px 20px; border-radius: 15px; font-family: 'Unbounded'; font-size: 12px; }
 
-.big-btn { width: 100%; padding: 25px; font-size: 18px; margin-top: auto; }
+.word-card { flex: 1; margin: 40px 0; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+.curse-banner { position: absolute; top: -15px; background: var(--pop-orange); color: white; padding: 5px 15px; border-radius: 10px; font-size: 10px; font-weight: 900; animation: pulse 1s infinite alternate; }
+@keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
 
-/* Difficulty */
-.section-title { font-family: 'Unbounded'; text-align: center; margin-bottom: 30px; color: var(--dark-green); }
-.difficulty-grid { display: grid; gap: 15px; }
-.diff-card { padding: 20px; display: flex; align-items: center; gap: 20px; cursor: pointer; }
-.diff-card .emoji { font-size: 32px; }
-.diff-card label { font-family: 'Unbounded'; font-size: 14px; font-weight: 900; }
+#current-word { font-family: 'Unbounded'; font-size: 32px; text-align: center; }
 
-/* Game */
-.game-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-.clay-timer { width: 70px; height: 70px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; color: var(--pop-orange); box-shadow: 8px 8px 16px var(--shadow); }
-.current-team { font-family: 'Unbounded'; font-size: 14px; background: var(--dark-green); color: white; padding: 10px 20px; border-radius: 15px; }
+.game-actions { display: grid; grid-template-columns: 80px 1fr; gap: 15px; }
+.game-btn { height: 65px; }
+.skip-btn { display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--pop-orange); }
 
-.word-card-container { flex: 1; display: flex; align-items: center; }
-.word-card { width: 100%; padding: 60px 20px; text-align: center; }
-.word-card .hint { font-size: 12px; font-weight: 700; opacity: 0.4; text-transform: uppercase; margin-bottom: 10px; }
-#current-word { font-family: 'Unbounded'; font-size: 32px; color: var(--text); }
+/* Финал */
+.winner-podium { text-align: center; padding: 40px 20px; }
+.crown { font-size: 60px; margin-bottom: 10px; }
+#final-scores { font-size: 24px; font-weight: 900; color: var(--dark-green); margin-top: 10px; }
 
-.game-actions { display: grid; grid-template-columns: 100px 1fr; gap: 15px; margin-top: 30px; }
-.game-btn { height: 70px; }
-.skip-btn { display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--dark-green); }
-
-.back-btn { margin-top: 20px; background: none; border: none; color: var(--dark-green); font-weight: 800; cursor: pointer; }
-
-.results-card { padding: 50px 20px; text-align: center; margin-bottom: 20px; }
-#round-points { font-size: 32px; font-weight: 900; color: var(--jungle-green); margin-top: 10px; }
+.hidden { display: none !important; }
+.big-btn { width: 100%; padding: 20px; font-family: 'Unbounded'; font-size: 14px; }
