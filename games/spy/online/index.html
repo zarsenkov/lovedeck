@@ -3,64 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ШПИОН ONLINE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>SPY ONLINE | NEON</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="nav-header">
-        <div class="circle-btn" onclick="goHome()"><i class="fas fa-arrow-left"></i></div>
-        <div id="room-badge" class="room-pill hidden" onclick="copyCode()">--- <i class="far fa-copy"></i></div>
-    </div>
+    <div class="spy-app">
+        <div class="back-link" onclick="handleBack()">← НАЗАД НА LOVCOUPLE</div>
+        <div class="rules-icon" onclick="toggleRules()">?</div>
 
-    <!-- ВХОД -->
-    <div id="screen-login" class="screen active">
-        <div class="logo-box">
-            <i class="fas fa-user-secret main-icon"></i>
-            <h1>ШПИОН</h1>
-        </div>
-        
-        <div class="clay-card">
-            <input type="text" id="username" placeholder="Твое имя" maxlength="12">
-            <button class="btn-main" onclick="createRoom()">Создать игру</button>
-            <div class="divider">или войти к друзьям</div>
-            <input type="text" id="room-input" placeholder="КОД КОМНАТЫ" style="text-transform: uppercase;">
-            <button class="btn-secondary" onclick="joinRoom()">Присоединиться</button>
-        </div>
-    </div>
-
-    <!-- ЛОББИ -->
-    <div id="screen-lobby" class="screen">
-        <div class="clay-card">
-            <h2>Список игроков</h2>
-            <div id="player-list" class="user-list"></div>
-            <div class="actions">
-                <button id="start-btn" class="btn-main hidden" onclick="startGame()">Начать игру</button>
-                <div id="wait-msg" class="status-msg">Ждем остальных...</div>
+        <!-- ЭКРАН 1: ВХОД -->
+        <div id="screen-login" class="screen active">
+            <div class="glitch-title">SPY<span>FALL</span></div>
+            <div class="online-badge">
+                <div class="pulse-dot"></div> ONLINE SERVER ACTIVE
             </div>
-        </div>
-    </div>
-
-    <!-- ИГРОВОЕ ПОЛЕ -->
-    <div id="screen-game" class="screen">
-        <div class="timer-box" id="timer">08:00</div>
-        
-        <div class="role-card" id="role-card">
-            <div class="card-inner">
-                <p>ВАША ЛОКАЦИЯ:</p>
-                <h2 id="location-display">???</h2>
-                <div id="spy-alert" class="hidden">ВЫ ШПИОН!</div>
+            
+            <div class="glass-card">
+                <input type="text" id="username" class="name-input" placeholder="ИМЯ АГЕНТА" maxlength="12" style="width: 100%; margin-bottom: 15px;">
+                <button class="neon-btn" onclick="createRoom()">СОЗДАТЬ СЕССИЮ</button>
+                <div style="text-align: center; margin: 15px; font-size: 10px; color: var(--text-dim);">ИЛИ ВВЕДИТЕ КОД ДОСТУПА</div>
+                <input type="text" id="room-input" class="name-input" placeholder="КОД" maxlength="5" style="width: 100%; margin-bottom: 15px; text-transform: uppercase;">
+                <button class="neon-btn" style="background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan);" onclick="joinRoom()">ПОДКЛЮЧИТЬСЯ</button>
             </div>
         </div>
 
-        <div class="players-info">
-            <h3>Участники:</h3>
-            <div id="game-players" class="mini-grid"></div>
+        <!-- ЭКРАН 2: ЛОББИ -->
+        <div id="screen-lobby" class="screen">
+            <div class="status-bar">СЕССИЯ: <span id="room-id" onclick="copyCode()">-----</span></div>
+            
+            <div class="glass-card">
+                <div class="setting-row">
+                    <span>ПОДКЛЮЧЕНО АГЕНТОВ</span>
+                    <span id="player-count">0</span>
+                </div>
+                <div class="names-container" id="player-list"></div>
+            </div>
+
+            <button id="start-btn" class="neon-btn" onclick="startGame()" style="display: none;">АКТИВИРОВАТЬ</button>
+            <div id="wait-msg" class="status-bar" style="font-size: 12px; margin-top: 10px;">ОЖИДАНИЕ ХОСТА...</div>
         </div>
-        
-        <button class="btn-danger" onclick="endGame()">Завершить игру</button>
+
+        <!-- ЭКРАН 3: КАРТОЧКА РОЛИ -->
+        <div id="screen-reveal" class="screen">
+            <div class="status-bar">ВАШИ ДАННЫЕ ЗАШИФРОВАНЫ</div>
+            
+            <div class="spy-card-inner" id="spy-card" onclick="flipCard()">
+                <div class="card-side front">
+                    <div style="font-size: 40px; margin-bottom: 20px;">🕵️‍♂️</div>
+                    <div style="font-family: 'Unbounded'; font-weight: 900;">НАЖМИ ЧТОБЫ<br>ДЕШИФРОВАТЬ</div>
+                </div>
+                <div class="card-side back">
+                    <div id="role-icon" style="font-size: 50px; margin-bottom: 10px;">📍</div>
+                    <h2 id="location-name" style="font-family: 'Unbounded'; margin-bottom: 10px;">...</h2>
+                    <p id="role-text" style="font-size: 12px; font-weight: 800; opacity: 0.8;"></p>
+                </div>
+            </div>
+
+            <button class="neon-btn" onclick="goToGame()">ПОДТВЕРДИТЬ</button>
+        </div>
+
+        <!-- ЭКРАН 4: ИГРА -->
+        <div id="screen-game" class="screen">
+            <div class="timer-circle">
+                <svg>
+                    <circle cx="110" cy="110" r="90"></circle>
+                    <circle cx="110" cy="110" r="90" id="timer-progress"></circle>
+                </svg>
+                <div id="countdown">08:00</div>
+            </div>
+
+            <div class="search-status">
+                <div class="scanner-line"></div>
+                <span id="game-status-text">ИДЕТ ПОИСК ШПИОНА...</span>
+            </div>
+
+            <button class="neon-btn danger" onclick="handleBack()">ПРЕРВАТЬ МИССИЮ</button>
+        </div>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
