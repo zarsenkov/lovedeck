@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>КТО Я? POP EDITION</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>КТО Я? | ОФФЛАЙН</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -11,97 +11,69 @@
 <body>
 
     <div class="app-container">
-        <!-- Кнопки навигации -->
-        <div class="nav-btn back-btn" onclick="handleBack()"><i class="fas fa-times"></i></div>
-        <div class="nav-btn rules-btn" onclick="toggleModal(true)">?</div>
+        <!-- Навигация -->
+        <div class="nav-btn back-btn" onclick="window.location.href='https://lovecouple.ru'"><i class="fas fa-home"></i></div>
+        <div class="nav-btn online-toggle" onclick="goToOnline()" title="Перейти в онлайн">🌐</div>
 
-        <!-- ЭКРАН 1: ВХОД -->
-        <section id="screen-login" class="screen active">
+        <!-- ЭКРАН 1: СПИСОК ИГРОКОВ -->
+        <section id="screen-setup" class="screen active">
             <div class="logo-area">
-                <div class="emoji-float">🧐</div>
+                <div class="emoji-float">🃏</div>
                 <h1 class="main-title">КТО<span>Я?</span></h1>
             </div>
             
             <div class="card-glass">
-                <span class="section-tag">ПРОФИЛЬ</span>
-                <input type="text" id="username" class="joy-input" placeholder="ТВОЕ ИМЯ" maxlength="12">
-                
-                <button class="primary-btn" onclick="createRoom()">СОЗДАТЬ ИГРУ</button>
-                <div style="text-align: center; margin: 15px; font-weight: 900; opacity: 0.3;">ИЛИ</div>
-                <input type="text" id="room-input" class="joy-input" placeholder="КОД КОМНАТЫ" style="text-transform: uppercase;">
-                <button class="primary-btn" style="background: var(--green); box-shadow: 0 8px 0 #20BF6B;" onclick="joinRoom()">ВОЙТИ</button>
-            </div>
-        </section>
-
-        <!-- ЭКРАН 2: ЛОББИ -->
-        <section id="screen-lobby" class="screen">
-            <h2 class="main-title-small">КОД: <span id="lobby-code">---</span></h2>
-            
-            <div class="card-glass">
-                <span class="section-tag">УЧАСТНИКИ</span>
-                <div id="player-list" class="player-column">
-                    <!-- Игроки -->
+                <span class="section-tag">ИГРОКИ</span>
+                <div id="player-inputs" class="player-column">
+                    <input type="text" class="joy-input player-name" placeholder="ИГРОК 1" value="ИГРОК 1">
+                    <input type="text" class="joy-input player-name" placeholder="ИГРОК 2" value="ИГРОК 2">
                 </div>
                 
-                <div id="host-controls" style="display: none; margin-top: auto;">
-                    <button class="primary-btn" onclick="startNaming()">НАЧАТЬ ИГРУ</button>
-                </div>
-                <p id="wait-msg" style="text-align: center; font-weight: 900; opacity: 0.5; margin-top: auto;">ЖДЕМ ХОСТА...</p>
+                <button class="add-player-circle" onclick="addInput()">+</button>
+                <button class="primary-btn" onclick="startAssignment()">НАЧАТЬ</button>
             </div>
         </section>
 
-        <!-- ЭКРАН 3: ЗАГАДЫВАНИЕ (NAMING) -->
-        <section id="screen-naming" class="screen">
+        <!-- ЭКРАН 2: ПЕРЕДАЙ ТЕЛЕФОН (ЗАГАДЫВАНИЕ) -->
+        <section id="screen-assign" class="screen">
             <div class="card-glass">
-                <span class="section-tag">ЗАДАНИЕ</span>
-                <p style="font-weight: 900; margin-bottom: 5px;">ПРИДУМАЙ ГЕРОЯ ДЛЯ:</p>
-                <h2 id="target-name" class="big-name">---</h2>
-                
-                <input type="text" id="character-input" class="joy-input" placeholder="НАПР: ШРЕК" maxlength="20">
-                <p style="font-size: 12px; font-weight: 700; opacity: 0.6; margin-bottom: 20px;">
-                    Это имя будет "на лбу" у игрока. Он его не увидит!
-                </p>
-                
-                <button id="btn-set-char" class="primary-btn" onclick="setCharacter()">ГОТОВО!</button>
+                <span class="section-tag">ПЕРЕДАЙ ТЕЛЕФОН</span>
+                <div class="transfer-card">
+                    <p style="font-weight: 900;">СЕЙЧАС ОЧЕРЕДЬ:</p>
+                    <h2 id="current-actor-name" class="big-name">---</h2>
+                    <p style="font-size: 14px; font-weight: 700; opacity: 0.7;">
+                        Загадай персонажа для игрока: <br>
+                        <span id="target-player-name" style="color: var(--accent); font-size: 1.5rem;">---</span>
+                    </p>
+                </div>
+
+                <div id="input-area" style="margin-top: 20px;">
+                    <input type="text" id="offline-character-input" class="joy-input" placeholder="НАПР: ГАРРИ ПОТТЕР">
+                    <button class="primary-btn" onclick="saveCharacter()">ГОТОВО, ПЕРЕДАЮ!</button>
+                </div>
             </div>
         </section>
 
-        <!-- ЭКРАН 4: ИГРОВОЕ ПОЛЕ -->
-        <section id="screen-game" class="screen">
+        <!-- ЭКРАН 3: ИГРОВОЙ СТОЛ -->
+        <section id="screen-board" class="screen">
             <div class="game-top">
-                <div class="score-pill">КТО Я?</div>
-                <div class="timer-pill" id="timer">00:00</div>
+                <div class="score-pill">OFFLINE</div>
+                <div class="timer-pill" onclick="resetGame()">ЗАНОВО</div>
             </div>
 
             <div class="card-glass">
-                <span class="section-tag">СТИКЕРЫ ДРУЗЕЙ</span>
-                <div id="stickers-grid" class="category-grid">
-                    <!-- Стикеры других игроков -->
+                <span class="section-tag">СТИКЕРЫ НА ЛБАХ</span>
+                <div class="category-grid" id="stickers-board">
+                    <!-- Здесь будут карточки -->
                 </div>
-
-                <div class="my-secret-area">
-                    <p style="font-weight: 900; font-size: 12px; opacity: 0.5; text-align: center;">ТВОЙ ГЕРОЙ (СКРЫТО):</p>
-                    <div class="word-card" style="min-height: 120px; border-style: dashed; margin-top: 10px;">
-                        <span id="my-character" style="filter: blur(8px); pointer-events: none;">??????</span>
-                    </div>
-                </div>
+                <p style="font-size: 11px; font-weight: 800; text-align: center; opacity: 0.5; margin-top: 20px;">
+                    Нажмите на стикер, чтобы показать/скрыть имя. <br> Не смотрите на свой стикер!
+                </p>
+                <button class="primary-btn" style="margin-top: auto; background: var(--accent); box-shadow: 0 8px 0 #C0392B;" onclick="location.reload()">ВЫХОД</button>
             </div>
         </section>
     </div>
 
-    <!-- МОДАЛКА ПРАВИЛ -->
-    <div id="modal-rules" class="modal-overlay">
-        <div class="modal-card">
-            <h2 style="font-weight: 900; margin-bottom: 20px; color: var(--primary);">КАК ИГРАТЬ?</h2>
-            <div class="rule-item"><span>1</span> Загадай персонажа игроку, чье имя на экране.</div>
-            <div class="rule-item"><span>2</span> Когда все закончат, ты увидишь персонажей всех друзей.</div>
-            <div class="rule-item"><span>3</span> Задавай вопросы, на которые можно ответить "Да" или "Нет".</div>
-            <div class="rule-item"><span>4</span> Твоя цель — угадать, кто ты!</div>
-            <button class="primary-btn" onclick="toggleModal(false)">ПОНЯТНО!</button>
-        </div>
-    </div>
-
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
