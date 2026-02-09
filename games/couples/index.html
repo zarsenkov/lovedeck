@@ -3,90 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ENTROPY | Connection Lab</title>
+    <title>Love Jar | Наша нежность</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="background-fx">
-        <div class="orb"></div>
-        <div class="orb"></div>
-    </div>
+    <!-- Фоновые сердечки -->
+    <div class="floating-bg" id="bg-particles"></div>
 
-    <main class="app-shell">
-        <!-- Экран 1: Инициализация -->
-        <section id="screen-init" class="screen active">
-            <div class="logo-container">
-                <h1 class="glitch" data-text="ENTROPY">ENTROPY</h1>
-                <p class="tagline">v.2.0.4 // CONNECTION STABILIZER</p>
+    <main class="app-container">
+        
+        <!-- Экран 1: Вход -->
+        <section id="screen-start" class="screen active">
+            <div class="logo-area">
+                <div class="icon-heart-main">💖</div>
+                <h1>Love Jar</h1>
+                <p class="subtitle">Баночка наших моментов</p>
             </div>
             
-            <div class="setup-form">
-                <div class="input-field">
-                    <label>ОПЕРАТОР_1</label>
-                    <input type="text" id="name1" placeholder="Введите имя..." autocomplete="off">
-                </div>
-                <div class="input-field">
-                    <label>ОПЕРАТОР_2</label>
-                    <input type="text" id="name2" placeholder="Введите имя..." autocomplete="off">
-                </div>
+            <div class="input-card">
+                <input type="text" id="p1-name" placeholder="Твое имя" class="pink-input">
+                <input type="text" id="p2-name" placeholder="Имя партнера" class="pink-input">
+                <button class="btn-main" onclick="startGame()">Начать магию ✨</button>
             </div>
-
-            <button class="btn-primary" onclick="initLab()">ЗАПУСТИТЬ СИСТЕМУ</button>
         </section>
 
-        <!-- Экран 2: Лаборатория -->
-        <section id="screen-lab" class="screen">
-            <div class="status-bar">
-                <div class="status-item">
-                    <span>СТАТУС:</span> <span id="status-text">СТАБИЛЬНО</span>
-                </div>
-                <div class="status-item">
-                    <span>ЗАРЯД:</span> <span id="charge-val">0%</span>
-                </div>
+        <!-- Экран 2: Меню категорий -->
+        <section id="screen-menu" class="screen">
+            <div class="header-compact">
+                <span class="user-info">Привет, <b id="user-display"></b>!</span>
+                <div class="stats-pill">💖 <span id="total-score">0</span></div>
             </div>
 
-            <div class="core-area">
-                <div class="core-ring"></div>
-                <div class="core-ring"></div>
-                <div class="core-center" id="core-trigger" onmousedown="startCharging()" onmouseup="stopCharging()" ontouchstart="startCharging()" ontouchend="stopCharging()">
-                    <div class="core-inner">
-                        <span id="trigger-label">HOLD</span>
+            <h2 class="title-small">Выбери настроение:</h2>
+            
+            <div class="category-grid">
+                <button class="cat-card" onclick="selectCategory('romance')">
+                    <span class="cat-icon">🕯️</span>
+                    <label>Романтика</label>
+                </button>
+                <button class="cat-card" onclick="selectCategory('fun')">
+                    <span class="cat-icon">🍭</span>
+                    <label>Веселье</label>
+                </button>
+                <button class="cat-card" onclick="selectCategory('hot')">
+                    <span class="cat-icon">🌶️</span>
+                    <label>Огонек</label>
+                </button>
+                <button class="cat-card" onclick="selectCategory('talk')">
+                    <span class="cat-icon">☁️</span>
+                    <label>Душа в душу</label>
+                </button>
+            </div>
+
+            <div class="bottom-actions">
+                <button class="btn-secondary" onclick="showAlbum()">📖 Наш альбом</button>
+            </div>
+        </section>
+
+        <!-- Экран 3: Игра (Баночка) -->
+        <section id="screen-play" class="screen">
+            <button class="btn-back" onclick="showScreen('screen-menu')">← Назад</button>
+            
+            <div class="jar-area">
+                <div class="jar-container" id="jar">
+                    <div class="jar-lid"></div>
+                    <div class="jar-glass">
+                        <!-- Сердечки внутри банки -->
+                        <div class="heart-in-jar"></div>
+                        <div class="heart-in-jar"></div>
+                        <div class="heart-in-jar"></div>
+                    </div>
+                </div>
+                <p class="shake-instruction">Нажми на баночку, чтобы достать записку!</p>
+                <button class="btn-shake" onclick="drawCard()">Достать записку 💌</button>
+            </div>
+
+            <!-- Модальное окно карточки -->
+            <div id="card-modal" class="modal">
+                <div class="card-content">
+                    <span class="card-tag" id="card-tag">КАТЕГОРИЯ</span>
+                    <div class="card-body">
+                        <p id="task-text">Загружаем нежность...</p>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-done" onclick="completeTask()">Выполнено! 🎀</button>
+                        <button class="btn-skip" onclick="closeModal()">Пропустить</button>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <div id="reaction-card" class="reaction-card">
-                <div class="card-header">
-                    <span id="task-category">КАТЕГОРИЯ</span>
-                    <button class="close-card" onclick="closeTask()">×</button>
-                </div>
-                <div class="card-body">
-                    <p id="task-text">Инициализация задания...</p>
-                </div>
-                <button class="btn-success" onclick="completeTask()">ПРОТОКОЛ ВЫПОЛНЕН</button>
-            </div>
-
-            <div class="lab-footer">
-                <div class="progress-container">
-                    <div class="progress-label">УРОВЕНЬ СИНХРОНИЗАЦИИ</div>
-                    <div class="progress-track">
-                        <div id="sync-bar" class="progress-fill"></div>
-                    </div>
-                </div>
+        <!-- Экран 4: Альбом -->
+        <section id="screen-album" class="screen">
+            <button class="btn-back" onclick="showScreen('screen-menu')">← К баночке</button>
+            <h2 class="title-small">Наши достижения</h2>
+            <div id="album-list" class="album-grid">
+                <!-- Здесь будут появляться "марки" за выполненные задания -->
             </div>
         </section>
 
-        <!-- Экран 3: Результат -->
-        <section id="screen-results" class="screen">
-            <h2 class="title-large">МИССИЯ ЗАВЕРШЕНА</h2>
-            <div class="stats-box">
-                <p>ВАШ УРОВЕНЬ СВЯЗИ:</p>
-                <div class="final-score" id="final-score">99%</div>
-            </div>
-            <button class="btn-primary" onclick="location.reload()">НОВЫЙ ЦИКЛ</button>
-        </section>
     </main>
 
     <script src="script.js"></script>
