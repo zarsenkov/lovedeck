@@ -2,102 +2,91 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MAFIA: NOIR EDITION</title>
-    <!-- Google Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BUNKER: SURVIVAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="background-overlay"></div>
 
-    <main class="app-container">
-        
-        <!-- ЭКРАН 1: Лобби -->
-        <section id="screen-setup" class="screen active">
-            <div class="logo-container">
-                <h1 class="glitch" data-text="MAFIA">MAFIA</h1>
-                <p class="subtitle">PROJECT NOIR</p>
-            </div>
-            
-            <div class="settings-box">
-                <div class="player-list" id="player-input-list">
-                    <!-- Инпуты генерируются JS -->
-                </div>
-                <button class="btn-secondary" onclick="addPlayerInput()"><i class="fas fa-plus"></i> Добавить игрока</button>
-            </div>
+    <div class="app-container">
+        <!-- Навигация -->
+        <div class="top-nav">
+            <div class="back-link" onclick="handleBack()">[ ВЫХОД ]</div>
+            <div class="online-switch" onclick="goToOnline()">ПЕРЕЙТИ В ONLINE <i class="fas fa-external-link-alt"></i></div>
+        </div>
 
-            <div class="roles-toggle">
-                <h3>Активные спецроли:</h3>
-                <label><input type="checkbox" id="role-doctor" checked disabled> <span class="role-tag doc">Доктор</span></label>
-                <label><input type="checkbox" id="role-sheriff" checked disabled> <span class="role-tag pol">Шериф</span></label>
-                <label><input type="checkbox" id="role-maniac"> <span class="role-tag man">Маньяк</span></label>
-                <label><input type="checkbox" id="role-putana"> <span class="role-tag put">Путана</span></label>
-                <label><input type="checkbox" id="role-don"> <span class="role-tag don">Дон</span></label>
-            </div>
-
-            <button class="btn-primary" onclick="startGame()">НАЧАТЬ ИГРУ</button>
-        </section>
-
-        <!-- ЭКРАН 2: Раскрытие роли (Карточка) -->
-        <section id="screen-reveal" class="screen">
-            <h2 id="reveal-header">Передайте устройство:</h2>
-            <div class="card-container" onclick="flipCard()">
-                <div class="card" id="role-card">
-                    <div class="card-front">
-                        <i class="fas fa-fingerprint icon-large"></i>
-                        <h3 id="reveal-player-name">Имя</h3>
-                        <p class="tap-hint">Нажми, чтобы узнать роль</p>
-                    </div>
-                    <div class="card-back">
-                        <div class="role-icon-container" id="role-icon-display"></div>
-                        <h2 id="role-name-display">РОЛЬ</h2>
-                        <p id="role-desc-display">Описание задачи</p>
-                    </div>
+        <!-- Экран 1: Настройка -->
+        <div id="screen-setup" class="screen active">
+            <h1 class="glitch-text">BUNKER<span>_OS</span></h1>
+            <div class="terminal-box">
+                <p>> ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ...</p>
+                <p>> ВЫБЕРИТЕ КОЛИЧЕСТВО ВЫЖИВШИХ:</p>
+                <div class="counter">
+                    <button onclick="changePlayers(-1)">-</button>
+                    <span id="player-count">6</span>
+                    <button onclick="changePlayers(1)">+</button>
                 </div>
             </div>
-            <button id="btn-next-role" class="btn-primary hidden" onclick="nextRoleReveal()">Далее</button>
-        </section>
+            <button class="action-btn" onclick="startGeneration()">ГЕНЕРИРОВАТЬ СЦЕНАРИЙ</button>
+        </div>
 
-        <!-- ЭКРАН 3: Ночь (Действия) -->
-        <section id="screen-night" class="screen">
-            <div class="phase-header">
-                <span class="phase-badge"><i class="fas fa-moon"></i> НОЧЬ</span>
-                <h2 id="night-actor-role">Ход Мафии</h2>
+        <!-- Экран 2: Катастрофа и Бункер -->
+        <div id="screen-disaster" class="screen">
+            <h2 class="section-title">ОТЧЕТ О КАТАСТРОФЕ</h2>
+            <div class="glass-panel alert">
+                <h3 id="disaster-name">ЯДЕРНАЯ ЗИМА</h3>
+                <p id="disaster-desc">...</p>
             </div>
-            <p id="night-action-desc" class="action-desc">Выберите цель...</p>
+            <div class="glass-panel">
+                <h4>ХАРАКТЕРИСТИКИ БУНКЕРА:</h4>
+                <ul id="bunker-stats"></ul>
+            </div>
+            <button class="action-btn" onclick="startPlayerReveal()">ПЕРЕЙТИ К ПЕРСОНАЖАМ</button>
+        </div>
+
+        <!-- Экран 3: Раскрытие (Pass & Play) -->
+        <div id="screen-reveal" class="screen">
+            <h2 id="player-title">ИГРОК #1</h2>
+            <p class="pass-hint">Передайте устройство этому игроку и нажмите кнопку ниже</p>
             
-            <div class="grid-targets" id="night-targets"></div>
-        </section>
-
-        <!-- ЭКРАН 4: День (Итоги и Голосование) -->
-        <section id="screen-day" class="screen">
-            <div class="phase-header">
-                <span class="phase-badge sun"><i class="fas fa-sun"></i> ДЕНЬ</span>
-                <h2>Город просыпается</h2>
+            <div id="character-card" class="char-card hidden">
+                <div class="trait"><span>ПРОФЕССИЯ:</span> <b id="t-prof">...</b></div>
+                <div class="trait"><span>БИО-ДАННЫЕ:</span> <b id="t-bio">...</b></div>
+                <div class="trait"><span>ЗДОРОВЬЕ:</span> <b id="t-health">...</b></div>
+                <div class="trait"><span>ХОББИ:</span> <b id="t-hobby">...</b></div>
+                <div class="trait"><span>ФОБИЯ:</span> <b id="t-phobia">...</b></div>
+                <div class="trait"><span>ДОП. ИНФО:</span> <b id="t-info">...</b></div>
+                <div class="trait"><span>БАГАЖ:</span> <b id="t-luggage">...</b></div>
+                <div class="special-card">
+                    <span>СПЕЦ. КАРТА:</span>
+                    <p id="t-special">...</p>
+                </div>
             </div>
 
-            <div class="events-log" id="day-log"></div>
+            <button id="show-btn" class="action-btn" onclick="toggleCard(true)">ПОКАЗАТЬ ДАННЫЕ</button>
+            <button id="next-btn" class="action-btn hidden" onclick="nextPlayer()">СЛЕДУЮЩИЙ ИГРОК</button>
+        </div>
 
-            <div class="voting-section">
-                <h3>Голосование</h3>
-                <div class="grid-targets" id="voting-targets"></div>
+        <!-- Экран 4: Игровой стол -->
+        <div id="screen-table" class="screen">
+            <div class="table-header">
+                <h3>ВЫЖИВШИЕ В БУНКЕРЕ</h3>
+                <p id="round-info">РАУНД 1: ОТКРЫТИЕ ХАРАКТЕРИСТИК</p>
             </div>
-            
-            <button class="btn-secondary" onclick="skipDay()">Пропустить голосование</button>
-        </section>
+            <div id="players-grid" class="players-grid"></div>
+            <button class="action-btn danger" onclick="startVoting()">НАЧАТЬ ГОЛОСОВАНИЕ</button>
+        </div>
 
-        <!-- ЭКРАН 5: Победа -->
-        <section id="screen-gameover" class="screen">
-            <i class="fas fa-trophy winner-icon"></i>
-            <h1>ИГРА ОКОНЧЕНА</h1>
-            <h2 id="winner-team" class="winner-text">Победила Мафия</h2>
-            <div id="survivors-list"></div>
-            <button class="btn-primary" onclick="location.reload()">Новая игра</button>
-        </section>
+        <!-- Экран 5: Голосование -->
+        <div id="screen-voting" class="screen">
+            <h2 class="section-title">ГОЛОСОВАНИЕ НА ИЗГНАНИЕ</h2>
+            <p>КТО НЕ ДОСТОИН МЕСТА В БУНКЕРЕ?</p>
+            <div id="voting-list" class="voting-grid"></div>
+        </div>
 
-    </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
