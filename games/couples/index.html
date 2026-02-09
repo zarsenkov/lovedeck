@@ -1,107 +1,21 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>SYNC | LoveCouple</title>
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <!-- Живой фон -->
-    <div class="glow-bg"></div>
-
-    <div class="app-container">
-        
-        <!-- ЭКРАН 1: ИНИЦИАЛИЗАЦИЯ -->
-        <section id="screen-setup" class="screen active">
-            <div class="brand">
-                <div class="logo-orb"></div>
-                <h1 class="title">SYNC</h1>
-                <p class="tagline">ЭНЕРГИЯ ВАШЕЙ СВЯЗИ</p>
-            </div>
-            
-            <div class="glass-card setup-box">
-                <div class="input-group">
-                    <label>Игрок 1</label>
-                    <input type="text" id="name1" placeholder="Имя">
-                </div>
-                <div class="input-group">
-                    <label>Игрок 2</label>
-                    <input type="text" id="name2" placeholder="Имя">
-                </div>
-            </div>
-            <button class="btn-glow" onclick="saveNames()">АКТИВИРОВАТЬ</button>
-        </section>
-
-        <!-- ЭКРАН 2: ВЫБОР ЧАСТОТЫ (ТЕМЫ) -->
-        <section id="screen-themes" class="screen">
-            <header class="game-header">
-                <div class="sync-level">
-                    <p>СИНХРОНИЗАЦИЯ</p>
-                    <div class="bar"><div id="sync-progress" style="width: 20%"></div></div>
-                </div>
-                <a href="https://lovecouple.ru" class="home-link"><i class="fas fa-th-large"></i></a>
-            </header>
-
-            <div class="themes-grid">
-                <div class="theme-card romance" onclick="selectTheme('romance')">
-                    <div class="icon">✨</div>
-                    <div class="label">SOFT<span>Романтика</span></div>
-                </div>
-                <div class="theme-card fun" onclick="selectTheme('fun')">
-                    <div class="icon">⚡</div>
-                    <div class="label">PULSE<span>Веселье</span></div>
-                </div>
-                <div class="theme-card hot" onclick="selectTheme('hot')">
-                    <div class="icon">🔥</div>
-                    <div class="label">HEAT<span>HOT 18+</span></div>
-                </div>
-            </div>
-
-            <div class="settings-row">
-                <button class="circle-btn" onclick="confirmReset()"><i class="fas fa-user-edit"></i></button>
-                <button class="circle-btn" onclick="showModal('favs')"><i class="fas fa-heart"></i></button>
-            </div>
-        </section>
-
-        <!-- ЭКРАН 3: ИГРОВАЯ ПАНЕЛЬ -->
-        <section id="screen-game" class="screen">
-            <div class="game-top">
-                <button onclick="goToScreen('themes')" class="btn-mini"><i class="fas fa-arrow-left"></i></button>
-                <div id="game-timer" class="pulse-timer">00</div>
-                <div id="card-intensity" class="badge">SOFT</div>
-            </div>
-
-            <div class="main-card-wrap">
-                <!-- Механика: Слепое согласие -->
-                <div id="blind-lock" class="blind-overlay">
-                    <div class="fingerprint-scan">
-                        <div class="scan-line"></div>
-                        <i class="fas fa-fingerprint"></i>
-                    </div>
-                    <p>ОБА ПРИЛОЖИТЕ ПАЛЬЦЫ,<br>ЧТОБЫ ОТКРЫТЬ</p>
-                    <button class="unlock-btn" onclick="unlockCard()">ОТКРЫТЬ</button>
-                </div>
-
-                <div class="game-card" id="game-card-body">
-                    <div class="type-tag" id="task-type">ПРЕДСКАЗАНИЕ</div>
-                    <h2 id="card-text">Загрузка...</h2>
-                    <p id="task-subtext" class="sub-task"></p>
-                </div>
-            </div>
-
-            <div class="controls-sync">
-                <button class="btn-skip" onclick="nextCard()"><i class="fas fa-redo"></i></button>
-                <button class="btn-done" onclick="finishTask()">ГОТОВО</button>
-            </div>
-        </section>
+<div class="orbital-wrapper">
+    <!-- Центральное ядро -->
+    <div class="core-connection" id="sync-core">
+        <div class="core-aura"></div>
+        <div class="core-text">SYNC</div>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="cards.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+    <!-- Плавающие задания (сферы) -->
+    <div id="orb-container">
+        <div class="task-orb" style="--d: 0s" onclick="triggerTask(this)"></div>
+        <div class="task-orb" style="--d: -2s" onclick="triggerTask(this)"></div>
+        <div class="task-orb" style="--d: -4s" onclick="triggerTask(this)"></div>
+    </div>
+
+    <!-- Панель активного задания (выплывает снизу как лепесток) -->
+    <div id="task-panel" class="task-modal">
+        <div class="pull-bar"></div>
+        <div id="active-task-content"></div>
+        <button class="close-orb" onclick="closeTask()">ЗАВЕРШИТЬ</button>
+    </div>
+</div>
