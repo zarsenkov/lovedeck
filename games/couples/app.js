@@ -1,23 +1,25 @@
 let state = {
-    name1: '', name2: '',
-    theme: '', currentCard: null,
+    names: {
+        n1: { nom: '', vin: '', dat: '' },
+        n2: { nom: '', vin: '', dat: '' }
+    },
+    theme: '', 
+    currentCard: null,
     used: new Set(),
     stats: JSON.parse(localStorage.getItem('lc_stats')) || { done: 0, sessions: 0 },
     favs: JSON.parse(localStorage.getItem('lc_favs')) || [],
-    startX: 0,
-    streak: parseInt(localStorage.getItem('lc_streak')) || 0
+    custom: JSON.parse(localStorage.getItem('lc_custom')) || [],
+    startX: 0
 };
 
 // --- ИНИЦИАЛИЗАЦИЯ ---
 document.addEventListener('DOMContentLoaded', () => {
-    const saved = JSON.parse(localStorage.getItem('lc_names'));
-    if (saved) {
-        state.name1 = saved.name1; state.name2 = saved.name2;
-        updateStreak();
+    const savedNames = JSON.parse(localStorage.getItem('lc_names_p3'));
+    if (savedNames) {
+        state.names = savedNames;
         goToScreen('themes');
     }
     setupSwipes();
-    
     setTimeout(() => {
         document.getElementById('loading-screen').style.opacity = '0';
         setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 800);
@@ -29,19 +31,31 @@ function goToScreen(id) {
     document.getElementById(`screen-${id}`).classList.add('active');
 }
 
+// --- ИМЕНА И ПАДЕЖИ ---
 function saveNames() {
-    const n1 = document.getElementById('name1').value.trim();
-    const n2 = document.getElementById('name2').value.trim();
-    if (!n1 || !n2) return alert("Введите оба имени для начала ❤️");
+    const data = {
+        n1: {
+            nom: document.getElementById('n1_nom').value.trim(),
+            vin: document.getElementById('n1_vin').value.trim(),
+            dat: document.getElementById('n1_dat').value.trim()
+        },
+        n2: {
+            nom: document.getElementById('n2_nom').value.trim(),
+            vin: document.getElementById('n2_vin').value.trim(),
+            dat: document.getElementById('n2_dat').value.trim()
+        }
+    };
+
+    if (!data.n1.nom || !data.n2.nom) return alert("Введите хотя бы имена в именительном падеже!");
     
-    state.name1 = n1; state.name2 = n2;
-    localStorage.setItem('lc_names', JSON.stringify({name1: n1, name2: n2}));
-    
+    state.names = data;
+    localStorage.setItem('lc_names_p3', JSON.stringify(data));
     state.stats.sessions++;
     saveData();
     goToScreen('themes');
 }
 
+// --- ЛОГИКА ИГРЫ ---
 function selectTheme(t) {
     state.theme = t;
     state.used.clear();
@@ -50,42 +64,89 @@ function selectTheme(t) {
 }
 
 function nextCard() {
-    const pool = CARDS_DB[state.theme];
+    let pool = [];
+    
+    if (state.theme === 'favorites') {
+        pool = state.favs;
+    } else if (state.theme === 'custom') {
+        pool = state.custom;
+    } else {
+        // Объединяем встроенные карты и свои карты этой категории
+        const builtIn = CARDS_DB[state.theme] || [];
+        const userCards = state.custom.filter(c => c.category === state.theme);
+        pool = [...builtIn, ...userCards];
+    }
+
+    if (!pool || pool.length === 0) {
+        alert("В этой категории пока пусто!");
+        return goToScreen('themes');
+    }
+
     const available = pool.filter(c => !state.used.has(c.id));
-    if (available.length === 0) { state.used.clear(); return nextCard(); }
+    if (available.length === 0) {
+        state.used.clear();
+        return nextCard();
+    }
     
     state.currentCard = available[Math.floor(Math.random() * available.length)];
     state.used.add(state.currentCard.id);
-    
     renderCard();
 }
 
 function renderCard() {
-    const text = state.currentCard.text
-        .replace(/{name1}/g, `<span>${state.name1}</span>`)
-        .replace(/{name2}/g, `<span>${state.name2}</span>`);
+    // Функция замены тегов на падежи
+    let text = state.currentCard.text;
+    const n = state.names;
+    
+    const replaces = {
+        '{n1}': n.n1.nom, '{n1_v}': n.n1.vin || n.n1.nom, '{n1_d}': n.n1.dat || n.n1.nom,
+        '{n2}': n.n2.nom, '{n2_v}': n.n2.vin || n.n2.nom, '{n2_d}': n.n2.dat || n.n2.nom
+    };
+
+    Object.keys(replaces).forEach(key => {
+        text = text.split(key).join(`<span>${replaces[key]}</span>`);
+    });
     
     const cardText = document.getElementById('card-text');
     cardText.style.opacity = 0;
     
     setTimeout(() => {
         cardText.innerHTML = text;
-        document.getElementById('card-type').innerText = state.theme.toUpperCase();
-        document.getElementById('intensity-badge').innerText = state.currentCard.level;
+        document.getElementById('card-type').innerText = (state.theme === 'favorites' ? 'ИЗБРАННОЕ' : state.theme.toUpperCase());
+        document.getElementById('intensity-badge').innerText = state.currentCard.level || 'USER';
         updateFavUI();
         cardText.style.opacity = 1;
     }, 200);
 }
 
-// --- СВАЙПЫ ---
+// --- СВОИ КАРТОЧКИ ---
+function addCustomCard() {
+    const text = document.getElementById('custom-text').value.trim();
+    const category = document.getElementById('custom-cat-select').value;
+    
+    if (!text) return alert("Введите текст задания!");
+
+    const newCard = {
+        id: 'user_' + Date.now(),
+        text: text,
+        category: category,
+        level: 'USER'
+    };
+
+    state.custom.push(newCard);
+    localStorage.setItem('lc_custom', JSON.stringify(state.custom));
+    document.getElementById('custom-text').value = '';
+    closeModals();
+    alert("Карточка добавлена в колоду!");
+}
+
+// --- ОСТАЛЬНАЯ ЛОГИКА (Свайпы, Кубик, Статистика) ---
 function setupSwipes() {
     const card = document.getElementById('game-card-body');
     card.addEventListener('touchstart', e => state.startX = e.touches[0].clientX);
     card.addEventListener('touchmove', e => {
         const x = e.touches[0].clientX - state.startX;
-        if (Math.abs(x) > 10) {
-            card.style.transform = `translateX(${x}px) rotate(${x/15}deg)`;
-        }
+        if (Math.abs(x) > 10) card.style.transform = `translateX(${x}px) rotate(${x/15}deg)`;
     });
     card.addEventListener('touchend', e => {
         const x = e.changedTouches[0].clientX - state.startX;
@@ -100,9 +161,7 @@ function swipe(dir) {
     if (dir === 'right') {
         card.classList.add('swipe-right');
         state.stats.done++;
-        state.streak++;
         saveData();
-        updateStreak();
         if (navigator.vibrate) navigator.vibrate(40);
     } else {
         card.classList.add('swipe-left');
@@ -116,32 +175,16 @@ function swipe(dir) {
     }, 300);
 }
 
-// --- МИНИ-ИГРЫ ---
 function rollDice() {
     const modal = document.getElementById('modal-dice');
-    const res = document.getElementById('dice-result');
-    const txt = document.getElementById('dice-text');
-    
     modal.classList.add('active');
-    res.innerText = "?";
-    txt.innerText = "Кубик катится...";
+    document.getElementById('dice-result').innerText = "?";
     
     setTimeout(() => {
         const val = Math.floor(Math.random() * 6) + 1;
-        res.innerText = val;
-        txt.innerText = val % 2 === 0 ? `Ходит ${state.name2}` : `Ходит ${state.name1}`;
-    }, 1000);
-}
-
-function toggleMood(type) {
-    if (navigator.vibrate) navigator.vibrate(20);
-    alert(`Режим "${type}" активирован (имитация звука)`);
-}
-
-// --- УТИЛИТЫ ---
-function updateStreak() {
-    document.getElementById('streak-val').innerText = state.streak;
-    localStorage.setItem('lc_streak', state.streak);
+        document.getElementById('dice-result').innerText = val;
+        document.getElementById('dice-text').innerText = val % 2 === 0 ? `Ходит ${state.names.n2.nom}` : `Ходит ${state.names.n1.nom}`;
+    }, 800);
 }
 
 function updateFavUI() {
@@ -151,7 +194,7 @@ function updateFavUI() {
 
 function toggleFavorite() {
     const idx = state.favs.findIndex(f => f.id === state.currentCard.id);
-    if (idx === -1) state.favs.push({...state.currentCard, theme: state.theme});
+    if (idx === -1) state.favs.push(state.currentCard);
     else state.favs.splice(idx, 1);
     saveData();
     updateFavUI();
@@ -162,14 +205,8 @@ function showModal(id) {
         document.getElementById('stats-content').innerHTML = `
             <div class="stat-item">Выполнено: <b>${state.stats.done}</b></div>
             <div class="stat-item">Сессий: <b>${state.stats.sessions}</b></div>
-            <div class="stat-item">Огонь: <b>${state.streak}</b></div>
+            <div class="stat-item">Своих карт: <b>${state.custom.length}</b></div>
         `;
-    }
-    if (id === 'favs') {
-        const list = document.getElementById('favs-list');
-        list.innerHTML = state.favs.length 
-            ? state.favs.map(f => `<div class="fav-card clay-card" style="margin-bottom:10px; padding:15px; font-size:12px;">${f.text.replace(/{name1}/g, state.name1).replace(/{name2}/g, state.name2)}</div>`).join('')
-            : '<p style="text-align:center; opacity:0.5">Тут будут ваши любимые задания</p>';
     }
     document.getElementById(`modal-${id}`).classList.add('active');
 }
@@ -184,8 +221,20 @@ function saveData() {
 }
 
 function confirmReset() {
-    if (confirm("Сбросить прогресс и имена?")) {
-        localStorage.clear();
+    if (confirm("Изменить имена?")) {
+        localStorage.removeItem('lc_names_p3');
         location.reload();
     }
+}
+
+function startTimer() {
+    let timeLeft = 60;
+    const el = document.getElementById('timer-display');
+    const timer = setInterval(() => {
+        timeLeft--;
+        const m = Math.floor(timeLeft/60);
+        const s = timeLeft%60;
+        el.innerText = `${m}:${s<10?'0':''}${s}`;
+        if(timeLeft<=0) { clearInterval(timer); el.innerText="01:00"; alert("Время вышло!"); }
+    }, 1000);
 }
