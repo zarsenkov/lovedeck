@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>КТО Я? — Онлайн</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="nav-btn back-btn" onclick="handleBack()"><i class="fas fa-times"></i></div>
+        <div class="nav-btn rules-btn" onclick="toggleModal(true)">?</div>
+
+        <!-- Вход -->
+        <section id="screen-login" class="screen active">
+            <div class="logo-area">
+                <div class="emoji-float">🌐</div>
+                <h1 class="main-title">КТО<span>Я?</span></h1>
+            </div>
+            <div class="card-glass">
+                <span class="section-tag">ОНЛАЙН</span>
+                <input type="text" id="username" class="joy-input" placeholder="ТВОЙ НИК" maxlength="12">
+                <button class="primary-btn" onclick="createRoom()">СОЗДАТЬ ИГРУ</button>
+                <div style="text-align: center; margin: 10px; font-weight: 900; opacity: 0.2;">ИЛИ</div>
+                <input type="text" id="room-input" class="joy-input" placeholder="КОД КОМНАТЫ" style="text-transform: uppercase;">
+                <button class="primary-btn" style="background: var(--green); box-shadow: 0 8px 0 #20BF6B;" onclick="joinRoom()">ВОЙТИ</button>
+            </div>
+        </section>
+
+        <!-- Лобби -->
+        <section id="screen-lobby" class="screen">
+            <h2 class="main-title-small">КОД: <span id="lobby-code">---</span></h2>
+            <div class="card-glass">
+                <span class="section-tag">В КОМНАТЕ</span>
+                <div id="player-list" class="player-column"></div>
+                <div id="host-controls" style="display: none; margin-top: auto;">
+                    <button class="primary-btn" onclick="startNaming()">НАЧАТЬ</button>
+                </div>
+                <p id="wait-msg" style="text-align: center; font-weight: 900; opacity: 0.5; margin-top: auto;">ЖДЕМ ХОСТА...</p>
+            </div>
+        </section>
+
+        <!-- Загадывание -->
+        <section id="screen-naming" class="screen">
+            <div class="card-glass">
+                <span class="section-tag">ЗАДАНИЕ</span>
+                <p style="font-weight: 900; text-align: center;">ПРИДУМАЙ ГЕРОЯ ДЛЯ:</p>
+                <h2 id="target-name" class="big-name" style="text-align: center;">---</h2>
+                <input type="text" id="character-input" class="joy-input" placeholder="НАПР: БЭТМЕН">
+                <button id="btn-set-char" class="primary-btn" onclick="setCharacter()">ОТПРАВИТЬ</button>
+            </div>
+        </section>
+
+        <!-- Игра -->
+        <section id="screen-game" class="screen">
+            <div class="game-top">
+                <div class="score-pill">ОНЛАЙН</div>
+                <div class="timer-pill" id="timer">ИГРАЕМ</div>
+            </div>
+            <div class="card-glass">
+                <span class="section-tag">СТИКЕРЫ ДРУЗЕЙ</span>
+                <div id="stickers-grid" class="category-grid"></div>
+                <div class="my-secret-area">
+                    <p style="font-weight: 900; font-size: 10px; opacity: 0.5; text-align: center;">ТВОЙ СТИКЕР (ЗАБЛЮРЕНО):</p>
+                    <div class="word-card">
+                        <span id="my-character" style="filter: blur(8px);">??????</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="modal-rules" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="font-weight: 900; color: var(--primary); margin-bottom: 15px;">ПРАВИЛА</h2>
+            <div class="rule-item"><span>1</span> Сервер назначит, кому ты загадываешь героя.</div>
+            <div class="rule-item"><span>2</span> Ты увидишь стикеры всех, кроме своего.</div>
+            <div class="rule-item"><span>3</span> Твой стикер заблюрен внизу экрана.</div>
+            <button class="primary-btn" onclick="toggleModal(false)">ОК</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="script-online.js"></script>
+</body>
+</html>
