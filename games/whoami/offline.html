@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>КТО Я? — Оффлайн</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="nav-btn back-btn" onclick="location.href='index.html'"><i class="fas fa-arrow-left"></i></div>
+
+        <!-- Настройка -->
+        <section id="screen-setup" class="screen active">
+            <div class="logo-area">
+                <div class="emoji-float">🃏</div>
+                <h2 class="main-title-small">КТО ЗА СТОЛОМ?</h2>
+            </div>
+            <div class="card-glass">
+                <span class="section-tag">ИГРОКИ</span>
+                <div id="player-inputs" class="player-column">
+                    <input type="text" class="joy-input player-name" placeholder="ИГРОК 1" value="ИГРОК 1">
+                    <input type="text" class="joy-input player-name" placeholder="ИГРОК 2" value="ИГРОК 2">
+                </div>
+                <button class="add-player-circle" onclick="addInput()">+</button>
+                <button class="primary-btn" onclick="startAssignment()">НАЧАТЬ</button>
+            </div>
+        </section>
+
+        <!-- Загадывание (Передай телефон) -->
+        <section id="screen-assign" class="screen">
+            <div class="card-glass">
+                <span class="section-tag">СЕКРЕТНО</span>
+                <p style="font-weight: 900; text-align: center;">ПЕРЕДАЙТЕ ТЕЛЕФОН:</p>
+                <h2 id="current-actor-name" class="big-name" style="text-align: center;">---</h2>
+                <div style="background: var(--gray); padding: 20px; border-radius: 20px; text-align: center; border: 3px dashed #ccc;">
+                    <p style="font-weight: 800; font-size: 14px;">ПРИДУМАЙ ГЕРОЯ ДЛЯ:</p>
+                    <p id="target-player-name" style="color: var(--accent); font-weight: 900; font-size: 20px;">---</p>
+                </div>
+                <input type="text" id="offline-char-input" class="joy-input" placeholder="НАПР: ШРЕК" style="margin-top: 20px;">
+                <button class="primary-btn" onclick="saveCharacter()">ГОТОВО!</button>
+            </div>
+        </section>
+
+        <!-- Поле игры -->
+        <section id="screen-board" class="screen">
+            <div class="game-top">
+                <div class="score-pill">ОФФЛАЙН</div>
+                <div class="timer-pill" onclick="location.reload()">ЗАНОВО</div>
+            </div>
+            <div class="card-glass">
+                <span class="section-tag">СТИКЕРЫ</span>
+                <div id="stickers-grid" class="category-grid"></div>
+                <p style="font-size: 10px; font-weight: 800; text-align: center; opacity: 0.5; margin-top: 20px;">
+                    Нажмите на стикер, чтобы показать/скрыть имя.<br>НЕ СМОТРИТЕ НА СВОЙ СТИКЕР!
+                </p>
+            </div>
+        </section>
+    </div>
+    <script src="script-offline.js"></script>
+</body>
+</html>
