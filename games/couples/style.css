@@ -1,10 +1,10 @@
 :root {
-    --bg: #f2f7f5;
-    --clay: #ffffff;
-    --primary: #8fb9a8; /* Шалфейный */
-    --accent: #f0c4b1;  /* Персиковый */
-    --text: #4a5d55;
-    --shadow: rgba(143, 185, 168, 0.2);
+    --bg: #0a0a0c;
+    --card: rgba(255, 255, 255, 0.05);
+    --primary: #00f3ff; /* Циан */
+    --accent: #ff0055;  /* Неоновый розовый */
+    --text: #ffffff;
+    --border: rgba(255, 255, 255, 0.1);
 }
 
 * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -14,69 +14,81 @@ body {
     height: 100dvh; display: flex; justify-content: center; overflow: hidden;
 }
 
-.app-container { width: 100%; max-width: 420px; padding: 20px; position: relative; display: flex; flex-direction: column; }
-
-/* Claymorphism Style */
-.clay-panel {
-    background: var(--clay);
-    border-radius: 35px;
-    box-shadow: 10px 10px 20px var(--shadow), -10px -10px 20px #ffffff;
-    border: 2px solid #ffffff;
+.glow-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 20% 30%, #1a1a2e 0%, #0a0a0c 100%);
+    z-index: -1;
 }
 
-.btn-organic {
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    box-shadow: inset -4px -4px 8px rgba(0,0,0,0.1), inset 4px 4px 8px rgba(255,255,255,0.3), 5px 5px 15px var(--shadow);
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.2s;
+.app-container { width: 100%; max-width: 420px; padding: 20px; height: 100%; display: flex; flex-direction: column; }
+
+/* Тексты */
+.title { font-family: 'Unbounded'; font-size: 3.5rem; text-align: center; letter-spacing: -2px; margin: 0; background: linear-gradient(to bottom, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.tagline { text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 5px; color: var(--primary); opacity: 0.8; }
+
+/* Стеклянные карточки */
+.glass-card {
+    background: var(--card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 25px;
 }
 
-.btn-organic:active { transform: scale(0.98); box-shadow: inset 4px 4px 8px rgba(0,0,0,0.2); }
+/* Кнопки */
+.btn-glow {
+    width: 100%; padding: 22px; border-radius: 20px; border: none;
+    background: var(--primary); color: #000; font-family: 'Unbounded';
+    font-weight: 900; font-size: 1rem; cursor: pointer;
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+    margin-top: 20px;
+}
 
-/* Screens */
-.screen { display: none; flex-direction: column; height: 100%; padding: 20px 0; }
-.screen.active { display: flex; animation: fadeIn 0.6s ease; }
+/* Сетка тем */
+.themes-grid { display: flex; flex-direction: column; gap: 15px; flex: 1; margin: 20px 0; }
+.theme-card {
+    height: 120px; border-radius: 25px; display: flex; align-items: center; padding: 0 30px;
+    background: var(--card); border: 1px solid var(--border); position: relative; overflow: hidden;
+}
+.theme-card .icon { font-size: 40px; margin-right: 20px; }
+.theme-card .label { font-family: 'Unbounded'; font-size: 1.2rem; }
+.theme-card span { display: block; font-size: 10px; font-family: 'Montserrat'; opacity: 0.5; }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* Индикаторы */
+.sync-level { flex: 1; }
+.sync-level .bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 5px; }
+#sync-progress { height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--primary); transition: 0.5s; }
 
-/* Garden Status */
-.garden-status { text-align: center; margin-bottom: 30px; }
-.tree-container { font-size: 80px; margin-bottom: 10px; }
-.growth-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-top: 15px; }
-#growth-fill { height: 100%; background: var(--primary); transition: 1s ease; }
+/* Игровая карта */
+.main-card-wrap { flex: 1; position: relative; margin: 20px 0; }
+.game-card {
+    height: 100%; background: var(--card); border: 1px solid var(--primary);
+    border-radius: 35px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; padding: 40px;
+    box-shadow: inset 0 0 30px rgba(0, 243, 255, 0.05);
+}
+.blind-overlay {
+    position: absolute; inset: 0; background: #0a0a0c; border-radius: 35px;
+    z-index: 10; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; border: 1px solid var(--border);
+}
 
-/* Themes */
-.themes-list { display: flex; flex-direction: column; gap: 15px; }
-.theme-item { padding: 20px; display: flex; align-items: center; gap: 20px; cursor: pointer; }
-.t-icon { font-size: 30px; }
-.t-info h3 { margin: 0; font-family: 'Playfair Display', serif; }
-.t-info p { margin: 0; font-size: 12px; opacity: 0.6; }
+.fingerprint-scan { font-size: 60px; color: var(--primary); margin-bottom: 20px; position: relative; }
+.scan-line {
+    position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+    background: var(--primary); box-shadow: 0 0 15px var(--primary);
+    animation: scan 2s infinite;
+}
+@keyframes scan { 0%, 100% { top: 0; } 50% { top: 100%; } }
 
-/* Game Card */
-.leaf-container { flex: 1; display: flex; align-items: center; justify-content: center; }
-.game-card { width: 100%; height: 380px; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-#card-text { font-family: 'Playfair Display', serif; font-size: 22px; line-height: 1.5; font-weight: 700; }
-#card-text span { color: var(--primary); }
+.unlock-btn {
+    background: transparent; border: 1px solid var(--primary); color: var(--primary);
+    padding: 12px 30px; border-radius: 50px; font-weight: 800; font-size: 12px; margin-top: 20px;
+}
 
-.game-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; margin-top: 20px; }
-.btn-action { height: 60px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; }
-.skip { background: #fff; color: var(--primary); }
+/* Утилиты */
+.screen { display: none; flex-direction: column; height: 100%; }
+.screen.active { display: flex; animation: slideIn 0.4s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Modals */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.1); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-.modal-overlay.active { display: flex; }
-.modal-content { width: 100%; max-height: 80vh; padding: 30px; }
-textarea { width: 100%; height: 100px; border-radius: 20px; border: 1px solid #ddd; padding: 15px; margin: 15px 0; outline: none; }
-
-/* Loader */
-.loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; transition: 1s; }
-.seed-icon { font-size: 60px; animation: bounce 2s infinite; }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-
-.exit-btn { display: block; text-align: center; margin-top: 20px; font-size: 11px; color: var(--text); opacity: 0.5; text-decoration: none; }
-.swipe-right { transform: translateX(150%) rotate(20deg); opacity: 0; }
-.swipe-left { transform: translateX(-150%) rotate(-20deg); opacity: 0; }
+.hidden { display: none !important; }
