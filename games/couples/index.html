@@ -19,64 +19,46 @@
 
     <div class="app-container">
         
-        <!-- ЭКРАН 1: РЕГИСТРАЦИЯ -->
+        <!-- ЭКРАН 1: ПРОФИЛЬ (ПАДЕЖИ) -->
         <section id="screen-setup" class="screen active">
-            <div class="welcome-box">
-                <h2 class="title-main">LoveCouple</h2>
-                <p class="subtitle">Ваша история начинается здесь</p>
-            </div>
-            <div class="clay-card setup-box">
-                <div class="input-wrapper">
-                    <label>Твое имя</label>
-                    <input type="text" id="name1" placeholder="Алексей">
+            <h2 class="title-main">Ваши Имена</h2>
+            <div class="clay-card setup-box scroll-y">
+                <div class="name-block">
+                    <p class="name-label">Игрок 1</p>
+                    <input type="text" id="n1_nom" placeholder="Кто? (Алексей)">
+                    <input type="text" id="n1_vin" placeholder="Кого? (Алексея)">
+                    <input type="text" id="n1_dat" placeholder="Кому? (Алексею)">
                 </div>
-                <div class="input-wrapper">
-                    <label>Её/Его имя</label>
-                    <input type="text" id="name2" placeholder="Мария">
+                <div class="name-block">
+                    <p class="name-label">Игрок 2</p>
+                    <input type="text" id="n2_nom" placeholder="Кто? (Мария)">
+                    <input type="text" id="n2_vin" placeholder="Кого? (Марию)">
+                    <input type="text" id="n2_dat" placeholder="Кому? (Марии)">
                 </div>
             </div>
-            <button class="btn-primary clay-button big-btn" onclick="saveNames()">СОЗДАТЬ МАГИЮ</button>
+            <button class="btn-primary clay-button big-btn" onclick="saveNames()">СОХРАНИТЬ</button>
         </section>
 
         <!-- ЭКРАН 2: ТЕМЫ -->
         <section id="screen-themes" class="screen">
             <div class="top-bar">
                 <h2 class="theme-title">Выберите режим</h2>
-                <div class="streak-badge">🔥 <span id="streak-val">0</span></div>
+                <button class="add-custom-btn clay-card" onclick="showModal('create')"><i class="fas fa-plus"></i></button>
             </div>
 
             <div class="themes-grid">
-                <div class="theme-card clay-card" onclick="selectTheme('romance')">
-                    <span class="icon">❤️</span>
-                    <label>Романтика</label>
-                </div>
-                <div class="theme-card clay-card" onclick="selectTheme('fun')">
-                    <span class="icon">😄</span>
-                    <label>Веселье</label>
-                </div>
-                <div class="theme-card clay-card" onclick="selectTheme('adult')">
-                    <span class="icon">🔥</span>
-                    <label>HOT</label>
-                </div>
-                <div class="theme-card clay-card" onclick="selectTheme('dates')">
-                    <span class="icon">📍</span>
-                    <label>Свидания</label>
-                </div>
-            </div>
-
-            <div class="atmosphere-player clay-card">
-                <p>Атмосфера:</p>
-                <div class="mood-btns">
-                    <button class="mood-btn" onclick="toggleMood('fire')">🔥</button>
-                    <button class="mood-btn" onclick="toggleMood('rain')">🌧️</button>
-                    <button class="mood-btn" onclick="toggleMood('jazz')">🎷</button>
-                </div>
+                <div class="theme-card clay-card" onclick="selectTheme('romance')"><span>❤️</span><label>Романтика</label></div>
+                <div class="theme-card clay-card" onclick="selectTheme('fun')"><span>😄</span><label>Веселье</label></div>
+                <div class="theme-card clay-card" onclick="selectTheme('adult')"><span>🔥</span><label>HOT</label></div>
+                <div class="theme-card clay-card" onclick="selectTheme('dates')"><span>📍</span><label>Свидания</label></div>
+                <!-- НОВЫЙ РЕЖИМ -->
+                <div class="theme-card clay-card special-card" onclick="selectTheme('favorites')"><span>⭐</span><label>Избранное</label></div>
+                <div class="theme-card clay-card special-card" onclick="selectTheme('custom')"><span>📝</span><label>Свои карты</label></div>
             </div>
 
             <div class="footer-actions">
-                <button class="circle-action clay-card" onclick="showModal('favs')"><i class="fas fa-star"></i></button>
                 <button class="circle-action clay-card" onclick="showModal('stats')"><i class="fas fa-chart-line"></i></button>
-                <button class="circle-action clay-card" onclick="confirmReset()"><i class="fas fa-cog"></i></button>
+                <button class="circle-action clay-card" onclick="confirmReset()"><i class="fas fa-user-edit"></i></button>
             </div>
         </section>
 
@@ -92,47 +74,48 @@
             </div>
 
             <div class="card-stack">
-                <div class="main-card-container">
-                    <div class="main-game-card clay-card" id="game-card-body">
-                        <div class="card-tag" id="card-type">ЗАДАНИЕ</div>
-                        <div id="card-text">Начнем?</div>
-                        <button onclick="toggleFavorite()" id="fav-btn" class="fav-star"><i class="far fa-star"></i></button>
-                    </div>
+                <div class="main-game-card clay-card" id="game-card-body">
+                    <div class="card-tag" id="card-type">ЗАДАНИЕ</div>
+                    <div id="card-text">...</div>
+                    <button onclick="toggleFavorite()" id="fav-btn" class="fav-star"><i class="far fa-star"></i></button>
                 </div>
             </div>
 
             <div class="game-controls">
                 <button class="control-btn skip clay-card" onclick="swipe('left')"><i class="fas fa-times"></i></button>
-                <button class="control-btn done clay-button" onclick="swipe('right')">ВЫПОЛНЕНО</button>
+                <button class="control-btn done clay-button" onclick="swipe('right')">ГОТОВО</button>
             </div>
         </section>
     </div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА -->
-    <div id="modal-favs" class="modal-overlay" onclick="closeModals()">
+    <!-- МОДАЛКА: СОЗДАНИЕ КАРТЫ -->
+    <div id="modal-create" class="modal-overlay" onclick="closeModals()">
         <div class="modal-content clay-card" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Избранное</h3>
-                <button onclick="closeModals()" class="close-x">&times;</button>
-            </div>
-            <div id="favs-list" class="scroll-list"></div>
+            <h3>Новое задание</h3>
+            <textarea id="custom-text" placeholder="Используй {n1} или {n2_v} для имен..."></textarea>
+            <select id="custom-cat-select" class="clay-select">
+                <option value="romance">Романтика</option>
+                <option value="fun">Веселье</option>
+                <option value="adult">HOT</option>
+            </select>
+            <button class="btn-primary clay-button" onclick="addCustomCard()">ДОБАВИТЬ</button>
         </div>
     </div>
 
+    <!-- Статистика -->
     <div id="modal-stats" class="modal-overlay" onclick="closeModals()">
         <div class="modal-content clay-card" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Статистика</h3>
-                <button onclick="closeModals()" class="close-x">&times;</button>
-            </div>
+            <h3>Прогресс</h3>
             <div id="stats-content" class="stats-grid"></div>
+            <button class="btn-primary clay-button" onclick="closeModals()">OK</button>
         </div>
     </div>
 
+    <!-- Кубик -->
     <div id="modal-dice" class="modal-overlay" onclick="closeModals()">
         <div class="modal-content clay-card dice-modal">
             <div id="dice-result">?</div>
-            <p id="dice-text">Бросаем кубик...</p>
+            <p id="dice-text">Кто же?</p>
         </div>
     </div>
 
