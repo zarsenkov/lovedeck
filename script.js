@@ -6,7 +6,7 @@ function loadGame(gameId) {
     // Ссылки на твои игры на Vercel
     // Когда создашь новые игры, просто заменяй эти ссылки на свои
     const gameUrls = {
-        'danetki': 'https://danetki-noir.vercel.app',
+        'danetki': 'https://danetki-offline-1xyp.vercel.app/',
         'mafia': 'https://mafia-offline-noir.vercel.app',
         'couples': 'https://love-moments.vercel.app'
         // добавь остальные позже
