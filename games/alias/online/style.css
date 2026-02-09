@@ -1,9 +1,145 @@
-/* Дополнения к вашим стилям */
+/* ==========================================
+   NEO-POP DESIGN SYSTEM
+   ========================================== */
 
+:root {
+    --bg: #F0F4F8; 
+    --white: #FFFFFF; 
+    --mint: #B2F5EA; 
+    --pink: #FED7E2;
+    --yellow: #FEFCBF; 
+    --purple: #E9D8FD; 
+    --blue: #BEE3F8; 
+    --black: #2D3748; 
+    --accent: #667EEA; 
+    --shadow: 6px 6px 0px #2D3748;
+    --border-width: 3px;
+    --card-border-width: 4px;
+}
+
+/* Base Resets */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Montserrat', sans-serif; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+body { 
+    background: var(--bg); 
+    color: var(--black); 
+    height: 100dvh; 
+    width: 100%; 
+    overflow: hidden; 
+    position: fixed; 
+}
+
+/* Layout */
+.app-shell { 
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px); 
+    position: relative; 
+    max-width: 500px; 
+    margin: 0 auto; 
+}
+
+/* Navigation Buttons */
+.home-btn, .rules-btn { 
+    position: absolute; 
+    top: 15px; 
+    width: 45px; 
+    height: 45px; 
+    background: var(--blue); 
+    border: var(--border-width) solid var(--black); 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    box-shadow: 4px 4px 0 var(--black); 
+    z-index: 100; 
+    cursor: pointer; 
+    font-weight: 900; 
+    transition: 0.1s;
+}
+
+.home-btn { left: 15px; }
+.rules-btn { right: 15px; background: var(--yellow); }
+
+.home-btn:active, .rules-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--black);
+}
+
+/* Header Elements */
+.pop-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 15px 0; 
+    min-height: 80px; 
+    width: 100%;
+}
+
+.timer-bubble, .score-pill { 
+    background: var(--yellow); 
+    border: var(--border-width) solid var(--black); 
+    padding: 8px 20px; 
+    border-radius: 30px; 
+    font-weight: 900; 
+    box-shadow: 4px 4px 0 var(--black); 
+    font-size: 0.9rem;
+}
+
+.score-pill { background: var(--mint); }
+
+/* Screens Logic */
+.pop-screen { 
+    display: none; 
+    flex-direction: column; 
+    flex-grow: 1; 
+    height: 100%;
+    overflow: hidden; 
+}
+
+.pop-screen.active { 
+    display: flex; 
+    animation: popIn 0.3s ease-out; 
+}
+
+@keyframes popIn { 
+    from { opacity: 0; transform: scale(0.95); } 
+    to { opacity: 1; transform: scale(1); } 
+}
+
+/* Typography */
+.pop-title { 
+    font-size: clamp(2rem, 10vw, 3.5rem); 
+    font-weight: 900; 
+    text-align: center; 
+    margin: 10px 0; 
+    letter-spacing: -2px; 
+    line-height: 1;
+}
+
+.pop-title span { color: var(--accent); }
+
+.section-label { 
+    font-size: 0.75rem; 
+    font-weight: 900; 
+    color: #4A5568; 
+    text-transform: uppercase; 
+    margin: 15px 0 8px 5px; 
+    letter-spacing: 1px; 
+}
+
+/* Inputs */
 .pop-input {
     width: 100%;
     padding: 18px;
-    border: 4px solid var(--black);
+    border: var(--card-border-width) solid var(--black);
     border-radius: 20px;
     font-size: 1.1rem;
     font-weight: 900;
@@ -11,47 +147,221 @@
     background: var(--white);
     outline: none;
     box-shadow: 4px 4px 0 var(--black);
+    transition: 0.2s;
 }
 
 .pop-input:focus {
     background: var(--blue);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--black);
 }
 
-.hidden { display: none !important; }
-
-/* Список игроков в лобби */
-.player-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    border-bottom: 3px solid var(--black);
-    font-weight: 900;
+/* Card Mechanics */
+.card-container { 
+    perspective: 1000px; 
+    margin: auto 0; 
+    width: 100%;
 }
 
-.player-row:last-child { border-bottom: none; }
-
-.host-badge {
-    background: var(--yellow);
-    padding: 4px 8px;
-    border: 2px solid var(--black);
-    border-radius: 8px;
-    font-size: 0.6rem;
-}
-
-/* Анимация карточки при свайпе */
-.word-card {
+.word-card { 
+    background: var(--white); 
+    border: var(--card-border-width) solid var(--black); 
+    border-radius: 30px; 
+    box-shadow: 10px 10px 0 var(--black); 
+    height: 280px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    touch-action: none; 
+    will-change: transform;
     transition: transform 0.1s ease-out;
 }
 
+#word-display { 
+    font-size: 2.3rem; 
+    font-weight: 900; 
+    text-transform: uppercase; 
+    text-align: center; 
+    padding: 20px; 
+    color: var(--black);
+}
+
+/* Buttons */
+.btn-pop-main { 
+    background: var(--accent); 
+    color: white; 
+    border: var(--card-border-width) solid var(--black); 
+    padding: 18px; 
+    border-radius: 22px; 
+    font-weight: 900; 
+    font-size: 1.2rem; 
+    box-shadow: var(--shadow); 
+    cursor: pointer; 
+    width: 100%;
+    transition: 0.1s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-pop-main:active { 
+    transform: translate(4px, 4px); 
+    box-shadow: 0px 0px 0 var(--black); 
+}
+
+.game-actions { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 15px; 
+    margin-bottom: 15px; 
+}
+
+.btn-skip { background: #FEB2B2; color: var(--black); }
+.btn-check { background: var(--mint); color: var(--black); }
+
+/* Selection Chips */
+.chips-group { 
+    display: flex; 
+    gap: 10px; 
+    margin-bottom: 20px; 
+    flex-wrap: wrap; 
+}
+
+.pop-chip { 
+    padding: 12px 18px; 
+    border-radius: 14px; 
+    border: var(--border-width) solid var(--black); 
+    background: var(--white); 
+    font-weight: 800; 
+    font-size: 0.8rem; 
+    box-shadow: 3px 3px 0 var(--black); 
+    cursor: pointer; 
+    transition: 0.1s;
+}
+
+.pop-chip.active { 
+    background: var(--purple); 
+    transform: translate(2px, 2px); 
+    box-shadow: 0px 0px 0 var(--black); 
+}
+
+/* Lists and Rows */
+.pop-list { 
+    flex-grow: 1; 
+    overflow-y: auto; 
+    margin: 15px 0; 
+    border: var(--border-width) solid var(--black); 
+    border-radius: 20px; 
+    background: var(--white);
+    box-shadow: inset 4px 4px 0 rgba(0,0,0,0.05);
+}
+
+.player-row, .word-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 15px 20px; 
+    border-bottom: var(--border-width) solid var(--black); 
+    font-weight: 800; 
+}
+
+.player-row:last-child, .word-row:last-child { border-bottom: none; }
+
+.host-badge {
+    background: var(--yellow);
+    padding: 4px 10px;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 900;
+}
+
+/* Ready State */
+.team-ready-box { 
+    background: var(--white); 
+    border: var(--card-border-width) solid var(--black); 
+    padding: 40px 25px; 
+    border-radius: 30px; 
+    text-align: center; 
+    margin: auto 0; 
+    box-shadow: 8px 8px 0 var(--black); 
+}
+
+.team-ready-box h3 { 
+    font-size: 1.8rem; 
+    font-weight: 900; 
+    color: var(--accent); 
+    margin-top: 10px; 
+    text-transform: uppercase;
+}
+
+/* Summary and Modals */
+.summary-box { 
+    background: var(--blue); 
+    border: var(--border-width) solid var(--black); 
+    border-radius: 18px; 
+    padding: 20px; 
+    font-weight: 900; 
+    text-align: center; 
+    box-shadow: 4px 4px 0 var(--black);
+}
+
+.modal-overlay { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(45, 55, 72, 0.8); 
+    backdrop-filter: blur(4px);
+    display: none; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 1000; 
+    padding: 20px; 
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal-content { 
+    background: var(--white); 
+    border: var(--card-border-width) solid var(--black); 
+    border-radius: 30px; 
+    padding: 30px; 
+    box-shadow: 10px 10px 0 var(--black); 
+    width: 100%; 
+    max-width: 400px; 
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Animations for Swiping */
 .swipe-right-anim {
-    transform: translateX(150%) rotate(20deg) !important;
+    transform: translateX(150%) rotate(25deg) !important;
     opacity: 0;
-    transition: 0.4s ease-in !important;
+    transition: 0.4s cubic-bezier(0.1, 0.5, 0.1, 1) !important;
 }
 
 .swipe-left-anim {
-    transform: translateX(-150%) rotate(-20deg) !important;
+    transform: translateX(-150%) rotate(-25deg) !important;
     opacity: 0;
-    transition: 0.4s ease-in !important;
+    transition: 0.4s cubic-bezier(0.1, 0.5, 0.1, 1) !important;
+}
+
+/* Helpers */
+.hidden { display: none !important; }
+.swipe-hint { 
+    text-align: center; 
+    font-size: 0.75rem; 
+    font-weight: 800; 
+    opacity: 0.4; 
+    margin-bottom: 8px; 
+    letter-spacing: 1px;
+}
+
+/* Scrollbar Style */
+.pop-list::-webkit-scrollbar { width: 8px; }
+.pop-list::-webkit-scrollbar-track { background: transparent; }
+.pop-list::-webkit-scrollbar-thumb { 
+    background: var(--black); 
+    border-radius: 10px; 
+    border: 2px solid var(--white);
 }
