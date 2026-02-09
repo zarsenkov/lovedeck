@@ -1,109 +1,36 @@
-:root {
-    --primary: #00e5ff;
-    --bg: #0a0e17;
-    --card: #161c2a;
-    --text: #ffffff;
-    --red: #ff3d71;
-    --gray: #8f9bb3;
-}
-
-body {
-    margin: 0; padding: 0;
-    font-family: 'Montserrat', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    height: 100dvh;
-    display: flex; justify-content: center; align-items: center;
-    overflow: hidden;
-}
-
-/* Навигация */
-.top-nav {
-    position: fixed; top: 0; width: 100%; height: 60px;
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0 20px; box-sizing: border-box; z-index: 1000;
-}
-.nav-btn { color: var(--gray); font-weight: 600; cursor: pointer; font-size: 0.9rem; }
-.room-badge {
-    background: var(--card); border: 1px solid var(--primary);
-    padding: 5px 12px; border-radius: 20px; font-weight: 900;
-    color: var(--primary); font-size: 0.8rem; letter-spacing: 1px;
-}
-
-.screen {
-    display: none; width: 100%; max-width: 400px;
-    padding: 20px; box-sizing: border-box;
-    flex-direction: column; height: 100%; justify-content: center;
-}
-.screen.active { display: flex; animation: slideUp 0.4s ease; }
-
-h1 { font-weight: 900; font-size: 3rem; margin: 0; text-align: center; color: var(--text); letter-spacing: -2px; }
-.hero p { text-align: center; color: var(--primary); font-weight: 600; letter-spacing: 4px; margin-bottom: 30px; }
-
-.main-card {
-    background: var(--card); padding: 30px; border-radius: 30px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-}
-
-input {
-    width: 100%; background: #0c1017; border: 1px solid #2e3a59;
-    padding: 15px; color: white; border-radius: 15px;
-    font-family: inherit; font-size: 1rem; margin-bottom: 15px;
-    box-sizing: border-box; text-align: center; transition: 0.3s;
-}
-input:focus { border-color: var(--primary); outline: none; }
-
-button {
-    width: 100%; padding: 16px; border-radius: 15px; border: none;
-    font-family: inherit; font-weight: 700; cursor: pointer;
-    transition: 0.2s; text-transform: uppercase; letter-spacing: 1px;
-}
-.btn-primary { background: var(--primary); color: #000; }
-.btn-outline { background: transparent; border: 1px solid var(--gray); color: var(--text); }
-.hr { text-align: center; color: var(--gray); font-size: 0.7rem; margin: 15px 0; text-transform: uppercase; }
-
-/* Лобби и игроки */
-.player-list { margin: 20px 0; max-height: 250px; overflow-y: auto; }
-.player-row {
-    padding: 12px 15px; background: rgba(255,255,255,0.03);
-    border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between;
-}
-.wait-status { text-align: center; color: var(--gray); font-size: 0.8rem; animation: pulse 1.5s infinite; }
-
-/* Роли */
-.role-card {
-    background: linear-gradient(135deg, #161c2a 0%, #0a0e17 100%);
-    border: 2px solid var(--primary); padding: 40px 20px;
-    border-radius: 30px; text-align: center; width: 100%;
-}
-.role-icon { font-size: 4rem; color: var(--primary); margin-bottom: 20px; }
-#role-display { font-size: 2.5rem; font-weight: 900; margin: 10px 0; }
-
-/* Сетка игры */
-.player-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;
-}
-.p-btn {
-    background: var(--card); padding: 20px 10px; border-radius: 15px;
-    text-align: center; border: 1px solid rgba(255,255,255,0.1); font-weight: 600;
-}
-.p-btn.active-target { border-color: var(--primary); background: rgba(0, 229, 255, 0.05); }
-
-/* Ночь */
-.night-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #000; z-index: 2000; display: none;
-    flex-direction: column; align-items: center; justify-content: center; text-align: center;
-}
-.night-overlay.active { display: flex; }
-.loader-circle {
-    width: 60px; height: 60px; border: 4px solid var(--card);
-    border-top: 4px solid var(--primary); border-radius: 50%;
-    animation: spin 1s linear infinite; margin-bottom: 20px;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-
+/* Дополнительные стили */
 .hidden { display: none !important; }
+
+.player-item-row {
+    background: var(--card);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #222;
+}
+
+.host-badge {
+    color: var(--red);
+    font-size: 9px;
+    font-weight: 900;
+    border: 1px solid var(--red);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+#game-timer {
+    font-variant-numeric: tabular-nums;
+}
+
+.vote-card.selected {
+    background: rgba(255, 0, 51, 0.2);
+    border-color: var(--red);
+}
+
+.vote-card.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
