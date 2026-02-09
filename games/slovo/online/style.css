@@ -1,6 +1,6 @@
 :root {
     --bg-paper: #e4e0d9;
-    --tape-color: rgba(241, 231, 103, 0.5);
+    --tape-color: rgba(241, 231, 103, 0.6);
     --ink: #1a1a1a;
     --accent-marker: #ff3e00;
 }
@@ -29,6 +29,16 @@ body {
     transform: rotate(-0.5deg);
 }
 
+.app-container::before {
+    content: "";
+    position: absolute;
+    top: -15px; left: 35%;
+    width: 100px; height: 30px;
+    background: var(--tape-color);
+    transform: rotate(-3deg);
+    z-index: 10;
+}
+
 .screen { display: flex; flex-direction: column; }
 .hidden { display: none !important; }
 
@@ -40,6 +50,7 @@ h1 {
     color: var(--bg-paper);
     padding: 10px;
     margin-top: 0;
+    transform: rotate(1deg);
 }
 
 .rules-box {
@@ -48,11 +59,12 @@ h1 {
     margin: 15px 0;
     background: #fff;
     font-size: 0.8rem;
+    font-weight: bold;
 }
 
 input {
     border: 2px solid var(--ink);
-    background: transparent;
+    background: #fff;
     padding: 12px;
     font-family: inherit;
     font-weight: bold;
@@ -70,6 +82,7 @@ input {
     font-weight: bold;
     text-transform: uppercase;
     box-shadow: 4px 4px 0px var(--ink);
+    transition: 0.1s;
 }
 
 .btn-zinc:active {
@@ -89,6 +102,7 @@ input {
     padding: 8px;
     border: 1px solid var(--ink);
     font-weight: bold;
+    transform: rotate(-1deg);
 }
 
 .game-card {
@@ -98,37 +112,38 @@ input {
     text-align: center;
     margin: 20px 0;
     position: relative;
+    box-shadow: 8px 8px 0 rgba(0,0,0,0.05);
 }
 
 .letter-tag {
     position: absolute;
-    top: -15px;
-    left: 10px;
+    top: -15px; left: 10px;
     background: var(--ink);
     color: #fff;
     padding: 5px 10px;
+    font-weight: bold;
 }
 
 .word-display {
     font-size: 2.2rem;
     font-weight: 900;
     text-decoration: underline;
+    text-transform: uppercase;
 }
 
 #timer {
-    font-size: 3rem;
+    font-size: 3.5rem;
     font-weight: 900;
     text-align: center;
     color: var(--accent-marker);
-    border-bottom: 4px double var(--ink);
+    margin-bottom: 10px;
 }
 
-.res-item { border-bottom: 2px solid var(--ink); padding: 10px 0; }
+.res-item { border-bottom: 2px solid var(--ink); padding: 10px 0; font-weight: bold; }
 
 .zine-back-button {
     position: absolute;
-    top: -45px;
-    left: 0;
+    top: -45px; left: 0;
     background: var(--ink);
     color: var(--bg-paper);
     padding: 8px 15px;
