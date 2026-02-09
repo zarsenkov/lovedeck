@@ -10,6 +10,9 @@
 </head>
 <body>
 
+    <!-- Кнопка возврата в кластер -->
+    <a href="https://lovecouple.ru" class="exit-to-cluster"><i class="fas fa-th"></i> LoveCouple.ru</a>
+
     <div class="app-container">
         
         <!-- ЭКРАН 1: ГЛАВНЫЙ -->
@@ -18,73 +21,94 @@
                 <div class="leaf-icon">🌿</div>
                 <h1 class="title">КРОКО<br>ДИЛ</h1>
             </div>
-            <div class="clay-card setup-card">
-                <div class="score-setup">
-                    <div class="team-box">
-                        <input type="text" id="team1-name" value="Команда 1">
-                        <span id="score1" class="score-val">0</span>
-                    </div>
-                    <div class="vs">VS</div>
-                    <div class="team-box">
-                        <input type="text" id="team2-name" value="Команда 2">
-                        <span id="score2" class="score-val">0</span>
-                    </div>
-                </div>
-            </div>
-            <button class="clay-button primary-btn big-btn" onclick="goToScreen('difficulty')">ПОГНАЛИ!</button>
+            <button class="clay-button primary-btn big-btn" onclick="goToScreen('setup')">ИГРАТЬ</button>
+            <button class="clay-button secondary-btn" style="margin-top: 15px;" onclick="alert('Правила: показывайте слова жестами, не издавая звуков!')">ПРАВИЛА</button>
         </section>
 
-        <!-- ЭКРАН 2: ВЫБОР СЛОЖНОСТИ -->
-        <section id="screen-difficulty" class="screen">
-            <h2 class="section-title">Уровень джунглей</h2>
-            <div class="difficulty-grid">
-                <div class="diff-card clay-card" onclick="startGame('easy')">
-                    <span class="emoji">🐣</span>
-                    <label>ЛЕГКО</label>
+        <!-- ЭКРАН 2: НАСТРОЙКИ -->
+        <section id="screen-setup" class="screen">
+            <button class="nav-back" onclick="goToScreen('main')"><i class="fas fa-arrow-left"></i> Назад</button>
+            <h2 class="section-title">Настройки</h2>
+            
+            <div class="clay-card settings-card">
+                <div class="input-group">
+                    <label>Команды</label>
+                    <input type="text" id="team1-name" value="Тролли">
+                    <input type="text" id="team2-name" value="Обезьяны">
                 </div>
-                <div class="diff-card clay-card" onclick="startGame('medium')">
-                    <span class="emoji">🐒</span>
-                    <label>СРЕДНЕ</label>
+                
+                <div class="input-group">
+                    <label>Время раунда: <span id="val-time">60</span>с</label>
+                    <input type="range" id="setup-time" min="30" max="120" step="10" value="60" oninput="updateVal('time')">
                 </div>
-                <div class="diff-card clay-card" onclick="startGame('hard')">
-                    <span class="emoji">🦖</span>
-                    <label>СЛОЖНО</label>
+
+                <div class="input-group">
+                    <label>Раундов: <span id="val-rounds">5</span></label>
+                    <input type="range" id="setup-rounds" min="1" max="10" value="5" oninput="updateVal('rounds')">
+                </div>
+
+                <div class="input-group">
+                    <label>Темы</label>
+                    <div class="categories-toggle">
+                        <button class="cat-chip active" data-cat="objects" onclick="toggleCat(this)">Предметы</button>
+                        <button class="cat-chip active" data-cat="actions" onclick="toggleCat(this)">Действия</button>
+                        <button class="cat-chip" data-cat="animals" onclick="toggleCat(this)">Животные</button>
+                        <button class="cat-chip" data-cat="pro" onclick="toggleCat(this)">Сложно</button>
+                    </div>
                 </div>
             </div>
-            <button class="back-btn" onclick="goToScreen('main')">НАЗАД</button>
+            <button class="clay-button primary-btn big-btn" onclick="initGame()">К ВЫБОРУ СЛОЖНОСТИ</button>
         </section>
 
         <!-- ЭКРАН 3: ИГРОВОЕ ПОЛЕ -->
         <section id="screen-game" class="screen">
             <div class="game-top">
+                <button class="pause-btn clay-card" onclick="togglePause()"><i class="fas fa-pause"></i></button>
                 <div id="active-team-name" class="current-team">Команда 1</div>
                 <div id="timer" class="clay-timer">60</div>
             </div>
 
             <div class="word-card-container">
+                <div id="curse-banner" class="curse-banner hidden">🍄 ПРОКЛЯТИЕ: ПОКАЗЫВАЙ БЕЗ РУК!</div>
                 <div id="word-display" class="clay-card word-card">
-                    <p class="hint">Ваше слово:</p>
+                    <p class="hint">Раунд <span id="current-round-display">1</span></p>
                     <h2 id="current-word">МАНГО</h2>
                 </div>
             </div>
 
             <div class="game-actions">
                 <button class="game-btn skip-btn clay-card" onclick="nextWord(false)">
-                    <i class="fas fa-redo"></i> Скип
+                    <i class="fas fa-redo"></i>
                 </button>
-                <button class="game-btn done-btn clay-button" onclick="nextWord(true)">
-                    УГАДАЛИ!
-                </button>
+                <button class="game-btn done-btn clay-button" onclick="nextWord(true)">УГАДАНО!</button>
             </div>
         </section>
 
         <!-- ЭКРАН 4: ИТОГИ РАУНДА -->
         <section id="screen-results" class="screen">
             <div class="clay-card results-card">
-                <h2 id="round-winner">РАУНД ОКОНЧЕН!</h2>
-                <p id="round-points">+0 очков</p>
+                <h2 id="round-winner-title">РАУНД ОКОНЧЕН!</h2>
+                <div class="round-stats">
+                    <div class="stat-item">
+                        <span id="res-team-name">Команда</span>
+                        <h3 id="round-points">+0</h3>
+                    </div>
+                </div>
             </div>
-            <button class="clay-button primary-btn big-btn" onclick="goToScreen('main')">СЛЕДУЮЩИЙ РАУНД</button>
+            <button class="clay-button primary-btn big-btn" id="next-round-btn" onclick="startNextTurn()">СЛЕДУЮЩИЙ ХОД</button>
+        </section>
+
+        <!-- ЭКРАН 5: ФИНАЛ ИГРЫ -->
+        <section id="screen-final" class="screen">
+            <h1 class="section-title">ПОБЕДА!</h1>
+            <div class="clay-card final-card">
+                <div class="winner-podium">
+                    <div class="crown">👑</div>
+                    <h2 id="final-winner-name">КОМАНДА 1</h2>
+                    <p id="final-scores">0 : 0</p>
+                </div>
+            </div>
+            <button class="clay-button primary-btn big-btn" onclick="goToScreen('main')">В МЕНЮ</button>
         </section>
 
     </div>
