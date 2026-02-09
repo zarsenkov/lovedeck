@@ -1,302 +1,127 @@
-// --- СОСТОЯНИЕ ИГРЫ ---
 let state = {
-    name1: '',
-    name2: '',
-    currentTheme: '',
-    currentCard: null,
-    usedCards: new Set(),
-    favorites: JSON.parse(localStorage.getItem('lc_favs')) || [],
-    stats: JSON.parse(localStorage.getItem('lc_stats')) || { completed: 0, sessions: 0, categories: {} },
-    timer: null,
-    startX: 0,
-    currentX: 0
+    name1: '', name2: '',
+    theme: '', currentCard: null,
+    used: new Set(),
+    stats: JSON.parse(localStorage.getItem('lc_stats')) || { done: 0 },
+    favs: JSON.parse(localStorage.getItem('lc_favs')) || [],
+    startX: 0
 };
 
 // --- ИНИЦИАЛИЗАЦИЯ ---
 document.addEventListener('DOMContentLoaded', () => {
-    loadProfile();
-    setupSwipeGestures();
-    
-    // Скрываем лоадер через 2 секунды
-    setTimeout(() => {
-        document.getElementById('loading-screen').style.opacity = '0';
-        setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
-    }, 2000);
+    const saved = JSON.parse(localStorage.getItem('lc_names'));
+    if (saved) {
+        state.name1 = saved.name1; state.name2 = saved.name2;
+        goToScreen('themes');
+    }
+    setupSwipes();
+    setTimeout(() => document.getElementById('loading-screen').style.opacity = '0', 1500);
+    setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 2000);
 });
 
-// --- НАВИГАЦИЯ ---
-function goToScreen(screenId) {
+function goToScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(`screen-${screenId}`).classList.add('active');
+    document.getElementById(`screen-${id}`).classList.add('active');
 }
 
-// --- ПРОФИЛЬ И ИМЕНА ---
 function saveNames() {
-    const n1 = document.getElementById('name1').value.trim();
-    const n2 = document.getElementById('name2').value.trim();
-
-    if (!n1 || !n2) {
-        alert("Пожалуйста, введите оба имени ✨");
-        return;
-    }
-
-    state.name1 = n1;
-    state.name2 = n2;
-    localStorage.setItem('lc_names', JSON.stringify({ name1: n1, name2: n2 }));
-    
-    // Увеличиваем счетчик сессий
-    state.stats.sessions++;
-    saveData();
-    
+    const n1 = document.getElementById('name1').value;
+    const n2 = document.getElementById('name2').value;
+    if (!n1 || !n2) return alert("Введите имена!");
+    state.name1 = n1; state.name2 = n2;
+    localStorage.setItem('lc_names', JSON.stringify({name1: n1, name2: n2}));
     goToScreen('themes');
 }
 
-function loadProfile() {
-    const saved = JSON.parse(localStorage.getItem('lc_names'));
-    if (saved) {
-        state.name1 = saved.name1;
-        state.name2 = saved.name2;
-        // Если имена есть, сразу идем к выбору тем
-        goToScreen('themes');
-    }
-}
-
-// --- ЛОГИКА ИГРЫ ---
-function selectTheme(theme) {
-    state.currentTheme = theme;
-    state.usedCards.clear();
+function selectTheme(t) {
+    state.theme = t; state.used.clear();
     nextCard();
     goToScreen('game');
 }
 
 function nextCard() {
-    const pool = CARDS_DB[state.currentTheme];
-    const available = pool.filter(c => !state.usedCards.has(c.id));
-
-    if (available.length === 0) {
-        state.usedCards.clear(); // Сбрасываем круг, если карты кончились
-        nextCard();
-        return;
-    }
-
-    const randomIndex = Math.floor(Math.random() * available.length);
-    state.currentCard = available[randomIndex];
-    state.usedCards.add(state.currentCard.id);
-
-    renderCard();
+    const pool = CARDS_DB[state.theme];
+    const available = pool.filter(c => !state.used.has(c.id));
+    if (available.length === 0) { state.used.clear(); return nextCard(); }
+    
+    state.currentCard = available[Math.floor(Math.random() * available.length)];
+    state.used.add(state.currentCard.id);
+    
+    const text = state.currentCard.text
+        .replace(/{name1}/g, `<b>${state.name1}</b>`)
+        .replace(/{name2}/g, `<b>${state.name2}</b>`);
+    
+    document.getElementById('card-text').innerHTML = text;
+    document.getElementById('intensity-badge').innerText = state.currentCard.level;
+    updateFavUI();
 }
 
-function renderCard() {
-    const cardBody = document.getElementById('game-card-body');
-    const cardText = document.getElementById('card-text');
-    const cardType = document.getElementById('card-type');
-    const intensity = document.getElementById('intensity-badge');
-    const details = document.getElementById('card-details');
+// --- СВАЙПЫ ---
+function setupSwipes() {
+    const card = document.getElementById('game-card-body');
+    card.addEventListener('touchstart', e => state.startX = e.touches[0].clientX);
+    card.addEventListener('touchmove', e => {
+        const x = e.touches[0].clientX - state.startX;
+        card.style.transform = `translateX(${x}px) rotate(${x/15}deg)`;
+    });
+    card.addEventListener('touchend', e => {
+        const x = e.changedTouches[0].clientX - state.startX;
+        if (x > 120) swipe('right');
+        else if (x < -120) swipe('left');
+        else {
+            card.style.transform = '';
+        }
+    });
+}
 
-    // Плавная замена текста
-    cardText.style.opacity = '0';
+function swipe(dir) {
+    const card = document.getElementById('game-card-body');
+    if (dir === 'right') {
+        card.classList.add('swipe-right');
+        state.stats.done++;
+        localStorage.setItem('lc_stats', JSON.stringify(state.stats));
+        if (navigator.vibrate) navigator.vibrate(40);
+    } else {
+        card.classList.add('swipe-left');
+    }
     
     setTimeout(() => {
-        // Подстановка имен
-        let text = state.currentCard.text
-            .replace(/{name1}/g, `<b>${state.name1}</b>`)
-            .replace(/{name2}/g, `<b>${state.name2}</b>`);
-        
-        cardText.innerHTML = text;
-        intensity.innerText = state.currentCard.level;
-        intensity.style.background = `var(--${state.currentCard.level.toLowerCase()})`;
-        
-        // Показываем тип и подсказки (для свиданий)
-        cardType.innerText = state.currentTheme.toUpperCase();
-        if (state.currentCard.tip) {
-            details.style.display = 'flex';
-            document.getElementById('detail-tip').innerText = state.currentCard.tip;
-        } else {
-            details.style.display = 'none';
-        }
-
-        // Обновляем кнопку избранного
-        updateFavBtnUI();
-
-        cardText.style.opacity = '1';
-    }, 200);
-}
-
-// --- СВАЙПЫ (TINDER ЛОГИКА) ---
-function setupSwipeGestures() {
-    const card = document.getElementById('game-card-body');
-
-    card.addEventListener('touchstart', (e) => {
-        state.startX = e.touches[0].clientX;
-        card.style.transition = 'none';
-    });
-
-    card.addEventListener('touchmove', (e) => {
-        state.currentX = e.touches[0].clientX;
-        const diff = state.currentX - state.startX;
-        const rotation = diff / 10;
-        card.style.transform = `translateX(${diff}px) rotate(${rotation}deg)`;
-        
-        // Подсветка при свайпе
-        if (diff > 50) card.style.background = '#e8f5e9'; // Зеленоватый (гуд)
-        else if (diff < -50) card.style.background = '#ffebee'; // Красноватый (скип)
-        else card.style.background = '#fff';
-    });
-
-    card.addEventListener('touchend', () => {
-        const diff = state.currentX - state.startX;
-        card.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s';
-        
-        if (diff > 120) {
-            animateSwipe('right');
-        } else if (diff < -120) {
-            animateSwipe('left');
-        } else {
-            card.style.transform = 'translateX(0) rotate(0)';
-            card.style.background = '#fff';
-        }
-        state.startX = 0; state.currentX = 0;
-    });
-}
-
-function animateSwipe(direction) {
-    const card = document.getElementById('game-card-body');
-    if (direction === 'right') {
-        card.style.transform = 'translateX(1000px) rotate(45deg)';
-        markAsDone();
-    } else {
-        card.style.transform = 'translateX(-1000px) rotate(-45deg)';
-        skipCard();
-    }
-
-    // Возвращаем карту на место для следующего задания
-    setTimeout(() => {
-        card.style.opacity = '0';
-        card.style.transition = 'none';
-        card.style.transform = 'translateX(0) scale(0.95)';
-        card.style.background = '#fff';
-        
-        setTimeout(() => {
-            nextCard();
-            card.style.transition = 'all 0.4s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'scale(1)';
-        }, 50);
-    }, 300);
-}
-
-// --- СТАТИСТИКА И ДЕЙСТВИЯ ---
-function markAsDone() {
-    state.stats.completed++;
-    const cat = state.currentTheme;
-    state.stats.categories[cat] = (state.stats.categories[cat] || 0) + 1;
-    saveData();
-    if (window.navigator.vibrate) window.navigator.vibrate(30);
-}
-
-function skipCard() {
-    if (window.navigator.vibrate) window.navigator.vibrate([10, 30]);
+        nextCard();
+        card.classList.remove('swipe-right', 'swipe-left');
+        card.style.transform = 'scale(0.8)';
+        setTimeout(() => card.style.transform = '', 50);
+    }, 400);
 }
 
 // --- ИЗБРАННОЕ ---
 function toggleFavorite() {
-    const idx = state.favorites.findIndex(f => f.id === state.currentCard.id);
-    if (idx === -1) {
-        state.favorites.push({ ...state.currentCard, category: state.currentTheme });
-    } else {
-        state.favorites.splice(idx, 1);
-    }
-    saveData();
-    updateFavBtnUI();
+    const idx = state.favs.findIndex(f => f.id === state.currentCard.id);
+    if (idx === -1) state.favs.push(state.currentCard);
+    else state.favs.splice(idx, 1);
+    localStorage.setItem('lc_favs', JSON.stringify(state.favs));
+    updateFavUI();
 }
 
-function updateFavBtnUI() {
-    const isFav = state.favorites.some(f => f.id === state.currentCard.id);
-    const btn = document.getElementById('fav-btn');
-    btn.innerHTML = isFav ? '<i class="fas fa-star" style="color:#ffb703"></i>' : '<i class="far fa-star"></i>';
+function updateFavUI() {
+    const isFav = state.favs.some(f => f.id === state.currentCard.id);
+    document.getElementById('fav-btn').innerHTML = isFav ? '<i class="fas fa-star" style="color: gold"></i>' : '<i class="far fa-star"></i>';
 }
 
-// --- МОДАЛЬНЫЕ ОКНА ---
-function showModal(type) {
-    if (type === 'favs') renderFavorites();
-    if (type === 'stats') renderStats();
-    if (type === 'reset') {
-        document.getElementById('current-name1').innerText = state.name1;
-        document.getElementById('current-name2').innerText = state.name2;
+function showModal(id) {
+    if (id === 'stats') document.getElementById('stats-content').innerHTML = `Выполнено заданий: <b>${state.stats.done}</b>`;
+    if (id === 'favs') {
+        document.getElementById('favs-list').innerHTML = state.favs.map(f => `<p style="font-size:14px; border-bottom:1px solid #eee; padding:10px 0;">${f.text.replace(/{name1}/g, state.name1).replace(/{name2}/g, state.name2)}</p>`).join('') || 'Тут пока пусто';
     }
-    document.getElementById(`modal-${type}`).classList.add('active');
+    document.getElementById(`modal-${id}`).classList.add('active');
 }
 
 function closeModals() {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
 }
 
-function renderFavorites() {
-    const container = document.getElementById('favs-list');
-    if (state.favorites.length === 0) {
-        container.innerHTML = "<p style='text-align:center; opacity:0.5'>Тут пока пусто...</p>";
-        return;
-    }
-
-    container.innerHTML = state.favorites.map(f => `
-        <div class="fav-item">
-            <div class="fav-type">${f.category}</div>
-            <p>${f.text.replace(/{name1}/g, state.name1).replace(/{name2}/g, state.name2)}</p>
-            <i class="fas fa-trash del-fav" onclick="removeFav('${f.id}')"></i>
-        </div>
-    `).join('');
-}
-
-function removeFav(id) {
-    state.favorites = state.favorites.filter(f => f.id !== id);
-    saveData();
-    renderFavorites();
-    updateFavBtnUI();
-}
-
-function renderStats() {
-    document.getElementById('stat-completed').innerText = state.stats.completed;
-    document.getElementById('stat-sessions').innerText = state.stats.sessions;
-    
-    const detailed = document.getElementById('detailed-stats');
-    detailed.innerHTML = `
-        <div class="stats-subtitle">По категориям:</div>
-        ${Object.entries(state.stats.categories).map(([cat, val]) => `
-            <div class="category-stat-item">
-                <span>${cat === 'romance' ? '❤️' : cat === 'adult' ? '🔥' : '🎲'} ${cat}</span>
-                <span>${val}</span>
-            </div>
-        `).join('')}
-    `;
-}
-
-// --- ВСПОМОГАТЕЛЬНЫЕ ---
-function saveData() {
-    localStorage.setItem('lc_favs', JSON.stringify(state.favorites));
-    localStorage.setItem('lc_stats', JSON.stringify(state.stats));
-}
-
 function confirmReset() {
-    localStorage.removeItem('lc_names');
-    location.reload();
-}
-
-function startTimer() {
-    const display = document.getElementById('timer-display');
-    let timeLeft = 60;
-    
-    if (state.timer) clearInterval(state.timer);
-    
-    state.timer = setInterval(() => {
-        timeLeft--;
-        let mins = Math.floor(timeLeft / 60);
-        let secs = timeLeft % 60;
-        display.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        
-        if (timeLeft <= 0) {
-            clearInterval(state.timer);
-            display.innerText = "01:00";
-            alert("Время вышло! ❤️");
-        }
-    }, 1000);
+    if (confirm("Сбросить имена?")) {
+        localStorage.removeItem('lc_names');
+        location.reload();
+    }
 }
