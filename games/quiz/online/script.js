@@ -1,189 +1,151 @@
-// // Инициализация сокета с твоим Amvera URL
-const socket = io("https://lovecouple-server-zarsenkov.amvera.io"); 
+const socket = io("https://lovecouple-server-zarsenkov.amvera.io", {
+    transports: ['websocket', 'polling']
+});
 
-// // Названия категорий
-const TRANSLATIONS = {
-    general: "ОБЩЕЕ", science: "НАУКА", history: "ИСТОРИЯ", 
-    culture: "КУЛЬТУРА", sport: "СПОРТ", geography: "ГЕОГРАФИЯ", 
-    movies: "КИНО", music: "МУЗЫКА", literature: "ЛИТЕРАТУРА"
+const app = {
+    myId: null,
+    roomId: null,
+    isHost: false,
+    score: 0,
+    canAnswer: false,
+
+    init() {
+        socket.on('connect', () => {
+            this.myId = socket.id;
+        });
+
+        // Слушатели событий
+        socket.on('room_data', (data) => this.updateLobby(data));
+        socket.on('game_start', (questions) => this.startGame(questions));
+        socket.on('next_question', (data) => this.renderQuestion(data));
+        socket.on('timer_tick', (time) => this.updateTimer(time));
+        socket.on('round_ended', (results) => this.showFeedback(results));
+        socket.on('game_over', (results) => this.showResults(results));
+        socket.on('error', (msg) => alert(msg));
+    },
+
+    // Навигация
+    showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    },
+
+    toggleRules(show) {
+        document.getElementById('modal-rules').classList.toggle('active', show);
+    },
+
+    // Действия с комнатой
+    createRoom() {
+        const name = document.getElementById('username').value.trim();
+        if (!name) return alert("Введи ник!");
+        socket.emit('quiz_create', { name });
+    },
+
+    joinRoom() {
+        const name = document.getElementById('username').value.trim();
+        const code = document.getElementById('room-input').value.trim().toUpperCase();
+        if (!name || !code) return alert("Введи ник и код!");
+        socket.emit('quiz_join', { name, roomId: code });
+    },
+
+    updateLobby(data) {
+        this.roomId = data.roomId;
+        this.isHost = data.hostId === this.myId;
+        
+        document.getElementById('display-room-code').innerText = this.roomId;
+        const list = document.getElementById('player-list');
+        list.innerHTML = data.players.map(p => `
+            <div class="player-item ${p.id === this.myId ? 'is-me' : ''}">
+                <span>${p.name}</span>
+                ${p.id === data.hostId ? '<span class="host-badge">HOST</span>' : ''}
+            </div>
+        `).join('');
+
+        document.getElementById('start-game-btn').style.display = this.isHost ? 'block' : 'none';
+        document.getElementById('wait-msg').style.display = this.isHost ? 'none' : 'block';
+        this.showScreen('screen-lobby');
+    },
+
+    requestStart() {
+        socket.emit('quiz_start_request', { roomId: this.roomId });
+    },
+
+    // Игровой процесс
+    startGame() {
+        this.score = 0;
+        document.getElementById('my-score').innerText = `Очки: 0`;
+        this.showScreen('screen-game');
+    },
+
+    renderQuestion(data) {
+        this.canAnswer = true;
+        document.getElementById('current-question-num').innerText = `Вопрос ${data.index + 1} из ${data.total}`;
+        document.getElementById('question-text').innerText = data.question;
+        
+        const grid = document.getElementById('answers-grid');
+        grid.innerHTML = data.answers.map((ans, i) => `
+            <button class="answer-btn" id="ans-${i}" onclick="app.sendAnswer(${i})">${ans}</button>
+        `).join('');
+    },
+
+    sendAnswer(index) {
+        if (!this.canAnswer) return;
+        this.canAnswer = false;
+        
+        // Визуальный выбор
+        document.getElementById(`ans-${index}`).classList.add('selected');
+        
+        // Блокируем остальные
+        const btns = document.querySelectorAll('.answer-btn');
+        btns.forEach(btn => btn.disabled = true);
+
+        socket.emit('quiz_submit_answer', {
+            roomId: this.roomId,
+            answerIndex: index
+        });
+    },
+
+    updateTimer(time) {
+        const el = document.getElementById('game-timer');
+        el.innerText = time;
+        el.style.color = time <= 5 ? 'var(--accent)' : 'var(--text)';
+    },
+
+    showFeedback(data) {
+        // data.correctIndex - правильный ответ
+        // data.playerResults - кто как ответил
+        const correctBtn = document.getElementById(`ans-${data.correctIndex}`);
+        if (correctBtn) correctBtn.classList.add('correct');
+
+        const myResult = data.playerResults.find(r => r.id === this.myId);
+        if (myResult) {
+            this.score = myResult.totalScore;
+            document.getElementById('my-score').innerText = `Очки: ${this.score}`;
+            
+            // Если ответил неверно, подсветим свой выбор красным
+            if (!myResult.isCorrect && myResult.lastAnswer !== null) {
+                const wrongBtn = document.getElementById(`ans-${myResult.lastAnswer}`);
+                if (wrongBtn) wrongBtn.classList.add('wrong');
+            }
+        }
+    },
+
+    showResults(results) {
+        this.showScreen('screen-results');
+        const list = document.getElementById('leaderboard');
+        // Сортировка по очкам
+        results.sort((a,b) => b.score - a.score);
+        list.innerHTML = results.map((r, i) => `
+            <div class="leader-row">
+                <span>${i+1}. ${r.name}</span>
+                <span>${r.score}</span>
+            </div>
+        `).join('');
+    },
+
+    leaveRoom() {
+        if (confirm("Выйти из игры?")) location.reload();
+    }
 };
 
-let myId = null;
-let currentRoom = null;
-let selectedCats = [];
-
-// --- ЛОГИКА ИНТЕРФЕЙСА ---
-
-// // Функция отрисовки категорий (теперь работает с файлом в той же папке)
-function initCategories() {
-    const list = document.getElementById('categories-box');
-    if (!list || typeof QUIZ_QUESTIONS === 'undefined') return;
-
-    // Собираем уникальные категории из всех уровней сложности
-    const allQs = [...QUIZ_QUESTIONS.easy, ...QUIZ_QUESTIONS.medium, ...QUIZ_QUESTIONS.hard];
-    const uniqueCats = [...new Set(allQs.map(q => q.category))];
-    
-    list.innerHTML = ''; 
-    uniqueCats.forEach(cat => {
-        const div = document.createElement('div');
-        div.className = 'cat-item';
-        div.innerText = TRANSLATIONS[cat] || cat.toUpperCase();
-        div.onclick = () => {
-            div.classList.toggle('selected');
-            if (selectedCats.includes(cat)) {
-                selectedCats = selectedCats.filter(c => c !== cat);
-            } else {
-                selectedCats.push(cat);
-            }
-        };
-        list.appendChild(div);
-    });
-}
-
-// --- SOCKET СОБЫТИЯ ---
-
-// // Создать новую комнату
-function createRoom() {
-    const name = document.getElementById('player-name').value.trim();
-    if(!name) return alert("Введите имя!");
-    socket.emit('quiz-create', { name });
-}
-
-// // Присоединиться к существующей
-function joinRoom() {
-    const name = document.getElementById('player-name').value.trim();
-    const roomId = document.getElementById('room-id').value.trim().toUpperCase();
-    if(!name || !roomId) return alert("Введите имя и ID!");
-    socket.emit('quiz-join', { name, roomId });
-}
-
-// // Когда игрок вошел в комнату
-socket.on('quiz-room-joined', (data) => {
-    currentRoom = data.roomId;
-    myId = socket.id;
-    document.getElementById('display-room-id').innerText = `ROOM: ${data.roomId}`;
-    showScreen('lobby-screen');
-
-    const startBtn = document.getElementById('start-game-btn');
-    const catBox = document.getElementById('categories-box');
-    const catTitle = document.getElementById('cats-title');
-
-    // Если этот клиент — хост, показываем настройки тем
-    if(data.isHost) {
-        startBtn.style.display = 'block';
-        catBox.style.display = 'grid';
-        catTitle.style.display = 'block';
-        initCategories();
-    } else {
-        startBtn.style.display = 'none';
-        catBox.style.display = 'none';
-        catTitle.style.display = 'none';
-    }
-});
-
-// // Обновление списка игроков (без дублей)
-socket.on('quiz-update-players', (players) => {
-    const list = document.getElementById('lobby-players-list');
-    if (!list) return;
-    
-    list.innerHTML = ''; // Очистка перед перерисовкой
-    players.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'joy-input';
-        div.style.marginBottom = '8px';
-        div.style.background = p.id === socket.id ? '#f0edff' : '#F1F2F6';
-        div.innerHTML = `<span>${p.name} ${p.isHost ? '👑' : ''}</span>`;
-        list.appendChild(div);
-    });
-});
-
-// // Запрос старта от хоста
-function requestStart() {
-    if(selectedCats.length === 0) return alert("Выберите хотя бы одну тему!");
-    socket.emit('quiz-start-request', { roomId: currentRoom, categories: selectedCats });
-}
-
-// // Фаза передачи хода
-socket.on('quiz-prep-phase', (data) => {
-    showScreen('transfer-screen');
-    document.getElementById('next-player-name').innerText = data.activePlayerName;
-    const isMe = data.activePlayerId === socket.id;
-    
-    document.getElementById('ready-btn').style.display = isMe ? 'block' : 'none';
-    document.getElementById('transfer-status').innerText = isMe ? 'Твой черед!' : 'Игрок готовится...';
-});
-
-// // Подтверждение готовности игрока
-function playerReady() {
-    socket.emit('quiz-player-ready', { roomId: currentRoom });
-}
-
-// // Получение вопроса
-socket.on('quiz-question', (data) => {
-    showScreen('game-screen');
-    document.getElementById('question-text').innerText = data.question.question;
-    document.getElementById('score-counter').innerText = data.score;
-    document.getElementById('current-active-player').innerText = `ОТВЕЧАЕТ: ${data.activePlayerName}`;
-    
-    const box = document.getElementById('answers-box');
-    box.innerHTML = '';
-    
-    data.question.answers.forEach((ans, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'answer-btn';
-        btn.innerText = ans;
-        btn.onclick = () => {
-            document.querySelectorAll('.answer-btn').forEach(b => b.style.pointerEvents = 'none');
-            socket.emit('quiz-answer', { roomId: currentRoom, answerIdx: idx });
-        };
-        box.appendChild(btn);
-    });
-});
-
-// // Подсветка правильного ответа
-socket.on('quiz-answer-result', (data) => {
-    const btns = document.querySelectorAll('.answer-btn');
-    if (btns[data.correctIdx]) btns[data.correctIdx].classList.add('correct');
-    if (data.sentIdx !== data.correctIdx && btns[data.sentIdx]) {
-        btns[data.sentIdx].classList.add('wrong');
-    }
-});
-
-// // Синхронизация таймера
-socket.on('quiz-timer-tick', (time) => {
-    const t = document.getElementById('timer-display');
-    if(t) t.innerText = time;
-});
-
-// // Вывод финальных результатов
-socket.on('quiz-results', (results) => {
-    showScreen('result-screen');
-    const board = document.getElementById('final-results');
-    const sorted = results.sort((a,b) => b.score - a.score);
-    
-    board.innerHTML = sorted.map((p, i) => `
-        <div style="display:flex; justify-content:space-between; padding:15px; background:#F1F2F6; border-radius:15px; margin-bottom:10px; font-weight:900;">
-            <span>${i===0?'🏆 ':''}${p.name}</span>
-            <span style="color:var(--bg)">${p.score}</span>
-        </div>
-    `).join('');
-});
-
-// --- УТИЛИТЫ ---
-
-// // Функция переключения экранов
-function showScreen(id) { 
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active'); 
-}
-
-// // Функция возврата: выходит из папки online в корень квиза
-function goBack() {
-    if (confirm("Выйти в главное меню?")) {
-        if(socket) socket.disconnect();
-        window.location.href = "../index.html"; // Выход на уровень выше
-    }
-}
-
-// // Правила
-function toggleRules(show) { document.getElementById('rules-modal').classList.toggle('active', show); }
+app.init();
