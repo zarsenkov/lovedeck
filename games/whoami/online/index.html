@@ -3,60 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>КТО Я? ONLINE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Кто я? — Онлайн игра</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="nav-bar">
-        <div class="back-btn" onclick="handleBack()"><i class="fas fa-arrow-left"></i></div>
-        <div id="room-id-badge" class="room-id hidden" onclick="copyCode()">--- <i class="far fa-copy"></i></div>
+    <div class="top-nav">
+        <div class="back-circle" onclick="goHome()"><i class="fas fa-chevron-left"></i></div>
+        <div id="room-badge" class="room-pill hidden" onclick="copyRoomCode()">
+            <span id="room-display">CODE</span> <i class="far fa-copy"></i>
+        </div>
     </div>
 
     <!-- ВХОД -->
     <div id="screen-login" class="screen active">
-        <h1 class="glitch">КТО Я?</h1>
-        <div class="glass-card">
+        <div class="floating-stickers">
+            <div class="mini-sticker s1">Batman</div>
+            <div class="mini-sticker s2">Pikachu</div>
+        </div>
+        
+        <h1 class="title">Кто<span>Я?</span></h1>
+        
+        <div class="clay-card">
             <input type="text" id="username" placeholder="Твое имя" maxlength="12">
-            <button class="btn-main" onclick="createRoom()">Создать игру</button>
-            <div class="divider">войти в комнату</div>
-            <input type="text" id="room-input" placeholder="КОД" style="text-transform: uppercase;">
-            <button class="btn-alt" onclick="joinRoom()">Присоединиться</button>
+            <button class="btn-main" onclick="createRoom()">Создать комнату</button>
+            <div class="separator">ИЛИ</div>
+            <input type="text" id="room-input" placeholder="Код комнаты" style="text-transform: uppercase;">
+            <button class="btn-light" onclick="joinRoom()">Присоединиться</button>
         </div>
     </div>
 
     <!-- ЛОББИ -->
     <div id="screen-lobby" class="screen">
-        <div class="glass-card">
-            <h2>Лобби</h2>
-            <div id="player-list" class="user-list"></div>
-            <button id="start-btn" class="btn-main hidden" onclick="startNaming()">Начать загадывать</button>
-            <p id="wait-msg" class="status-text">Ждем игроков...</p>
+        <div class="clay-card">
+            <h2>Участники</h2>
+            <div id="player-list" class="player-list"></div>
+            <div class="lobby-actions">
+                <button id="start-btn" class="btn-main hidden" onclick="startNamingPhase()">Начать игру</button>
+                <div id="wait-msg" class="wait-bubble">Ждем остальных...</div>
+            </div>
         </div>
     </div>
 
     <!-- ЭТАП ЗАГАДЫВАНИЯ -->
     <div id="screen-naming" class="screen">
-        <div class="glass-card">
-            <h3>Загадай для:</h3>
-            <h2 id="target-name" class="highlight-name">---</h2>
-            <input type="text" id="character-input" placeholder="Напр: Человек-Паук">
-            <button class="btn-main" onclick="setCharacter()">Готово</button>
-            <p class="hint">Это имя появится на лбу у игрока</p>
+        <div class="clay-card">
+            <p class="instruct">Придумай персонажа для:</p>
+            <h2 id="target-player-name" class="target-name">---</h2>
+            <input type="text" id="char-input" placeholder="Напр: Чебурашка">
+            <button class="btn-main" onclick="confirmCharacter()">Готово!</button>
         </div>
     </div>
 
     <!-- ИГРОВОЕ ПОЛЕ -->
     <div id="screen-game" class="screen">
-        <div class="game-grid" id="game-grid">
-            <!-- Здесь будут карточки всех игроков -->
-        </div>
-        <div class="my-status-panel">
-            <div class="my-card">
-                <span>МОЯ КАРТОЧКА:</span>
-                <div class="hidden-blur">? ? ? ?</div>
+        <div class="game-info">Все видят твоего героя, кроме тебя!</div>
+        <div id="stickers-grid" class="stickers-grid"></div>
+        
+        <div class="my-zone">
+            <div class="my-sticker-placeholder">
+                <span>ТВОЙ ГЕРОЙ СКРЫТ</span>
+                <div class="blur-overlay">??????</div>
             </div>
         </div>
     </div>
