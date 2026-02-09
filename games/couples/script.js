@@ -1,138 +1,123 @@
 const state = {
-    p1: "",
-    p2: "",
+    p1: "", p2: "",
     score: 0,
+    turn: 1, // 1 или 2
     currentCategory: "",
-    completedTasks: []
+    wishProgress: 0,
+    tasksUsed: new Set()
 };
 
-const tasks = {
+const database = {
     romance: [
-        "{p1}, возьми {p2} за руку и скажи 3 вещи, за которые ты любишь этот момент.",
-        "{p2}, организуй медленный танец под воображаемую музыку прямо сейчас.",
-        "Сделайте друг другу массаж рук в течение 2 минут.",
-        "{p1}, напиши {p2} короткое любовное признание и отправь в мессенджер."
+        "{actor}, возьми {target} за руки и скажи 3 вещи, которые ты ценишь в ваших отношениях.",
+        "{actor}, сделай {target} массаж плеч в течение 1 минуты.",
+        "{actor}, расскажи о своем самом счастливом сне, где был(а) {target}.",
+        "{actor}, напиши {target} СМС с признанием в любви прямо сейчас."
     ],
     fun: [
-        "Попробуйте рассмешить друг друга. Кто первым засмеется, тот делает массаж ножек!",
-        "Сделайте самое смешное совместное селфи.",
-        "{p2}, изобрази {p1} в стиле немого кино.",
-        "Придумайте ваше секретное слово, которое будет означать 'хочу обнимашек'."
+        "{actor}, изобрази {target}, когда он(а) злится. Если {target} не засмеется, +5 баллов!",
+        "Сыграйте в 'гляделки'. Кто первый моргнет, тот выполняет желание партнера.",
+        "{actor}, придумай секретное кодовое слово для 'хочу обнимашек' для {target}.",
+        "{actor}, сделай 5 приседаний, держа {target} за руки."
     ],
     hot: [
-        "{p1}, поцелуй {p2} в то место, куда тебя еще никогда не целовали.",
-        "Прошепчи на ухо партнеру свою самую смелую фантазию.",
-        "Сделайте поцелуй, который продлится ровно 30 секунд.",
-        "{p2}, выбери место на теле {p1}, которое ты хочешь поцеловать прямо сейчас."
-    ],
-    talk: [
-        "Если бы вы могли прямо сейчас отправиться в любую точку мира, куда бы вы поехали?",
-        "Расскажите о своем самом первом впечатлении друг о друге.",
-        "Какое качество в вашем партнере вы считаете самым вдохновляющим?",
-        "Опишите ваш идеальный день через 5 лет."
+        "{actor}, прошепчи на ухо {target} свою самую смелую фантазию.",
+        "{actor}, поцелуй {target} так, как будто вы в финале голливудского фильма.",
+        "{actor}, выбери место на теле {target}, которое ты хочешь поцеловать прямо сейчас.",
+        "{actor}, опиши 3 вещи, которые тебя больше всего возбуждают в {target}."
     ]
 };
 
-// Переключение экранов
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
+// Функция уведомления
+function notify(text) {
+    const box = document.getElementById('custom-alert');
+    document.getElementById('alert-msg').innerText = text;
+    box.classList.add('active');
+    setTimeout(() => box.classList.remove('active'), 3000);
 }
 
-// Запуск игры
-function startGame() {
-    const name1 = document.getElementById('p1-name').value.trim();
-    const name2 = document.getElementById('p2-name').value.trim();
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
 
-    if (!name1 || !name2) {
-        alert("Милые, введите ваши имена! 💕");
+function startGame() {
+    const n1 = document.getElementById('p1-name').value.trim();
+    const n2 = document.getElementById('p2-name').value.trim();
+
+    if (!n1 || !n2) {
+        notify("Пожалуйста, введите оба имени ✨");
         return;
     }
 
-    state.p1 = name1;
-    state.p2 = name2;
-    document.getElementById('user-display').innerText = name1;
+    state.p1 = n1;
+    state.p2 = n2;
+    updateLobby();
     showScreen('screen-menu');
 }
 
-// Выбор категории
+function updateLobby() {
+    const activeName = state.turn === 1 ? state.p1 : state.p2;
+    document.getElementById('current-player-name').innerText = activeName;
+    document.getElementById('active-user').innerText = activeName;
+}
+
 function selectCategory(cat) {
     state.currentCategory = cat;
     showScreen('screen-play');
 }
 
-// Достать карточку
 function drawCard() {
     const jar = document.getElementById('jar');
-    jar.classList.add('shake-anim');
+    jar.style.transform = "scale(1.1) rotate(5deg)";
     
-    setTimeout(() => {
-        jar.classList.remove('shake-anim');
-        const pool = tasks[state.currentCategory];
-        const randomTask = pool[Math.floor(Math.random() * pool.length)];
-        
-        // Подстановка имен
-        const text = randomTask
-            .replace(/{p1}/g, `<b>${state.p1}</b>`)
-            .replace(/{p2}/g, `<b>${state.p2}</b>`);
+    if (window.navigator.vibrate) window.navigator.vibrate(50);
 
-        document.getElementById('task-text').innerHTML = text;
-        document.getElementById('card-tag').innerText = state.currentCategory.toUpperCase();
-        document.getElementById('card-modal').classList.add('active');
-    }, 500);
+    setTimeout(() => {
+        jar.style.transform = "scale(1) rotate(0deg)";
+        
+        const pool = database[state.currentCategory];
+        const task = pool[Math.floor(Math.random() * pool.length)];
+        
+        const actor = state.turn === 1 ? state.p1 : state.p2;
+        const target = state.turn === 1 ? state.p2 : state.p1;
+
+        const processedText = task
+            .replace(/{actor}/g, `<b>${actor}</b>`)
+            .replace(/{target}/g, `<b>${target}</b>`);
+
+        document.getElementById('task-text').innerHTML = processedText;
+        document.getElementById('task-cat').innerText = state.currentCategory.toUpperCase();
+        document.getElementById('modal-task').classList.add('active');
+    }, 200);
+}
+
+function completeTask() {
+    state.wishProgress += 10;
+    if (state.wishProgress > 100) state.wishProgress = 100;
+    
+    // Обновляем прогресс
+    document.getElementById('wish-fill').style.width = state.wishProgress + "%";
+    document.getElementById('wish-percent').innerText = state.wishProgress + "%";
+
+    if (state.wishProgress === 100) {
+        notify(`🎉 БУМ! Баночка полна! ${state.turn === 1 ? state.p1 : state.p2} загадывает желание!`);
+        state.wishProgress = 0;
+    }
+
+    // Смена хода
+    state.turn = state.turn === 1 ? 2 : 1;
+    
+    closeModal();
+    updateLobby();
+    showScreen('screen-menu');
+    notify("Задание выполнено! Ход переходит...");
 }
 
 function closeModal() {
-    document.getElementById('card-modal').classList.remove('active');
+    document.getElementById('modal-task').classList.remove('active');
 }
 
-// Выполнение задания
-function completeTask() {
-    state.score += 10;
-    document.getElementById('total-score').innerText = state.score;
-    
-    // Добавляем в альбом (иконку по категории)
-    const icons = { romance: '💖', fun: '🍭', hot: '🌶️', talk: '☁️' };
-    state.completedTasks.push(icons[state.currentCategory]);
-    
-    closeModal();
-    
-    // Эффект конфетти (упрощенно - вибрация)
-    if (window.navigator.vibrate) window.navigator.vibrate(50);
-}
-
-// Показать альбом
 function showAlbum() {
-    const albumList = document.getElementById('album-list');
-    albumList.innerHTML = "";
-    
-    if (state.completedTasks.length === 0) {
-        albumList.innerHTML = "<p style='grid-column: 1/4; text-align:center; opacity:0.5;'>Тут пока пусто. Время наполнять баночку! 💕</p>";
-    } else {
-        state.completedTasks.forEach(icon => {
-            const stamp = document.createElement('div');
-            stamp.className = 'stamp';
-            stamp.innerText = icon;
-            albumList.appendChild(stamp);
-        });
-    }
-    
-    showScreen('screen-album');
+    notify("Альбом будет доступен в следующем обновлении! 💖");
 }
-
-// Создание фоновых частиц
-function createParticles() {
-    const container = document.getElementById('bg-particles');
-    for (let i = 0; i < 15; i++) {
-        const heart = document.createElement('div');
-        heart.innerText = "🌸";
-        heart.style.position = "absolute";
-        heart.style.left = Math.random() * 100 + "vw";
-        heart.style.top = Math.random() * 100 + "vh";
-        heart.style.opacity = "0.2";
-        heart.style.fontSize = Math.random() * 20 + 10 + "px";
-        container.appendChild(heart);
-    }
-}
-
-createParticles();
